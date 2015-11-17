@@ -1,0 +1,22 @@
+{
+  "name": "BeaconLocation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "beaconId": {
+      "type": "number",
+      "required": true
+    },
+    "locationId": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

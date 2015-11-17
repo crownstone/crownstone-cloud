@@ -1,0 +1,29 @@
+{
+  "name": "Location",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "string",
+      "required": false
+    }
+  },
+  "validations": [],
+  "relations": {
+    "beacons": {
+      "type": "hasAndBelongsToMany",
+      "model": "Beacon",
+      "through": "BeaconLocation",
+      "foreignKey": ""
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
