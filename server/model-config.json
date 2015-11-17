@@ -33,15 +33,15 @@
     "public": false
   },
   "Location": {
-    "dataSource": "db",
+    "dataSource": "mongoDs",
     "public": true
   },
   "Beacon": {
-    "dataSource": "db",
+    "dataSource": "mongoDs",
     "public": true
   },
   "BeaconLocation": {
-    "dataSource": "db",
+    "dataSource": "mongoDs",
     "public": false
   }
 }

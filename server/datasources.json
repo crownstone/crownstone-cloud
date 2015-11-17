@@ -2,5 +2,14 @@
   "db": {
     "name": "db",
     "connector": "memory"
+  },
+  "mongoDs": {
+    "name": "mongoDs",
+    "connector": "mongodb",
+    "host": "ds047474.mongolab.com",
+    "port": 47474,
+    "database": "crownstone-cloud",
+    "username": "demo",
+    "password": "dodedodo!!#"
   }
 }
