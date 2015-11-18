@@ -5,8 +5,12 @@ module.exports = function(Beacon) {
 
 	Beacon.findLocation = function(beaconAddress, cb) {
 			Beacon.find({where: {address: beaconAddress}, include: {locations: 'name'}}, function(err, beacons) {
-				console.log('found: ' + JSON.stringify(beacons[0].locations));
-				cb(null, beacons[0].locations);
+				if (beacons.length > 0 && beacons[0].locations.length > 0) {
+					console.log('found: ' + JSON.stringify(beacons[0].locations));
+					cb(null, beacons[0].locations);
+				} else {
+					cb({message: "no beacon found with address: " + beaconAddress}, null);
+				}
 			});
 	}
 
