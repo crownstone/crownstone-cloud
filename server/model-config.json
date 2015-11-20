@@ -14,7 +14,8 @@
     ]
   },
   "User": {
-    "dataSource": "db"
+    "dataSource": "db",
+    "public": false
   },
   "AccessToken": {
     "dataSource": "db",
@@ -32,6 +33,10 @@
     "dataSource": "db",
     "public": false
   },
+  "Email": {
+    "dataSource": "sendgridDs",
+    "public": false
+  },
   "Location": {
     "dataSource": "mongoDs",
     "public": true
@@ -43,5 +48,12 @@
   "BeaconLocation": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "user": {
+    "dataSource": "mongoDs",
+    "public": true,
+    "options": {
+      "emailVerificationRequired": true
+    }
   }
 }

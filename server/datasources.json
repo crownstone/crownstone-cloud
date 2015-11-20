@@ -4,12 +4,18 @@
     "connector": "memory"
   },
   "mongoDs": {
-    "name": "mongoDs",
-    "connector": "mongodb",
     "host": "ds047474.mongolab.com",
     "port": 47474,
     "database": "crownstone-cloud",
     "username": "demo",
-    "password": "dodedodo!!#"
+    "password": "dodedodo!!#",
+    "name": "mongoDs",
+    "connector": "mongodb"
+  },
+  "sendgridDs": {
+    "name": "sendgridDs",
+    "connector": "loopback-connector-sendgrid",
+    "api_user": "app43993663@heroku.com",
+    "api_key": "69h5k5n97466"
   }
 }

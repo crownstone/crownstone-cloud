@@ -1,7 +1,37 @@
 var loopback = require('loopback');
 var boot = require('loopback-boot');
+var path = require('path');
+var bodyParser = require('body-parser');
 
 var app = module.exports = loopback();
+
+// configure view handler
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// configure body parser
+app.use(bodyParser.urlencoded({extended: true}));
+
+app.use(loopback.context());
+app.use(loopback.token());
+app.use(function setCurrentUser(req, res, next) {
+  if (!req.accessToken) {
+    return next();
+  }
+  app.models.user.findById(req.accessToken.userId, function(err, user) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return next(new Error('No user with this access token was found.'));
+    }
+    var loopbackContext = loopback.getCurrentContext();
+    if (loopbackContext) {
+      loopbackContext.set('currentUser', user);
+    }
+    next();
+  });
+});
 
 app.start = function() {
   // start the web server
