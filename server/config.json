@@ -1,5 +1,6 @@
 {
   "restApiRoot": "/api",
+  "port": 3000,
   "remoting": {
     "context": {
       "enableHttpContext": true
