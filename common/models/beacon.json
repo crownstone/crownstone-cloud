@@ -28,6 +28,11 @@
       "model": "Location",
       "foreignKey": "",
       "through": "BeaconLocation"
+    },
+    "scans": {
+      "type": "hasMany",
+      "model": "Scan",
+      "foreignKey": ""
     }
   },
   "acls": [

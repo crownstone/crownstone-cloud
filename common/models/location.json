@@ -25,6 +25,11 @@
       "model": "Beacon",
       "foreignKey": "",
       "through": "BeaconLocation"
+    },
+    "owner": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": ""
     }
   },
   "acls": [

@@ -1,0 +1,25 @@
+{
+  "name": "Scan",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "timestamp": {
+      "type": "date",
+      "dataType": "timestamp",
+      "required": true
+    },
+    "scannedDevices": {
+      "type": [
+        "ScannedDevice"
+      ],
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

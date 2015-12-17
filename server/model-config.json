@@ -55,5 +55,13 @@
     "options": {
       "emailVerificationRequired": true
     }
+  },
+  "ScannedDevice": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "Scan": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

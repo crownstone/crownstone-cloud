@@ -31,54 +31,54 @@ module.exports = function(beacon) {
 
 
 	beacon.beforeRemote('**', function(context, unused, next) {
-		console.log("beacon.app.models.Beacon.settings.mongodb.collection: " + beacon.app.models.Beacon.settings.mongodb.collection);
+		// console.log("beacon.app.models.Beacon.settings.mongodb.collection: " + beacon.app.models.Beacon.settings.mongodb.collection);
 
-		var ctx = loopback.getCurrentContext();
-		var currentUser = ctx && ctx.get('currentUser');
-		console.log("currentUser: " + JSON.stringify(currentUser));
-		// console.log('currentUser.username: ', currentUser.username);
+		// var ctx = loopback.getCurrentContext();
+		// var currentUser = ctx && ctx.get('currentUser');
+		// console.log("currentUser: " + JSON.stringify(currentUser));
+		// // console.log('currentUser.username: ', currentUser.username);
 
-		console.log("realm: " + currentUser.realm)
-		if (currentUser.realm == "user2") {
-			// var wait = false;
-			// if (!dataSource || attachedDataSource != dataSource) {
-			// 	if (!dataSource) {
-			// 		dataSource = loopback.createDataSource({
-			// 			connector: "mongodb",
-			// 			"host": "ds047484.mongolab.com",
-			// 			"port": 47484,
-			// 			"database": "crownstone-cloud-2",
-			// 			"username": dataSources.mongoDs.username,
-			// 			"password": dataSources.mongoDs.password,
-			// 		});
-			// 		dataSource.on('connected', function() {
-			// 			next();
-			// 		});
-			// 		wait = true;
-			// 	}
+		// console.log("realm: " + currentUser.realm)
+		// if (currentUser.realm == "user2") {
+		// 	// var wait = false;
+		// 	// if (!dataSource || attachedDataSource != dataSource) {
+		// 	// 	if (!dataSource) {
+		// 	// 		dataSource = loopback.createDataSource({
+		// 	// 			connector: "mongodb",
+		// 	// 			"host": "ds047484.mongolab.com",
+		// 	// 			"port": 47484,
+		// 	// 			"database": "crownstone-cloud-2",
+		// 	// 			"username": dataSources.mongoDs.username,
+		// 	// 			"password": dataSources.mongoDs.password,
+		// 	// 		});
+		// 	// 		dataSource.on('connected', function() {
+		// 	// 			next();
+		// 	// 		});
+		// 	// 		wait = true;
+		// 	// 	}
 
-			// 	console.log("attaching datasource 2")
-			// 	beacon.app.models.Beacon.attachTo(dataSource);
-			// 	attachedDataSource = dataSource;
-			// }
-			// if (!wait) {
-			// 	next();
-			// }
-			beacon.app.models.Beacon.settings.mongodb.collection = "Beacon_User2";
-		// } else if (currentUser.realm == "user1") {
-		} else {
-			// if (attachedDataSource != beacon.app.dataSources.mongoDs) {
-			// 	console.log("attaching datasource 1");
-			// 	console.log("dataSources: " + dataSources.mongoDs.username);
-			// 	beacon.app.models.Beacon.attachTo(beacon.app.dataSources.mongoDs);
-			// 	attachedDataSource = beacon.app.dataSources.mongoDs;
-			// }
-			// next();
-			beacon.app.models.Beacon.settings.mongodb.collection = "Beacon";
+		// 	// 	console.log("attaching datasource 2")
+		// 	// 	beacon.app.models.Beacon.attachTo(dataSource);
+		// 	// 	attachedDataSource = dataSource;
+		// 	// }
+		// 	// if (!wait) {
+		// 	// 	next();
+		// 	// }
+		// 	beacon.app.models.Beacon.settings.mongodb.collection = "Beacon_User2";
+		// // } else if (currentUser.realm == "user1") {
 		// } else {
-		// 	next({error: "user realm not found"});
-		// 	return;
-		}
+		// 	// if (attachedDataSource != beacon.app.dataSources.mongoDs) {
+		// 	// 	console.log("attaching datasource 1");
+		// 	// 	console.log("dataSources: " + dataSources.mongoDs.username);
+		// 	// 	beacon.app.models.Beacon.attachTo(beacon.app.dataSources.mongoDs);
+		// 	// 	attachedDataSource = beacon.app.dataSources.mongoDs;
+		// 	// }
+		// 	// next();
+		// 	beacon.app.models.Beacon.settings.mongodb.collection = "Beacon";
+		// // } else {
+		// // 	next({error: "user realm not found"});
+		// // 	return;
+		// }
 		next();
 
 	});
