@@ -14,5 +14,5 @@ filter: {"where": {"address":"CB:FC:C7:31:F7:8D"}, "include":"scans"}
 
 1.c including newest scan:
 /Beacons
-{"where": {"address":"CB:FC:C7:31:F7:8D"}, "include":{"relation":"scans", "scope": {"order":"timestamp DESC","limit":1}}}
+filter: {"where": {"address":"CB:FC:C7:31:F7:8D"}, "include":{"relation":"scans", "scope": {"order":"timestamp DESC","limit":1}}}
 

@@ -10,8 +10,7 @@
   },
   "properties": {
     "name": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "address": {
       "type": "string",

@@ -28,8 +28,13 @@
     },
     "owner": {
       "type": "belongsTo",
-      "model": "user",
+      "model": "Person",
       "foreignKey": ""
+    },
+    "presentPeople": {
+      "type": "hasMany",
+      "model": "Person",
+      "foreignKey": "currentLocationId"
     }
   },
   "acls": [

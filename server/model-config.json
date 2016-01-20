@@ -63,5 +63,13 @@
   "Scan": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "Person": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "Device": {
+    "dataSource": "mongoDs",
+    "public": true
   }
 }
