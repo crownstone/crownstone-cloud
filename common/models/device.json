@@ -22,7 +22,12 @@
     "owner": {
       "type": "belongsTo",
       "model": "Person",
-      "foreignKey": ""
+      "foreignKey": "ownerId"
+    },
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
     }
   },
   "acls": [],

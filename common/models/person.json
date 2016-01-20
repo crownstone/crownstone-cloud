@@ -38,9 +38,10 @@
       "foreignKey": "ownerId"
     },
     "currentLocation": {
-      "type": "belongsTo",
+      "type": "hasMany",
       "model": "Location",
-      "foreignKey": "currentLocationId"
+      "foreignKey": "ownerId",
+      "through": "Device"
     }
   },
   "acls": [],

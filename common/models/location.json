@@ -34,7 +34,8 @@
     "presentPeople": {
       "type": "hasMany",
       "model": "Person",
-      "foreignKey": "currentLocationId"
+      "foreignKey": "locationId",
+      "through": "Device"
     }
   },
   "acls": [
