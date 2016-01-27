@@ -13,10 +13,6 @@
     "rssi": {
       "type": "number",
       "required": true
-    },
-    "occurrences": {
-      "type": "number",
-      "required": true
     }
   },
   "validations": [],

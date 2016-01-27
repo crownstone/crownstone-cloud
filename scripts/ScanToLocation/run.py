@@ -8,8 +8,9 @@ import os;
 import getpass;
 import copy;
 
-from datetime import datetime;
+from datetime import datetime, timedelta;
 from pprint import pprint;
+from termcolor import colored;
 
 # crownstone_base_url = "http://0.0.0.0:3000"
 crownstone_base_url = "http://crownstone-cloud.herokuapp.com"
@@ -19,7 +20,7 @@ date_time_format = "%Y-%m-%dT%H:%M:%S.000Z"
 
 sleep_time = 30
 
-scan_interval = 10
+scan_interval = 60
 
 def loginCrownstone():
 	response = requests.post("%s/users/login" %crownstone_api_url,
@@ -173,7 +174,7 @@ def checkCredentials():
 def test(start_time):
 	global access_token
 
-	scan_filter = '{"include":{"relation":"scans", "scope": { "fields" : ["timestamp"], "where": {"timestamp": {"gt": "%s"}}}}}' %start_time
+	scan_filter = '{"include":{"relation":"scans", "scope": { "fields" : ["timestamp"], "where": {"timestamp": {"gt": "%s"}}, "limit": 500, "order": "timestamp ASC"}}}' %start_time
 
 	response = requests.get("%s/Beacons/?filter=%s&access_token=%s" %(crownstone_api_url, scan_filter, access_token))
 
@@ -188,7 +189,8 @@ def test(start_time):
 location_dict = {}
 
 # if __name__ == "__main__":
-def run(startTime):
+def run(startTime = None):
+	global scan_interval
 
 	try:
 		print "*****************************************************"
@@ -205,7 +207,7 @@ def run(startTime):
 		print "done"
 
 		# beacons = getBeaconsWithLocations();
-		beacons = test(startTime);
+		# beacons = test(startTime);
 
 		# locationLookup = {b['address'] : b['locations'][0] for b in beacons if b['locations']}
 
@@ -215,6 +217,10 @@ def run(startTime):
 		else:
 			# for debugging purposes, use provided start time
 			timestamp = datetime.strptime(startTime, date_time_format)
+
+		# beacons = test("2016-01-22T00:00:00.000Z")
+		today = datetime.date(datetime.now()).strftime(date_time_format)
+		beacons = test(today)
 
 		iteration = 1
 
@@ -236,10 +242,15 @@ def run(startTime):
 			# for i in range(len(beacons)):
 				# b = beacons[i]
 				beacon = getBeaconWithScans(b['id'], timestamp.strftime(date_time_format), (timestamp + timedelta(seconds=20)).strftime(date_time_format))
+
+				if not beacon:
+					print colored("failed to get beacon with scans", "red")
+					continue
+
 				# beacon = getBeaconWithLastScan(b['id'])
 				beaconAddress = beacon['address']
 
-				# if  no scans found for this beacon, continue with next
+				# gather some statistics
 				if not beacon['scans']:
 
 					b['caught'] = 0
@@ -253,8 +264,8 @@ def run(startTime):
 						b['missed'] = 1
 						b['totalMissed'] = 1
 
-					print "No new scans found for beacon [%s] (caught %d/%d, missed %d/%d)" %(beaconAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
-					continue
+					print "{:s} [{:17s}] (caught {:3d}/{:3d}, missed {:s}/{:s})".format(colored("No scans found for", "red"), beaconAddress, b['caught'], b['totalCaught'], colored("{:3d}".format(b['missed']), "red"), colored("{:3d}".format(b['totalMissed']), "red"))
+					#print "No scans found for [%s] (caught %d/%d, missed %d/%d)" %(beaconAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
 
 				else:
 					# reset missed counter, but leave totalMissed counter
@@ -269,7 +280,12 @@ def run(startTime):
 					if not b.has_key('totalMissed'):
 						b['totalMissed'] = 0
 
-					print "found scans for [%s] (caught %d/%d, missed %d/%d)" %(beaconAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
+					print "{:s} [{:17s}] (caught {:s}/{:s}, missed {:3d}/{:3d})".format(colored("found scans for   ", "green"), beaconAddress, colored("{:3d}".format(b['caught']), "green"), colored("{:3d}".format(b['totalCaught']), "green"), b['missed'], b['totalMissed'])
+					#print "found scans for [%s] (caught %d/%d, missed %d/%d)" %(beaconAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
+
+				# if  no scans found for this beacon, continue with next
+				if not beacon['scans']:
+					continue
 
 				# for all scanned devices, check if rssi is bigger than last
 				for d in beacon['scans'][0]['scannedDevices']:
@@ -301,7 +317,7 @@ def run(startTime):
 			for a, l in location_dict.items():
 				if old_loc_dict.has_key(a):
 					if old_loc_dict[a]['beacon'] != l['beacon']:
-						print ">> [%s] LOCTION CHANGED from %s to %s" %(a, old_loc_dict[a]['beacon'], location_dict[a]['beacon'])
+						print ">> [%s] LOCATION CHANGED from %s to %s" %(a, old_loc_dict[a]['beacon'], location_dict[a]['beacon'])
 
 			print
 
@@ -326,11 +342,22 @@ def run(startTime):
 
 			#update timestamp and wait
 			timestamp += timedelta(seconds=scan_interval)
-			
+			now = datetime.fromtimestamp(time.time())
+
+			next_check = timestamp + timedelta(seconds=scan_interval)
+
+			# if simulated (debugging)
 			if startTime:
 				time.sleep(0)
+			# if next time to check is in the future, sleep until that time
+			elif now < next_check:
+				time.sleep((next_check - now).seconds)
+			# if next time is in the past, we can't keep up, so increase scan_interval
 			else:
-				time.sleep(scan_interval)
+				dt = (now - next_check).seconds
+				scan_interval += dt
+				print "can't keep up, increase scan_interval time by %d to %d sec" %(dt, scan_interval)
+
 
 	except KeyboardInterrupt:
 		print "\n\nexiting ..."

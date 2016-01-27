@@ -12,6 +12,9 @@ app.set('views', path.join(__dirname, 'views'));
 // configure body parser
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.use(loopback.compress());
+console.log("enable compression");
+
 app.use(loopback.context());
 app.use(loopback.token());
 app.use(function setCurrentUser(req, res, next) {
