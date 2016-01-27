@@ -1,7 +1,7 @@
 module.exports = {
   mongoDs: {
     "connector": "loopback-connector-mongodb",
-    "host": "ds047474.mongolab.com",
+    "host": "dobots.customers.luna.net",
     "port": 47474,
     "database": process.env.MONGODB_DATABASE,
     "username": process.env.MONGODB_USER,

@@ -48,6 +48,20 @@ def getBeaconsWithLocations():
 
 	return parsed_beacons
 
+def getBeacons():
+	global access_token
+
+	beacon_filter = '{"fields":["address", "id"]}'
+
+	response = requests.get("%s/Beacons?filter=%s&access_token=%s" %(crownstone_api_url, beacon_filter, access_token))
+
+	if response.status_code != 200:
+		print "failed to get beacons"
+		return None
+
+	return response.json()
+
+
 # def getBeaconsWithLastScans():
 # 	global access_token
 
@@ -206,6 +220,7 @@ def run(startTime = None):
 		loginCrownstone()
 		print "done"
 
+		beacons = getBeacons()
 		# beacons = getBeaconsWithLocations();
 		# beacons = test(startTime);
 
@@ -219,8 +234,8 @@ def run(startTime = None):
 			timestamp = datetime.strptime(startTime, date_time_format)
 
 		# beacons = test("2016-01-22T00:00:00.000Z")
-		today = datetime.date(datetime.now()).strftime(date_time_format)
-		beacons = test(today)
+		# today = datetime.date(datetime.now()).strftime(date_time_format)
+		# beacons = test(today)
 
 		iteration = 1
 
@@ -241,7 +256,7 @@ def run(startTime = None):
 			for b in beacons:
 			# for i in range(len(beacons)):
 				# b = beacons[i]
-				beacon = getBeaconWithScans(b['id'], timestamp.strftime(date_time_format), (timestamp + timedelta(seconds=20)).strftime(date_time_format))
+				beacon = getBeaconWithScans(b['id'], timestamp.strftime(date_time_format), (timestamp + timedelta(seconds=scan_interval)).strftime(date_time_format))
 
 				if not beacon:
 					print colored("failed to get beacon with scans", "red")
