@@ -15,6 +15,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(loopback.compress());
 console.log("enable compression");
 
+loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { idInjection: false });
+
 app.use(loopback.context());
 app.use(loopback.token());
 app.use(function setCurrentUser(req, res, next) {

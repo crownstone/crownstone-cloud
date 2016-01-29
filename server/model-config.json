@@ -57,7 +57,7 @@
     }
   },
   "ScannedDevice": {
-    "dataSource": "mongoDs",
+    "dataSource": null,
     "public": false
   },
   "Scan": {

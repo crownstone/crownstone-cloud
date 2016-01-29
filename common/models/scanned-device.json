@@ -1,7 +1,7 @@
 {
   "name": "ScannedDevice",
-  "base": "PersistedModel",
-  "idInjection": true,
+  "base": "TransientModel",
+  "idInjection": false,
   "options": {
     "validateUpsert": true
   },
