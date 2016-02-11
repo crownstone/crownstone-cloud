@@ -1,5 +1,6 @@
 var config = require('../../server/config.json');
 var path = require('path');
+var loopback = require('loopback');
 
 module.exports = function(user) {
   //send verification email after registration
@@ -51,4 +52,23 @@ module.exports = function(user) {
       console.log('> sending password reset email to:', info.email);
     });
   });
+
+  user.me = function(cb) {
+    var ctx = loopback.getCurrentContext();
+    var currentUser = ctx && ctx.get('currentUser');
+    if (currentUser) {
+      cb(null, currentUser);
+    } else {
+      cb({message: "WTF: user not found??"});
+    }
+  }
+
+  user.remoteMethod(
+    'me',
+    {
+      http: {path: '/me', verb: 'get'},
+      returns: {arg: 'user', type: 'object'}
+    }
+  );
+
 };

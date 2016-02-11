@@ -50,7 +50,7 @@
     "public": false
   },
   "user": {
-    "dataSource": "mongoDs",
+    "dataSource": "userDs",
     "public": true,
     "options": {
       "emailVerificationRequired": true

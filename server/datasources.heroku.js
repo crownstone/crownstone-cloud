@@ -1,11 +1,22 @@
 module.exports = {
+  // mongoDsRealm: {
+  //   "connector": "loopback-connector-mongodb",
+  //   "url": "mongodb://" + process.env.MONGODB_USER + ":"
+  //                       + process.env.MONGODB_PASSWORD + "@"
+  //                       + process.env.MONGODB_HOST + ":"
+  //                       + process.env.MONGODB_PORT + "/%s?authSource=admin"
+  // },
   mongoDs: {
-    "connector": "loopback-connector-mongodb",
-    "host": "dobots.customers.luna.net",
-    "port": 47474,
-    "database": process.env.MONGODB_DATABASE,
-    "username": process.env.MONGODB_USER,
-    "password": process.env.MONGODB_PASSWORD
+    "url": "mongodb://" + process.env.MONGODB_USER + ":"
+                        + process.env.MONGODB_PASSWORD + "@"
+                        + process.env.MONGODB_HOST + ":"
+                        + process.env.MONGODB_PORT + "/dev?authSource=admin"
+  },
+  userDs: {
+    "url": "mongodb://" + process.env.MONGODB_USER + ":"
+                        + process.env.MONGODB_PASSWORD + "@"
+                        + process.env.MONGODB_HOST + ":"
+                        + process.env.MONGODB_PORT + "/users?authSource=admin"
   },
   "sendgridDs": {
     "connector": "loopback-connector-sendgrid",

@@ -6,6 +6,9 @@
   "mongoDs": {
     "name": "mongoDs"
   },
+  "userDs": {
+    "name": "userDs"
+  },
   "sendgridDs": {
     "name": "sendgridDs"
   }

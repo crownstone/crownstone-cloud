@@ -13,7 +13,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(loopback.compress());
-console.log("enable compression");
+// console.log("enable compression");
 
 loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { idInjection: false });
 

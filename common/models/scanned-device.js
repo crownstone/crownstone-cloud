@@ -1,3 +1,3 @@
-module.exports = function(ScannedDevice) {
+module.exports = function(model) {
 
 };

@@ -1,13 +1,13 @@
+var updateDS = require('../../server/updateDS.js');
 var loopback = require('loopback');
-var dataSources = require('../../server/datasources.json');
 
-module.exports = function(beacon) {
+module.exports = function(model) {
 
 	// address has to be unique to a beacon
-	beacon.validatesUniquenessOf('address', {message: 'a beacon with this address was already added!'});
+	model.validatesUniquenessOf('address', {message: 'a beacon with this address was already added!'});
 
-	beacon.findLocation = function(beaconAddress, cb) {
-			beacon.find({where: {address: beaconAddress}, include: {locations: 'name'}}, function(err, beacons) {
+	model.findLocation = function(beaconAddress, cb) {
+			model.find({where: {address: beaconAddress}, include: {locations: 'name'}}, function(err, beacons) {
 				if (beacons.length > 0 && beacons[0].locations.length > 0) {
 					console.log('found: ' + JSON.stringify(beacons[0].locations));
 					cb(null, beacons[0].locations);
@@ -17,7 +17,7 @@ module.exports = function(beacon) {
 			});
 	}
 
-	beacon.remoteMethod(
+	model.remoteMethod(
 		'findLocation',
 		{
 			http: {path: '/findLocation', verb: 'get'},
@@ -26,61 +26,95 @@ module.exports = function(beacon) {
 		}
 	);
 
-	var attachedDataSource = undefined;
-	var dataSource = undefined;
 
 
-	beacon.beforeRemote('**', function(context, unused, next) {
-		// console.log("beacon.app.models.Beacon.settings.mongodb.collection: " + beacon.app.models.Beacon.settings.mongodb.collection);
+	// var connector = model.app.models.Beacon.getDataSource().connector;
+	// connector.observe('before execute', function(ctx, next) {
+	// 	console.log("beacon before execute");
+	// 	var ctx = loopback.getCurrentContext();
+	// 	var currentUser = ctx && ctx.get('currentUser');
+	// 	console.log("currentUser: " + JSON.stringify(currentUser));
 
-		// var ctx = loopback.getCurrentContext();
-		// var currentUser = ctx && ctx.get('currentUser');
-		// console.log("currentUser: " + JSON.stringify(currentUser));
-		// // console.log('currentUser.username: ', currentUser.username);
+	// });
 
-		// console.log("realm: " + currentUser.realm)
-		// if (currentUser.realm == "user2") {
-		// 	// var wait = false;
-		// 	// if (!dataSource || attachedDataSource != dataSource) {
-		// 	// 	if (!dataSource) {
-		// 	// 		dataSource = loopback.createDataSource({
-		// 	// 			connector: "mongodb",
-		// 	// 			"host": "ds047484.mongolab.com",
-		// 	// 			"port": 47484,
-		// 	// 			"database": "crownstone-cloud-2",
-		// 	// 			"username": dataSources.mongoDs.username,
-		// 	// 			"password": dataSources.mongoDs.password,
-		// 	// 		});
-		// 	// 		dataSource.on('connected', function() {
-		// 	// 			next();
-		// 	// 		});
-		// 	// 		wait = true;
-		// 	// 	}
+	// model.observe('access', function(ctx, next) {
+	// 	console.log("beacon observe");
+	// 	console.log('Accessing %s matching %s', ctx.Model.modelName, ctx.query.where);
+	// 	// console.log(ctx.options.remoteCtx.req.accessToken.userId);
+	// 	updateDS.update(model.app.models.Beacon, model.app, ctx.options.remoteCtx.req.accessToken, next);
+	// });
 
-		// 	// 	console.log("attaching datasource 2")
-		// 	// 	beacon.app.models.Beacon.attachTo(dataSource);
-		// 	// 	attachedDataSource = dataSource;
-		// 	// }
-		// 	// if (!wait) {
-		// 	// 	next();
-		// 	// }
-		// 	beacon.app.models.Beacon.settings.mongodb.collection = "Beacon_User2";
-		// // } else if (currentUser.realm == "user1") {
-		// } else {
-		// 	// if (attachedDataSource != beacon.app.dataSources.mongoDs) {
-		// 	// 	console.log("attaching datasource 1");
-		// 	// 	console.log("dataSources: " + dataSources.mongoDs.username);
-		// 	// 	beacon.app.models.Beacon.attachTo(beacon.app.dataSources.mongoDs);
-		// 	// 	attachedDataSource = beacon.app.dataSources.mongoDs;
-		// 	// }
-		// 	// next();
-		// 	beacon.app.models.Beacon.settings.mongodb.collection = "Beacon";
-		// // } else {
-		// // 	next({error: "user realm not found"});
-		// // 	return;
-		// }
-		next();
-
+	model.beforeRemote('**', function(ctx, unused, next) {
+		console.log("beacon.beforeRemote");
+		// next();
+	// 	// updateDS.update(model.app.models.Beacon, model.app.dataSources, next);
+	// 	console.log(ctx.req.accessToken);
+		// updateDS.update(model.app.models.Beacon, model.app, ctx.req.accessToken, next);
+		updateDS.updateDS(ctx.req.accessToken, model.app, next);
 	});
+
+	model.getDataSource = function() {
+		// return updateDS.getDataSource(this);
+		return updateDS.getCurrentDataSource(this);
+	}
+
+	// model.beforeRemote('**', function(context, unused, next) {
+	// 	// console.log("beacon.app.models.Beacon.settings.mongodb.collection: " + model.app.models.Beacon.settings.mongodb.collection);
+
+	// 	var ctx = loopback.getCurrentContext();
+	// 	var currentUser = ctx && ctx.get('currentUser');
+	// 	console.log("currentUser: " + JSON.stringify(currentUser));
+	// 	// console.log('currentUser.username: ', currentUser.username);
+
+	// 	if (currentUser) {
+	// 		console.log("realm: " + currentUser.realm)
+	// 	}
+	// 	// if (currentUser && currentUser.realm == "cbre") {
+	// 	if (currentUser && currentUser.realm) {
+	// 		var wait = false;
+	// 		if (!dataSource[currentUser.realm] || attachedDataSource != dataSource[currentUser.realm]) {
+	// 			if (!dataSource[currentUser.realm]) {
+	// 				console.log("creating dataSource " + currentUser.realm)
+	// 				url = util.format(dataSources.mongoDsRealm.url, currentUser.realm)
+	// 				console.log("url: " + url)
+	// 				dataSource[currentUser.realm] = loopback.createDataSource({
+	// 					connector: "mongodb",
+	// 					url: url
+	// 				});
+	// 				dataSource[currentUser.realm].on('connected', function() {
+	// 					next();
+	// 				});
+	// 				wait = true;
+	// 			}
+
+	// 			console.log("attaching " + currentUser.realm)
+	// 			model.app.models.Beacon.attachTo(dataSource[currentUser.realm]);
+	// 			attachedDataSource = dataSource[currentUser.realm];
+
+	// 			// console.log("dataSource " + JSON.stringify(dataSource));
+	// 		}
+	// 		if (!wait) {
+	// 			next();
+	// 		}
+	// 		// model.app.models.Beacon.settings.mongodb.collection = "Beacon_User2";
+	// 	// } else if (currentUser.realm == "user1") {
+	// 	} else {
+	// 		// console.log("attachedDataSource " + JSON.stringify(attachedDataSource))
+	// 		// console.log("beacon.app.dataSources.mongoDs " + JSON.stringify(model.app.dataSources.mongoDs))
+	// 		if (attachedDataSource && attachedDataSource != model.app.dataSources.mongoDs) {
+	// 			console.log("attaching dev");
+	// 			// console.log("dataSources: " + dataSources.mongoDs.username);
+	// 			model.app.models.Beacon.attachTo(model.app.dataSources.mongoDs);
+	// 			attachedDataSource = model.app.dataSources.mongoDs;
+	// 		}
+	// 		next();
+	// 		// model.app.models.Beacon.settings.mongodb.collection = "Beacon";
+	// 	// } else {
+	// 	// 	next({error: "user realm not found"});
+	// 	// 	return;
+	// 	}
+	// 	// next();
+
+	// });
 
 };
