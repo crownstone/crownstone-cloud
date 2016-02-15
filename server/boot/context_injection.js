@@ -11,8 +11,12 @@ module.exports = function(app) {
   }
 
   app.remotes().before('*.*', inject);
+  app.remotes().before('*.prototype.*', function(ctx, instance, next, p) {
+    if (typeof instance === 'function') {
+      next = instance
+    }
 
-  app.remotes().before('*.prototype.*', function(ctx, instance, next) {
+
     inject(ctx, next);
   });
 

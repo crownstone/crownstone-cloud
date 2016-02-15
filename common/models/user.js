@@ -53,11 +53,18 @@ module.exports = function(user) {
     });
   });
 
-  user.me = function(cb) {
-    var ctx = loopback.getCurrentContext();
-    var currentUser = ctx && ctx.get('currentUser');
-    if (currentUser) {
-      cb(null, currentUser);
+  user.me = function(ctx, cb) {
+    // var ctx = loopback.getCurrentContext();
+    // var currentUser = ctx && ctx.get('currentUser');
+    // console.log(ctx);
+    if (ctx && ctx.remoteCtx && ctx.remoteCtx.req.accessToken) {
+      user.findById(ctx.remoteCtx.req.accessToken.userId, function(err, user) {
+        if (user) {
+          cb(null, user);
+        } else {
+          cb({message: "WTF: user not found??"});
+        }
+      })
     } else {
       cb({message: "WTF: user not found??"});
     }
