@@ -7,6 +7,7 @@ module.exports = {
   //                       + process.env.MONGODB_PORT + "/%s?authSource=admin"
   // },
   mongoDs: {
+    "connector": "loopback-connector-mongodb",
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
@@ -16,6 +17,7 @@ module.exports = {
     }
   },
   userDs: {
+    "connector": "loopback-connector-mongodb",
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
