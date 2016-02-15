@@ -10,13 +10,19 @@ module.exports = {
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
-                        + process.env.MONGODB_PORT + "/dev?authSource=admin"
+                        + process.env.MONGODB_PORT + "/dev?authSource=admin&ssl=true",
+    "server": {
+      "sslValidate": false
+    }
   },
   userDs: {
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
-                        + process.env.MONGODB_PORT + "/users?authSource=admin"
+                        + process.env.MONGODB_PORT + "/users?authSource=admin&ssl=true",
+    "server": {
+      "sslValidate": false
+    }
   },
   "sendgridDs": {
     "connector": "loopback-connector-sendgrid",

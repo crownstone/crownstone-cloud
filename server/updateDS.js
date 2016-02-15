@@ -69,11 +69,14 @@ module.exports = {
 					if (!dataSourceMap[currentUser.realm]) {
 						console.log("creating dataSource " + currentUser.realm)
 						// url = util.format(dataSources.mongoDsRealm.url, currentUser.realm)
-						url = util.format(dataSources.mongoDsRealm.url, currentUser.realm)
+						url = util.format(model.app.get('mongo_url'), currentUser.realm)
 						console.log("url: " + url)
 						dataSourceMap[currentUser.realm] = loopback.createDataSource({
 							connector: "mongodb",
-							url: url
+							url: url,
+							server: {
+      							sslValidate: false
+    						}
 						});
 						// dataSourceMap[currentUser.realm].on('connected', function() {
 						// 	next();
@@ -127,11 +130,15 @@ var updateDataSource = function(obj, app, user, next) {
 			// if (!dataSourceMap[user.realm] || attachedDataSource != user.realm) {
 				if (!dataSourceMap[user.realm]) {
 					console.log("creating dataSource " + user.realm)
-					url = util.format(dataSources.mongoDsRealm.url, user.realm)
+					// url = util.format(dataSources.mongoDsRealm.url, user.realm)
+					url = util.format(app.get('mongo_url'), user.realm)
 					console.log("url: " + url)
 					dataSourceMap[user.realm] = loopback.createDataSource({
 						connector: "mongodb",
-						url: url
+						url: url,
+						server: {
+  							sslValidate: false
+						}
 					});
 					dataSourceMap[user.realm].on('connected', function() {
 						next();
@@ -194,11 +201,14 @@ var updateDataSource2 = function(user, app, next) {
 				if (!dataSourceMap[user.realm]) {
 					console.log("creating dataSource " + user.realm)
 					// url = util.format(dataSources.mongoDsRealm.url, user.realm)
-					// url = util.format(app.get('mongo_url'), user.realm)
+					url = util.format(app.get('mongo_url'), user.realm)
 					console.log("url: " + url)
 					dataSourceMap[user.realm] = loopback.createDataSource({
 						connector: "mongodb",
-						url: url
+						url: url,
+						server: {
+  							sslValidate: false
+						}
 					});
 					dataSourceMap[user.realm].on('connected', function() {
 						next();
