@@ -6,7 +6,7 @@ module.exports = function(model) {
 	// address has to be unique to a beacon
 	model.validatesUniquenessOf('address', {message: 'a beacon with this address was already added!'});
 
-	model.findLocation = function(beaconAddress, cb) {
+	model.findLocation = function(ctx, beaconAddress, cb) {
 			model.find({where: {address: beaconAddress}, include: {locations: 'name'}}, function(err, beacons) {
 				if (beacons.length > 0 && beacons[0].locations.length > 0) {
 					console.log('found: ' + JSON.stringify(beacons[0].locations));
