@@ -8,6 +8,7 @@ module.exports = {
   // },
   mongoDs: {
     "connector": "loopback-connector-mongodb",
+    "name": "dev",
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
@@ -18,6 +19,7 @@ module.exports = {
   },
   userDs: {
     "connector": "loopback-connector-mongodb",
+    "name": "user",
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"

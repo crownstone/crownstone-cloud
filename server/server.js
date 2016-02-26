@@ -2,7 +2,7 @@ var loopback = require('loopback');
 var boot = require('loopback-boot');
 var path = require('path');
 var bodyParser = require('body-parser');
-var updateDS = require('./updateDS.js');
+// var updateDS = require('./updateDS.js');
 
 var app = module.exports = loopback();
 
@@ -41,22 +41,22 @@ app.use(loopback.token());
 //   });
 // });
 
-app.middleware('routes:before', function(req, res, next) {
-  // console.log(req);
-  console.log("access token:", req.accessToken);
-  if (!req.accessToken) {
-    return next();
-  }
-  app.models.user.findById(req.accessToken.userId, function(err, user) {
-    if (err) {
-      return next(err);
-    }
-    // if (!user) {
-    //   return next(new Error('No user with this access token was found.'));
-    // }
-    updateDS.updateUserDS(user, app, next);
-  });
-});
+// app.middleware('routes:before', function(req, res, next) {
+//   // console.log(req);
+//   console.log("access token:", req.accessToken);
+//   if (!req.accessToken) {
+//     return next();
+//   }
+//   app.models.user.findById(req.accessToken.userId, function(err, user) {
+//     if (err) {
+//       return next(err);
+//     }
+//     // if (!user) {
+//     //   return next(new Error('No user with this access token was found.'));
+//     // }
+//     updateDS.updateUserDS(user, app, next);
+//   });
+// });
 
 app.start = function() {
   // start the web server

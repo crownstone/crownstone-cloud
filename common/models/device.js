@@ -1,4 +1,4 @@
-var updateDS = require('../../server/updateDS.js');
+var updateDS = require('../../server/middleware/updateDS.js');
 
 module.exports = function(model) {
 
@@ -6,12 +6,13 @@ module.exports = function(model) {
 	model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
 
 	model.beforeRemote('**', function(ctx, unused, next) {
-		updateDS.updateDS(ctx.req.accessToken, model.app, next);
+		console.log("device beforeRemote");
+		next();
 	});
 
 	model.getDataSource = function() {
-		// return updateDS.getDataSource(this);
-		return updateDS.getCurrentDataSource(this);
+		// console.log("device:");
+		return updateDS.getDataSource(this);
 	}
 
 };

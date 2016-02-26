@@ -1,4 +1,4 @@
-var updateDS = require('../../server/updateDS.js');
+var updateDS = require('../../server/middleware/updateDS.js');
 
 module.exports = function(model) {
 
@@ -20,12 +20,12 @@ module.exports = function(model) {
 	// });
 
 	model.beforeRemote('**', function(ctx, unused, next) {
-		updateDS.updateDS(ctx.req.accessToken, model.app, next);
+		updateDS.update(ctx.req.accessToken, model.app, next);
 	});
 
 	model.getDataSource = function() {
 		// return updateDS.getDataSource(this);
-		return updateDS.getCurrentDataSource(this);
+		return updateDS.getDataSource(this);
 	}
 
 

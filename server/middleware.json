@@ -22,6 +22,9 @@
     "loopback#token": {}
   },
   "parse": {},
+  "routes:before": {
+    "./middleware/dataSourceHandler": {}
+  },
   "routes": {
     "loopback#rest": {
       "paths": [

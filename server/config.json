@@ -22,5 +22,5 @@
     }
   },
   "legacyExplorer": false,
-  "mongo_url": ""
+  "db_url": ""
 }
