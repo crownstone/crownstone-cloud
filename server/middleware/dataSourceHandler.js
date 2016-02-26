@@ -4,8 +4,8 @@ module.exports = function() {
 
 	return function udpate(req, res, next) {
 		if (!req.accessToken) {
-			// return next();
-			return updateDS.update(undefined, req.app, next);
+			return next();
+			// return updateDS.update(undefined, req.app, next);
 		}
 		req.app.models.user.findById(req.accessToken.userId, function(err, user) {
 			if (err) {
