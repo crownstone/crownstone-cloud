@@ -40,13 +40,18 @@ module.exports = function(model) {
 	// 	next();
 	// };
 
-	model.beforeRemote('**', function(ctx, unused, next) {
-		updateDS.updateDS(ctx.req.accessToken, model.app, next);
-	});
+	// model.beforeRemote('**', function(ctx, unused, next) {
+	// 	updateDS.updateDS(ctx.req.accessToken, model.app, next);
+	// });
 
 	model.getDataSource = function() {
+		// console.log("scan.getDataSource");
+		// var ctx = loopback.getCurrentContext();
+		// console.log("ctx " + ctx);
+		// console.log(ctx);
 		// return updateDS.getDataSource(this);
-		return updateDS.getCurrentDataSource(this);
+		// return updateDS.getCurrentDataSource(this);
+		return updateDS.getDataSource(this);
 	}
 
 	// model.getDataSource = function() {
@@ -62,13 +67,13 @@ module.exports = function(model) {
 	// 	// updateDS.update(model.app.models.Scan, model.app, ctx.req.accessToken, next);
 	// });
 
-	model.observe('access', function(ctx, next) {
-		console.log("scan observe access");
-		console.log('Accessing %s matching %s', ctx.Model.modelName, ctx.query.where);
-		console.log(ctx.options.remoteCtx.req.accessToken);
-		next();
-		// updateDS.update(model.app.models.Scan, model.app, ctx.options.remoteCtx.req.accessToken, next);
-	});
+	// model.observe('access', function(ctx, next) {
+	// 	console.log("scan observe access");
+	// 	console.log('Accessing %s matching %s', ctx.Model.modelName, ctx.query.where);
+	// 	console.log(ctx.options.remoteCtx.req.accessToken);
+	// 	next();
+	// 	// updateDS.update(model.app.models.Scan, model.app, ctx.options.remoteCtx.req.accessToken, next);
+	// });
 
 	// model.beforeRemote('**', function(context, unused, next) {
 	// 	updateDS.update(model.app.models.Scan, model.app.dataSources, next);

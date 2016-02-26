@@ -2,6 +2,7 @@ var loopback = require('loopback');
 var boot = require('loopback-boot');
 var path = require('path');
 var bodyParser = require('body-parser');
+var updateDS = require('./updateDS.js');
 
 var app = module.exports = loopback();
 
@@ -19,7 +20,30 @@ loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { i
 
 app.use(loopback.context());
 app.use(loopback.token());
-app.use(function setCurrentUser(req, res, next) {
+// app.use(function setCurrentUser(req, res, next) {
+//   if (!req.accessToken) {
+//     return next();
+//   }
+//   console.log("set user");
+//   app.models.user.findById(req.accessToken.userId, function(err, user) {
+//     if (err) {
+//       return next(err);
+//     }
+//     if (!user) {
+//       return next(new Error('No user with this access token was found.'));
+//     }
+//     // var loopbackContext = loopback.getCurrentContext();
+//     // if (loopbackContext) {
+//     //   loopbackContext.set('currentUser', user);
+//     // }
+//     req.currentUser = user;
+//     next();
+//   });
+// });
+
+app.middleware('routes:before', function(req, res, next) {
+  // console.log(req);
+  console.log("access token:", req.accessToken);
   if (!req.accessToken) {
     return next();
   }
@@ -27,14 +51,10 @@ app.use(function setCurrentUser(req, res, next) {
     if (err) {
       return next(err);
     }
-    if (!user) {
-      return next(new Error('No user with this access token was found.'));
-    }
-    var loopbackContext = loopback.getCurrentContext();
-    if (loopbackContext) {
-      loopbackContext.set('currentUser', user);
-    }
-    next();
+    // if (!user) {
+    //   return next(new Error('No user with this access token was found.'));
+    // }
+    updateDS.updateUserDS(user, app, next);
   });
 });
 

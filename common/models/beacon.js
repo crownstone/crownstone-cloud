@@ -37,15 +37,46 @@ module.exports = function(model) {
 
 	// });
 
-	// model.observe('access', function(ctx, next) {
-	// 	console.log("beacon observe");
+	// model.afterInitialize = function() {
+	// 	console.log("afterInitialize");
+	// 	model.getDataSource().connector.observe('before execute', function(ctx, next) {
+	// 		console.log("before execute");
+	// 		console.log(ctx);
+	// 		next();
+	// 	});
+	// }
+	//
+
+	model.updateDS = function(accessToken, next) {
+		console.log("updating data source");
+		updateDS.updateDS(accessToken, model.app, next);
+	}
+
+	model.observe('beforeAccess', function(ctx, next) {
+		console.log("beacon beforeAccess", ctx.options);
+		// console.log(ctx);
+		updateDS.updateDefaultDS(ctx, this, model, next);
+	});
+
+	model.observe('access', function(ctx, next) {
+		console.log("beacon access", ctx.options);
+		// console.log(ctx.options.remoteCtx)
+		// console.log(ctx.options.remoteCtx.req.accessToken)
 	// 	console.log('Accessing %s matching %s', ctx.Model.modelName, ctx.query.where);
-	// 	// console.log(ctx.options.remoteCtx.req.accessToken.userId);
+		// console.log(ctx.options.remoteCtx);
 	// 	updateDS.update(model.app.models.Beacon, model.app, ctx.options.remoteCtx.req.accessToken, next);
-	// });
+		// updateDS.updateDefaultDS(ctx, this, model, function() {
+		// 	// connector = model.getDataSource().connector.url;
+
+		// 	// console.log("con: ", ctx.connector);
+		// 	next(null, ctx)
+		// });
+		next();
+	});
 
 	model.beforeRemote('**', function(ctx, unused, next) {
 		console.log("beacon.beforeRemote");
+		console.log("accessToken: ", ctx.req.accessToken);
 		// next();
 	// 	// updateDS.update(model.app.models.Beacon, model.app.dataSources, next);
 	// 	console.log(ctx.req.accessToken);
@@ -53,9 +84,23 @@ module.exports = function(model) {
 		updateDS.updateDS(ctx.req.accessToken, model.app, next);
 	});
 
+	model.afterRemote('**', function (ctx, unused, next) {
+		console.log("beacon.afterRemote");
+		next();
+	});
+
 	model.getDataSource = function() {
+		// console.log("beacon.getDataSource");
+		// var ctx = loopback.getCurrentContext();
+		// console.log("ctx " + ctx);
+		// console.log(ctx);
 		// return updateDS.getDataSource(this);
+		console.log("location:");
 		return updateDS.getCurrentDataSource(this);
+		// if (!DS) {
+		// 	DS = model.app.dataSources["db"];
+		// }
+		// return DS;
 	}
 
 	// model.beforeRemote('**', function(context, unused, next) {
