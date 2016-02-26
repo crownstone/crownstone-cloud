@@ -2,29 +2,19 @@ var updateDS = require('../../server/middleware/updateDS.js');
 
 module.exports = function(model) {
 
-	// model.beforeRemote('**', function(context, unused, next) {
-
-	// 	var ctx = loopback.getCurrentContext();
-	// 	var currentUser = ctx && ctx.get('currentUser');
-
-	// 	console.log("currentUser: " + JSON.stringify(currentUser));
-	// 	console.log("realm: " + currentUser.realm)
-
-	// 	if (currentUser.realm == "user2") {
-	// 		model.app.models.model.settings.mongodb.collection = "model_User2";
-	// 	} else {
-	// 		model.app.models.model.settings.mongodb.collection = "model";
-	// 	}
-	// 	next();
-
-	// });
-
 	model.beforeRemote('**', function(ctx, unused, next) {
+		console.log("beacon-location.beforeRemote");
+		// next();
 		updateDS.update(ctx.req.accessToken, model.app, next);
 	});
 
+	model.afterRemote('**', function (ctx, unused, next) {
+		console.log("beacon-location.afterRemote");
+		next();
+	});
+
 	model.getDataSource = function() {
-		// return updateDS.getDataSource(this);
+		// console.log("beacon location:");
 		return updateDS.getDataSource(this);
 	}
 

@@ -28,7 +28,8 @@ module.exports = function(model) {
 
 	model.beforeRemote('**', function(ctx, unused, next) {
 		console.log("beacon.beforeRemote");
-		next();
+		// next();
+		updateDS.update(ctx.req.accessToken, model.app, next);
 	});
 
 	model.afterRemote('**', function (ctx, unused, next) {

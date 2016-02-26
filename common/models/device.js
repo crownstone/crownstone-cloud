@@ -6,8 +6,8 @@ module.exports = function(model) {
 	model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
 
 	model.beforeRemote('**', function(ctx, unused, next) {
-		console.log("device beforeRemote");
-		next();
+		console.log("device.beforeRemote");
+		updateDS.update(ctx.req.accessToken, model.app, next);
 	});
 
 	model.getDataSource = function() {

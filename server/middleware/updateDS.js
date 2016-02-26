@@ -5,45 +5,22 @@ selectedDataSource = undefined;
 
 module.exports = {
 
-	update : function(user, app, next) {
+	update : function(accessToken, app, next) {
 
-		if (user) {
-			console.log("realm: " + user.realm)
-		}
-		if (user && user.realm) {
-			var wait = false;
-			if (!app.dataSources[user.realm] || selectedDataSource != app.dataSources[user.realm]) {
-				if (!app.dataSources[user.realm]) {
-					console.log("creating dataSource " + user.realm)
-					url = util.format(app.get('db_url'), user.realm)
-					// console.log("url: " + url)
-					app.dataSources[user.realm] = loopback.createDataSource({
-						connector: "mongodb",
-						name: user.realm,
-						url: url,
-						server: {
-							sslValidate: false
-						}
-					});
-					app.dataSources[user.realm].on('connected', function() {
-						next();
-					});
-					wait = true;
+		if (accessToken) {
+			app.models.user.findById(accessToken.userId, function(err, user) {
+				if (err) {
+					return next(err);
 				}
-
-				console.log("using " + user.realm)
-				selectedDataSource = app.dataSources[user.realm];
-			}
-			if (!wait) {
-				next();
-			}
+				// if (!user) {
+				//   return next(new Error('No user with this access token was found.'));
+				// }
+				return updateDataSource(user, app, next);
+			});
 		} else {
-			if (selectedDataSource != app.dataSources.mongoDs) {
-				console.log("using dev");
-				selectedDataSource = app.dataSources.mongoDs;
-			}
-			next();
+			return updateDataSource(undefined, app, next);
 		}
+
 	},
 
 	getDataSource : function(model) {
@@ -58,3 +35,43 @@ module.exports = {
 	},
 }
 
+var updateDataSource = function(user, app, next) {
+
+	if (user) {
+		console.log("realm: " + user.realm)
+	}
+	if (user && user.realm) {
+		var wait = false;
+		if (!app.dataSources[user.realm] || selectedDataSource != app.dataSources[user.realm]) {
+			if (!app.dataSources[user.realm]) {
+				console.log("creating dataSource " + user.realm)
+				url = util.format(app.get('db_url'), user.realm)
+				// console.log("url: " + url)
+				app.dataSources[user.realm] = loopback.createDataSource({
+					connector: "mongodb",
+					name: user.realm,
+					url: url,
+					server: {
+						sslValidate: false
+					}
+				});
+				app.dataSources[user.realm].on('connected', function() {
+					next();
+				});
+				wait = true;
+			}
+
+			console.log("using " + user.realm)
+			selectedDataSource = app.dataSources[user.realm];
+		}
+		if (!wait) {
+			next();
+		}
+	} else {
+		if (selectedDataSource != app.dataSources.mongoDs) {
+			console.log("using dev");
+			selectedDataSource = app.dataSources.mongoDs;
+		}
+		next();
+	}
+}
