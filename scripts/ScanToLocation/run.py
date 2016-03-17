@@ -48,6 +48,19 @@ def getStonesWithLocations():
 
 	return parsed_stones
 
+def getStones():
+	global access_token
+
+	stone_filter = '{"fields":["address", "id"]}'
+
+	response = requests.get("%s/Stones?filter=%s&access_token=%s" %(crownstone_api_url, stone_filter, access_token))
+
+	if response.status_code != 200:
+		print "failed to get stones"
+		return None
+
+	return response.json()
+
 # def getStonesWithLastScans():
 # 	global access_token
 
@@ -219,8 +232,8 @@ def run(startTime = None):
 			timestamp = datetime.strptime(startTime, date_time_format)
 
 		# stones = test("2016-01-22T00:00:00.000Z")
-		today = datetime.date(datetime.now()).strftime(date_time_format)
-		stones = test(today)
+		# today = datetime.date(datetime.now()).strftime(date_time_format)
+		# stones = test(today)
 
 		iteration = 1
 
@@ -241,7 +254,7 @@ def run(startTime = None):
 			for b in stones:
 			# for i in range(len(stones)):
 				# b = stones[i]
-				stone = getStoneWithScans(b['id'], timestamp.strftime(date_time_format), (timestamp + timedelta(seconds=20)).strftime(date_time_format))
+				stones = getStonesWithScans(b['id'], timestamp.strftime(date_time_format), (timestamp + timedelta(seconds=scan_interval)).strftime(date_time_format))
 
 				if not stone:
 					print colored("failed to get stone with scans", "red")
