@@ -1,0 +1,45 @@
+{
+  "name": "PowerCurve",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "GroupContent": true
+  },
+  "properties": {
+    "timestamp": {
+      "type": "date",
+      "required": true
+    },
+    "voltage": {
+      "type": [
+        "number"
+      ],
+      "required": true
+    },
+    "voltageTimestamps": {
+      "type": [
+        "number"
+      ],
+      "required": true
+    },
+    "current": {
+      "type": [
+        "number"
+      ],
+      "required": true
+    },
+    "currentTimestamps": {
+      "type": [
+        "number"
+      ],
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

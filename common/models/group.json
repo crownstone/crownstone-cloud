@@ -1,0 +1,59 @@
+{
+  "name": "Group",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "PIN": {
+      "type": "string"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "members": {
+      "type": "hasAndBelongsToMany",
+      "model": "user",
+      "foreignKey": "",
+      "through": "GroupMember",
+      "keyThrough": ""
+    },
+    "owner": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "userId"
+    },
+    "guests": {
+      "type": "hasAndBelongsToMany",
+      "model": "user",
+      "foreignKey": "",
+      "through": "GroupGuest",
+      "keyThrough": ""
+    },
+    "ownedLocations": {
+      "type": "hasMany",
+      "model": "Location",
+      "foreignKey": "groupId"
+    },
+    "ownedStones": {
+      "type": "hasMany",
+      "model": "Stone",
+      "foreignKey": "groupId",
+      "through": "Location"
+    },
+    "users": {
+      "type": "hasMany",
+      "model": "user",
+      "foreignKey": "groupId",
+      "through": "GroupAccess",
+      "keyThrough": ""
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

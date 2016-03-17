@@ -1,15 +1,13 @@
-var updateDS = require('../../server/middleware/updateDS.js');
-
 module.exports = function(model) {
 
-	model.beforeRemote('**', function(ctx, unused, next) {
-		console.log("location.beforeRemote");
-		updateDS.update(ctx.req.accessToken, model.app, next);
-	});
+	model.disableRemoteMethod('createChangeStream', true);
 
-	model.getDataSource = function() {
-		// console.log("location:");
-		return updateDS.getDataSource(this);
-	}
+	model.disableRemoteMethod('__link__presentPeople', false);
+	model.disableRemoteMethod('__unlink__presentPeople', false);
+	model.disableRemoteMethod('__findById__presentPeople', false);
+	model.disableRemoteMethod('__updateById__presentPeople', false);
+	model.disableRemoteMethod('__destroyById__presentPeople', false);
+	model.disableRemoteMethod('__create__presentPeople', false);
+	model.disableRemoteMethod('__delete__presentPeople', false);
 
 };

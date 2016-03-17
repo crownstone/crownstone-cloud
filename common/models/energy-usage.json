@@ -1,0 +1,29 @@
+{
+  "name": "EnergyUsage",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "GroupContent": true
+  },
+  "properties": {
+    "timestamp": {
+      "type": "date",
+      "required": true
+    },
+    "energy": {
+      "type": "number",
+      "required": true
+    },
+    "duration": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

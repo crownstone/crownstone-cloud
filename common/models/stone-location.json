@@ -1,15 +1,18 @@
 {
-  "name": "BeaconLocation",
+  "name": "StoneLocation",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
     "validateUpsert": true,
     "mongodb": {
-      "collection": "BeaconLocation"
+      "collection": "StoneLocation"
     }
   },
+  "mixins": {
+    "GroupContent": true
+  },
   "properties": {
-    "beaconId": {
+    "stoneId": {
       "type": "number",
       "required": true
     },
@@ -25,7 +28,7 @@
       "accessType": "*",
       "principalType": "ROLE",
       "principalId": "$everyone",
-      "permission": "DENY"
+      "permission": "ALLOW"
     },
     {
       "accessType": "*",

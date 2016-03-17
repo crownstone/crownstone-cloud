@@ -1,5 +1,16 @@
 {
   "loopback-component-explorer": {
     "mountPath": "/explorer"
+  },
+  "loopback-component-access-groups": {
+    "userModel": "user",
+    "roleModel": "Role",
+    "groupModel": "Group",
+    "foreignKey": "groupId",
+    "groupRoles": [
+      "$group:owner",
+      "$group:member",
+      "$group:guest"
+    ]
   }
 }

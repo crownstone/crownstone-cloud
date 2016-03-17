@@ -1,0 +1,32 @@
+{
+  "name": "TimedLocation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "GroupContent": true
+  },
+  "properties": {
+    "timestamp": {
+      "type": "date",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
+    },
+    "device": {
+      "type": "belongsTo",
+      "model": "Device",
+      "foreignKey": "deviceId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

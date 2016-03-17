@@ -2,7 +2,7 @@
   "restApiRoot": "/api",
   "remoting": {
     "context": {
-      "enableHttpContext": true
+      "enableHttpContext": false
     },
     "rest": {
       "normalizeHttpPath": false,

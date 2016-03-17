@@ -1,0 +1,36 @@
+{
+  "name": "Coordinate",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "GroupContent": true
+  },
+  "properties": {
+    "x": {
+      "type": "number",
+      "required": true
+    },
+    "y": {
+      "type": "number",
+      "required": true
+    },
+    "z": {
+      "type": "number",
+      "required": true
+    },
+    "reference": {
+      "type": "any",
+      "required": true
+    },
+    "groundTruth": {
+      "type": "boolean"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

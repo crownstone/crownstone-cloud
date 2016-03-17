@@ -4,10 +4,10 @@
     "connector": "memory"
   },
   "mongoDs": {
-    "name": "dev"
+    "name": "mongoDs"
   },
   "userDs": {
-    "name": "user"
+    "name": "userDs"
   },
   "sendgridDs": {
     "name": "sendgridDs"

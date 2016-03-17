@@ -8,17 +8,44 @@
   "properties": {},
   "validations": [],
   "relations": {
-    "person": {
-      "type": "hasOne",
-      "model": "Person",
-      "foreignKey": ""
+    "devices": {
+      "type": "hasMany",
+      "model": "Device",
+      "foreignKey": "ownerId"
+    },
+    "currentLocation": {
+      "type": "hasMany",
+      "model": "Location",
+      "foreignKey": "ownerId",
+      "through": "Device"
+    },
+    "memberOf": {
+      "type": "hasAndBelongsToMany",
+      "model": "Group",
+      "foreignKey": "",
+      "through": "GroupMember",
+      "keyThrough": ""
+    },
+    "guestOf": {
+      "type": "hasAndBelongsToMany",
+      "model": "Group",
+      "foreignKey": "",
+      "through": "GroupGuest",
+      "keyThrough": ""
+    },
+    "groups": {
+      "type": "hasMany",
+      "model": "Group",
+      "foreignKey": "userId",
+      "through": "GroupAccess",
+      "keyThrough": ""
     }
   },
   "acls": [
     {
       "principalType": "ROLE",
       "principalId": "$everyone",
-      "permission": "DENY",
+      "permission": "ALLOW",
       "property": "create"
     },
     {

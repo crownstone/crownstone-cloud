@@ -33,55 +33,55 @@ def loginCrownstone():
 	global access_token
 	access_token = json.loads(response.text)['id']
 
-def getBeaconsWithLocations():
+def getStonesWithLocations():
 	global access_token
 
-	beacon_filter = '{"fields":["address", "id"], "include": "locations"}'
+	stone_filter = '{"fields":["address", "id"], "include": "locations"}'
 
-	response = requests.get("%s/Beacons?filter=%s&access_token=%s" %(crownstone_api_url, beacon_filter, access_token))
+	response = requests.get("%s/Stones?filter=%s&access_token=%s" %(crownstone_api_url, stone_filter, access_token))
 
 	if response.status_code != 200:
-		print "failed to get beacons"
+		print "failed to get stones"
 		return None
 
-	parsed_beacons = [b for b in response.json() if b['locations']]
+	parsed_stones = [b for b in response.json() if b['locations']]
 
-	return parsed_beacons
+	return parsed_stones
 
-# def getBeaconsWithLastScans():
+# def getStonesWithLastScans():
 # 	global access_token
 
 # 	# scan_filter = '{"include":"scans"}'
 # 	scan_filter = '{"include":{"relation":"scans", "scope": {"order":"timestamp DESC","limit":1}}}'
 
-# 	response = requests.get("%s/Beacons?filter=%s&access_token=%s" %(crownstone_api_url, scan_filter, access_token))
+# 	response = requests.get("%s/Stones?filter=%s&access_token=%s" %(crownstone_api_url, scan_filter, access_token))
 
 # 	if response.status_code != 200:
-# 		print "failed to get beacons"
+# 		print "failed to get stones"
 # 		return None
 
-# 	parsed_beacons = [b for b in response.json() if b['scans']]
+# 	parsed_stones = [b for b in response.json() if b['scans']]
 
-# 	return parsed_beacons
+# 	return parsed_stones
 
-def getBeaconsAndScans():
+def getStonesAndScans():
 	global access_token
 
 	scan_filter = '{"include": "scans"}'
 
 	# print scan_filter
 
-	response = requests.get("%s/Beacons?filter=%s&access_token=%s" %(crownstone_api_url, scan_filter, access_token))
+	response = requests.get("%s/Stones?filter=%s&access_token=%s" %(crownstone_api_url, scan_filter, access_token))
 
 	if response.status_code != 200:
-		print "failed to get beacons"
+		print "failed to get stones"
 		return None
 
-	parsed_beacons = [b for b in response.json() if b['scans']]
+	parsed_stones = [b for b in response.json() if b['scans']]
 
-	return parsed_beacons
+	return parsed_stones
 
-def getBeaconWithScans(id, timestamp, ts):
+def getStoneWithScans(id, timestamp, ts):
 	global access_token
 
 	if timestamp:
@@ -91,36 +91,36 @@ def getBeaconWithScans(id, timestamp, ts):
 
 	# print scan_filter
 
-	response = requests.get("%s/Beacons/%s?filter=%s&access_token=%s" %(crownstone_api_url, id, scan_filter, access_token))
+	response = requests.get("%s/Stones/%s?filter=%s&access_token=%s" %(crownstone_api_url, id, scan_filter, access_token))
 
 	if response.status_code != 200:
-		print "failed to get beacons"
+		print "failed to get stones"
 		return None
 
 	return response.json()
 
-def getBeaconWithLastScan(id):
+def getStoneWithLastScan(id):
 	global access_token
 
 	scan_filter = '{"include":{"relation":"scans", "scope": {"order":"timestamp DESC","limit":1}}}'
 
 	# print scan_filter
 
-	response = requests.get("%s/Beacons/%s?filter=%s&access_token=%s" %(crownstone_api_url, id, scan_filter, access_token))
+	response = requests.get("%s/Stones/%s?filter=%s&access_token=%s" %(crownstone_api_url, id, scan_filter, access_token))
 
 	if response.status_code != 200:
-		print "failed to get beacons"
+		print "failed to get stones"
 		return None
 
 	return response.json()
 
-# def getLocationsForBeacon():
+# def getLocationsForStone():
 # 	global access_token
 
-# 	response = requests.get("%s/Beacons/%s/locations?access_token=%s" %(crownstone_api_url, id, access_token))
+# 	response = requests.get("%s/Stones/%s/locations?access_token=%s" %(crownstone_api_url, id, access_token))
 
 # 	if response.status_code != 200:
-# 		print "failed to get beacons"
+# 		print "failed to get stones"
 # 		return None
 
 # 	return response.json()
@@ -176,14 +176,14 @@ def test(start_time):
 
 	scan_filter = '{"include":{"relation":"scans", "scope": { "fields" : ["timestamp"], "where": {"timestamp": {"gt": "%s"}}, "limit": 500, "order": "timestamp ASC"}}}' %start_time
 
-	response = requests.get("%s/Beacons/?filter=%s&access_token=%s" %(crownstone_api_url, scan_filter, access_token))
+	response = requests.get("%s/Stones/?filter=%s&access_token=%s" %(crownstone_api_url, scan_filter, access_token))
 
 	if response.status_code != 200:
 		print "failed"
 
-	parsed_beacons = [b for b in response.json() if b['scans']]
+	parsed_stones = [b for b in response.json() if b['scans']]
 
-	return parsed_beacons
+	return parsed_stones
 
 
 location_dict = {}
@@ -206,10 +206,10 @@ def run(startTime = None):
 		loginCrownstone()
 		print "done"
 
-		# beacons = getBeaconsWithLocations();
-		# beacons = test(startTime);
+		# stones = getStonesWithLocations();
+		# stones = test(startTime);
 
-		# locationLookup = {b['address'] : b['locations'][0] for b in beacons if b['locations']}
+		# locationLookup = {b['address'] : b['locations'][0] for b in stones if b['locations']}
 
 		if not startTime:
 			# this is the first timestamp we will be using to check for new scans
@@ -218,9 +218,9 @@ def run(startTime = None):
 			# for debugging purposes, use provided start time
 			timestamp = datetime.strptime(startTime, date_time_format)
 
-		# beacons = test("2016-01-22T00:00:00.000Z")
+		# stones = test("2016-01-22T00:00:00.000Z")
 		today = datetime.date(datetime.now()).strftime(date_time_format)
-		beacons = test(today)
+		stones = test(today)
 
 		iteration = 1
 
@@ -235,23 +235,23 @@ def run(startTime = None):
 
 			print "checking new scans since %s" %(timestamp.strftime(date_time_format))
 
-			# pprint(beacons)
+			# pprint(stones)
 
-			# get scans for beacons, newer than timestamp
-			for b in beacons:
-			# for i in range(len(beacons)):
-				# b = beacons[i]
-				beacon = getBeaconWithScans(b['id'], timestamp.strftime(date_time_format), (timestamp + timedelta(seconds=20)).strftime(date_time_format))
+			# get scans for stones, newer than timestamp
+			for b in stones:
+			# for i in range(len(stones)):
+				# b = stones[i]
+				stone = getStoneWithScans(b['id'], timestamp.strftime(date_time_format), (timestamp + timedelta(seconds=20)).strftime(date_time_format))
 
-				if not beacon:
-					print colored("failed to get beacon with scans", "red")
+				if not stone:
+					print colored("failed to get stone with scans", "red")
 					continue
 
-				# beacon = getBeaconWithLastScan(b['id'])
-				beaconAddress = beacon['address']
+				# stone = getStoneWithLastScan(b['id'])
+				stoneAddress = stone['address']
 
 				# gather some statistics
-				if not beacon['scans']:
+				if not stone['scans']:
 
 					b['caught'] = 0
 					if not b.has_key('totalCaught'):
@@ -264,8 +264,8 @@ def run(startTime = None):
 						b['missed'] = 1
 						b['totalMissed'] = 1
 
-					print "{:s} [{:17s}] (caught {:3d}/{:3d}, missed {:s}/{:s})".format(colored("No scans found for", "red"), beaconAddress, b['caught'], b['totalCaught'], colored("{:3d}".format(b['missed']), "red"), colored("{:3d}".format(b['totalMissed']), "red"))
-					#print "No scans found for [%s] (caught %d/%d, missed %d/%d)" %(beaconAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
+					print "{:s} [{:17s}] (caught {:3d}/{:3d}, missed {:s}/{:s})".format(colored("No scans found for", "red"), stoneAddress, b['caught'], b['totalCaught'], colored("{:3d}".format(b['missed']), "red"), colored("{:3d}".format(b['totalMissed']), "red"))
+					#print "No scans found for [%s] (caught %d/%d, missed %d/%d)" %(stoneAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
 
 				else:
 					# reset missed counter, but leave totalMissed counter
@@ -280,15 +280,15 @@ def run(startTime = None):
 					if not b.has_key('totalMissed'):
 						b['totalMissed'] = 0
 
-					print "{:s} [{:17s}] (caught {:s}/{:s}, missed {:3d}/{:3d})".format(colored("found scans for   ", "green"), beaconAddress, colored("{:3d}".format(b['caught']), "green"), colored("{:3d}".format(b['totalCaught']), "green"), b['missed'], b['totalMissed'])
-					#print "found scans for [%s] (caught %d/%d, missed %d/%d)" %(beaconAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
+					print "{:s} [{:17s}] (caught {:s}/{:s}, missed {:3d}/{:3d})".format(colored("found scans for   ", "green"), stoneAddress, colored("{:3d}".format(b['caught']), "green"), colored("{:3d}".format(b['totalCaught']), "green"), b['missed'], b['totalMissed'])
+					#print "found scans for [%s] (caught %d/%d, missed %d/%d)" %(stoneAddress, b['caught'], b['totalCaught'], b['missed'], b['totalMissed'])
 
-				# if  no scans found for this beacon, continue with next
-				if not beacon['scans']:
+				# if  no scans found for this stone, continue with next
+				if not stone['scans']:
 					continue
 
 				# for all scanned devices, check if rssi is bigger than last
-				for d in beacon['scans'][0]['scannedDevices']:
+				for d in stone['scans'][0]['scannedDevices']:
 					update = False
 					deviceAddress = d['address']
 					# print "> %s" %deviceAddress
@@ -305,10 +305,10 @@ def run(startTime = None):
 
 					if update:
 						location_dict[deviceAddress]['rssi'] = d['rssi']
-						location_dict[deviceAddress]['beacon'] = beaconAddress
+						location_dict[deviceAddress]['stone'] = stoneAddress
 						location_dict[deviceAddress]['update'] = True
 
-			# pprint({addr : loc['beacon'] for addr, loc in location_dict.items()})
+			# pprint({addr : loc['stone'] for addr, loc in location_dict.items()})
 			# pprint(location_dict)
 			# pprint(old_loc_dict)
 
@@ -316,8 +316,8 @@ def run(startTime = None):
 
 			for a, l in location_dict.items():
 				if old_loc_dict.has_key(a):
-					if old_loc_dict[a]['beacon'] != l['beacon']:
-						print ">> [%s] LOCATION CHANGED from %s to %s" %(a, old_loc_dict[a]['beacon'], location_dict[a]['beacon'])
+					if old_loc_dict[a]['stone'] != l['stone']:
+						print ">> [%s] LOCATION CHANGED from %s to %s" %(a, old_loc_dict[a]['stone'], location_dict[a]['stone'])
 
 			print
 
@@ -329,7 +329,7 @@ def run(startTime = None):
 			# 		# get the device object from the address
 			# 		device = getDevice(address)
 
-			# 		# get location of beacon
+			# 		# get location of stone
 			# 		location = locationLookup[b['address']]
 
 			# 		# update location id of device

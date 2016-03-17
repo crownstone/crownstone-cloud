@@ -1,18 +1,22 @@
-var updateDS = require('../../server/middleware/updateDS.js');
-
 module.exports = function(model) {
 
-	// address has to be unique to a beacon
+	// address has to be unique to a stone
 	model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
 
-	model.beforeRemote('**', function(ctx, unused, next) {
-		console.log("device.beforeRemote");
-		updateDS.update(ctx.req.accessToken, model.app, next);
-	});
+	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
+	model.disableRemoteMethod('__link__coordinatesHistory', false);
+	model.disableRemoteMethod('__unlink__coordinatesHistory', false);
+	model.disableRemoteMethod('__exists__coordinatesHistory', false);
+	model.disableRemoteMethod('__findById__coordinatesHistory', false);
 
-	model.getDataSource = function() {
-		// console.log("device:");
-		return updateDS.getDataSource(this);
-	}
+	model.disableRemoteMethod('__updateById__locationsHistory', false);
+	model.disableRemoteMethod('__link__locationsHistory', false);
+	model.disableRemoteMethod('__unlink__locationsHistory', false);
+	model.disableRemoteMethod('__exists__locationsHistory', false);
+	model.disableRemoteMethod('__findById__locationsHistory', false);
 
+	model.disableRemoteMethod('__updateById__scans', false);
+	model.disableRemoteMethod('__findById__scans', false);
+
+	model.disableRemoteMethod('createChangeStream', true);
 };

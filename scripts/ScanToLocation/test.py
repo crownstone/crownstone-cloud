@@ -1,5 +1,5 @@
-for b in beacons:
-	beaconAddress = b['address']
+for b in stones:
+	stoneAddress = b['address']
 
 	for d in b['scans'][0]['scannedDevices']:
 		update = False
@@ -13,4 +13,4 @@ for b in beacons:
 
 		if update:
 			location_dict[deviceAddress]['rssi'] = d['rssi']
-			location_dict[deviceAddress]['beacon'] = beaconAddress
+			location_dict[deviceAddress]['stone'] = stoneAddress

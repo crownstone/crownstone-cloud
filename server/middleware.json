@@ -1,13 +1,15 @@
 {
   "initial:before": {
-    "loopback#favicon": {}
+    "loopback#favicon": {},
+    "loopback#context": {},
+    "loopback#token": {}
   },
   "initial": {
     "compression": {
-      "enabled": true,
-      "params" : {
+      "params": {
         "threshold": 512
-      }
+      },
+      "enabled": true
     },
     "cors": {
       "params": {
@@ -18,13 +20,13 @@
     }
   },
   "session": {},
-  "auth": {
-    "loopback#token": {}
-  },
+  "auth:after": {
+      "loopback-component-access-groups/lib/middleware/user-context": {}
+    },
   "parse": {},
   "routes:before": {
-    "./middleware/dataSourceHandler": {}
-  },
+      "loopback-component-access-groups/lib/middleware/access-logger": {}
+    },
   "routes": {
     "loopback#rest": {
       "paths": [

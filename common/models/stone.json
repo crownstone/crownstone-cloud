@@ -1,9 +1,15 @@
 {
-  "name": "Device",
+  "name": "Stone",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
-    "validateUpsert": true
+    "validateUpsert": true,
+    "mongodb": {
+      "collection": "Stone"
+    }
+  },
+  "mixins": {
+    "GroupContent": true
   },
   "properties": {
     "name": {
@@ -15,30 +21,49 @@
     },
     "description": {
       "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "switchState": {
+      "type": "boolean"
+    },
+    "deviceType": {
+      "type": "string"
     }
   },
   "validations": [],
   "relations": {
-    "owner": {
-      "type": "belongsTo",
-      "model": "user",
-      "foreignKey": "ownerId"
-    },
-    "currentLocation": {
-      "type": "belongsTo",
+    "locations": {
+      "type": "hasAndBelongsToMany",
       "model": "Location",
-      "foreignKey": "currentLocationId"
+      "foreignKey": "",
+      "through": "StoneLocation"
     },
     "scans": {
       "type": "hasMany",
       "model": "Scan",
       "foreignKey": ""
     },
-    "locationsHistory": {
+    "powerUsageHistory": {
       "type": "hasMany",
-      "model": "Location",
-      "foreignKey": "deviceId",
-      "through": "TimedLocation"
+      "model": "PowerUsage",
+      "foreignKey": "stoneId"
+    },
+    "currentPowerUsage": {
+      "type": "belongsTo",
+      "model": "PowerUsage",
+      "foreignKey": "currentPowerUsageId"
+    },
+    "energyUsageHistory": {
+      "type": "hasMany",
+      "model": "EnergyUsage",
+      "foreignKey": "stoneId"
+    },
+    "currentEnergyUsage": {
+      "type": "belongsTo",
+      "model": "EnergyUsage",
+      "foreignKey": "currentEnergyUsageId"
     },
     "coordinatesHistory": {
       "type": "hasMany",
@@ -50,6 +75,11 @@
       "type": "belongsTo",
       "model": "Coordinate",
       "foreignKey": "currentCoordinateId"
+    },
+    "powerCurveHistory": {
+      "type": "hasMany",
+      "model": "PowerCurve",
+      "foreignKey": "stoneId"
     }
   },
   "acls": [

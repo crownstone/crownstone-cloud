@@ -10,7 +10,8 @@
       "loopback/common/mixins",
       "loopback/server/mixins",
       "../common/mixins",
-      "./mixins"
+      "./mixins",
+      "loopback-component-access-groups/lib/mixins"
     ]
   },
   "User": {
@@ -37,18 +38,6 @@
     "dataSource": "sendgridDs",
     "public": false
   },
-  "Location": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
-  "Beacon": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
-  "BeaconLocation": {
-    "dataSource": "mongoDs",
-    "public": false
-  },
   "user": {
     "dataSource": "userDs",
     "public": true,
@@ -56,20 +45,64 @@
       "emailVerificationRequired": true
     }
   },
+  "Group": {
+    "dataSource": "userDs",
+    "public": true
+  },
+  "Location": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "Stone": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "StoneLocation": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
   "ScannedDevice": {
     "dataSource": null,
     "public": false
   },
   "Scan": {
     "dataSource": "mongoDs",
-    "public": false
-  },
-  "Person": {
-    "dataSource": "mongoDs",
     "public": true
   },
   "Device": {
     "dataSource": "mongoDs",
+    "public": true
+  },
+  "TimedLocation": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "PowerUsage": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "Coordinate": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "TimedCoordinate": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "EnergyUsage": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "PowerCurve": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "Event": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "GroupAccess": {
+    "dataSource": "userDs",
     "public": true
   }
 }

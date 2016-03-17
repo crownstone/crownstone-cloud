@@ -3,6 +3,27 @@ var path = require('path');
 var loopback = require('loopback');
 
 module.exports = function(user) {
+
+  user.disableRemoteMethod('find', true);
+  user.disableRemoteMethod('findOne', true);
+  user.disableRemoteMethod('updateAll', true);
+  user.disableRemoteMethod('upsert', true);
+  user.disableRemoteMethod('exists', true);
+  user.disableRemoteMethod('createChangeStream', true);
+
+  user.disableRemoteMethod('__get__accessTokens', false);
+  user.disableRemoteMethod('__create__accessTokens', false);
+  user.disableRemoteMethod('__delete__accessTokens', false);
+  user.disableRemoteMethod('__count__accessTokens', false);
+  user.disableRemoteMethod('__findById__accessTokens', false);
+  user.disableRemoteMethod('__destroyById__accessTokens', false);
+  user.disableRemoteMethod('__updateById__accessTokens', false);
+
+  user.disableRemoteMethod('__create__currentLocation', false);
+  user.disableRemoteMethod('__delete__currentLocation', false);
+  user.disableRemoteMethod('__updateById__currentLocation', false);
+  user.disableRemoteMethod('__deleteById__currentLocation', false);
+
   //send verification email after registration
   user.afterRemote('create', function(context, user, next) {
     console.log('> user.afterRemote triggered');
@@ -53,15 +74,12 @@ module.exports = function(user) {
     });
   });
 
-  user.me = function(ctx, cb) {
-    if (ctx && ctx.remoteCtx && ctx.remoteCtx.req.accessToken) {
-      user.findById(ctx.remoteCtx.req.accessToken.userId, function(err, user) {
-        if (user) {
-          cb(null, user);
-        } else {
-          cb({message: "WTF: user not found??"});
-        }
-      })
+  user.me = function(cb) {
+    const loopbackContext = loopback.getCurrentContext();
+    var currentUser = loopbackContext.get('currentUser');
+
+    if (currentUser) {
+      cb(null, currentUser);
     } else {
       cb({message: "WTF: user not found??"});
     }
