@@ -1,3 +1,6 @@
+var stl = require('../../server/middleware/scanToLocation');
+var loopback = require('loopback');
+
 module.exports = function(model) {
 
 	// address has to be unique to a stone
@@ -19,4 +22,18 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__findById__scans', false);
 
 	model.disableRemoteMethod('createChangeStream', true);
+
+	model.afterRemote('prototype.__create__scans', function(ctx, instance, next) {
+		const loopbackContext = loopback.getCurrentContext();
+		var currentUser = loopbackContext.get('currentUser');
+
+		// console.log("ctx: ", ctx);
+		// console.log("instance: ", ctx.instance);
+
+		next();
+		stl.update(ctx.args.data, ctx.instance, currentUser);
+
+
+	});
+
 };

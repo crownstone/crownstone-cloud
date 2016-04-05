@@ -2,6 +2,8 @@ var config = require('../../server/config.json');
 var path = require('path');
 var loopback = require('loopback');
 
+const debug = require('debug')('loopback:dobots');
+
 module.exports = function(user) {
 
   user.disableRemoteMethod('find', true);
@@ -24,9 +26,12 @@ module.exports = function(user) {
   user.disableRemoteMethod('__updateById__currentLocation', false);
   user.disableRemoteMethod('__deleteById__currentLocation', false);
 
-  //send verification email after registration
-  user.afterRemote('create', function(context, user, next) {
-    console.log('> user.afterRemote triggered');
+  user.disableRemoteMethod('__delete__groups', false);
+  user.disableRemoteMethod('__create__groups', false);
+  user.disableRemoteMethod('__updateById__groups', false);
+  user.disableRemoteMethod('__destroyById__groups', false);
+
+  user.sendVerification = function(user, cb) {
 
     var options = {
       type: 'email',
@@ -42,7 +47,14 @@ module.exports = function(user) {
 
     console.log("options: " + JSON.stringify(options));
 
-    user.verify(options, function(err, response, next) {
+    user.verify(options, cb);
+  };
+
+  //send verification email after registration
+  user.afterRemote('create', function(context, user, next) {
+    console.log('> user.afterRemote triggered');
+
+    user.sendVerification(user, function(err, response, next) {
       if (err) return next(err);
 
       console.log('> verification email sent:', response);
@@ -54,7 +66,7 @@ module.exports = function(user) {
         redirectTo: '/',
         redirectToLinkText: 'Log in'
       });
-    });
+    })
   });
 
   //send password reset link when requested
@@ -90,6 +102,25 @@ module.exports = function(user) {
     {
       http: {path: '/me', verb: 'get'},
       returns: {arg: 'user', type: 'object'}
+    }
+  );
+
+  user.createNewGroup = function(data, id, cb) {
+    debug("createNewGroup:", data);
+    const Group = loopback.getModel('Group');
+    Group.create(data, cb);
+  }
+
+  user.remoteMethod(
+    'createNewGroup',
+    {
+      http: {path: '/:id/groups', verb: 'post'},
+      accepts: [
+        {arg: 'data', type: 'object', required: true},
+        {arg: 'id', type: 'any', required: true}
+      ],
+      returns: {type: 'object'},
+      description: "Creates a new instance in groups of this model"
     }
   );
 

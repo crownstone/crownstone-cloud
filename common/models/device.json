@@ -10,8 +10,7 @@
       "type": "string"
     },
     "address": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "description": {
       "type": "string"

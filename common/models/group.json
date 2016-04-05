@@ -16,24 +16,10 @@
   },
   "validations": [],
   "relations": {
-    "members": {
-      "type": "hasAndBelongsToMany",
-      "model": "user",
-      "foreignKey": "",
-      "through": "GroupMember",
-      "keyThrough": ""
-    },
     "owner": {
       "type": "belongsTo",
       "model": "user",
-      "foreignKey": "userId"
-    },
-    "guests": {
-      "type": "hasAndBelongsToMany",
-      "model": "user",
-      "foreignKey": "",
-      "through": "GroupGuest",
-      "keyThrough": ""
+      "foreignKey": "ownerId"
     },
     "ownedLocations": {
       "type": "hasMany",
@@ -54,6 +40,7 @@
       "keyThrough": ""
     }
   },
-  "acls": [],
+  "acls": [
+  ],
   "methods": {}
 }
