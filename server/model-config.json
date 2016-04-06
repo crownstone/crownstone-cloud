@@ -104,5 +104,9 @@
   "GroupAccess": {
     "dataSource": "userDs",
     "public": true
+  },
+  "ClosestStone": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

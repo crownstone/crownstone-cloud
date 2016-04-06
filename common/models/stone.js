@@ -1,3 +1,8 @@
+var stl = require('../../server/middleware/stoneScanToLocation');
+var loopback = require('loopback');
+
+const debug = require('debug')('loopback:dobots');
+
 module.exports = function(model) {
 
 	// address has to be unique to a stone
@@ -19,7 +24,7 @@ module.exports = function(model) {
 	model.findLocation = function(ctx, stoneAddress, cb) {
 		model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
 			if (stones.length > 0 && stones[0].locations.length > 0) {
-				console.log('found: ' + JSON.stringify(stones[0].locations));
+				debug('found: ' + JSON.stringify(stones[0].locations));
 				cb(null, stones[0].locations);
 			} else {
 				cb({message: "no stone found with address: " + stoneAddress}, null);
@@ -35,5 +40,19 @@ module.exports = function(model) {
 			returns: {arg: 'location', type: 'object'}
 		}
 	);
+
+	model.afterRemote('prototype.__create__scans', function(ctx, instance, next) {
+		const loopbackContext = loopback.getCurrentContext();
+		var currentUser = loopbackContext.get('currentUser');
+
+		// console.log("ctx: ", ctx);
+		// console.log("instance: ", ctx.instance);
+
+		next();
+		stl.update(ctx.args.data, ctx.instance, currentUser);
+
+	});
+
+
 
 };

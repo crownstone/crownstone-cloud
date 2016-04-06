@@ -26,6 +26,18 @@ module.exports = function(Model, options) {
 	);
 
 	//////////////////////////////////
+	/// ADMIN
+	//////////////////////////////////
+	Model.settings.acls.push(
+		{
+			"accessType": "*",
+			"principalType": "ROLE",
+			"principalId": "$group:admin",
+			"permission": "ALLOW"
+		}
+	);
+
+	//////////////////////////////////
 	/// OWNER
 	//////////////////////////////////
 	Model.settings.acls.push(
@@ -35,8 +47,6 @@ module.exports = function(Model, options) {
 			"principalId": "$group:owner",
 			"permission": "ALLOW"
 		}
-	);
-	Model.settings.acls.push(
 	);
 
 	//////////////////////////////////

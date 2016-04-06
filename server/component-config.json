@@ -8,6 +8,7 @@
     "groupModel": "Group",
     "foreignKey": "groupId",
     "groupRoles": [
+      "$group:admin",
       "$group:owner",
       "$group:member",
       "$group:guest"

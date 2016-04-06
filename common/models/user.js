@@ -6,6 +6,10 @@ const debug = require('debug')('loopback:dobots');
 
 module.exports = function(user) {
 
+  /************************************
+   **** Disable Remote Methods
+   ************************************/
+
   user.disableRemoteMethod('find', true);
   user.disableRemoteMethod('findOne', true);
   user.disableRemoteMethod('updateAll', true);
@@ -30,6 +34,17 @@ module.exports = function(user) {
   user.disableRemoteMethod('__create__groups', false);
   user.disableRemoteMethod('__updateById__groups', false);
   user.disableRemoteMethod('__destroyById__groups', false);
+  user.disableRemoteMethod('__link__groups', false);
+
+  /************************************
+   **** Model Validation
+   ************************************/
+
+  user.validatesExclusionOf('username', {in: ['superuser', 'admin']});
+
+  /************************************
+   **** Custom functions
+   ************************************/
 
   user.sendVerification = function(user, cb) {
 

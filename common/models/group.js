@@ -103,13 +103,34 @@ module.exports = function(model) {
 		addGroupAccess(ctx.instance.ownerId, ctx.instance.id, "$group:owner",
 			function(err, res) {
 
-			});
+			}
+		);
 
 		next();
 	};
 
+	var addSuperUser = function(ctx) {
+
+		user = loopback.getModel('user');
+		user.findOne({where: {username: "superuser"}}, function(err, res) {
+			if (err) return debug("failed to find superuser");
+
+			addGroupAccess(ctx.instance.ownerId, ctx.instance.id, "$group:admin",
+				function(err, res) {
+
+				}
+			);
+		})
+
+	}
+
+	var afterSave = function(ctx, next) {
+		updateOwnerAccess(ctx, next);
+		addSuperUser(ctx)
+	}
+
 	// model.afterRemote('create', updateOwnerAccess);
-	model.observe('after save', updateOwnerAccess);
+	model.observe('after save', afterSave);
 
 	model.beforeRemote('**', function(ctx, instance, next) {
 		debug("method.name: ", ctx.method.name);

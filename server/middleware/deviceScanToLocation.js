@@ -5,11 +5,11 @@ const debug = require('debug')('loopback:dobots');
 var runner = {
 
 	update : function(scan, deviceInstance, user) {
+		debug('udpate location based on scans from device', deviceInstance.name);
 		this.useClosestBeacon(scan, deviceInstance, user);
 	},
 
 	useClosestBeacon : function(scan, deviceInstance, user) {
-		debug('udpate');
 		// console.log('scan:', scan);
 		debug('scan.scannedDevices:', scan.scannedDevices);
 
