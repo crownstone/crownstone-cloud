@@ -36,7 +36,7 @@ module.exports = function(model) {
 		'findLocation',
 		{
 			http: {path: '/findLocation', verb: 'get'},
-			accepts: {arg: 'address', type: 'string', http: { source : 'query' }},
+			accepts: {arg: 'address', type: 'string'},
 			returns: {arg: 'location', type: 'object'}
 		}
 	);

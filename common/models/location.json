@@ -26,8 +26,7 @@
     "stones": {
       "type": "hasAndBelongsToMany",
       "model": "Stone",
-      "foreignKey": "",
-      "through": "StoneLocation"
+      "foreignKey": ""
     },
     "presentPeople": {
       "type": "hasMany",

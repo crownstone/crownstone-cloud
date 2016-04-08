@@ -37,8 +37,7 @@
     "locations": {
       "type": "hasAndBelongsToMany",
       "model": "Location",
-      "foreignKey": "",
-      "through": "StoneLocation"
+      "foreignKey": ""
     },
     "scans": {
       "type": "hasMany",

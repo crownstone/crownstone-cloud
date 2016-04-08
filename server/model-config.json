@@ -57,10 +57,6 @@
     "dataSource": "mongoDs",
     "public": true
   },
-  "StoneLocation": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
   "ScannedDevice": {
     "dataSource": null,
     "public": false
@@ -103,6 +99,10 @@
   },
   "GroupAccess": {
     "dataSource": "userDs",
+    "public": true
+  },
+  "Container": {
+    "dataSource": "gridfs",
     "public": true
   },
   "ClosestStone": {

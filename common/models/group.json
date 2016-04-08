@@ -26,12 +26,6 @@
       "model": "Location",
       "foreignKey": "groupId"
     },
-    "ownedStones": {
-      "type": "hasMany",
-      "model": "Stone",
-      "foreignKey": "groupId",
-      "through": "Location"
-    },
     "users": {
       "type": "hasMany",
       "model": "user",
@@ -40,7 +34,6 @@
       "keyThrough": ""
     }
   },
-  "acls": [
-  ],
+  "acls": [],
   "methods": {}
 }

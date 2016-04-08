@@ -116,7 +116,7 @@ module.exports = function(user) {
     'me',
     {
       http: {path: '/me', verb: 'get'},
-      returns: {arg: 'user', type: 'object'}
+      returns: {arg: 'data', type: 'user', root: true}
     }
   );
 
@@ -126,15 +126,18 @@ module.exports = function(user) {
     Group.create(data, cb);
   }
 
+  // var app = require('../../server/server');
+  // var Group = app.models.Group;
+
   user.remoteMethod(
     'createNewGroup',
     {
       http: {path: '/:id/groups', verb: 'post'},
       accepts: [
-        {arg: 'data', type: 'object', required: true},
-        {arg: 'id', type: 'any', required: true}
+        {arg: 'data', type: 'Group', 'http': {source: 'body'}},
+        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
       ],
-      returns: {type: 'object'},
+      returns: {arg:'data', type:'Group', root:true},
       description: "Creates a new instance in groups of this model"
     }
   );

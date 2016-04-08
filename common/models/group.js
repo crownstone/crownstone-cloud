@@ -5,36 +5,36 @@ const debug = require('debug')('loopback:dobots');
 module.exports = function(model) {
 
 	/* ACL
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY"
-    },
-    {
-      "accessType": "WRITE",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "create"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$group:owner",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$group:member",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "READ",
-      "principalType": "ROLE",
-      "principalId": "$group:guest",
-      "permission": "ALLOW"
-    }
+	{
+	  "accessType": "*",
+	  "principalType": "ROLE",
+	  "principalId": "$everyone",
+	  "permission": "DENY"
+	},
+	{
+	  "accessType": "WRITE",
+	  "principalType": "ROLE",
+	  "principalId": "$authenticated",
+	  "permission": "create"
+	},
+	{
+	  "accessType": "*",
+	  "principalType": "ROLE",
+	  "principalId": "$group:owner",
+	  "permission": "ALLOW"
+	},
+	{
+	  "accessType": "READ",
+	  "principalType": "ROLE",
+	  "principalId": "$group:member",
+	  "permission": "ALLOW"
+	},
+	{
+	  "accessType": "READ",
+	  "principalType": "ROLE",
+	  "principalId": "$group:guest",
+	  "permission": "ALLOW"
+	}
 	*/
 
 	// model.disableRemoteMethod('find', true);
@@ -113,9 +113,9 @@ module.exports = function(model) {
 
 		user = loopback.getModel('user');
 		user.findOne({where: {username: "superuser"}}, function(err, res) {
-			if (err) return debug("failed to find superuser");
+			if (err || !res) return debug("failed to find superuser");
 
-			addGroupAccess(ctx.instance.ownerId, ctx.instance.id, "$group:admin",
+			addGroupAccess(res.id, ctx.instance.id, "$group:admin",
 				function(err, res) {
 
 				}
@@ -126,7 +126,7 @@ module.exports = function(model) {
 
 	var afterSave = function(ctx, next) {
 		updateOwnerAccess(ctx, next);
-		addSuperUser(ctx)
+		// addSuperUser(ctx)
 	}
 
 	// model.afterRemote('create', updateOwnerAccess);
@@ -198,8 +198,8 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/guests', verb: 'put'},
 			accepts: [
-				{arg: 'email', type: 'string', http: { source : 'query' }, required: true},
-				{arg: 'id', type: 'any', required: true}
+				{arg: 'email', type: 'string', required: true},
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			description: "Add an existing user as a member to this group"
 		}
@@ -216,14 +216,14 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/members', verb: 'put'},
 			accepts: [
-				{arg: 'email', type: 'string', http: { source : 'query' }, required: true},
-				{arg: 'id', type: 'any', required: true}
+				{arg: 'email', type: 'string', required: true},
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			description: "Add an existing user as a guest to this group"
 		}
 	);
 
-	var createUser = function(email, password, id, access, cb) {
+	var createUser = function(data, id, access, cb) {
 		// debug("email:", email);
 		// debug("password:", password);
 		// debug("id:", id);
@@ -238,7 +238,7 @@ module.exports = function(model) {
 					debug("group:", group);
 
 					const user = loopback.getModel('user');
-					user.create({email: email, password: password}, function(err, instance) {
+					user.create(data, function(err, instance) {
 						if (err) {
 							cb(err);
 						} else {
@@ -254,10 +254,10 @@ module.exports = function(model) {
 		});
 	};
 
-	model.createNewGuest = function(email, id, password, cb) {
+	model.createNewGuest = function(data, id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		createUser(email, id, password, "$group:guest", cb);
+		createUser(data, id, "$group:guest", cb);
 	};
 
 	model.remoteMethod(
@@ -265,18 +265,17 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/guests', verb: 'post'},
 			accepts: [
-				{arg: 'email', type: 'string', http: { source : 'query' }, required: true},
-				{arg: 'password', type: 'string', http: { source : 'query' }, required: true},
-				{arg: 'id', type: 'any', required: true}
+				{arg: 'data', type: 'user', required: true, http: { source : 'body' }},
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			description: "Create a new user and make it a guest of this group"
 		}
 	);
 
-	model.createNewMember = function(email, id, password, cb) {
+	model.createNewMember = function(data, id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		createUser(email, id, password, "$group:member", cb);
+		createUser(data, id, "$group:member", cb);
 	};
 
 	model.remoteMethod(
@@ -284,9 +283,8 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/members', verb: 'post'},
 			accepts: [
-				{arg: 'email', type: 'string', http: { source : 'query' }, required: true},
-				{arg: 'password', type: 'string', http: { source : 'query' }, required: true},
-				{arg: 'id', type: 'any', required: true}
+				{arg: 'data', type: 'user', required: true, http: { source : 'body' }},
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			description: "Create a new user and make it a member of this group"
 		}
@@ -343,9 +341,9 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/members', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			returns: {arg: 'members', type: 'user'},
+			returns: {arg: 'data', type: 'user', root: true},
 			description: "Queries members of Group"
 		}
 	);
@@ -361,12 +359,203 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/guests', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			returns: {arg: 'guests', type: 'user'},
+			returns: {arg: 'data', type: 'user', root: true},
 			description: "Queries guests of Group"
 		}
 	);
+
+	// model.beforeRemote('*.__get__users', function(ctx, instance, next) {
+	// 	debug("ctx:", ctx);
+	// 	next();
+	// });
+
+	model.ownedStones = function(id, cb) {
+		model.findById(id, function(err, group) {
+			if (err || !group) return cb("failed to find group for id");
+
+			// debug("group:", group);
+			group.ownedLocations({include: 'stones'}, function(err, locations) {
+				if (err) return cb("failed to get locations for group");
+
+				// debug("locations:", locations)
+				var stones = [];
+				for (i = 0; i < locations.length; ++i) {
+					// debug("locations[" + i + "]", locations[i]);
+					// debug("locations[" + i + "].stones", locations[i].stones());
+					stones = stones.concat(locations[i].stones());
+				}
+				debug("stones:", stones)
+
+				cb(null, stones);
+			});
+		});
+	}
+
+	model.remoteMethod(
+		'ownedStones',
+		{
+			http: {path: '/:id/ownedStones', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'data', type: ['Stone'], root: true},
+			description: "Queries stones owned by Group"
+		}
+	);
+
+	model.countOwnedStones = function(id, cb) {
+		model.ownedStones(id, function(err, stones) {
+			if (err) return cb(err);
+
+			cb(null, stones.length);
+		})
+	}
+
+	model.remoteMethod(
+		'countOwnedStones',
+		{
+			http: {path: '/:id/ownedStones/count', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'count', type: 'number'},
+			description: "Counts ownedStones of Group"
+		}
+	);
+
+
+
+	/************************************
+	 **** Container Methods
+	 ************************************/
+
+	model.listFiles = function(id, cb) {
+		const Container = loopback.getModel('Container');
+		Container._getFiles(id, cb);
+	}
+
+	model.remoteMethod(
+		'listFiles',
+		{
+			http: {path: '/:id/files', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'files', type: 'array', root: true},
+			description: "Queries files of Group"
+		}
+	);
+
+	model.countFiles = function(id, cb) {
+		const Container = loopback.getModel('Container');
+		Container._getFiles(id, function(err, res) {
+			if (err) return cb(err);
+
+			cb(null, res.length);
+		});
+	}
+
+	model.remoteMethod(
+		'countFiles',
+		{
+			http: {path: '/:id/files/count', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'count', type: 'number'},
+			description: "Count files of Group"
+		}
+	);
+
+	// model.listFile = function(id, fk, cb) {
+	// 	const Container = loopback.getModel('Container');
+	// 	Container.getFile(id, fk, cb);
+	// }
+
+	// model.remoteMethod(
+	// 	'listFile',
+	// 	{
+	// 		http: {path: '/:id/files/:fk', verb: 'get'},
+	// 		accepts: [
+	// 			{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+	// 			{arg: 'fk', type: 'any', required: true, http: { source : 'path' }}
+	// 		],
+	// 		returns: {arg: 'file', type: 'object', root: true},
+	// 		description: "Queries file by id"
+	// 	}
+	// );
+
+	// model.deleteFile = function(id, fk, cb) {
+	// 	const Container = loopback.getModel('Container');
+	// 	Container.deleteFile(id, fk, cb);
+	// }
+
+	model.remoteMethod(
+		'deleteFile',
+		{
+			http: {path: '/:id/files/:fk', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Delete a file by id"
+		}
+	);
+
+	model.deleteAllFiles = function(id, cb) {
+		const Container = loopback.getModel('Container');
+		Container._deleteContainer(id, cb);
+	}
+
+	model.remoteMethod(
+		'deleteAllFiles',
+		{
+			http: {path: '/:id/files', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Delete all files of Group"
+		}
+	);
+
+	model.downloadFile = function(id, fk, res, cb) {
+		const Container = loopback.getModel('Container');
+		Container._download(id, fk, res, cb);
+	}
+
+	model.remoteMethod(
+		'downloadFile',
+		{
+			http: {path: '/:id/files/:fk', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+			],
+			description: "Download a file by id"
+		}
+	);
+
+	model.uploadFile = function(id, req, cb) {
+		const Container = loopback.getModel('Container');
+		Container._upload(id, req, cb);
+	}
+
+	model.remoteMethod(
+		'uploadFile',
+		{
+			http: {path: '/:id/files', verb: 'post'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'req', type: 'object', http: { source: 'req' }}
+			],
+			returns: {arg: 'file', type: 'object', root: true},
+			description: "Upload a file to Group"
+		}
+	);
+
 
 
 };

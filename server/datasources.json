@@ -11,5 +11,8 @@
   },
   "sendgridDs": {
     "name": "sendgridDs"
+  },
+  "gridfs": {
+    "name": "gridfs"
   }
 }
