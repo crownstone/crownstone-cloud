@@ -20,7 +20,7 @@ module.exports = function(model) {
 		var currentUser = model.app.accessUtils.getCurrentUser();
 		// debug("currentUser:", currentUser);
 		if (currentUser) {
-			if (currentUser.username !== 'superuser') {
+			if (currentUser.role !== 'superuser') {
 				debug("getUserGroups");
 				// model.app.accessUtils.getUserGroups(currentUser.getId())
 				// 	.then(userGroups => {
@@ -176,7 +176,7 @@ module.exports = function(model) {
 	// 		return next();
 	// 	}
 
-	// 	if (currentUser.username === 'superuser') {
+	// 	if (currentUser.role === 'superuser') {
 	// 		debug('skipping access filters for superuser');
 	// 		return next();
 	// 	}

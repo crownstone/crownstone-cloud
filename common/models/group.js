@@ -112,7 +112,7 @@ module.exports = function(model) {
 	var addSuperUser = function(ctx) {
 
 		user = loopback.getModel('user');
-		user.findOne({where: {username: "superuser"}}, function(err, res) {
+		user.findOne({where: {role: "superuser"}}, function(err, res) {
 			if (err || !res) return debug("failed to find superuser");
 
 			addGroupAccess(res.id, ctx.instance.id, "$group:admin",
@@ -343,7 +343,7 @@ module.exports = function(model) {
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			returns: {arg: 'data', type: 'user', root: true},
+			returns: {arg: 'data', type: ['user'], root: true},
 			description: "Queries members of Group"
 		}
 	);
@@ -361,7 +361,7 @@ module.exports = function(model) {
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			returns: {arg: 'data', type: 'user', root: true},
+			returns: {arg: 'data', type: ['user'], root: true},
 			description: "Queries guests of Group"
 		}
 	);

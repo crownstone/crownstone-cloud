@@ -5,7 +5,11 @@
   "options": {
     "validateUpsert": true
   },
-  "properties": {},
+  "properties": {
+    "role": {
+      "type": "string"
+    }
+  },
   "validations": [],
   "relations": {
     "devices": {
@@ -18,20 +22,6 @@
       "model": "Location",
       "foreignKey": "ownerId",
       "through": "Device"
-    },
-    "memberOf": {
-      "type": "hasAndBelongsToMany",
-      "model": "Group",
-      "foreignKey": "",
-      "through": "GroupMember",
-      "keyThrough": ""
-    },
-    "guestOf": {
-      "type": "hasAndBelongsToMany",
-      "model": "Group",
-      "foreignKey": "",
-      "through": "GroupGuest",
-      "keyThrough": ""
     },
     "groups": {
       "type": "hasMany",

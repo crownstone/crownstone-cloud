@@ -13,6 +13,15 @@ module.exports = function(Model, options) {
 	// which are common among ALL GroupContent Models. If a model needs
 	// individual access rules, define them in the respective model.json
 
+	Model.settings.acls.push(
+		{
+			"accessType": "*",
+			"principalType": "ROLE",
+			"principalId": "lib-user",
+			"permission": "DENY"
+		}
+	);
+
 	//////////////////////////////////
 	/// UNAUTHENTICATED
 	//////////////////////////////////

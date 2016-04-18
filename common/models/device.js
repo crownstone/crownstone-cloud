@@ -39,17 +39,17 @@ module.exports = function(model) {
 	model.disableRemoteMethod('createChangeStream', true);
 	// model.disableRemoteMethod('create', true);
 	// model.disableRemoteMethod('find', true);
-	model.disableRemoteMethod('findOne', true);
 	model.disableRemoteMethod('upsert', true);
 
 	model.afterRemote('prototype.__create__scans', function(ctx, instance, next) {
-		const loopbackContext = loopback.getCurrentContext();
-		var currentUser = loopbackContext.get('currentUser');
 
 		// console.log("ctx: ", ctx);
 		// console.log("instance: ", ctx.instance);
 
 		next();
+
+		const loopbackContext = loopback.getCurrentContext();
+		var currentUser = loopbackContext.get('currentUser');
 		stl.update(ctx.args.data, ctx.instance, currentUser);
 
 	});

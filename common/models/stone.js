@@ -24,7 +24,7 @@ module.exports = function(model) {
 	model.findLocation = function(ctx, stoneAddress, cb) {
 		model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
 			if (stones.length > 0 && stones[0].locations.length > 0) {
-				debug('found: ' + JSON.stringify(stones[0].locations));
+				debug('found location: ' + JSON.stringify(stones[0].locations));
 				cb(null, stones[0].locations);
 			} else {
 				cb({message: "no stone found with address: " + stoneAddress}, null);
@@ -41,14 +41,22 @@ module.exports = function(model) {
 		}
 	);
 
-	model.afterRemote('prototype.__create__scans', function(ctx, instance, next) {
-		const loopbackContext = loopback.getCurrentContext();
-		var currentUser = loopbackContext.get('currentUser');
+	// model.beforeRemote('*.__create__scans', function(ctx, instance, next) {
+	// 	// console.log("ctx: ", ctx);
+	// 	// console.log("instance: ", ctx.instance);
 
-		// console.log("ctx: ", ctx);
-		// console.log("instance: ", ctx.instance);
+	// 	if (ctx.args.data) {
+	// 		ctx.args.data.groupId = ctx.instance.groupId;
+	// 	}
+	// 	next();
+	// });
+
+	model.afterRemote('*.__create__scans', function(ctx, instance, next) {
 
 		next();
+
+		const loopbackContext = loopback.getCurrentContext();
+		var currentUser = loopbackContext.get('currentUser');
 		stl.update(ctx.args.data, ctx.instance, currentUser);
 
 	});

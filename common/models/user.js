@@ -4,49 +4,54 @@ var loopback = require('loopback');
 
 const debug = require('debug')('loopback:dobots');
 
-module.exports = function(user) {
+module.exports = function(model) {
 
   /************************************
    **** Disable Remote Methods
    ************************************/
 
-  user.disableRemoteMethod('find', true);
-  user.disableRemoteMethod('findOne', true);
-  user.disableRemoteMethod('updateAll', true);
-  user.disableRemoteMethod('upsert', true);
-  user.disableRemoteMethod('exists', true);
-  user.disableRemoteMethod('createChangeStream', true);
+  model.disableRemoteMethod('find', true);
+  model.disableRemoteMethod('findOne', true);
+  model.disableRemoteMethod('updateAll', true);
+  model.disableRemoteMethod('upsert', true);
+  model.disableRemoteMethod('exists', true);
+  model.disableRemoteMethod('createChangeStream', true);
 
-  user.disableRemoteMethod('__get__accessTokens', false);
-  user.disableRemoteMethod('__create__accessTokens', false);
-  user.disableRemoteMethod('__delete__accessTokens', false);
-  user.disableRemoteMethod('__count__accessTokens', false);
-  user.disableRemoteMethod('__findById__accessTokens', false);
-  user.disableRemoteMethod('__destroyById__accessTokens', false);
-  user.disableRemoteMethod('__updateById__accessTokens', false);
+  model.disableRemoteMethod('__get__accessTokens', false);
+  model.disableRemoteMethod('__create__accessTokens', false);
+  model.disableRemoteMethod('__delete__accessTokens', false);
+  model.disableRemoteMethod('__count__accessTokens', false);
+  model.disableRemoteMethod('__findById__accessTokens', false);
+  model.disableRemoteMethod('__destroyById__accessTokens', false);
+  model.disableRemoteMethod('__updateById__accessTokens', false);
 
-  user.disableRemoteMethod('__create__currentLocation', false);
-  user.disableRemoteMethod('__delete__currentLocation', false);
-  user.disableRemoteMethod('__updateById__currentLocation', false);
-  user.disableRemoteMethod('__deleteById__currentLocation', false);
+  model.disableRemoteMethod('__create__currentLocation', false);
+  model.disableRemoteMethod('__delete__currentLocation', false);
+  model.disableRemoteMethod('__updateById__currentLocation', false);
+  model.disableRemoteMethod('__deleteById__currentLocation', false);
 
-  user.disableRemoteMethod('__delete__groups', false);
-  user.disableRemoteMethod('__create__groups', false);
-  user.disableRemoteMethod('__updateById__groups', false);
-  user.disableRemoteMethod('__destroyById__groups', false);
-  user.disableRemoteMethod('__link__groups', false);
+  model.disableRemoteMethod('__delete__groups', false);
+  model.disableRemoteMethod('__create__groups', false);
+  model.disableRemoteMethod('__updateById__groups', false);
+  model.disableRemoteMethod('__destroyById__groups', false);
+  model.disableRemoteMethod('__link__groups', false);
 
   /************************************
    **** Model Validation
    ************************************/
 
-  user.validatesExclusionOf('username', {in: ['superuser', 'admin']});
+  model.validatesExclusionOf('role', {in: ['superuser', 'admin', 'lib-user'], allowNull: true});
+
+  // const regex = /^(?=.*\d).{8,}$/; // Password must be at least 8 characters long and include at least one numeric digit.
+  // const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, and no spaces.
+  const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s)(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,]).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, no spaces, and one special character
+  model.validatesFormatOf('password', {with: regex, message: 'Invalid format'})
 
   /************************************
    **** Custom functions
    ************************************/
 
-  user.sendVerification = function(user, cb) {
+  model.sendVerification = function(user, cb) {
 
     var options = {
       type: 'email',
@@ -62,35 +67,39 @@ module.exports = function(user) {
 
     console.log("options: " + JSON.stringify(options));
 
-    user.verify(options, cb);
+    model.verify(options, cb);
   };
 
   //send verification email after registration
-  user.afterRemote('create', function(context, user, next) {
+  model.afterRemote('create', function(context, user, next) {
     console.log('> user.afterRemote triggered');
 
-    user.sendVerification(user, function(err, response, next) {
-      if (err) return next(err);
+    if (model.settings.emailVerificationRequired) {
+      model.sendVerification(user, function(err, response, next) {
+        if (err) return next(err);
 
-      console.log('> verification email sent:', response);
+        console.log('> verification email sent:', response);
 
-      context.res.render('response', {
-        title: 'Signed up successfully',
-        content: 'Please check your email and click on the verification link ' +
-            'before logging in.',
-        redirectTo: '/',
-        redirectToLinkText: 'Log in'
-      });
-    })
+        context.res.render('response', {
+          title: 'Signed up successfully',
+          content: 'Please check your email and click on the verification link ' +
+              'before logging in.',
+          redirectTo: '/',
+          redirectToLinkText: 'Log in'
+        });
+      })
+    } else {
+      next();
+    }
   });
 
   //send password reset link when requested
-  user.on('resetPasswordRequest', function(info) {
+  model.on('resetPasswordRequest', function(info) {
     var url = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/reset-password';
     var html = 'Click <a href="' + url + '?access_token=' +
         info.accessToken.id + '">here</a> to reset your password';
 
-    user.app.models.Email.send({
+    model.app.models.Email.send({
       to: info.email,
       from: info.email,
       subject: 'Password reset',
@@ -101,7 +110,7 @@ module.exports = function(user) {
     });
   });
 
-  user.me = function(cb) {
+  model.me = function(cb) {
     const loopbackContext = loopback.getCurrentContext();
     var currentUser = loopbackContext.get('currentUser');
 
@@ -112,7 +121,7 @@ module.exports = function(user) {
     }
   }
 
-  user.remoteMethod(
+  model.remoteMethod(
     'me',
     {
       http: {path: '/me', verb: 'get'},
@@ -120,7 +129,7 @@ module.exports = function(user) {
     }
   );
 
-  user.createNewGroup = function(data, id, cb) {
+  model.createNewGroup = function(data, id, cb) {
     debug("createNewGroup:", data);
     const Group = loopback.getModel('Group');
     Group.create(data, cb);
@@ -129,7 +138,7 @@ module.exports = function(user) {
   // var app = require('../../server/server');
   // var Group = app.models.Group;
 
-  user.remoteMethod(
+  model.remoteMethod(
     'createNewGroup',
     {
       http: {path: '/:id/groups', verb: 'post'},

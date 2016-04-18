@@ -19,6 +19,9 @@
     "description": {
       "type": "string",
       "required": false
+    },
+    "groundTruth": {
+      "type": "boolean"
     }
   },
   "validations": [],
