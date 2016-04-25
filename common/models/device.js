@@ -5,21 +5,6 @@ const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	/*
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$owner",
-      "permission": "ALLOW"
-    }
-    */
-
 	var app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 		model.disableRemoteMethod('find', true);
@@ -28,38 +13,51 @@ module.exports = function(model) {
 		// GENERAL:
 		//   - nothing
 		//***************************
-		model.settings.acls.push(
-			{
-				"accessType": "*",
-				"principalType": "ROLE",
-				"principalId": "$everyone",
-				"permission": "DENY"
-			}
-		);
+		model.settings.acls.push({
+			"accessType": "*",
+			"principalType": "ROLE",
+			"principalId": "$everyone",
+			"permission": "DENY"
+		});
 		//***************************
 		// AUTHENTICATED:
 		//   - create new device
 		//***************************
-		model.settings.acls.push(
-			{
-				"principalType": "ROLE",
-				"principalId": "$authenticated",
-				"permission": "ALLOW",
-				"property": "create"
-			}
-		);
+		model.settings.acls.push({
+			"principalType": "ROLE",
+			"principalId": "$authenticated",
+			"permission": "ALLOW",
+			"property": "create"
+		});
 		//***************************
 		// OWNER:
 		//   - everything
 		//***************************
-		model.settings.acls.push(
-			{
-				"accessType": "*",
-				"principalType": "ROLE",
-				"principalId": "$owner",
-				"permission": "ALLOW"
-			}
-		);
+		model.settings.acls.push({
+			"accessType": "*",
+			"principalType": "ROLE",
+			"principalId": "$owner",
+			"permission": "ALLOW"
+		});
+		//***************************
+		// LIB-USER:
+		//   - nothing except:
+		//   	- findOne
+		//   	- create scans
+		//***************************
+		model.settings.acls.push({
+			"accessType": "*",
+			"principalType": "ROLE",
+			"principalId": "lib-user",
+			"permission": "DENY"
+		});
+		model.settings.acls.push({
+			"accessType": "EXECUTE",
+			"principalType": "ROLE",
+			"principalId": "lib-user",
+			"permission": "ALLOW",
+			"property": "__create__scans"
+		});
 	}
 
 	// address has to be unique to a stone

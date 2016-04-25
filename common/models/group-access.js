@@ -4,11 +4,9 @@ const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	// model.validatesInclusionOf('role', {in: groupRoles});
-
-	model.beforeRemote('**', function(ctx, instance, next) {
-		debug("method.name: ", ctx.method.name);
-		next();
-	});
+	// make sure role is actually part of the defined group roles. do not accept
+	// any other role
+	var roles = Array.from(groupRoles, groupRole => groupRole.split(':')[1]);
+	model.validatesInclusionOf('role', {in: roles});
 
 };

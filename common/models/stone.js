@@ -9,29 +9,10 @@ module.exports = function(model) {
 	if (app.get('acl_enabled')) {
 
 		//***************************
-		// GENERAL:
-		//   - nothing
+		// GENERAL, ADMIN and OWNER
+		//  see group-conent.js
 		//***************************
-		model.settings.acls.push(
-			{
-				"accessType": "*",
-				"principalType": "ROLE",
-				"principalId": "$everyone",
-				"permission": "DENY"
-			}
-		);
-		//***************************
-		// OWNER:
-		//   - everything
-		//***************************
-		model.settings.acls.push(
-			{
-				"accessType": "*",
-				"principalType": "ROLE",
-				"principalId": "$group:owner",
-				"permission": "ALLOW"
-			}
-		);
+
 		//***************************
 		// MEMBER:
 		//   - everything except:
@@ -168,6 +149,15 @@ module.exports = function(model) {
 				"principalId": "$group:guest",
 				"permission": "ALLOW",
 				"property": "findLocation"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"accessType": "WRITE",
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW",
+				"property": "updateSwitchState"
 			}
 		);
 	}

@@ -94,7 +94,6 @@
       "foreignKey": "stoneId"
     }
   },
-  "acls": [
-  ],
+  "acls": [],
   "methods": {}
 }

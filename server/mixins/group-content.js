@@ -1,19 +1,19 @@
-module.exports = function(Model, options) {
+module.exports = function(model, options) {
 
 	// define property: groupId which is used as a reference to the group
 	// that "owns" the model instance
-	Model.defineProperty("groupId", {type: "string", required: true});
+	model.defineProperty("groupId", {type: "string", required: true});
 
 	// define the belongTo relation to the Group. this is necessary to
 	// distinguish GroupContent and decide who has access to what content
 	var Group = require("loopback").getModel("Group");
-	Model.belongsTo(Group, { foreignKey: "groupId", as: "owner"});
+	model.belongsTo(Group, { foreignKey: "groupId", as: "owner"});
 
 	// define access rules based on the group roles. define here all rules
-	// which are common among ALL GroupContent Models. If a model needs
-	// individual access rules, define them in the respective model.json
+	// which are common among ALL GroupContent models. If a model needs
+	// individual access rules, define them in the respective model.js
 
-	// Model.settings.acls.push(
+	// model.settings.acls.push(
 	// 	{
 	// 		"accessType": "*",
 	// 		"principalType": "ROLE",
@@ -22,13 +22,17 @@ module.exports = function(Model, options) {
 	// 	}
 	// );
 
+	// todo: does it make sense to define that here? or define it per
+	// model. and only do the general disable here
+
 	var app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 
 		//////////////////////////////////
 		/// UNAUTHENTICATED
+		/// 	- nothing
 		//////////////////////////////////
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "*",
 				"principalType": "ROLE",
@@ -39,8 +43,9 @@ module.exports = function(Model, options) {
 
 		//////////////////////////////////
 		/// ADMIN
+		/// 	- everyting
 		//////////////////////////////////
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "*",
 				"principalType": "ROLE",
@@ -51,8 +56,9 @@ module.exports = function(Model, options) {
 
 		//////////////////////////////////
 		/// OWNER
+		/// 	- everyting
 		//////////////////////////////////
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "*",
 				"principalType": "ROLE",
@@ -63,8 +69,9 @@ module.exports = function(Model, options) {
 
 		//////////////////////////////////
 		/// GUEST
+		/// 	- read
 		//////////////////////////////////
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "READ",
 				"principalType": "ROLE",
@@ -72,20 +79,14 @@ module.exports = function(Model, options) {
 				"permission": "ALLOW"
 			}
 		);
-		Model.settings.acls.push(
-			{
-				"accessType": "WRITE",
-				"principalType": "ROLE",
-				"principalId": "$group:guest",
-				"permission": "ALLOW",
-				"property": "updateSwitchState"
-			}
-		);
 
 		//////////////////////////////////
 		/// MEMBER
+		/// 	- read
+		/// 	- create
+		/// 	- update
 		//////////////////////////////////
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "READ",
 				"principalType": "ROLE",
@@ -93,7 +94,7 @@ module.exports = function(Model, options) {
 				"permission": "ALLOW"
 			}
 		);
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "WRITE",
 				"principalType": "ROLE",
@@ -102,7 +103,7 @@ module.exports = function(Model, options) {
 				"property": "create"
 			}
 		);
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "WRITE",
 				"principalType": "ROLE",
@@ -111,7 +112,7 @@ module.exports = function(Model, options) {
 				"property": "upsert"
 			}
 		);
-		Model.settings.acls.push(
+		model.settings.acls.push(
 			{
 				"accessType": "WRITE",
 				"principalType": "ROLE",
