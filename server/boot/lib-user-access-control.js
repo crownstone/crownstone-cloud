@@ -1,7 +1,6 @@
 module.exports = function(app) {
   var Role = app.models.Role;
   Role.registerResolver('lib-user', function(role, context, cb) {
-    console.log("resolve lib user");
     function reject() {
       process.nextTick(function() {
         cb(null, false);

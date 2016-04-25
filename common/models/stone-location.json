@@ -3,10 +3,7 @@
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
-    "validateUpsert": true,
-    "mongodb": {
-      "collection": "StoneLocation"
-    }
+    "validateUpsert": true
   },
   "mixins": {
     "GroupContent": true

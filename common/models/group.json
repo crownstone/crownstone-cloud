@@ -5,8 +5,17 @@
   "options": {
     "validateUpsert": true
   },
+  "mixins": {
+    "Cascade": {
+      "GroupAccess": "groupId"
+    }
+  },
   "properties": {
     "name": {
+      "type": "string",
+      "required": true
+    },
+    "uuid": {
       "type": "string",
       "required": true
     },

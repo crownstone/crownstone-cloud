@@ -13,108 +13,112 @@ module.exports = function(Model, options) {
 	// which are common among ALL GroupContent Models. If a model needs
 	// individual access rules, define them in the respective model.json
 
-	Model.settings.acls.push(
-		{
-			"accessType": "*",
-			"principalType": "ROLE",
-			"principalId": "lib-user",
-			"permission": "DENY"
-		}
-	);
+	// Model.settings.acls.push(
+	// 	{
+	// 		"accessType": "*",
+	// 		"principalType": "ROLE",
+	// 		"principalId": "lib-user",
+	// 		"permission": "DENY"
+	// 	}
+	// );
 
-	//////////////////////////////////
-	/// UNAUTHENTICATED
-	//////////////////////////////////
-	Model.settings.acls.push(
-		{
-			"accessType": "*",
-			"principalType": "ROLE",
-			"principalId": "$everyone",
-			"permission": "DENY"
-		}
-	);
+	var app = require('../../server/server');
+	if (app.get('acl_enabled')) {
 
-	//////////////////////////////////
-	/// ADMIN
-	//////////////////////////////////
-	Model.settings.acls.push(
-		{
-			"accessType": "*",
-			"principalType": "ROLE",
-			"principalId": "$group:admin",
-			"permission": "ALLOW"
-		}
-	);
+		//////////////////////////////////
+		/// UNAUTHENTICATED
+		//////////////////////////////////
+		Model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$everyone",
+				"permission": "DENY"
+			}
+		);
 
-	//////////////////////////////////
-	/// OWNER
-	//////////////////////////////////
-	Model.settings.acls.push(
-		{
-			"accessType": "*",
-			"principalType": "ROLE",
-			"principalId": "$group:owner",
-			"permission": "ALLOW"
-		}
-	);
+		//////////////////////////////////
+		/// ADMIN
+		//////////////////////////////////
+		Model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$group:admin",
+				"permission": "ALLOW"
+			}
+		);
 
-	//////////////////////////////////
-	/// GUEST
-	//////////////////////////////////
-	Model.settings.acls.push(
-		{
-			"accessType": "READ",
-			"principalType": "ROLE",
-			"principalId": "$group:guest",
-			"permission": "ALLOW"
-		}
-	);
-	Model.settings.acls.push(
-		{
-			"accessType": "WRITE",
-			"principalType": "ROLE",
-			"principalId": "$group:guest",
-			"permission": "ALLOW",
-			"property": "updateSwitchState"
-		}
-	);
+		//////////////////////////////////
+		/// OWNER
+		//////////////////////////////////
+		Model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$group:owner",
+				"permission": "ALLOW"
+			}
+		);
 
-	//////////////////////////////////
-	/// MEMBER
-	//////////////////////////////////
-	Model.settings.acls.push(
-		{
-			"accessType": "READ",
-			"principalType": "ROLE",
-			"principalId": "$group:member",
-			"permission": "ALLOW"
-		}
-	);
-	Model.settings.acls.push(
-		{
-			"accessType": "WRITE",
-			"principalType": "ROLE",
-			"principalId": "$group:member",
-			"permission": "ALLOW",
-			"property": "create"
-		}
-	);
-	Model.settings.acls.push(
-		{
-			"accessType": "WRITE",
-			"principalType": "ROLE",
-			"principalId": "$group:member",
-			"permission": "ALLOW",
-			"property": "upsert"
-		}
-	);
-	Model.settings.acls.push(
-		{
-			"accessType": "WRITE",
-			"principalType": "ROLE",
-			"principalId": "$group:member",
-			"permission": "ALLOW",
-			"property": "updateAttributes"
-		}
-	);
+		//////////////////////////////////
+		/// GUEST
+		//////////////////////////////////
+		Model.settings.acls.push(
+			{
+				"accessType": "READ",
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW"
+			}
+		);
+		Model.settings.acls.push(
+			{
+				"accessType": "WRITE",
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW",
+				"property": "updateSwitchState"
+			}
+		);
+
+		//////////////////////////////////
+		/// MEMBER
+		//////////////////////////////////
+		Model.settings.acls.push(
+			{
+				"accessType": "READ",
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "ALLOW"
+			}
+		);
+		Model.settings.acls.push(
+			{
+				"accessType": "WRITE",
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "ALLOW",
+				"property": "create"
+			}
+		);
+		Model.settings.acls.push(
+			{
+				"accessType": "WRITE",
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "ALLOW",
+				"property": "upsert"
+			}
+		);
+		Model.settings.acls.push(
+			{
+				"accessType": "WRITE",
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "ALLOW",
+				"property": "updateAttributes"
+			}
+		);
+	}
 }

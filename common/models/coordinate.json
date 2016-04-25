@@ -5,10 +5,11 @@
   "options": {
     "validateUpsert": true
   },
-  "mixins": {
-    "GroupContent": true
-  },
   "properties": {
+    "timestamp": {
+      "type": "date",
+      "default": "$now"
+    },
     "x": {
       "type": "number",
       "required": true
@@ -22,15 +23,25 @@
       "required": true
     },
     "reference": {
-      "type": "any",
-      "required": true
+      "type": "any"
     },
     "groundTruth": {
       "type": "boolean"
     }
   },
   "validations": [],
-  "relations": {},
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    },
+    "device": {
+      "type": "belongsTo",
+      "model": "Device",
+      "foreignKey": "deviceId"
+    }
+  },
   "acls": [],
   "methods": {}
 }

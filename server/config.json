@@ -22,5 +22,6 @@
     }
   },
   "legacyExplorer": false,
-  "db_url": ""
+  "db_url": "",
+  "acl_enabled": false
 }

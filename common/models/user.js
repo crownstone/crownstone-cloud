@@ -6,6 +6,19 @@ const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
+  var app = require('../../server/server');
+  if (app.get('acl_enabled')) {
+
+    // model.settings.acls.push(
+    //   {
+    //     "accessType": "*",
+    //     "principalType": "ROLE",
+    //     "principalId": "$everyone",
+    //     "permission": "DENY"
+    //   }
+    // );
+  }
+
   /************************************
    **** Disable Remote Methods
    ************************************/
@@ -40,12 +53,13 @@ module.exports = function(model) {
    **** Model Validation
    ************************************/
 
+  // reserved user roles for special liberties
   model.validatesExclusionOf('role', {in: ['superuser', 'admin', 'lib-user'], allowNull: true});
 
-  // const regex = /^(?=.*\d).{8,}$/; // Password must be at least 8 characters long and include at least one numeric digit.
+  const regex = /^(?=.*\d).{8,}$/; // Password must be at least 8 characters long and include at least one numeric digit.
   // const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, and no spaces.
-  const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s)(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,]).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, no spaces, and one special character
-  model.validatesFormatOf('password', {with: regex, message: 'Invalid format'})
+  // const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s)(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,]).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, no spaces, and one special character
+  model.validatesFormatOf('password', {with: regex, message: 'Invalid format. Password needs to be at least 8 characters long and include at least 1 digit'})
 
   /************************************
    **** Custom functions

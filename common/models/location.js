@@ -4,6 +4,104 @@ const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
+	var app = require('../../server/server');
+	if (app.get('acl_enabled')) {
+
+		//***************************
+		// GENERAL:
+		//   - nothing
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$everyone",
+				"permission": "DENY"
+			}
+		);
+		//***************************
+		// OWNER:
+		//   - everything
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$group:owner",
+				"permission": "ALLOW"
+			}
+		);
+		//***************************
+		// MEMBER:
+		//   - everything except:
+		//   	- delete stone(s)
+		//   	- remove stone(s)
+		//   	- delete location
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "ALLOW"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "__destroyById__stones"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "__unlink__stones"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "__delete__stones"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "deleteById"
+			}
+		);
+		//***************************
+		// GUEST:
+		//   - read
+		//   - update stone(s)
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "READ",
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW",
+				"property": "__updateById__stones"
+			}
+		);
+	}
+
+	model.disableRemoteMethod('updateAll', true);
 	model.disableRemoteMethod('createChangeStream', true);
 
 	model.disableRemoteMethod('__link__presentPeople', false);

@@ -11,7 +11,7 @@
   "properties": {
     "timestamp": {
       "type": "date",
-      "required": true
+      "default": "$now"
     },
     "voltage": {
       "type": [

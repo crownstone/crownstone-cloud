@@ -29,21 +29,24 @@ var runner = {
 
 		debug("closest: ", closest);
 
-		Stone.findLocation(null, closest.address, function(err, res) {
-			if (!err) {
-				console.log('location: ' + res[0].name );
+		Stone.findLocation(null, closest.addlocationss, function(err, locations) {
+			if (!err && locations) {
+				console.log('location: ' + locations[0].name );
 
-				deviceInstance.currentLocationId = res[0].id;
-				console.log('deviceInstance:', deviceInstance);
-				Device.upsert(deviceInstance, function(err, obj) {
-					if (err) {
-						debug("Error: failed to update device");
-					} else {
-						debug('ok');
-					}
-				})
+				Device.setCurrentLocation(deviceInstance, locations[0].id);
+
+				// deviceInstance.currentLocationId = locations[0].id;
+				// console.log('deviceInstance:', deviceInstance);
+				// Device.upsert(deviceInstance, function(err, obj) {
+				// 	if (err) {
+				// 		debug("Error: failed to update device");
+				// 	} else {
+				// 		debug('ok');
+				// 	}
+				// })
 			} else {
-				debug("Error: failed to get location");
+				debug("Error: failed to find location");
+				//todo: handle the case where closest beacon is not assigned to a location?
 			}
 		});
 

@@ -5,12 +5,17 @@
   "options": {
     "validateUpsert": true
   },
-  "mixins": {
-    "GroupContent": true
-  },
   "properties": {
     "timestamp": {
       "type": "date",
+      "default": "$now"
+    },
+    "locationId": {
+      "type": "any",
+      "required": true
+    },
+    "deviceId": {
+      "type": "any",
       "required": true
     }
   },

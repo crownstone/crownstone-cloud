@@ -10,7 +10,8 @@
       "type": "string"
     },
     "address": {
-      "type": "string"
+      "type": "string",
+      "required": true
     },
     "description": {
       "type": "string"
@@ -23,32 +24,30 @@
       "model": "user",
       "foreignKey": "ownerId"
     },
-    "currentLocation": {
-      "type": "belongsTo",
-      "model": "Location",
-      "foreignKey": "currentLocationId"
-    },
     "scans": {
       "type": "hasMany",
       "model": "Scan",
       "foreignKey": ""
     },
+    "currentLocation": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "currentLocationId"
+    },
     "locationsHistory": {
       "type": "hasMany",
-      "model": "Location",
-      "foreignKey": "deviceId",
-      "through": "TimedLocation"
-    },
-    "coordinatesHistory": {
-      "type": "hasMany",
-      "model": "Coordinate",
-      "foreignKey": "stoneId",
-      "through": "TimedCoordinate"
+      "model": "TimedLocation",
+      "foreignKey": "deviceId"
     },
     "currentCoordinate": {
       "type": "belongsTo",
       "model": "Coordinate",
       "foreignKey": "currentCoordinateId"
+    },
+    "coordinatesHistory": {
+      "type": "hasMany",
+      "model": "Coordinate",
+      "foreignKey": "deviceId"
     }
   },
   "acls": [

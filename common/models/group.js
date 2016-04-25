@@ -1,86 +1,194 @@
 var loopback = require('loopback');
+var uuid = require('node-uuid');
 
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	/* ACL
-	{
-	  "accessType": "*",
-	  "principalType": "ROLE",
-	  "principalId": "$everyone",
-	  "permission": "DENY"
-	},
-	{
-	  "accessType": "WRITE",
-	  "principalType": "ROLE",
-	  "principalId": "$authenticated",
-	  "permission": "create"
-	},
-	{
-	  "accessType": "*",
-	  "principalType": "ROLE",
-	  "principalId": "$group:owner",
-	  "permission": "ALLOW"
-	},
-	{
-	  "accessType": "READ",
-	  "principalType": "ROLE",
-	  "principalId": "$group:member",
-	  "permission": "ALLOW"
-	},
-	{
-	  "accessType": "READ",
-	  "principalType": "ROLE",
-	  "principalId": "$group:guest",
-	  "permission": "ALLOW"
-	}
-	*/
+	var app = require('../../server/server');
+	if (app.get('acl_enabled')) {
+		model.disableRemoteMethod('find', true);
 
-	// model.disableRemoteMethod('find', true);
+		//***************************
+		// GENERAL:
+		//   - nothing
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$everyone",
+				"permission": "DENY"
+			}
+		);
+		//***************************
+		// AUTHENTICATED:
+		//   - create new group
+		//***************************
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$authenticated",
+				"permission": "ALLOW",
+				"property": "create"
+			}
+		);
+		//***************************
+		// OWNER:
+		//   - everything
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$group:owner",
+				"permission": "ALLOW"
+			}
+		);
+		//***************************
+		// MEMBER:
+		//   - everything except:
+		//   	- delete location(s)
+		//   	- remove users
+		//   	- delete group
+		//   	- delete file(s)
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "ALLOW"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "__destroyById__ownedLocations"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "__unlink__users"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "__delete__ownedLocations"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "deleteById"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "deleteFile"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "deleteAllFiles"
+			}
+		);
+		//***************************
+		// GUEST:
+		//   - read
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "READ",
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW"
+			}
+		);
+	}
+
 	model.disableRemoteMethod('findOne', true);
 	model.disableRemoteMethod('updateAll', true);
 	model.disableRemoteMethod('count', true);
 	model.disableRemoteMethod('upsert', true);
+	model.disableRemoteMethod('createChangeStream', true);
 
 	model.disableRemoteMethod('__create__users', false);
 	model.disableRemoteMethod('__delete__users', false);
 	model.disableRemoteMethod('__destroyById__users', false);
 	model.disableRemoteMethod('__updateById__users', false);
 
-	model.disableRemoteMethod('createChangeStream', true);
+	var initGroup = function(ctx, next) {
+		debug("initGroup");
 
-	var injectOwner = function(ctx, next) {
-		debug("ctx.instance: ", ctx.instance);
+		if (ctx.isNewInstance) {
+			injectUUID(ctx.instance)
+			injectOwner(ctx.instance, next)
+		} else {
+			injectUUID(ctx.data);
+			injectOwner(ctx.data, next);
+		}
+	}
 
-		const loopbackContext = loopback.getCurrentContext();
-		var currentUser = loopbackContext.get('currentUser');
+	var injectUUID = function(item) {
+		if (!item.uuid) {
+			debug("create uuid");
+			item.uuid = uuid.v4();
+		}
+	}
 
-		inject = function(ctx, user, next) {
-			debug("user:", user);
-			ctx.instance.ownerId = user.id;
-			debug("ctx.instance: ", ctx.instance);
+	var injectOwner = function(item, next) {
+		if (!item.ownerId) {
+			debug("injectOwner");
+			debug("ctx.instance: ", item);
+
+			const loopbackContext = loopback.getCurrentContext();
+			var currentUser = loopbackContext.get('currentUser');
+
+			inject = function(item, user, next) {
+				debug("user:", user);
+				item.ownerId = user.id;
+				debug("ctx.instance: ", item.instance);
+				next();
+			}
+
+			// only for DEBUG purposes
+			if (currentUser == null) {
+
+				const user = loopback.getModel('user');
+				user.find({where: {email: "dominik@dobots.nl"}}, function(err, res) {
+					if (err) {
+						debug("fatal error");
+					} else {
+						currentUser = res[0];
+						inject(item, currentUser, next);
+					}
+				})
+			} else {
+				inject(item, currentUser, next)
+			}
+		} else {
 			next();
 		}
-
-		if (currentUser == null) {
-
-			const user = loopback.getModel('user');
-			user.find({where: {email: "dominik@dobots.nl"}}, function(err, res) {
-				if (err) {
-					debug("fatal error");
-				} else {
-					currentUser = res[0];
-					inject(ctx, currentUser, next);
-				}
-			})
-		} else {
-			inject(ctx, currentUser, next)
-		}
-
 	};
 
-	model.observe('before save', injectOwner);
+	model.observe('before save', initGroup);
 	// model.beforeRemote('create', injectOwner);
 	// model.beforeRemote('upsert', injectOwner);
 
@@ -91,7 +199,7 @@ module.exports = function(model) {
 		// GroupAccess.create({
 		// 	groupId: instance.id,
 		// 	userId: instance.ownerId,
-		// 	role: "$group:owner"
+		// 	role: "owner"
 		// }, function(err, res) {
 		// 	if (err) {
 		// 		debug("Error: ", err);
@@ -100,7 +208,7 @@ module.exports = function(model) {
 		// 	}
 		// });
 
-		addGroupAccess(ctx.instance.ownerId, ctx.instance.id, "$group:owner",
+		addGroupAccess(ctx.instance.ownerId, ctx.instance.id, "owner",
 			function(err, res) {
 
 			}
@@ -115,7 +223,7 @@ module.exports = function(model) {
 		user.findOne({where: {role: "superuser"}}, function(err, res) {
 			if (err || !res) return debug("failed to find superuser");
 
-			addGroupAccess(res.id, ctx.instance.id, "$group:admin",
+			addGroupAccess(res.id, ctx.instance.id, "admin",
 				function(err, res) {
 
 				}
@@ -190,7 +298,7 @@ module.exports = function(model) {
 	model.addGuest = function(email, id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		addUser(email, id, "$group:guest", cb);
+		addUser(email, id, "guest", cb);
 	};
 
 	model.remoteMethod(
@@ -208,7 +316,7 @@ module.exports = function(model) {
 	model.addMember = function(email, id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		addUser(email, id, "$group:member", cb);
+		addUser(email, id, "member", cb);
 	};
 
 	model.remoteMethod(
@@ -257,7 +365,7 @@ module.exports = function(model) {
 	model.createNewGuest = function(data, id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		createUser(data, id, "$group:guest", cb);
+		createUser(data, id, "guest", cb);
 	};
 
 	model.remoteMethod(
@@ -275,7 +383,7 @@ module.exports = function(model) {
 	model.createNewMember = function(data, id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		createUser(data, id, "$group:member", cb);
+		createUser(data, id, "member", cb);
 	};
 
 	model.remoteMethod(
@@ -295,7 +403,7 @@ module.exports = function(model) {
 		model.findById(id, function(err, instance) {
 			if (err) return cb(err);
 
-			// instance.users({where: {role: "$group:member"}}, cb);
+			// instance.users({where: {role: "member"}}, cb);
 			instance.users(function(err, users) {
 				if (err) return cb(err);
 
@@ -333,7 +441,7 @@ module.exports = function(model) {
 	model.members = function(id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		findUsersWithRole(id, '$group:member', cb);
+		findUsersWithRole(id, 'member', cb);
 	};
 
 	model.remoteMethod(
@@ -351,7 +459,7 @@ module.exports = function(model) {
 	model.guests = function(id, cb) {
 		// debug("email:", email);
 		// debug("id:", id);
-		findUsersWithRole(id, '$group:guest', cb);
+		findUsersWithRole(id, 'guest', cb);
 	};
 
 	model.remoteMethod(

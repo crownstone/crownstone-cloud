@@ -42,7 +42,7 @@
     "dataSource": "userDs",
     "public": true,
     "options": {
-      "emailVerificationRequired": true
+      "emailVerificationRequired": false
     }
   },
   "Group": {
@@ -63,7 +63,7 @@
   },
   "Scan": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "Device": {
     "dataSource": "mongoDs",
@@ -71,23 +71,23 @@
   },
   "TimedLocation": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "PowerUsage": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "Coordinate": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "EnergyUsage": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "PowerCurve": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "Event": {
     "dataSource": "mongoDs",
@@ -95,7 +95,7 @@
   },
   "GroupAccess": {
     "dataSource": "userDs",
-    "public": true
+    "public": false
   },
   "Container": {
     "dataSource": "gridfs",

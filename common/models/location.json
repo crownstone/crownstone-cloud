@@ -3,13 +3,13 @@
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
-    "validateUpsert": true,
-    "mongodb": {
-      "collection": "Location"
-    }
+    "validateUpsert": true
   },
   "mixins": {
-    "GroupContent": true
+    "GroupContent": true,
+    "Cascade": {
+      "StoneLocation": "locationId"
+    }
   },
   "properties": {
     "name": {
@@ -29,13 +29,14 @@
     "stones": {
       "type": "hasAndBelongsToMany",
       "model": "Stone",
-      "foreignKey": ""
+      "foreignKey": "locationId"
     },
     "presentPeople": {
       "type": "hasMany",
       "model": "user",
-      "foreignKey": "locationId",
-      "through": "Device"
+      "foreignKey": "currentLocationId",
+      "through": "Device",
+      "keyThrough": "ownerId"
     }
   },
   "acls": [

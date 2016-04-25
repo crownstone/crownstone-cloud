@@ -28,24 +28,27 @@ var runner = {
 				}
 
 				Stone.findLocation(null, stone.address,
-					function(err, location) {
+					function(err, locations) {
 						if (err){
 							return debug("Error:", err);
-						} else if (!location) {
+						} else if (!locations) {
 							return debug("No location found with this address");
 						}
 
-						debug('location: ' + location[0].name );
+						debug('location: ' + locations[0].name );
 
-						if (!runner.compareId(device.currentLocationId, location[0].id)) {
-							device.currentLocationId = location[0].id;
-							debug("save device:", device);
-							device.save();
+						if (!runner.compareId(device.currentLocationId, locations[0].id)) {
+
+							Device.setCurrentLocation(device, locations[0].id);
+
+							// device.currentLocationId = locations[0].id;
+							// debug("save device:", device);
+							// device.save();
 						}
 					}
-					);
+				);
 			}
-			);
+		);
 	},
 
 	filterDevices : function(scan, cb) {

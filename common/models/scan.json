@@ -8,8 +8,8 @@
   "properties": {
     "timestamp": {
       "type": "date",
-      "required": true,
-      "dataType": "timestamp"
+      "dataType": "timestamp",
+      "default": "$now"
     },
     "scannedDevices": {
       "type": [

@@ -10,6 +10,12 @@
       "type": "string"
     }
   },
+  "mixins": {
+    "Cascade": {
+      "GroupAccess": "userId"
+    }
+  },
+  "hidden": ["role"],
   "validations": [],
   "relations": {
     "devices": {

@@ -3,13 +3,13 @@
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
-    "validateUpsert": true,
-    "mongodb": {
-      "collection": "Stone"
-    }
+    "validateUpsert": true
   },
   "mixins": {
-    "GroupContent": true
+    "GroupContent": true,
+    "Cascade": {
+      "StoneLocation": "stoneId"
+    }
   },
   "properties": {
     "name": {
@@ -30,6 +30,15 @@
     },
     "deviceType": {
       "type": "string"
+    },
+    "major": {
+      "type": "number"
+    },
+    "minor": {
+      "type": "number"
+    },
+    "uid": {
+      "type": "number"
     }
   },
   "validations": [],
@@ -37,26 +46,21 @@
     "locations": {
       "type": "hasAndBelongsToMany",
       "model": "Location",
-      "foreignKey": ""
+      "foreignKey": "stoneId"
     },
     "scans": {
       "type": "hasMany",
       "model": "Scan",
       "foreignKey": ""
     },
-    "powerUsageHistory": {
-      "type": "hasMany",
-      "model": "PowerUsage",
-      "foreignKey": "stoneId"
-    },
     "currentPowerUsage": {
       "type": "belongsTo",
       "model": "PowerUsage",
       "foreignKey": "currentPowerUsageId"
     },
-    "energyUsageHistory": {
+    "powerUsageHistory": {
       "type": "hasMany",
-      "model": "EnergyUsage",
+      "model": "PowerUsage",
       "foreignKey": "stoneId"
     },
     "currentEnergyUsage": {
@@ -64,16 +68,25 @@
       "model": "EnergyUsage",
       "foreignKey": "currentEnergyUsageId"
     },
-    "coordinatesHistory": {
+    "energyUsageHistory": {
       "type": "hasMany",
-      "model": "Coordinate",
-      "foreignKey": "stoneId",
-      "through": "TimedCoordinate"
+      "model": "EnergyUsage",
+      "foreignKey": "stoneId"
     },
     "currentCoordinate": {
       "type": "belongsTo",
       "model": "Coordinate",
       "foreignKey": "currentCoordinateId"
+    },
+    "coordinatesHistory": {
+      "type": "hasMany",
+      "model": "Coordinate",
+      "foreignKey": "stoneId"
+    },
+    "currentPowerCurve": {
+      "type": "belongsTo",
+      "model": "PowerCurve",
+      "foreignKey": "currentPowerCurveId"
     },
     "powerCurveHistory": {
       "type": "hasMany",
@@ -82,18 +95,6 @@
     }
   },
   "acls": [
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW"
-    },
-    {
-      "accessType": "*",
-      "principalType": "ROLE",
-      "principalId": "$authenticated",
-      "permission": "ALLOW"
-    }
   ],
   "methods": {}
 }
