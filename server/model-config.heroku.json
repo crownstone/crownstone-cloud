@@ -1,0 +1,34 @@
+{
+  "user": {
+    "options": {
+      "emailVerificationRequired": false
+    }
+  },
+  "Scan": {
+    "public": false
+  },
+  "TimedLocation": {
+    "public": false
+  },
+  "PowerUsage": {
+    "public": false
+  },
+  "Coordinate": {
+    "public": false
+  },
+  "EnergyUsage": {
+    "public": false
+  },
+  "PowerCurve": {
+    "public": false
+  },
+  "GroupAccess": {
+    "public": false
+  },
+  "GroupContainer": {
+    "public": false
+  },
+  "UserContainer": {
+    "public": false
+  }
+}
