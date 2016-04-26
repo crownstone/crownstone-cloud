@@ -98,11 +98,11 @@
     "public": true
   },
   "GroupContainer": {
-    "dataSource": "gridfs",
+    "dataSource": "filesDs",
     "public": true
   },
   "UserContainer": {
-    "dataSource": "gridfs",
+    "dataSource": "filesDs",
     "public": true
   },
   "ClosestStone": {

@@ -12,7 +12,7 @@
   "sendgridDs": {
     "name": "sendgridDs"
   },
-  "gridfs": {
-    "name": "gridfs"
+  "filesDs": {
+    "name": "files"
   }
 }

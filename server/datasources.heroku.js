@@ -28,6 +28,17 @@ module.exports = {
       "sslValidate": false
     }
   },
+  filesDs: {
+    "connector": "loopback-component-storage-gridfs",
+    "name": "files",
+    "url": "mongodb://" + process.env.MONGODB_USER + ":"
+                        + process.env.MONGODB_PASSWORD + "@"
+                        + process.env.MONGODB_HOST + ":"
+                        + process.env.MONGODB_PORT + "/files?authSource=admin&ssl=true",
+    "server": {
+      "sslValidate": false
+    }
+  },
   "sendgridDs": {
     "connector": "loopback-connector-sendgrid",
     "api_user": process.env.SENDGRID_USERNAME,
