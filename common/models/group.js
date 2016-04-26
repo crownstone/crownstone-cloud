@@ -540,7 +540,7 @@ module.exports = function(model) {
 	 ************************************/
 
 	model.listFiles = function(id, cb) {
-		const Container = loopback.getModel('Container');
+		const Container = loopback.getModel('GroupContainer');
 		Container._getFiles(id, cb);
 	}
 
@@ -557,7 +557,7 @@ module.exports = function(model) {
 	);
 
 	model.countFiles = function(id, cb) {
-		const Container = loopback.getModel('Container');
+		const Container = loopback.getModel('GroupContainer');
 		Container._getFiles(id, function(err, res) {
 			if (err) return cb(err);
 
@@ -578,7 +578,7 @@ module.exports = function(model) {
 	);
 
 	// model.listFile = function(id, fk, cb) {
-	// 	const Container = loopback.getModel('Container');
+	// 	const Container = loopback.getModel('GroupContainer');
 	// 	Container.getFile(id, fk, cb);
 	// }
 
@@ -596,7 +596,7 @@ module.exports = function(model) {
 	// );
 
 	// model.deleteFile = function(id, fk, cb) {
-	// 	const Container = loopback.getModel('Container');
+	// 	const Container = loopback.getModel('GroupContainer');
 	// 	Container.deleteFile(id, fk, cb);
 	// }
 
@@ -613,7 +613,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllFiles = function(id, cb) {
-		const Container = loopback.getModel('Container');
+		const Container = loopback.getModel('GroupContainer');
 		Container._deleteContainer(id, cb);
 	}
 
@@ -629,7 +629,7 @@ module.exports = function(model) {
 	);
 
 	model.downloadFile = function(id, fk, res, cb) {
-		const Container = loopback.getModel('Container');
+		const Container = loopback.getModel('GroupContainer');
 		Container._download(id, fk, res, cb);
 	}
 
@@ -647,7 +647,7 @@ module.exports = function(model) {
 	);
 
 	model.uploadFile = function(id, req, cb) {
-		const Container = loopback.getModel('Container');
+		const Container = loopback.getModel('GroupContainer');
 		Container._upload(id, req, cb);
 	}
 

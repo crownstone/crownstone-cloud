@@ -6,18 +6,27 @@ const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	var app = require('../../server/server');
-	if (app.get('acl_enabled')) {
+	///// put the acls by default, since the base model user
+	///// already has the ACLs set anyway
+	// var app = require('../../server/server');
+	// if (app.get('acl_enabled')) {
 
 		//***************************
 		// GENERAL:
 		//   - nothing
+		//   - download user profile pic
 		//***************************
 		model.settings.acls.push({
 			"accessType": "*",
 			"principalType": "ROLE",
 			"principalId": "$everyone",
 			"permission": "DENY"
+		});
+		model.settings.acls.push({
+			"principalType": "ROLE",
+			"principalId": "$everyone",
+			"permission": "ALLOW",
+			"property": "downloadProfilePicByEmail"
 		});
 		//***************************
 		// AUTHENTICATED:
@@ -46,7 +55,7 @@ module.exports = function(model) {
 			"principalId": "$owner",
 			"permission": "ALLOW"
 		});
-	}
+	// }
 
 	/************************************
 	 **** Disable Remote Methods
@@ -168,7 +177,8 @@ module.exports = function(model) {
 		'me',
 		{
 			http: {path: '/me', verb: 'get'},
-			returns: {arg: 'data', type: 'user', root: true}
+			returns: {arg: 'data', type: 'user', root: true},
+			description: "Return instance of authenticated User"
 		}
 	);
 
@@ -189,8 +199,229 @@ module.exports = function(model) {
 				{arg: 'data', type: 'Group', 'http': {source: 'body'}},
 				{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
 			],
-			returns: {arg:'data', type:'Group', root:true},
+			returns: {arg: 'data', type: 'Group', root: true},
 			description: "Creates a new instance in groups of this model"
+		}
+	);
+
+	/************************************
+	 **** Container Methods
+	 ************************************/
+
+	model.listFiles = function(id, cb) {
+		const Container = loopback.getModel('UserContainer');
+		Container._getFiles(id, cb);
+	}
+
+	model.remoteMethod(
+		'listFiles',
+		{
+			http: {path: '/:id/files', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'files', type: 'array', root: true},
+			description: "Queries files of User"
+		}
+	);
+
+	model.countFiles = function(id, cb) {
+		const Container = loopback.getModel('UserContainer');
+		Container._getFiles(id, function(err, res) {
+			if (err) return cb(err);
+
+			cb(null, res.length);
+		});
+	}
+
+	model.remoteMethod(
+		'countFiles',
+		{
+			http: {path: '/:id/files/count', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'count', type: 'number'},
+			description: "Count files of User"
+		}
+	);
+
+	// model.listFile = function(id, fk, cb) {
+	// 	const Container = loopback.getModel('UserContainer');
+	// 	Container.getFile(id, fk, cb);
+	// }
+
+	// model.remoteMethod(
+	// 	'listFile',
+	// 	{
+	// 		http: {path: '/:id/files/:fk', verb: 'get'},
+	// 		accepts: [
+	// 			{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+	// 			{arg: 'fk', type: 'any', required: true, http: { source : 'path' }}
+	// 		],
+	// 		returns: {arg: 'file', type: 'object', root: true},
+	// 		description: "Queries file by id"
+	// 	}
+	// );
+
+	model.deleteFile = function(id, fk, cb) {
+		const Container = loopback.getModel('UserContainer');
+		Container._deleteFile(id, fk, cb);
+	}
+
+	model.remoteMethod(
+		'deleteFile',
+		{
+			http: {path: '/:id/files/:fk', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Delete a file by id"
+		}
+	);
+
+	model.deleteAllFiles = function(id, cb) {
+		const Container = loopback.getModel('UserContainer');
+		Container._deleteContainer(id, cb);
+	}
+
+	model.remoteMethod(
+		'deleteAllFiles',
+		{
+			http: {path: '/:id/files', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Delete all files of User"
+		}
+	);
+
+	model.downloadFile = function(id, fk, res, cb) {
+		const Container = loopback.getModel('UserContainer');
+		Container._download(id, fk, res, cb);
+	}
+
+	model.remoteMethod(
+		'downloadFile',
+		{
+			http: {path: '/:id/files/:fk', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+			],
+			description: "Download a file by id"
+		}
+	);
+
+	model.uploadFile = function(id, req, cb) {
+		const Container = loopback.getModel('UserContainer');
+		Container._upload(id, req, cb);
+	}
+
+	model.remoteMethod(
+		'uploadFile',
+		{
+			http: {path: '/:id/files', verb: 'post'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'req', type: 'object', http: { source: 'req' }}
+			],
+			returns: {arg: 'file', type: 'object', root: true},
+			description: "Upload a file to User"
+		}
+	);
+
+	model.uploadProfilePic = function(id, req, cb) {
+		// debug("uploadProfilePic");
+
+		var upload = function(user, req) {
+
+			// upload the file
+			model.uploadFile(user.id, req, function(err, file) {
+				if (err) return cb(err);
+
+				// and set the id as profilePicId
+				user.profilePicId = file._id;
+				user.save();
+
+				cb(null, file);
+			});
+		}
+
+		// get the user instance
+		model.findById(id, function(err, user) {
+			if (err) return cb(err);
+
+			// if there is already a profile picture uploaded, delete the old one first
+			if (user.profilePicId) {
+				model.deleteFile(user.id, user.profilePicId, function(err, file) {
+					if (err) return cb(err);
+					upload(user, req);
+				});
+			} else {
+				upload(user, req);
+			}
+
+		});
+	}
+
+	model.remoteMethod(
+		'uploadProfilePic',
+		{
+			http: {path: '/:id/profilePic', verb: 'post'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'req', type: 'object', http: { source: 'req' }}
+			],
+			returns: {arg: 'file', type: 'object', root: true},
+			description: "Upload profile pic to User"
+		}
+	);
+
+	model.downloadProfilePicById = function(id, res, cb) {
+		// debug("downloadProfilePicById");
+
+		model.findById(id, function(err, user) {
+			if (err) return cb(err);
+
+			model.downloadFile(id, user.profilePicId, res, cb);
+		});
+	}
+
+	model.remoteMethod(
+		'downloadProfilePicById',
+		{
+			http: {path: '/:id/profilePic', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+			],
+			description: "Download profile pic of User"
+		}
+	);
+
+	model.downloadProfilePicByEmail = function(email, res, cb) {
+		// debug("downloadProfilePicByEmail");
+
+		model.findOne({where: {email: email}}, function(err, user) {
+			if (err) return cb(err);
+			if (!user) return cb({message:"user not found"});
+
+			model.downloadFile(user.id, user.profilePicId, res, cb);
+		});
+	}
+
+	model.remoteMethod(
+		'downloadProfilePicByEmail',
+		{
+			http: {path: '/profilePic', verb: 'get'},
+			accepts: [
+				{arg: 'email', type: 'string', required: true, http: { source : 'query' }},
+				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+			],
+			description: "Download profile pic of User"
 		}
 	);
 

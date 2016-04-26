@@ -97,7 +97,11 @@
     "dataSource": "userDs",
     "public": true
   },
-  "Container": {
+  "GroupContainer": {
+    "dataSource": "gridfs",
+    "public": true
+  },
+  "UserContainer": {
     "dataSource": "gridfs",
     "public": true
   },

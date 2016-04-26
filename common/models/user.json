@@ -8,6 +8,9 @@
   "properties": {
     "role": {
       "type": "string"
+    },
+    "profilePicId": {
+      "type": "any"
     }
   },
   "mixins": {
@@ -37,6 +40,13 @@
       "keyThrough": ""
     }
   },
-  "acls": [],
+  "acls": [
+    {
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW"
+    }
+  ],
   "methods": {}
 }

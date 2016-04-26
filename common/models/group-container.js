@@ -147,11 +147,15 @@ module.exports = function(model) {
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
-			model.upload(containerName, req, next);
+			model.upload(containerName, req, function(err, res) {
+				if (err) return next(err);
+
+				debug("file id:", res._id);
+			});
 		})
 	}
 
-	model._download = function (containerName, fileId, res, cb) {
+	model._download = function (containerName, fileId, res, next) {
 
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);

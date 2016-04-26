@@ -24,5 +24,11 @@
   },
   "GroupAccess": {
     "public": false
+  },
+  "GroupContainer": {
+    "public": false
+  },
+  "UserContainer": {
+    "public": false
   }
 }
