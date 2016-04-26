@@ -16,7 +16,7 @@
     "loopback-component-access-groups": "^0.1.1",
     "loopback-component-explorer": "^2.1.0",
     "loopback-component-storage": "^1.7.0",
-    "loopback-component-storage-gridfs": "^1.0.1",
+    "loopback-component-storage-gridfs": "eggerdo/loopback-component-storage-gridfs",
     "loopback-component-storage-mongo": "^1.5.0",
     "loopback-connector-mongodb": "^1.13.0",
     "loopback-connector-sendgrid": "^1.2.1",
