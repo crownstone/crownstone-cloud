@@ -119,7 +119,7 @@ module.exports = function(model) {
 
 		console.log("options: " + JSON.stringify(options));
 
-		model.verify(options, cb);
+		user.verify(options, cb);
 	};
 
 	//send verification email after registration
