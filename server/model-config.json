@@ -19,7 +19,7 @@
     "public": false
   },
   "AccessToken": {
-    "dataSource": "db",
+    "dataSource": "userDs",
     "public": false
   },
   "ACL": {

@@ -28,6 +28,12 @@ module.exports = function(model) {
 			"permission": "ALLOW",
 			"property": "downloadProfilePicByEmail"
 		});
+		model.settings.acls.push({
+			"principalType": "ROLE",
+			"principalId": "$everyone",
+			"permission": "ALLOW",
+			"property": "resendVerification"
+		});
 		//***************************
 		// AUTHENTICATED:
 		//   - create new user
@@ -127,11 +133,11 @@ module.exports = function(model) {
 		console.log('> user.afterRemote triggered');
 
 		if (model.settings.emailVerificationRequired) {
-			model.sendVerification(user, function(err, response, next) {
+			model.sendVerification(user, function(err, response) {
 				if (err) return next(err);
 
 				console.log('> verification email sent:', response);
-
+				// todo: return this only if request is coming from website?
 				context.res.render('response', {
 					title: 'Signed up successfully',
 					content: 'Please check your email and click on the verification link ' +
@@ -143,6 +149,7 @@ module.exports = function(model) {
 		} else {
 			next();
 		}
+		// next();
 	});
 
 	//send password reset link when requested
@@ -161,6 +168,30 @@ module.exports = function(model) {
 			console.log('> sending password reset email to:', info.email);
 		});
 	});
+
+	model.resendVerification = function(email, cb) {
+		model.findOne({where: {email: email}}, function(err, user) {
+			if (!user.emailVerified) {
+				model.sendVerification(user, function(err, response) {
+					cb();
+				});
+			} else {
+				var err = new Error("user already verified");
+				err.statusCode = 400;
+				err.code = 'ALREADY_VERIFIED';
+				cb(err);
+			}
+		})
+	}
+
+	model.remoteMethod(
+		'resendVerification',
+		{
+			http: {path: '/resendVerification', verb: 'post'},
+			accepts: {arg: 'email', type: 'string', required: true, 'http': {source: 'query'}},
+			description: "Resend verification email"
+		}
+	);
 
 	model.me = function(cb) {
 		const loopbackContext = loopback.getCurrentContext();
