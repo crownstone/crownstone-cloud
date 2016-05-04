@@ -21,12 +21,21 @@ module.exports = function(app) {
       password: req.body.password
     }, 'user', function(err, token) {
       if (err) {
-        res.render('response', {
-          title: 'Login failed',
-          content: err,
-          redirectTo: '/',
-          redirectToLinkText: 'Try again'
-        });
+        if (err.code === 'LOGIN_FAILED_EMAIL_NOT_VERIFIED') {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/resend-verification',
+            redirectToLinkText: 'Resend verification'
+          });
+        } else {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/',
+            redirectToLinkText: 'Try again'
+          });
+        }
         return;
       }
 
@@ -45,6 +54,26 @@ module.exports = function(app) {
       res.redirect('/');
     });
   });
+
+  app.get('/resend-verification', function(req, res) {
+    res.render('resend-verification', {
+      email: ""
+    });
+  });
+
+  app.post('/request-verification', function(req, res, next) {
+    User.resendVerification(req.body.email, function(err, user) {
+      if (err) return next(err);
+
+      res.render('response', {
+        title: 'Verification email successfully resent',
+        content: 'Please check your email and click on the verification link ' +
+        'before logging in.',
+        redirectTo: '/',
+        redirectToLinkText: 'Log in'
+      });
+    });
+});
 
   //send an email with instructions to reset an existing user's password
   app.post('/request-password-reset', function(req, res, next) {
