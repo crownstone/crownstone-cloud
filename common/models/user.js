@@ -26,12 +26,6 @@ module.exports = function(model) {
 			"principalType": "ROLE",
 			"principalId": "$everyone",
 			"permission": "ALLOW",
-			"property": "downloadProfilePicByEmail"
-		});
-		model.settings.acls.push({
-			"principalType": "ROLE",
-			"principalId": "$everyone",
-			"permission": "ALLOW",
 			"property": "resendVerification"
 		});
 		//***************************
@@ -427,29 +421,6 @@ module.exports = function(model) {
 			http: {path: '/:id/profilePic', verb: 'get'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'res', type: 'object', 'http': { source: 'res' }}
-			],
-			description: "Download profile pic of User"
-		}
-	);
-
-	model.downloadProfilePicByEmail = function(email, res, cb) {
-		// debug("downloadProfilePicByEmail");
-
-		model.findOne({where: {email: email}}, function(err, user) {
-			if (err) return cb(err);
-			if (!user) return cb({message:"user not found"});
-
-			model.downloadFile(user.id, user.profilePicId, res, cb);
-		});
-	}
-
-	model.remoteMethod(
-		'downloadProfilePicByEmail',
-		{
-			http: {path: '/profilePic', verb: 'get'},
-			accepts: [
-				{arg: 'email', type: 'string', required: true, http: { source : 'query' }},
 				{arg: 'res', type: 'object', 'http': { source: 'res' }}
 			],
 			description: "Download profile pic of User"

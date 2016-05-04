@@ -109,6 +109,14 @@ module.exports = function(model) {
 				"property": "deleteAllFiles"
 			}
 		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "ALLOW",
+				"property": "downloadProfilePicOfUser"
+			}
+		);
 		//***************************
 		// GUEST:
 		//   - read
@@ -119,6 +127,14 @@ module.exports = function(model) {
 				"principalType": "ROLE",
 				"principalId": "$group:guest",
 				"permission": "ALLOW"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW",
+				"property": "downloadProfilePicOfUser"
 			}
 		);
 	}
@@ -661,6 +677,36 @@ module.exports = function(model) {
 			],
 			returns: {arg: 'file', type: 'object', root: true},
 			description: "Upload a file to Group"
+		}
+	);
+
+	model.downloadProfilePicOfUser = function(id, email, res, cb) {
+		model.findById(id, function(err, group) {
+			if (err) return next(err);
+			if (!group) return cb(new Error("group not found"));
+
+			group.users({where: {email: email}}, function(err, users) {
+				if (err) return cb(err);
+
+				if (users.length == 0) return cb(new Error("user not found"));
+				var user = users[0];
+
+				const User = loopback.getModel('user');
+				User.downloadFile(user.id, user.profilePicId, res, cb);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'downloadProfilePicOfUser',
+		{
+			http: {path: '/:id/profilePic', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'email', type: 'string', required: true, http: { source : 'query' }},
+				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+			],
+			description: "Download profile pic of User"
 		}
 	);
 
