@@ -17,11 +17,19 @@
   </form>
 </section>
 
-<!--
+
 <section>
   <form action="/api/users" method="post">
     <fieldset>
       <legend>Sign up form</legend>
+      <div>
+        <label for="firstName">First Name:</label>
+        <input type="text" name="firstName" value="<%= firstName %>"/>
+      </div>
+      <div>
+        <label for="lastName">Last Name:</label>
+        <input type="text" name="lastName" value="<%= lastName %>"/>
+      </div>
       <div>
         <label for="email">Email:</label>
         <input type="text" name="email" value="<%= email %>"/>
@@ -36,7 +44,7 @@
     </fieldset>
   </form>
 </section>
--->
+
 
 <section>
   <form action="/request-password-reset" method="post">

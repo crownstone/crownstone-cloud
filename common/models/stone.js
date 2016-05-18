@@ -166,6 +166,7 @@ module.exports = function(model) {
 	// address has to be unique to a stone
 	model.validatesUniquenessOf('address', {message: 'a stone with this address was already added!'});
 
+	model.disableRemoteMethod('updateAll', true);
 	model.disableRemoteMethod('createChangeStream', true);
 
 	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
@@ -187,7 +188,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__updateById__powerCurveHistory', false);
 
 
-	model.findLocation = function(ctx, stoneAddress, cb) {
+	model.findLocation = function(stoneAddress, cb) {
 		model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
 			if (stones.length > 0 && stones[0].locations.length > 0) {
 				debug('found location: ' + JSON.stringify(stones[0].locations));
@@ -203,7 +204,8 @@ module.exports = function(model) {
 		{
 			http: {path: '/findLocation', verb: 'get'},
 			accepts: {arg: 'address', type: 'string'},
-			returns: {arg: 'location', type: 'object'}
+			returns: {arg: 'location', type: 'object'},
+			description: "Find the location of the stone by address"
 		}
 	);
 

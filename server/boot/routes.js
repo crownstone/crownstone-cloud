@@ -4,6 +4,8 @@ module.exports = function(app) {
   //login page
   app.get('/', function(req, res) {
     res.render('login', {
+      firstName: "",
+      lastName: "",
       email: "",
       password: ""
     });

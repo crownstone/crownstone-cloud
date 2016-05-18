@@ -80,6 +80,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__delete__currentLocation', false);
 	model.disableRemoteMethod('__updateById__currentLocation', false);
 	model.disableRemoteMethod('__deleteById__currentLocation', false);
+	model.disableRemoteMethod('__count__currentLocation', false);
 
 	model.disableRemoteMethod('__delete__groups', false);
 	model.disableRemoteMethod('__create__groups', false);
