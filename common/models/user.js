@@ -28,6 +28,12 @@ module.exports = function(model) {
 			"permission": "ALLOW",
 			"property": "resendVerification"
 		});
+		model.settings.acls.push({
+			"principalType": "ROLE",
+			"principalId": "$everyone",
+			"permission": "ALLOW",
+			"property": "resendVerification"
+		});
 		//***************************
 		// AUTHENTICATED:
 		//   - create new user
