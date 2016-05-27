@@ -146,6 +146,17 @@ module.exports = function(model) {
 	});
 
 	/************************************
+	 **** Cascade
+	 ************************************/
+
+	// if the group is deleted, delete also all files stored for this group
+	model.observe('after delete', function(context, next) {
+		model.deleteAllFiles(context.where.id, function() {
+			next();
+		});
+	});
+
+	/************************************
 	 **** Custom functions
 	 ************************************/
 
