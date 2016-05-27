@@ -1,7 +1,10 @@
 var loopback = require('loopback');
 var uuid = require('node-uuid');
+var crypto = require('crypto');
 
 const debug = require('debug')('loopback:dobots');
+
+var util = require('../../server/emails/util');
 
 module.exports = function(model) {
 
@@ -150,26 +153,123 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__destroyById__users', false);
 	model.disableRemoteMethod('__updateById__users', false);
 
-	var initGroup = function(ctx, next) {
+	/************************************
+	 **** Model Validation
+	 ************************************/
+
+	model.validatesUniquenessOf('name', {scopedTo: ['ownerId'], message: 'a group with this name was already added'});
+	model.validatesUniquenessOf('uuid', {message: 'a group with this UUID was already added'});
+
+	/************************************
+	 **** Verification checks
+	 ************************************/
+
+	// check that the owner of a group can't unlink himself from the group, otherwise there will
+	// be access problems to the group. And a group should never be without an owner.
+	model.beforeRemote('*.__unlink__users', function(context, user, next) {
+
+		const User = loopback.findModel('user');
+		User.findById(context.args.fk, function(err, user) {
+			if (err) return next(err);
+			if (!user) return next();
+
+			if (new String(user.id).valueOf() === new String(context.instance.ownerId).valueOf()) {
+				error = new Error("can't remove owner from group");
+				return next(error);
+			} else {
+				next();
+			}
+		})
+	});
+
+	model.observe('before delete', function(context, next) {
+
+		model.countOwnedStones(context.where.id, function(err, count) {
+			if (count > 0) {
+				error = new Error("Can't delete a group with assigned crownstones.")
+				next(error);
+			} else {
+				next();
+			}
+		});
+	});
+
+	/************************************
+	 **** Custom
+	 ************************************/
+
+	function initGroup(ctx, next) {
 		debug("initGroup");
 
 		if (ctx.isNewInstance) {
-			injectUUID(ctx.instance)
-			injectOwner(ctx.instance, next)
+			injectUUID(ctx.instance);
+			injectEncryptionKeys(ctx.instance);
+			injectOwner(ctx.instance, next);
 		} else {
 			injectUUID(ctx.data);
+			injectEncryptionKeys(ctx.data);
 			injectOwner(ctx.data, next);
 		}
 	}
 
-	var injectUUID = function(item) {
+	function injectUUID(item) {
 		if (!item.uuid) {
 			debug("create uuid");
 			item.uuid = uuid.v4();
 		}
 	}
 
-	var injectOwner = function(item, next) {
+	function createKey(cb) {
+		return crypto.randomBytes(16).toString('hex');
+		// crypto.randomBytes(16, function(err, buf) {
+		// 	if (err) return cb(err);
+		// 	if (!buf) {
+		// 		var error = new Error("could not generate encryption key");
+		// 		error.code = 'ENCRYPTION_KEY_GENERATION_FAILED';
+		// 		cb(error);
+		// 	}
+
+		// 	cb(null, buf.toString('hex'));
+		// })
+	}
+
+	function injectEncryptionKeys(item, next) {
+
+		if (!item.ownerEncryptionKey) {
+			item.ownerEncryptionKey = createKey();
+		}
+		if (!item.memberEncryptionKey) {
+			item.memberEncryptionKey = createKey();
+		}
+		if (!item.guestEncryptionKey) {
+			item.guestEncryptionKey = createKey();
+		}
+
+		// createKey(function(err, ownerKey) {
+		// 	if (!item.ownerEncryptionKey) {
+		// 		if (err) return next(err);
+		// 		item.ownerEncryptionKey = ownerKey;
+		// 	}
+
+		// 	createKey(function(err, memberKey) {
+		// 		if (!item.memberEncryptionKey) {
+		// 			if (err) return next(err);
+		// 			item.memberEncryptionKey = memberKey;
+		// 		}
+
+		// 		createKey(function(err, guestKey) {
+		// 			if (!item.getEncryptionKeys) {
+		// 				if (err) return next(err);
+		// 				item.guestEncryptionKey = guestKey;
+		// 			}
+		// 			next();
+		// 		})
+		// 	});
+		// });
+
+	}
+
+	function injectOwner(item, next) {
 		if (!item.ownerId) {
 			debug("injectOwner");
 			debug("ctx.instance: ", item);
@@ -187,12 +287,11 @@ module.exports = function(model) {
 			// only for DEBUG purposes
 			if (currentUser == null) {
 
-				const user = loopback.getModel('user');
-				user.find({where: {email: "dominik@dobots.nl"}}, function(err, res) {
+				const User = loopback.getModel('user');
+				User.findOne({where: {email: "dominik@dobots.nl"}}, function(err, currentUser) {
 					if (err) {
 						debug("fatal error");
 					} else {
-						currentUser = res[0];
 						inject(item, currentUser, next);
 					}
 				})
@@ -208,7 +307,7 @@ module.exports = function(model) {
 	// model.beforeRemote('create', injectOwner);
 	// model.beforeRemote('upsert', injectOwner);
 
-	var updateOwnerAccess = function(ctx, next) {
+	function updateOwnerAccess(ctx, next) {
 		debug("instance: ", ctx.instance);
 
 		// const GroupAccess = loopback.getModel('GroupAccess');
@@ -224,31 +323,38 @@ module.exports = function(model) {
 		// 	}
 		// });
 
-		addGroupAccess(ctx.instance.ownerId, ctx.instance.id, "owner",
-			function(err, res) {
+		if (ctx.isNewInstance) {
+			const User = loopback.getModel('user');
+			User.findById(ctx.instance.ownerId, function(err, user) {
+				if (err) return next(err);
 
-			}
-		);
+				addGroupAccess(user, ctx.instance, "owner",
+					function(err, res) {
+
+					}
+				);
+			})
+		}
 
 		next();
 	};
 
-	var addSuperUser = function(ctx) {
+	// var addSuperUser = function(ctx) {
 
-		user = loopback.getModel('user');
-		user.findOne({where: {role: "superuser"}}, function(err, res) {
-			if (err || !res) return debug("failed to find superuser");
+	// 	user = loopback.getModel('user');
+	// 	user.findOne({where: {role: "superuser"}}, function(err, res) {
+	// 		if (err || !res) return debug("failed to find superuser");
 
-			addGroupAccess(res.id, ctx.instance.id, "admin",
-				function(err, res) {
+	// 		addGroupAccess(res.id, ctx.instance.id, "admin",
+	// 			function(err, res) {
 
-				}
-			);
-		})
+	// 			}
+	// 		);
+	// 	})
 
-	}
+	// }
 
-	var afterSave = function(ctx, next) {
+	function afterSave(ctx, next) {
 		updateOwnerAccess(ctx, next);
 		// addSuperUser(ctx)
 	}
@@ -261,27 +367,38 @@ module.exports = function(model) {
 		next();
 	});
 
-	var addGroupAccess = function(userId, groupId, access, cb) {
+	function addGroupAccess(user, group, access, cb) {
 		debug("addGroupAccess");
 
-		const GroupAccess = loopback.getModel('GroupAccess');
-		GroupAccess.create({
-			groupId: groupId,
-			userId: userId,
+		group.users.add(user, {
+			groupId: group.id,
+			userId: user.id,
 			role: access
-		}, function(err, res) {
-			if (err) {
-				debug("Error: ", err);
-				cb(err);
-			} else {
-				debug("OK");
-				cb();
-			}
-		});
+		},
+		function(err, access) {
+			debug("err", err);
+			debug("access", access);
+			cb(err);
+		})
+
+		// const GroupAccess = loopback.getModel('GroupAccess');
+		// GroupAccess.create({
+		// 	groupId: groupId,
+		// 	userId: userId,
+		// 	role: access
+		// }, function(err, res) {
+		// 	if (err) {
+		// 		debug("Error: ", err);
+		// 		cb(err);
+		// 	} else {
+		// 		debug("OK");
+		// 		cb();
+		// 	}
+		// });
 	};
 
-	var addUser = function(email, id, access, cb) {
-		const user = loopback.getModel('user');
+	function addUser(email, id, access, cb) {
+		const User = loopback.getModel('user');
 		model.findById(id, function(err, instance) {
 			if (err) {
 				cb(err, null);
@@ -289,23 +406,25 @@ module.exports = function(model) {
 				var group = instance;
 				if (group) {
 					debug("group:", group);
+					var encryptionKey = group[access + "EncryptionKey"];
 
-					user.find({where: {email: email}}, function(err, res) {
+					User.findOne({where: {email: email}}, function(err, user) {
 						if (err) {
-							debug("did not find user with this email")
-							cb(err)
+							debug("did not find user with this email");
+							cb(err);
 						} else {
-							var user = res[0];
 							if (user) {
 								debug("user:", user);
-								addGroupAccess(user.id, group.id, access, cb)
+								addGroupAccess(user, group, access, cb);
 							} else {
-								cb({message: "no user found with this email"});
+								error = new Error("no user found with this email");
+								cb(error);
 							}
 						}
 					});
 				} else {
-					cb({message:"no group found with this id"});
+					error = new Error("no group found with this id");
+					cb(error);
 				}
 			}
 		});
@@ -347,7 +466,7 @@ module.exports = function(model) {
 		}
 	);
 
-	var createUser = function(data, id, access, cb) {
+	function createUser(data, id, access, cb) {
 		// debug("email:", email);
 		// debug("password:", password);
 		// debug("id:", id);
@@ -360,6 +479,7 @@ module.exports = function(model) {
 				var group = instance;
 				if (group) {
 					debug("group:", group);
+					var encryptionKey = group[access + "EncryptionKey"];
 
 					const user = loopback.getModel('user');
 					user.create(data, function(err, instance) {
@@ -368,11 +488,12 @@ module.exports = function(model) {
 						} else {
 							debug("user created:", instance);
 							user.sendVerification(instance, function() {});
-							addGroupAccess(instance.id, group.id, access, cb);
+							addGroupAccess(instance, group, access, cb);
 						}
 					})
 				} else {
-					cb({message:"no group found with this id"});
+					error = new Error("no group found with this id");
+					cb(error);
 				}
 			}
 		});
@@ -414,7 +535,7 @@ module.exports = function(model) {
 		}
 	);
 
-	var findUsersWithRole = function(id, access, cb) {
+	function findUsersWithRole(id, access, cb) {
 
 		model.findById(id, function(err, instance) {
 			if (err) return cb(err);
@@ -496,25 +617,13 @@ module.exports = function(model) {
 	// });
 
 	model.ownedStones = function(id, cb) {
-		model.findById(id, function(err, group) {
-			if (err || !group) return cb("failed to find group for id");
 
-			// debug("group:", group);
-			group.ownedLocations({include: 'stones'}, function(err, locations) {
-				if (err) return cb("failed to get locations for group");
-
-				// debug("locations:", locations)
-				var stones = [];
-				for (i = 0; i < locations.length; ++i) {
-					// debug("locations[" + i + "]", locations[i]);
-					// debug("locations[" + i + "].stones", locations[i].stones());
-					stones = stones.concat(locations[i].stones());
-				}
-				debug("stones:", stones)
-
-				cb(null, stones);
-			});
+		var Stone = loopback.getModel('Stone');
+		Stone.find({where: {"groupId": id}}, function(err, stones) {
+			if (err) return cb(err);
+			cb(null, stones);
 		});
+
 	}
 
 	model.remoteMethod(
@@ -530,6 +639,7 @@ module.exports = function(model) {
 	);
 
 	model.countOwnedStones = function(id, cb) {
+
 		model.ownedStones(id, function(err, stones) {
 			if (err) return cb(err);
 
@@ -710,6 +820,60 @@ module.exports = function(model) {
 		}
 	);
 
+	/************************************
+	 **** Sending Emails
+	 ************************************/
 
+	model.afterRemote("*.__unlink__users", function(context, instance, next) {
+		// do not need to wait for result of email
+		next();
+
+		const User = loopback.findModel('user');
+		User.findById(context.args.fk, function(err, user) {
+			if (err || !user) return debug("did not find user to send notification email");
+			util.sendRemovedFromGroupEmail(user, context.instance, next);
+		});
+	});
+
+	model.afterRemote("*.__link__users", function(context, instance, next) {
+		// do not need to wait for result of email
+		next();
+
+		const User = loopback.findModel('user');
+		User.findById(context.args.fk, function(err, user) {
+			if (err || !user) return debug("did not find user to send notification email");
+			util.sendAddedToGroupEmail(user, context.instance, next);
+		});
+	});
+
+	model.afterRemote("addMember", function(context, instance, next) {
+		// do not need to wait for result of email
+		next();
+
+		const User = loopback.findModel('user');
+		User.findOne({where: {email: context.args.email}}, function(err, user) {
+			if (err || !user) return debug("did not find user to send notification email");
+
+			model.findById(context.args.id, function(err, group) {
+				if (err || !group) return debug("did not find group to send notification email");
+				util.sendAddedToGroupEmail(user, group, next);
+			});
+		});
+	});
+
+	model.afterRemote("addGuest", function(context, instance, next) {
+		// do not need to wait for result of email
+		next();
+
+		const User = loopback.findModel('user');
+		User.findOne({where: {email: context.args.email}}, function(err, user) {
+			if (err || !user) return debug("did not find user to send notification email");
+
+			model.findById(context.args.id, function(err, group) {
+				if (err || !group) return debug("did not find group to send notification email");
+				util.sendAddedToGroupEmail(user, group, next);
+			});
+		});
+	});
 
 };

@@ -1,5 +1,5 @@
 {
-  "name": "Location",
+  "name": "Appliance",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -8,7 +8,7 @@
   "mixins": {
     "GroupContent": true,
     "Cascade": {
-      "StoneLocation": "locationId"
+      "ApplianceStone": "applianceId"
     },
     "TimeStamp": {
       "required": false,
@@ -17,15 +17,10 @@
   },
   "properties": {
     "name": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
-    "description": {
-      "type": "string",
-      "required": false
-    },
-    "groundTruth": {
-      "type": "boolean"
+    "json": {
+      "type": "string"
     }
   },
   "validations": [],
@@ -33,14 +28,12 @@
     "stones": {
       "type": "hasAndBelongsToMany",
       "model": "Stone",
-      "foreignKey": "locationId"
+      "foreignKey": "applianceId"
     },
-    "presentPeople": {
-      "type": "hasMany",
-      "model": "user",
-      "foreignKey": "currentLocationId",
-      "through": "Device",
-      "keyThrough": "ownerId"
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
     }
   },
   "acls": [],

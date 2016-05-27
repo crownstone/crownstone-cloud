@@ -9,6 +9,10 @@
     "GroupContent": true,
     "Cascade": {
       "StoneLocation": "stoneId"
+    },
+    "TimeStamp": {
+      "required": false,
+      "validateUpsert": true
     }
   },
   "properties": {
@@ -39,6 +43,9 @@
     },
     "uid": {
       "type": "number"
+    },
+    "json": {
+      "type": "string"
     }
   },
   "validations": [],
@@ -92,6 +99,11 @@
       "type": "hasMany",
       "model": "PowerCurve",
       "foreignKey": "stoneId"
+    },
+    "appliance": {
+      "type": "belongsTo",
+      "model": "Appliance",
+      "foreignKey": "applianceId"
     }
   },
   "acls": [],

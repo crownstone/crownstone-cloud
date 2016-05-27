@@ -4,6 +4,8 @@ var loopback = require('loopback');
 
 const debug = require('debug')('loopback:dobots');
 
+var util = require('../../server/emails/util');
+
 module.exports = function(model) {
 
 	///// put the acls by default, since the base model user
@@ -107,24 +109,64 @@ module.exports = function(model) {
 	model.validatesFormatOf('password', {with: regex, message: 'Invalid format. Password needs to be at least 8 characters long and include at least 1 digit'})
 
 	/************************************
+	 **** Verification checks
+	 ************************************/
+
+	// check that the owner of a group can't unlink himself from the group, otherwise there will
+	// be access problems to the group. And a group should never be without an owner.
+	model.beforeRemote('*.__unlink__groups', function(context, user, next) {
+
+		const Group = loopback.findModel('Group');
+		Group.findById(context.args.fk, function(err, group) {
+			if (err) return next(err);
+			if (!group) return next();
+
+			if (new String(group.ownerId).valueOf() === new String(context.instance.id).valueOf()) {
+				error = new Error("can't exit from group where user with id is the owner");
+				return next(error);
+			} else {
+				next();
+			}
+		})
+	});
+
+	// check that a user is not deleted as long as he is owner of a group
+	model.observe('before delete', function(context, next) {
+
+		const Group = loopback.findModel('Group');
+		Group.find({where:{ownerId: context.where.id}}, function(err, groups) {
+			if (err) return next(err);
+			if (groups.length > 0) {
+				error = new Error("Can't delete user as long as he is owner of a group");
+				next(error);
+			} else {
+				next();
+			}
+		});
+	});
+
+	/************************************
 	 **** Custom functions
 	 ************************************/
 
-	model.sendVerification = function(user, cb) {
+	model.sendVerification = function(user, func, cb) {
 
-		var options = {
-			type: 'email',
-			to: user.email,
-			from: 'noreply@crownstone.rocks',
-			subject: 'Thanks for registering.',
-			template: path.resolve(__dirname, '../../server/views/verify.ejs'),
-			redirect: '/verified',
-			user: user,
-			protocol: 'http',
-			port: 80
-		};
+		var options = util.getVerificationEmailOptions(user);
+		options.generateVerificationToken = func;
+		// var options = {
+		// 	type: 'email',
+		// 	to: user.email,
+		// 	from: 'noreply@crownstone.rocks',
+		// 	subject: 'Thanks for registering.',
+		// 	template: path.resolve(__dirname, '../../server/views/verify.ejs'),
+		// 	redirect: '/verified',
+		// 	user: user,
+		// 	protocol: 'http',
+		// 	port: 80,
+		// 	generateVerificationToken: func
+		// };
 
-		console.log("options: " + JSON.stringify(options));
+		// console.log("options: " + JSON.stringify(options));
 
 		user.verify(options, cb);
 	};
@@ -134,7 +176,7 @@ module.exports = function(model) {
 		console.log('> user.afterRemote triggered');
 
 		if (model.settings.emailVerificationRequired) {
-			model.sendVerification(user, function(err, response) {
+			model.sendVerification(user, null, function(err, response) {
 				if (err) return next(err);
 
 				console.log('> verification email sent:', response);
@@ -155,27 +197,23 @@ module.exports = function(model) {
 
 	//send password reset link when requested
 	model.on('resetPasswordRequest', function(info) {
-		var url = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/reset-password';
-		var html = 'Click <a href="' + url + '?access_token=' +
-				info.accessToken.id + '">here</a> to reset your password';
-
-		model.app.models.Email.send({
-			to: info.email,
-			from: info.email,
-			subject: 'Password reset',
-			html: html
-		}, function(err) {
-			if (err) return console.log('> error sending password reset email');
-			console.log('> sending password reset email to:', info.email);
-		});
+		var url = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/reset-password'
+		var token = info.accessToken.id;
+		var email = info.email;
+		util.sendResetPasswordRequest(url, token, email);
 	});
 
 	model.resendVerification = function(email, cb) {
 		model.findOne({where: {email: email}}, function(err, user) {
 			if (!user.emailVerified) {
-				model.sendVerification(user, function(err, response) {
-					cb();
-				});
+				model.sendVerification(user,
+					function(user, cb) {
+						cb(null, user.verificationToken);
+					},
+					function(err, response) {
+						cb();
+					}
+				);
 			} else {
 				var err = new Error("user already verified");
 				err.statusCode = 400;
@@ -430,6 +468,38 @@ module.exports = function(model) {
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 				{arg: 'res', type: 'object', 'http': { source: 'res' }}
 			],
+			description: "Download profile pic of User"
+		}
+	);
+
+	model.getEncryptionKeys = function(id, cb) {
+		const GroupAccess = loopback.getModel('GroupAccess');
+		GroupAccess.find({where: {userId: id}, include: "group"}, function(err, objects) {
+			keys = Array.from(objects, function(access) {
+				el = { groupId: access.groupId, keys: {}};
+				switch (access.role) {
+					case "owner": {
+						el.keys.owner = access.group().ownerEncryptionKey;
+					}
+					case "member": {
+						el.keys.member = access.group().memberEncryptionKey;
+					}
+					case "guest": {
+						el.keys.guest = access.group().guestEncryptionKey;
+					}
+				}
+				return el
+			});
+			cb(null, keys);
+		});
+	}
+
+	model.remoteMethod(
+		'getEncryptionKeys',
+		{
+			http: {path: '/:id/keys', verb: 'get'},
+			accepts: {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			returns: {arg: 'data', type: ['object'], root: true},
 			description: "Download profile pic of User"
 		}
 	);

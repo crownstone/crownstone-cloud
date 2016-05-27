@@ -1,5 +1,6 @@
 var stl = require('../../server/middleware/stoneScanToLocation');
 var loopback = require('loopback');
+var crypto = require('crypto');
 
 const debug = require('debug')('loopback:dobots');
 
@@ -165,6 +166,8 @@ module.exports = function(model) {
 
 	// address has to be unique to a stone
 	model.validatesUniquenessOf('address', {message: 'a stone with this address was already added!'});
+	model.validatesUniquenessOf('uid', {scopedTo: ['groupId'], message: 'a stone with this uid was already added'});
+	model.validatesUniquenessOf('major', {scopedTo: ['groupId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
 	model.disableRemoteMethod('updateAll', true);
 	model.disableRemoteMethod('createChangeStream', true);
@@ -187,6 +190,52 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
 	model.disableRemoteMethod('__updateById__powerCurveHistory', false);
 
+	function initStone(ctx, next) {
+		debug("initStone");
+
+		if (ctx.instance) {
+			injectMajorMinor(ctx.instance);
+			injectUID(ctx.instance, next);
+		} else {
+			injectMajorMinor(ctx.data);
+			injectUID(ctx.data, next);
+		}
+	}
+
+	function injectMajorMinor(item, next) {
+		buf = crypto.randomBytes(4);
+		if (!item.major) {
+			debug("inject major");
+			item.major = buf.readUInt16BE(0);
+		}
+		if (!item.minor) {
+			debug("inject minor");
+			item.minor = buf.readUInt16BE(2);
+		}
+	}
+
+	function injectUID(item, next) {
+		if (!item.uid) {
+			debug("inject uid");
+			model.find({where: {groupId: item.groupId}, order: "uid DESC", limit: "1"}, function(err, instances) {
+				if (err) return next(err);
+
+				if (instances.length > 0) {
+					stone = instances[0];
+					item.uid = stone.uid + 1;
+				} else {
+					item.uid = 1;
+				}
+				debug("uid:", item.uid);
+				next();
+			})
+		} else {
+			next();
+		}
+	}
+
+	// populate some of the elements like uid, major, minor, if not already provided
+	model.observe('before save', initStone);
 
 	model.findLocation = function(stoneAddress, cb) {
 		model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
@@ -194,7 +243,8 @@ module.exports = function(model) {
 				debug('found location: ' + JSON.stringify(stones[0].locations));
 				cb(null, stones[0].locations);
 			} else {
-				cb({message: "no stone found with address: " + stoneAddress}, null);
+				error = new Error("no stone found with address: " + stoneAddress);
+				return cb(error);
 			}
 		});
 	}
@@ -208,16 +258,6 @@ module.exports = function(model) {
 			description: "Find the location of the stone by address"
 		}
 	);
-
-	// model.beforeRemote('*.__create__scans', function(ctx, instance, next) {
-	// 	// console.log("ctx: ", ctx);
-	// 	// console.log("instance: ", ctx.instance);
-
-	// 	if (ctx.args.data) {
-	// 		ctx.args.data.groupId = ctx.instance.groupId;
-	// 	}
-	// 	next();
-	// });
 
 	model.afterRemote('*.__create__scans', function(ctx, instance, next) {
 
@@ -254,7 +294,8 @@ module.exports = function(model) {
 						}
 					})
 				} else {
-					next({"message": "failed to create coordinate"});
+					error = new Error("failed to create coordinate");
+					return next(error);
 				}
 			}
 		});
@@ -270,7 +311,8 @@ module.exports = function(model) {
 			if (stone) {
 				model.setCurrentCoordinate(stone, coordinate, next);
 			} else {
-				return next({"message":"no stone found with this id"})
+				error = new Error("no stone found with this id");
+				return next(error);
 			}
 		})
 
@@ -316,7 +358,8 @@ module.exports = function(model) {
 						}
 					})
 				} else {
-					next({"message": "failed to create energyUsage"});
+					error = new Error("failed to create energyUsage");
+					return next(error);
 				}
 			}
 		});
@@ -332,7 +375,8 @@ module.exports = function(model) {
 			if (stone) {
 				model.setCurrentEnergyUsage(stone, energyUsage, next);
 			} else {
-				return next({"message":"no stone found with this id"})
+				error = new Error("no stone found with this id");
+				return next(error);
 			}
 		})
 
@@ -378,7 +422,8 @@ module.exports = function(model) {
 						}
 					})
 				} else {
-					next({"message": "failed to create powerUsage"});
+					error = new Error("failed to create powerUsage");
+					return next(error);
 				}
 			}
 		});
@@ -394,7 +439,8 @@ module.exports = function(model) {
 			if (stone) {
 				model.setCurrentPowerUsage(stone, powerUsage, next);
 			} else {
-				return next({"message":"no stone found with this id"})
+				error = new Error("no stone found with this id");
+				return next(error);
 			}
 		})
 
@@ -440,7 +486,8 @@ module.exports = function(model) {
 						}
 					})
 				} else {
-					next({"message": "failed to create powerCurve"});
+					error = new Error("failed to create powerCurve");
+					return next(error);
 				}
 			}
 		});
@@ -456,7 +503,8 @@ module.exports = function(model) {
 			if (stone) {
 				model.setCurrentPowerCurve(stone, powerCurve, next);
 			} else {
-				return next({"message":"no stone found with this id"})
+				error = new Error("no stone found with this id");
+				return next(error);
 			}
 		})
 
@@ -475,6 +523,120 @@ module.exports = function(model) {
 		}
 	);
 
+	/************************************
+	 **** Appliance
+	 ************************************/
 
+	function removeApplianceFromStone(stone, applianceId, next) {
+
+		const Appliance = loopback.getModel('Appliance');
+		Appliance.findById(applianceId, function(err, appliance) {
+			if (err) return next(err);
+
+			stone.applianceId = undefined;
+			stone.save();
+
+			if (!appliance) {
+				// this is not necessarily a fatal error, could happen
+				// if the appliance was deleted but stone still has the link
+				// if a new appliance should be added we don't care if the
+				// stone can't be removed from the old one because it was not
+				// found
+				debug("no appliance found with id");
+				return next();
+			} else {
+				appliance.stones.remove(stone, function(err) {
+					if (err) return next(err);
+					next();
+				});
+			}
+		});
+	}
+
+	function addApplianceToStone(stone, applianceId, next) {
+
+		const Appliance = loopback.getModel('Appliance');
+		Appliance.findById(applianceId, function(err, appliance) {
+			if (err) return next(err);
+
+			if (!appliance) {
+				error = new Error("no appliance found with id");
+				next(error);
+			}
+			stone.applianceId = applianceId;
+			stone.save();
+			appliance.stones.add(stone, function(err) {
+				if (err) return next(err);
+				next();
+			});
+		});
+	}
+
+	model.remoteSetAppliance = function(stoneId, applianceId, next) {
+		debug("remoteSetAppliance");
+
+		model.findById(stoneId, function(err, stone) {
+			if (err) return next(err);
+
+			if (stone) {
+				if (stone.applianceId) {
+					removeApplianceFromStone(stone, stone.applianceId, function(err) {
+						if (err) return next(err);
+						addApplianceToStone(stone, applianceId, next);
+					})
+				} else {
+					addApplianceToStone(stone, applianceId, next);
+				}
+			} else {
+				error = new Error("no stone found with this id");
+				return next(error);
+			}
+		});
+
+	}
+
+	model.remoteMethod(
+		'remoteSetAppliance',
+		{
+			http: {path: '/:id/appliance/:fk', verb: 'PUT'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}},
+				{arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}}
+			],
+			description: "Link appliance to stone"
+		}
+	);
+
+	model.remoteRemoveAppliance = function(stoneId, applianceId, next) {
+		debug("remoteRemoveAppliance");
+
+		const Appliance = loopback.getModel('Appliance');
+		model.findById(stoneId, function(err, stone) {
+			if (err) return next(err);
+
+			if (stone) {
+				removeApplianceFromStone(stone, applianceId, function(err) {
+					if (err) return next(err);
+					next();
+				});
+			} else {
+				error = new Error("no stone found with this id");
+				return next(error);
+			}
+		});
+
+	}
+
+	model.remoteMethod(
+		'remoteRemoveAppliance',
+		{
+			http: {path: '/:id/appliance/:fk', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}},
+				{arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}}
+			],
+			description: "Unlink appliance from stone"
+		}
+	);
 
 };

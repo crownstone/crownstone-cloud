@@ -5,6 +5,18 @@
   "options": {
     "validateUpsert": true
   },
+  "mixins": {
+    "Cascade": {
+      "GroupAccess": "userId"
+    },
+    "TimeStamp": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "hidden": [
+    "role"
+  ],
   "properties": {
     "role": {
       "type": "string"
@@ -19,14 +31,11 @@
     "lastName": {
       "type": "string",
       "required": true
+    },
+    "json": {
+      "type": "string"
     }
   },
-  "mixins": {
-    "Cascade": {
-      "GroupAccess": "userId"
-    }
-  },
-  "hidden": ["role"],
   "validations": [],
   "relations": {
     "devices": {

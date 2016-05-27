@@ -7,10 +7,13 @@
   },
   "dependencies": {
     "async": "*",
+    "bluebird": "*",
     "body-parser": "^1.10.0",
     "compression": "^1.0.3",
     "cors": "^2.5.2",
+    "debug": "*",
     "errorhandler": "^1.1.1",
+    "lodash": "*",
     "loopback": "^2.22.0",
     "loopback-boot": "^2.6.5",
     "loopback-component-access-groups": "^0.1.1",
@@ -21,12 +24,10 @@
     "loopback-connector-mongodb": "^1.13.0",
     "loopback-connector-sendgrid": "^1.2.1",
     "loopback-datasource-juggler": "^2.39.0",
-    "serve-favicon": "^2.0.1",
-    "util": "*",
-    "lodash": "*",
+    "loopback-ds-timestamp-mixin": "^3.2.4",
     "node-uuid": "*",
-    "debug": "*",
-    "bluebird": "*"
+    "serve-favicon": "^2.0.1",
+    "util": "*"
   },
   "devDependencies": {
     "jshint": "^2.5.6"

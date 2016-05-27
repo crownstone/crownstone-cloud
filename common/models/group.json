@@ -7,9 +7,19 @@
   },
   "mixins": {
     "Cascade": {
-      "GroupAccess": "groupId"
+      "GroupAccess": "groupId",
+      "Location": "groupId"
+    },
+    "TimeStamp": {
+      "required": false,
+      "validateUpsert": true
     }
   },
+  "hidden": [
+    "ownerEncryptionKey",
+    "memberEncryptionKey",
+    "guestEncryptionKey"
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -19,7 +29,13 @@
       "type": "string",
       "required": true
     },
-    "PIN": {
+    "ownerEncryptionKey": {
+      "type": "string"
+    },
+    "memberEncryptionKey": {
+      "type": "string"
+    },
+    "guestEncryptionKey": {
       "type": "string"
     }
   },

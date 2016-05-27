@@ -11,7 +11,8 @@
       "loopback/server/mixins",
       "../common/mixins",
       "./mixins",
-      "loopback-component-access-groups/lib/mixins"
+      "loopback-component-access-groups/lib/mixins",
+      "../node_modules/loopback-ds-timestamp-mixin"
     ]
   },
   "User": {
@@ -108,5 +109,9 @@
   "ClosestStone": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "Appliance": {
+    "dataSource": "mongoDs",
+    "public": true
   }
 }

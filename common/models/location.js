@@ -82,6 +82,7 @@ module.exports = function(model) {
 		);
 	}
 
+
 	model.disableRemoteMethod('updateAll', true);
 	model.disableRemoteMethod('createChangeStream', true);
 
@@ -92,6 +93,16 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__destroyById__presentPeople', false);
 	model.disableRemoteMethod('__create__presentPeople', false);
 	model.disableRemoteMethod('__delete__presentPeople', false);
+
+	/************************************
+	 **** Model Validation
+	 ************************************/
+
+	model.validatesUniquenessOf('name', {scopedTo: ['groupId'], message: 'a location with this name was already added'});
+
+	/************************************
+	 **** Custom functions
+	 ************************************/
 
 	model.beforeRemote('**', function(ctx, instance, next) {
 		// debug("method.name: ", ctx.method.name);
