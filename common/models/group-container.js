@@ -11,6 +11,16 @@ module.exports = function(model) {
 
 	var userGroups = null;
 
+	var getContainerName = function(id) {
+		if (typeof id === 'object') {
+			return new String(id).valueOf()
+		// } else if (typeof id === 'string') {
+		// 	return id;
+		} else {
+			return id;
+		}
+	}
+
 	var retreiveUserGroups = function(next) {
 		if (DEBUG) {
 			userGroups = null;
@@ -22,37 +32,37 @@ module.exports = function(model) {
 		if (currentUser) {
 			if (currentUser.role !== 'superuser') {
 				debug("getUserGroups");
-				// model.app.accessUtils.getUserGroups(currentUser.getId())
-				// 	.then(userGroups => {
-				// 		debug("groups:", groups);
-		  //       userGroups = Array.from(userGroups, group => group[model.app.accessUtils.options.foreignKey]);
-				// 		debug("userGroups:", userGroups);
-		  //       // filter[this.options.foreignKey] = { inq: userGroups };
-		  //       // return filter;
-		  //     });
-		  	groups = model.app.accessUtils.getCurrentUserGroups();
+					// model.app.accessUtils.getUserGroups(currentUser.getId())
+					// 	.then(userGroups => {
+					// 		debug("groups:", groups);
+				//       userGroups = Array.from(userGroups, group => group[model.app.accessUtils.options.foreignKey]);
+					// 		debug("userGroups:", userGroups);
+				//       // filter[this.options.foreignKey] = { inq: userGroups };
+				//       // return filter;
+				//     });
+				groups = model.app.accessUtils.getCurrentUserGroups();
 				userGroups = Array.from(groups, group => new String(group[model.app.accessUtils.options.foreignKey]).valueOf());
-		  	debug("userGroups:", userGroups);
-		  }
-		  next();
-		// } else if (DEBUG) {
+				debug("userGroups:", userGroups);
+			}
+			next();
+			// } else if (DEBUG) {
 
-		// 	const user = loopback.getModel('user');
-		// 	user.find({where: {email: "dominik@dobots.nl"}}, function(err, res) {
-		// 		if (err) {
-		// 			debug("fatal error");
-		// 		} else {
-		// 			currentUser = res[0];
-		// 			model.app.accessUtils.getUserGroups(currentUser.id, false, function(err, res) {
-		// 				if (err) return next(err);
-		// 				// debug("res:", res);
-		// 				userGroups = Array.from(res, group => new String(group[model.app.accessUtils.options.foreignKey]).valueOf());
-		// 				debug("userGroups:", userGroups);
+			// 	const user = loopback.getModel('user');
+			// 	user.find({where: {email: "dominik@dobots.nl"}}, function(err, res) {
+			// 		if (err) {
+			// 			debug("fatal error");
+			// 		} else {
+			// 			currentUser = res[0];
+			// 			model.app.accessUtils.getUserGroups(currentUser.id, false, function(err, res) {
+			// 				if (err) return next(err);
+			// 				// debug("res:", res);
+			// 				userGroups = Array.from(res, group => new String(group[model.app.accessUtils.options.foreignKey]).valueOf());
+			// 				debug("userGroups:", userGroups);
 
-		// 				next();
-		// 			});
-		// 		}
-		// 	})
+			// 				next();
+			// 			});
+			// 		}
+			// 	})
 		} else {
 			next();
 		}
@@ -60,10 +70,15 @@ module.exports = function(model) {
 
 	var checkAccess = function(id, cb) {
 
+		var containerName = getContainerName(id);
 		retreiveUserGroups(function() {
-			if (userGroups && userGroups.indexOf(ctx.args.containerName) < 0) {
-				cb("Access denied")
+			// debug("id", id);
+			// debug("userGroups.indexOf(id)", userGroups.indexOf(containerName));
+			if (userGroups && userGroups.indexOf(containerName) < 0) {
+				debug("Access denied");
+				cb("Access denied");
 			} else {
+				debug("Access ok");
 				cb();
 			}
 		});
@@ -92,8 +107,10 @@ module.exports = function(model) {
 		// debug("result:", result)
 
 		if (userGroups || !DEBUG) {
-			ctx.result = instance.filter(res => userGroups.indexOf(res) >= 0)
+			var containerName = getContainerName(id);
+			ctx.result = instance.filter(res => userGroups.indexOf(containerName) >= 0)
 		}
+		// debug("after remote get containers");
 		next();
 	});
 
@@ -106,8 +123,9 @@ module.exports = function(model) {
 		// next();
 	});
 
-	model._deleteContainer = function (containerName, next) {
+	model._deleteContainer = function (id, next) {
 
+		var containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
@@ -115,26 +133,38 @@ module.exports = function(model) {
 		})
 	}
 
-	model._getFiles = function (containerName, next) {
+	model._getFiles = function (id, next) {
 
+		var containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
-			model.getFiles(containerName, next);
+			debug("getFiles", containerName);
+			model.getFiles(containerName, function(err, succ) {
+				debug("err", err);
+				debug("succ", succ);
+				next(err, succ);
+			});
 		})
 	}
 
-	model._getFile = function (containerName, fileId, next) {
+	model._getFile = function (id, fileId, next) {
 
+		var containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
-			model.getFile(containerName, fileId, next);
+			model.getFile(containerName, fileId, function(err, succ) {
+				debug("err", err);
+				debug("succ", succ);
+				next(err, succ);
+			});
 		})
 	}
 
-	model._deleteFile = function (containerName, fileId, next) {
+	model._deleteFile = function (id, fileId, next) {
 
+		var containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
@@ -142,21 +172,19 @@ module.exports = function(model) {
 		})
 	}
 
-	model._upload = function (containerName, req, next) {
+	model._upload = function (id, req, next) {
 
+		var containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
-			model.upload(containerName, req, function(err, res) {
-				if (err) return next(err);
-
-				debug("file id:", res._id);
-			});
+			model.upload(containerName, req, next);
 		})
 	}
 
-	model._download = function (containerName, fileId, res, next) {
+	model._download = function (id, fileId, res, next) {
 
+		var containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 

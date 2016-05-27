@@ -472,6 +472,10 @@ module.exports = function(model) {
 		}
 	);
 
+	/************************************
+	 **** Keys Methods
+	 ************************************/
+
 	model.getEncryptionKeys = function(id, cb) {
 		const GroupAccess = loopback.getModel('GroupAccess');
 		GroupAccess.find({where: {userId: id}, include: "group"}, function(err, objects) {

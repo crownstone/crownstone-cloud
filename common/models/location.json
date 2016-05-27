@@ -26,6 +26,9 @@
     },
     "groundTruth": {
       "type": "boolean"
+    },
+    "iconId": {
+      "type": "any"
     }
   },
   "validations": [],

@@ -182,6 +182,7 @@ module.exports = function(model) {
 		})
 	});
 
+	// check that a group is not deleted as long as there are crownstones assigned
 	model.observe('before delete', function(context, next) {
 
 		model.countOwnedStones(context.where.id, function(err, count) {
@@ -191,6 +192,17 @@ module.exports = function(model) {
 			} else {
 				next();
 			}
+		});
+	});
+
+	/************************************
+	 **** Cascade
+	 ************************************/
+
+	// if the group is deleted, delete also all files stored for this group
+	model.observe('after delete', function(context, next) {
+		model.deleteAllFiles(context.where.id, function() {
+			next();
 		});
 	});
 
@@ -721,10 +733,10 @@ module.exports = function(model) {
 	// 	}
 	// );
 
-	// model.deleteFile = function(id, fk, cb) {
-	// 	const Container = loopback.getModel('GroupContainer');
-	// 	Container.deleteFile(id, fk, cb);
-	// }
+	model.deleteFile = function(id, fk, cb) {
+		const Container = loopback.getModel('GroupContainer');
+		Container._deleteFile(id, fk, cb);
+	}
 
 	model.remoteMethod(
 		'deleteFile',
