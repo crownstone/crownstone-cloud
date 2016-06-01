@@ -4,15 +4,19 @@
     "connector": "memory"
   },
   "mongoDs": {
-    "name": "mongoDs"
+    "name": "mongoDs",
+    "connector": "memory"
   },
   "userDs": {
-    "name": "userDs"
+    "name": "userDs",
+    "connector": "memory"
   },
   "sendgridDs": {
-    "name": "sendgridDs"
+    "name": "sendgridDs",
+    "connector": "memory"
   },
   "filesDs": {
-    "name": "filesDs"
+    "name": "filesDs",
+    "connector": "memory"
   }
 }
