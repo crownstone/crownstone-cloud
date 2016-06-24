@@ -103,10 +103,10 @@ module.exports = function(model) {
 	// reserved user roles for special liberties
 	model.validatesExclusionOf('role', {in: ['superuser', 'admin', 'lib-user'], allowNull: true});
 
-	const regex = /^(?=.*\d).{8,}$/; // Password must be at least 8 characters long and include at least one numeric digit.
+	// const regex = /^(?=.*\d).{8,}$/; // Password must be at least 8 characters long and include at least one numeric digit.
 	// const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, and no spaces.
 	// const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s)(?=.*[!@#$%^&amp;*()_+}{&quot;:;'?/&gt;.&lt;,]).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, no spaces, and one special character
-	model.validatesFormatOf('password', {with: regex, message: 'Invalid format. Password needs to be at least 8 characters long and include at least 1 digit'})
+	// model.validatesFormatOf('password', {with: regex, message: 'Invalid format. Password needs to be at least 8 characters long and include at least 1 digit'})
 
 	/************************************
 	 **** Verification checks
@@ -515,7 +515,7 @@ module.exports = function(model) {
 			http: {path: '/:id/keys', verb: 'get'},
 			accepts: {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 			returns: {arg: 'data', type: ['object'], root: true},
-			description: "Download profile pic of User"
+			description: "Returns encryption keys per Group of User"
 		}
 	);
 
