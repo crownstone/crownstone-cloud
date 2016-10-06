@@ -1,8 +1,7 @@
 
 const debug = require('debug')('loopback:dobots');
 
-module.exports = function (Model, bootOptions = {}) {
-  console.log("my timestamp")
+module.exports = function (Model, bootOptions) {
   debug('TimeStamps mixin for Model %s', Model.modelName);
 
   const options = Object.assign({
