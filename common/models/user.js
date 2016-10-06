@@ -90,11 +90,11 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__deleteById__currentLocation', false);
 	model.disableRemoteMethod('__count__currentLocation', false);
 
-	model.disableRemoteMethod('__delete__groups', false);
-	model.disableRemoteMethod('__create__groups', false);
-	model.disableRemoteMethod('__updateById__groups', false);
-	model.disableRemoteMethod('__destroyById__groups', false);
-	model.disableRemoteMethod('__link__groups', false);
+	model.disableRemoteMethod('__delete__spheres', false);
+	model.disableRemoteMethod('__create__spheres', false);
+	model.disableRemoteMethod('__updateById__spheres', false);
+	model.disableRemoteMethod('__destroyById__spheres', false);
+	model.disableRemoteMethod('__link__spheres', false);
 
 	/************************************
 	 **** Model Validation
@@ -112,17 +112,17 @@ module.exports = function(model) {
 	 **** Verification checks
 	 ************************************/
 
-	// check that the owner of a group can't unlink himself from the group, otherwise there will
-	// be access problems to the group. And a group should never be without an owner.
-	model.beforeRemote('*.__unlink__groups', function(context, user, next) {
+	// check that the owner of a sphere can't unlink himself from the sphere, otherwise there will
+	// be access problems to the sphere. And a sphere should never be without an owner.
+	model.beforeRemote('*.__unlink__spheres', function(context, user, next) {
 
-		const Group = loopback.findModel('Group');
-		Group.findById(context.args.fk, function(err, group) {
+		const Sphere = loopback.findModel('Sphere');
+		Sphere.findById(context.args.fk, function(err, sphere) {
 			if (err) return next(err);
-			if (!group) return next();
+			if (!sphere) return next();
 
-			if (new String(group.ownerId).valueOf() === new String(context.instance.id).valueOf()) {
-				error = new Error("can't exit from group where user with id is the owner");
+			if (new String(sphere.ownerId).valueOf() === new String(context.instance.id).valueOf()) {
+				error = new Error("can't exit from sphere where user with id is the owner");
 				return next(error);
 			} else {
 				next();
@@ -130,14 +130,14 @@ module.exports = function(model) {
 		})
 	});
 
-	// check that a user is not deleted as long as he is owner of a group
+	// check that a user is not deleted as long as he is owner of a sphere
 	model.observe('before delete', function(context, next) {
 
-		const Group = loopback.findModel('Group');
-		Group.find({where:{ownerId: context.where.id}}, function(err, groups) {
+		const Sphere = loopback.findModel('Sphere');
+		Sphere.find({where:{ownerId: context.where.id}}, function(err, spheres) {
 			if (err) return next(err);
-			if (groups.length > 0) {
-				error = new Error("Can't delete user as long as he is owner of a group");
+			if (spheres.length > 0) {
+				error = new Error("Can't delete user as long as he is owner of a sphere");
 				next(error);
 			} else {
 				next();
@@ -149,7 +149,7 @@ module.exports = function(model) {
 	 **** Cascade
 	 ************************************/
 
-	// if the group is deleted, delete also all files stored for this group
+	// if the sphere is deleted, delete also all files stored for this sphere
 	model.observe('after delete', function(context, next) {
 		model.deleteAllFiles(context.where.id, function() {
 			next();
@@ -244,9 +244,11 @@ module.exports = function(model) {
 	);
 
 	model.me = function(cb) {
+		debug("me");
 		const loopbackContext = loopback.getCurrentContext();
 		var currentUser = loopbackContext.get('currentUser');
 
+		debug("currentUser", currentUser)
 		if (currentUser) {
 			cb(null, currentUser);
 		} else {
@@ -263,25 +265,25 @@ module.exports = function(model) {
 		}
 	);
 
-	model.createNewGroup = function(data, id, cb) {
-		debug("createNewGroup:", data);
-		const Group = loopback.getModel('Group');
-		Group.create(data, cb);
+	model.createNewSphere = function(data, id, cb) {
+		debug("createNewSphere:", data);
+		const Sphere = loopback.getModel('Sphere');
+		Sphere.create(data, cb);
 	}
 
 	// var app = require('../../server/server');
-	// var Group = app.models.Group;
+	// var Sphere = app.models.Sphere;
 
 	model.remoteMethod(
-		'createNewGroup',
+		'createNewSphere',
 		{
-			http: {path: '/:id/groups', verb: 'post'},
+			http: {path: '/:id/spheres', verb: 'post'},
 			accepts: [
-				{arg: 'data', type: 'Group', 'http': {source: 'body'}},
+				{arg: 'data', type: 'Sphere', 'http': {source: 'body'}},
 				{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
 			],
-			returns: {arg: 'data', type: 'Group', root: true},
-			description: "Creates a new instance in groups of this model"
+			returns: {arg: 'data', type: 'Sphere', root: true},
+			description: "Creates a new instance in spheres of this model"
 		}
 	);
 
@@ -483,24 +485,45 @@ module.exports = function(model) {
 		}
 	);
 
+	model.deleteProfilePicById = function(id, res, cb) {
+		// debug("downloadProfilePicById");
+
+		model.findById(id, function(err, user) {
+			if (err) return cb(err);
+
+			model.deleteFile(id, user.profilePicId, res, cb);
+		});
+	}
+
+	model.remoteMethod(
+		'deleteProfilePicById',
+		{
+			http: {path: '/:id/profilePic', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Delete profile pic of User"
+		}
+	);
+
 	/************************************
 	 **** Keys Methods
 	 ************************************/
 
 	model.getEncryptionKeys = function(id, cb) {
-		const GroupAccess = loopback.getModel('GroupAccess');
-		GroupAccess.find({where: {userId: id}, include: "group"}, function(err, objects) {
+		const SphereAccess = loopback.getModel('SphereAccess');
+		SphereAccess.find({where: {userId: id}, include: "sphere"}, function(err, objects) {
 			keys = Array.from(objects, function(access) {
-				el = { groupId: access.groupId, keys: {}};
+				el = { sphereId: access.sphereId, keys: {}};
 				switch (access.role) {
-					case "owner": {
-						el.keys.owner = access.group().ownerEncryptionKey;
+					case "admin": {
+						el.keys.admin = access.sphere().adminEncryptionKey;
 					}
 					case "member": {
-						el.keys.member = access.group().memberEncryptionKey;
+						el.keys.member = access.sphere().memberEncryptionKey;
 					}
 					case "guest": {
-						el.keys.guest = access.group().guestEncryptionKey;
+						el.keys.guest = access.sphere().guestEncryptionKey;
 					}
 				}
 				return el
@@ -515,7 +538,7 @@ module.exports = function(model) {
 			http: {path: '/:id/keys', verb: 'get'},
 			accepts: {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 			returns: {arg: 'data', type: ['object'], root: true},
-			description: "Returns encryption keys per Group of User"
+			description: "Returns encryption keys per Sphere of User"
 		}
 	);
 

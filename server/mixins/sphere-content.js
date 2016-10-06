@@ -1,16 +1,16 @@
 module.exports = function(model, options) {
 
-	// define property: groupId which is used as a reference to the group
+	// define property: sphereId which is used as a reference to the sphere
 	// that "owns" the model instance
-	model.defineProperty("groupId", {type: "string", required: true});
+	model.defineProperty("sphereId", {type: "string", required: true});
 
-	// define the belongTo relation to the Group. this is necessary to
-	// distinguish GroupContent and decide who has access to what content
-	var Group = require("loopback").getModel("Group");
-	model.belongsTo(Group, { foreignKey: "groupId", as: "owner"});
+	// define the belongTo relation to the Sphere. this is necessary to
+	// distinguish SphereContent and decide who has access to what content
+	var Sphere = require("loopback").getModel("Sphere");
+	model.belongsTo(Sphere, { foreignKey: "sphereId", as: "owner"});
 
-	// define access rules based on the group roles. define here all rules
-	// which are common among ALL GroupContent models. If a model needs
+	// define access rules based on the sphere roles. define here all rules
+	// which are common among ALL SphereContent models. If a model needs
 	// individual access rules, define them in the respective model.js
 
 	// model.settings.acls.push(
@@ -50,19 +50,6 @@ module.exports = function(model, options) {
 				"accessType": "*",
 				"principalType": "ROLE",
 				"principalId": "$group:admin",
-				"permission": "ALLOW"
-			}
-		);
-
-		//////////////////////////////////
-		/// OWNER
-		/// 	- everyting
-		//////////////////////////////////
-		model.settings.acls.push(
-			{
-				"accessType": "*",
-				"principalType": "ROLE",
-				"principalId": "$group:owner",
 				"permission": "ALLOW"
 			}
 		);

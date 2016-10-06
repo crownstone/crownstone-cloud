@@ -26,7 +26,7 @@ module.exports = function(model) {
 		);
 		//***************************
 		// AUTHENTICATED:
-		//   - create new group
+		//   - create new sphere
 		//***************************
 		model.settings.acls.push(
 			{
@@ -44,16 +44,36 @@ module.exports = function(model) {
 			{
 				"accessType": "*",
 				"principalType": "ROLE",
-				"principalId": "$group:owner",
+				"principalId": "$owner",
 				"permission": "ALLOW"
 			}
 		);
+		//***************************
+		// ADMIN:
+		//   - everything
+		//***************************
+		model.settings.acls.push(
+			{
+				"accessType": "*",
+				"principalType": "ROLE",
+				"principalId": "$group:admin",
+				"permission": "ALLOW"
+			}
+		);
+		// model.settings.acls.push(
+		// 	{
+		// 		"principalType": "ROLE",
+		// 		"principalId": "$group:admin",
+		// 		"permission": "DENY",
+		// 		"property": "changeOwnership"
+		// 	}
+		// );
 		//***************************
 		// MEMBER:
 		//   - everything except:
 		//   	- delete location(s)
 		//   	- remove users
-		//   	- delete group
+		//   	- delete sphere
 		//   	- delete file(s)
 		//***************************
 		model.settings.acls.push(
@@ -77,6 +97,14 @@ module.exports = function(model) {
 				"principalType": "ROLE",
 				"principalId": "$group:member",
 				"permission": "DENY",
+				"property": "__destroyById__ownedAppliances"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
 				"property": "__unlink__users"
 			}
 		);
@@ -86,6 +114,14 @@ module.exports = function(model) {
 				"principalId": "$group:member",
 				"permission": "DENY",
 				"property": "__delete__ownedLocations"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "__delete__ownedAppliances"
 			}
 		);
 		model.settings.acls.push(
@@ -118,6 +154,22 @@ module.exports = function(model) {
 				"principalId": "$group:member",
 				"permission": "ALLOW",
 				"property": "downloadProfilePicOfUser"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "changeRole"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:member",
+				"permission": "DENY",
+				"property": "changeOwnership"
 			}
 		);
 		//***************************
@@ -157,15 +209,15 @@ module.exports = function(model) {
 	 **** Model Validation
 	 ************************************/
 
-	model.validatesUniquenessOf('name', {scopedTo: ['ownerId'], message: 'a group with this name was already added'});
-	model.validatesUniquenessOf('uuid', {message: 'a group with this UUID was already added'});
+	model.validatesUniquenessOf('name', {scopedTo: ['ownerId'], message: 'a sphere with this name was already added'});
+	model.validatesUniquenessOf('uuid', {message: 'a sphere with this UUID was already added'});
 
 	/************************************
 	 **** Verification checks
 	 ************************************/
 
-	// check that the owner of a group can't unlink himself from the group, otherwise there will
-	// be access problems to the group. And a group should never be without an owner.
+	// check that the owner of a sphere can't unlink himself from the sphere, otherwise there will
+	// be access problems to the sphere. And a sphere should never be without an owner.
 	model.beforeRemote('*.__unlink__users', function(context, user, next) {
 
 		const User = loopback.findModel('user');
@@ -174,7 +226,7 @@ module.exports = function(model) {
 			if (!user) return next();
 
 			if (new String(user.id).valueOf() === new String(context.instance.ownerId).valueOf()) {
-				error = new Error("can't remove owner from group");
+				error = new Error("can't remove owner from sphere");
 				return next(error);
 			} else {
 				next();
@@ -182,12 +234,12 @@ module.exports = function(model) {
 		})
 	});
 
-	// check that a group is not deleted as long as there are crownstones assigned
+	// check that a sphere is not deleted as long as there are crownstones assigned
 	model.observe('before delete', function(context, next) {
 
 		model.countOwnedStones(context.where.id, function(err, count) {
 			if (count > 0) {
-				error = new Error("Can't delete a group with assigned crownstones.")
+				error = new Error("Can't delete a sphere with assigned crownstones.")
 				next(error);
 			} else {
 				next();
@@ -199,7 +251,7 @@ module.exports = function(model) {
 	 **** Cascade
 	 ************************************/
 
-	// if the group is deleted, delete also all files stored for this group
+	// if the sphere is deleted, delete also all files stored for this sphere
 	model.observe('after delete', function(context, next) {
 		model.deleteAllFiles(context.where.id, function() {
 			next();
@@ -210,17 +262,25 @@ module.exports = function(model) {
 	 **** Custom
 	 ************************************/
 
-	function initGroup(ctx, next) {
-		debug("initGroup");
+	function initSphere(ctx, next) {
+		debug("initSphere");
+		debug("ctx", ctx);
 
 		if (ctx.isNewInstance) {
 			injectUUID(ctx.instance);
 			injectEncryptionKeys(ctx.instance);
 			injectOwner(ctx.instance, next);
 		} else {
-			injectUUID(ctx.data);
-			injectEncryptionKeys(ctx.data);
-			injectOwner(ctx.data, next);
+			// injectUUID(ctx.data);
+			// injectEncryptionKeys(ctx.data);
+			// injectOwner(ctx.data, next);
+
+			// disallow changing the owner when updating the sphere
+			// so always overwrite the ownerId with the current ownerId
+			if (ctx.data && ctx.currentInstance) {
+				ctx.data.ownerId = ctx.currentInstance.ownerId;
+			}
+			next();
 		}
 	}
 
@@ -247,8 +307,8 @@ module.exports = function(model) {
 
 	function injectEncryptionKeys(item, next) {
 
-		if (!item.ownerEncryptionKey) {
-			item.ownerEncryptionKey = createKey();
+		if (!item.adminEncryptionKey) {
+			item.adminEncryptionKey = createKey();
 		}
 		if (!item.memberEncryptionKey) {
 			item.memberEncryptionKey = createKey();
@@ -258,9 +318,9 @@ module.exports = function(model) {
 		}
 
 		// createKey(function(err, ownerKey) {
-		// 	if (!item.ownerEncryptionKey) {
+		// 	if (!item.adminEncryptionKey) {
 		// 		if (err) return next(err);
-		// 		item.ownerEncryptionKey = ownerKey;
+		// 		item.adminEncryptionKey = ownerKey;
 		// 	}
 
 		// 	createKey(function(err, memberKey) {
@@ -315,16 +375,16 @@ module.exports = function(model) {
 		}
 	};
 
-	model.observe('before save', initGroup);
+	model.observe('before save', initSphere);
 	// model.beforeRemote('create', injectOwner);
 	// model.beforeRemote('upsert', injectOwner);
 
 	function updateOwnerAccess(ctx, next) {
 		debug("instance: ", ctx.instance);
 
-		// const GroupAccess = loopback.getModel('GroupAccess');
-		// GroupAccess.create({
-		// 	groupId: instance.id,
+		// const SphereAccess = loopback.getModel('SphereAccess');
+		// SphereAccess.create({
+		// 	sphereId: instance.id,
 		// 	userId: instance.ownerId,
 		// 	role: "owner"
 		// }, function(err, res) {
@@ -340,7 +400,8 @@ module.exports = function(model) {
 			User.findById(ctx.instance.ownerId, function(err, user) {
 				if (err) return next(err);
 
-				addGroupAccess(user, ctx.instance, "owner",
+				// make the owner admin of the group
+				addSphereAccess(user, ctx.instance, "admin",
 					function(err, res) {
 
 					}
@@ -357,7 +418,7 @@ module.exports = function(model) {
 	// 	user.findOne({where: {role: "superuser"}}, function(err, res) {
 	// 		if (err || !res) return debug("failed to find superuser");
 
-	// 		addGroupAccess(res.id, ctx.instance.id, "admin",
+	// 		addSphereAccess(res.id, ctx.instance.id, "admin",
 	// 			function(err, res) {
 
 	// 			}
@@ -379,11 +440,11 @@ module.exports = function(model) {
 		next();
 	});
 
-	function addGroupAccess(user, group, access, cb) {
-		debug("addGroupAccess");
+	function addSphereAccess(user, sphere, access, cb) {
+		debug("addSphereAccess");
 
-		group.users.add(user, {
-			groupId: group.id,
+		sphere.users.add(user, {
+			sphereId: sphere.id,
 			userId: user.id,
 			role: access
 		},
@@ -393,9 +454,9 @@ module.exports = function(model) {
 			cb(err);
 		})
 
-		// const GroupAccess = loopback.getModel('GroupAccess');
-		// GroupAccess.create({
-		// 	groupId: groupId,
+		// const SphereAccess = loopback.getModel('SphereAccess');
+		// SphereAccess.create({
+		// 	sphereId: sphereId,
 		// 	userId: userId,
 		// 	role: access
 		// }, function(err, res) {
@@ -415,10 +476,10 @@ module.exports = function(model) {
 			if (err) {
 				cb(err, null);
 			} else {
-				var group = instance;
-				if (group) {
-					debug("group:", group);
-					var encryptionKey = group[access + "EncryptionKey"];
+				var sphere = instance;
+				if (sphere) {
+					debug("sphere:", sphere);
+					// var encryptionKey = sphere[access + "EncryptionKey"];
 
 					User.findOne({where: {email: email}}, function(err, user) {
 						if (err) {
@@ -427,7 +488,7 @@ module.exports = function(model) {
 						} else {
 							if (user) {
 								debug("user:", user);
-								addGroupAccess(user, group, access, cb);
+								addSphereAccess(user, sphere, access, cb);
 							} else {
 								error = new Error("no user found with this email");
 								cb(error);
@@ -435,7 +496,7 @@ module.exports = function(model) {
 						}
 					});
 				} else {
-					error = new Error("no group found with this id");
+					error = new Error("no sphere found with this id");
 					cb(error);
 				}
 			}
@@ -456,7 +517,7 @@ module.exports = function(model) {
 				{arg: 'email', type: 'string', required: true},
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			description: "Add an existing user as a member to this group"
+			description: "Add an existing user as a member to this sphere"
 		}
 	);
 
@@ -474,7 +535,25 @@ module.exports = function(model) {
 				{arg: 'email', type: 'string', required: true},
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			description: "Add an existing user as a guest to this group"
+			description: "Add an existing user as a guest to this sphere"
+		}
+	);
+
+	model.addAdmin = function(email, id, cb) {
+		// debug("email:", email);
+		// debug("id:", id);
+		addUser(email, id, "admin", cb);
+	};
+
+	model.remoteMethod(
+		'addAdmin',
+		{
+			http: {path: '/:id/admins', verb: 'put'},
+			accepts: [
+				{arg: 'email', type: 'string', required: true},
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Add an existing user as an admin to this sphere"
 		}
 	);
 
@@ -488,10 +567,10 @@ module.exports = function(model) {
 			if (err) {
 				cb(err, null);
 			} else {
-				var group = instance;
-				if (group) {
-					debug("group:", group);
-					var encryptionKey = group[access + "EncryptionKey"];
+				var sphere = instance;
+				if (sphere) {
+					debug("sphere:", sphere);
+					// var encryptionKey = sphere[access + "EncryptionKey"];
 
 					const user = loopback.getModel('user');
 					user.create(data, function(err, instance) {
@@ -500,11 +579,11 @@ module.exports = function(model) {
 						} else {
 							debug("user created:", instance);
 							user.sendVerification(instance, function() {});
-							addGroupAccess(instance, group, access, cb);
+							addSphereAccess(instance, sphere, access, cb);
 						}
 					})
 				} else {
-					error = new Error("no group found with this id");
+					error = new Error("no sphere found with this id");
 					cb(error);
 				}
 			}
@@ -525,7 +604,7 @@ module.exports = function(model) {
 				{arg: 'data', type: 'user', required: true, http: { source : 'body' }},
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			description: "Create a new user and make it a guest of this group"
+			description: "Create a new user and make it a guest of this sphere"
 		}
 	);
 
@@ -543,7 +622,25 @@ module.exports = function(model) {
 				{arg: 'data', type: 'user', required: true, http: { source : 'body' }},
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			description: "Create a new user and make it a member of this group"
+			description: "Create a new user and make it a member of this sphere"
+		}
+	);
+
+	model.createNewAdmin = function(data, id, cb) {
+		// debug("email:", email);
+		// debug("id:", id);
+		createUser(data, id, "admin", cb);
+	};
+
+	model.remoteMethod(
+		'createNewAdmin',
+		{
+			http: {path: '/:id/admins', verb: 'post'},
+			accepts: [
+				{arg: 'data', type: 'user', required: true, http: { source : 'body' }},
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Create a new user and make it an admin of this sphere"
 		}
 	);
 
@@ -558,52 +655,34 @@ module.exports = function(model) {
 
 				// debug("users:", users);
 
-				const GroupAccess = loopback.getModel('GroupAccess');
-				GroupAccess.find(
-					{where: {and: [{groupId: id}, {role: access}]}, field: "userId"},
+				const SphereAccess = loopback.getModel('SphereAccess');
+				SphereAccess.find(
+					{where: {and: [{sphereId: id}, {role: access}]}, field: "userId"},
 					function(err, res) {
 						if (err) return cb(err);
 
-						// debug("groupMembers:", res);
+						// debug("sphereMembers:", res);
 
-						var members = [];
+						var filteredUsers = [];
 						for (i = 0; i < users.length; ++i) {
 							var user = users[i];
 							// debug("  user.id " + i + ":", user.id.valueOf() );
 							for (j = 0; j < res.length; ++j) {
-								member = res[j];
+								access = res[j];
 								// debug("member.id " + j + ":", member.userId.valueOf());
-								if (new String(user.id).valueOf() === new String(member.userId).valueOf()) {
-									members.push(user);
+								if (new String(user.id).valueOf() === new String(access.userId).valueOf()) {
+									filteredUsers.push(user);
 									break;
 								}
 							}
 						}
-						debug("found members: ", members);
-						cb(null, members);
+						debug("found users: ", filteredUsers);
+						cb(null, filteredUsers);
 					}
 				);
 			});
 		});
 	}
-
-	model.members = function(id, cb) {
-		// debug("email:", email);
-		// debug("id:", id);
-		findUsersWithRole(id, 'member', cb);
-	};
-
-	model.remoteMethod(
-		'members',
-		{
-			http: {path: '/:id/members', verb: 'get'},
-			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
-			],
-			returns: {arg: 'data', type: ['user'], root: true},
-			description: "Queries members of Group"
-		}
-	);
 
 	model.guests = function(id, cb) {
 		// debug("email:", email);
@@ -619,7 +698,43 @@ module.exports = function(model) {
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			returns: {arg: 'data', type: ['user'], root: true},
-			description: "Queries guests of Group"
+			description: "Queries guests of Sphere"
+		}
+	);
+
+	model.members = function(id, cb) {
+		// debug("email:", email);
+		// debug("id:", id);
+		findUsersWithRole(id, 'member', cb);
+	};
+
+	model.remoteMethod(
+		'members',
+		{
+			http: {path: '/:id/members', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'data', type: ['user'], root: true},
+			description: "Queries members of Sphere"
+		}
+	);
+
+	model.admins = function(id, cb) {
+		// debug("email:", email);
+		// debug("id:", id);
+		findUsersWithRole(id, 'admin', cb);
+	};
+
+	model.remoteMethod(
+		'admins',
+		{
+			http: {path: '/:id/admins', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'data', type: ['user'], root: true},
+			description: "Queries admins of Sphere"
 		}
 	);
 
@@ -631,7 +746,7 @@ module.exports = function(model) {
 	model.ownedStones = function(id, cb) {
 
 		var Stone = loopback.getModel('Stone');
-		Stone.find({where: {"groupId": id}}, function(err, stones) {
+		Stone.find({where: {"sphereId": id}}, function(err, stones) {
 			if (err) return cb(err);
 			cb(null, stones);
 		});
@@ -646,7 +761,7 @@ module.exports = function(model) {
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			returns: {arg: 'data', type: ['Stone'], root: true},
-			description: "Queries stones owned by Group"
+			description: "Queries stones owned by Sphere"
 		}
 	);
 
@@ -667,7 +782,7 @@ module.exports = function(model) {
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			returns: {arg: 'count', type: 'number'},
-			description: "Counts ownedStones of Group"
+			description: "Counts ownedStones of Sphere"
 		}
 	);
 
@@ -678,7 +793,7 @@ module.exports = function(model) {
 	 ************************************/
 
 	model.listFiles = function(id, cb) {
-		const Container = loopback.getModel('GroupContainer');
+		const Container = loopback.getModel('SphereContainer');
 		Container._getFiles(id, cb);
 	}
 
@@ -690,12 +805,12 @@ module.exports = function(model) {
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			returns: {arg: 'files', type: 'array', root: true},
-			description: "Queries files of Group"
+			description: "Queries files of Sphere"
 		}
 	);
 
 	model.countFiles = function(id, cb) {
-		const Container = loopback.getModel('GroupContainer');
+		const Container = loopback.getModel('SphereContainer');
 		Container._getFiles(id, function(err, res) {
 			if (err) return cb(err);
 
@@ -711,12 +826,12 @@ module.exports = function(model) {
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			returns: {arg: 'count', type: 'number'},
-			description: "Count files of Group"
+			description: "Count files of Sphere"
 		}
 	);
 
 	// model.listFile = function(id, fk, cb) {
-	// 	const Container = loopback.getModel('GroupContainer');
+	// 	const Container = loopback.getModel('SphereContainer');
 	// 	Container.getFile(id, fk, cb);
 	// }
 
@@ -734,7 +849,7 @@ module.exports = function(model) {
 	// );
 
 	model.deleteFile = function(id, fk, cb) {
-		const Container = loopback.getModel('GroupContainer');
+		const Container = loopback.getModel('SphereContainer');
 		Container._deleteFile(id, fk, cb);
 	}
 
@@ -751,7 +866,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllFiles = function(id, cb) {
-		const Container = loopback.getModel('GroupContainer');
+		const Container = loopback.getModel('SphereContainer');
 		Container._deleteContainer(id, cb);
 	}
 
@@ -762,12 +877,12 @@ module.exports = function(model) {
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			description: "Delete all files of Group"
+			description: "Delete all files of Sphere"
 		}
 	);
 
 	model.downloadFile = function(id, fk, res, cb) {
-		const Container = loopback.getModel('GroupContainer');
+		const Container = loopback.getModel('SphereContainer');
 		Container._download(id, fk, res, cb);
 	}
 
@@ -785,7 +900,7 @@ module.exports = function(model) {
 	);
 
 	model.uploadFile = function(id, req, cb) {
-		const Container = loopback.getModel('GroupContainer');
+		const Container = loopback.getModel('SphereContainer');
 		Container._upload(id, req, cb);
 	}
 
@@ -798,16 +913,16 @@ module.exports = function(model) {
 				{arg: 'req', type: 'object', http: { source: 'req' }}
 			],
 			returns: {arg: 'file', type: 'object', root: true},
-			description: "Upload a file to Group"
+			description: "Upload a file to Sphere"
 		}
 	);
 
 	model.downloadProfilePicOfUser = function(id, email, res, cb) {
-		model.findById(id, function(err, group) {
+		model.findById(id, function(err, sphere) {
 			if (err) return next(err);
-			if (!group) return cb(new Error("group not found"));
+			if (!sphere) return cb(new Error("sphere not found"));
 
-			group.users({where: {email: email}}, function(err, users) {
+			sphere.users({where: {email: email}}, function(err, users) {
 				if (err) return cb(err);
 
 				if (users.length == 0) return cb(new Error("user not found"));
@@ -832,6 +947,206 @@ module.exports = function(model) {
 		}
 	);
 
+	model.changeOwnership = function(id, email, cb) {
+
+		model.findById(id, function(err, sphere) {
+			if (err) return cb(err);
+
+			const User = loopback.findModel('user');
+			User.findOne({where: {email: email}}, function(err, user) {
+				if (err) return cb(err);
+				debug("user", user);
+				debug("sphere", sphere);
+
+				const loopbackContext = loopback.getCurrentContext();
+				var currentUser = loopbackContext.get('currentUser');
+
+				if (new String(sphere.ownerId).valueOf() === new String(currentUser.id).valueOf()) {
+
+					const SphereAccess = loopback.findModel("SphereAccess");
+					SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
+						if (err) return cb(err);
+
+						if (objects.length = 1) {
+							objects[0].role = "admin";
+							objects[0].save(function(err, instance) {
+								if (err) return cb(err);
+
+								sphere.ownerId = user.id;
+								sphere.save(function(err, inst) {
+									if (err) return cb(err);
+
+									cb(null, true);
+								});
+							});
+
+						} else {
+							error = new Error("user is not part of the sphere!");
+							return cb(error);
+						}
+						// for (access of objects) {
+						// 	if (access.role in ["member", "guest"]) {
+						// 		access.
+						// 	}
+						// }
+					})
+				} else {
+
+					debug("Error: Authorization required!");
+					error = new Error("Authorization Required");
+					error.status = 401;
+					return cb(error);
+				}
+
+				// SphereAccess.destroyAll({and: [{userId: sphere.ownerId}, {sphereId: id}, {role: "owner"}]}, function(err, info) {
+				// 	if (err) return cb(err);
+				// 	debug("info", info);
+
+				// 	addSphereAccess(user, sphere, "owner", function(err) {
+				// 		if (err) return cb(err);
+
+				// 		debug("added sphere access");
+
+				// 		cb(null, true);
+				// 	});
+				// });
+			});
+		});
+	}
+
+	model.remoteMethod(
+		'changeOwnership',
+		{
+			http: {path: '/:id/owner', verb: 'put'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'email', type: 'string', required: true, http: { source : 'query' }}
+			],
+			returns: {arg: 'success', type: 'boolean', root: true},
+			description: "Change owner of Group"
+		}
+	);
+
+	function verifyChangeRole(sphereId, user, role, cb) {
+
+		model.findById(sphereId, function(err, sphere) {
+			if (err) return cb(err);
+
+			if (role === "owner") {
+				cb(null, false);
+			} else {
+				cb(null, user.id != sphere.ownerId)
+			}
+		});
+
+	}
+
+	model.getRole = function(id, email, cb) {
+
+		const User = loopback.findModel('user');
+		User.findOne({where: {email: email}}, function(err, user) {
+			if (err) return cb(err);
+			debug("user", user);
+
+			const SphereAccess = loopback.findModel("SphereAccess");
+			SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
+				if (err) return cb(err);
+				debug(objects);
+				roles = Array.from(objects, access => access.role)
+				cb(null, roles);
+			})
+		});
+	}
+
+	model.remoteMethod(
+		'getRole',
+		{
+			http: {path: '/:id/role', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'email', type: 'string', required: true, http: { source : 'query' }}
+			],
+			returns: {arg: 'role', type: 'string', root: true},
+			description: "Get role of User in Sphere"
+		}
+	);
+
+	model.changeRole = function(id, email, role, cb) {
+
+		const User = loopback.findModel('user');
+		User.findOne({where: {email: email}}, function(err, user) {
+			if (err) return cb(err);
+			debug("user", user);
+
+			verifyChangeRole(id, user, role, function(err, success) {
+				if (err) return cb(err);
+
+				if (success) {
+					const SphereAccess = loopback.findModel("SphereAccess");
+					// SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
+					// 	if (err) return cb(err);
+					// 	debug(objects);
+					// 	roles = Array.from(objects, access => access.role)
+					// 	cb(null, roles);
+					// })
+					// SphereAccess.updateAll({and: [{userId: user.id}, {sphereId: id}]}, {role: role}, function(err, info) {
+					// 	if (err) return cb(err);
+					// 	debug(info);
+					// 	cb();
+					// })
+					SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
+						if (err) return cb(err);
+
+						if (objects.length = 1) {
+							objects[0].role = role;
+							objects[0].save(function(err, instance) {
+								if (err) return cb(err);
+								cb();
+							});
+						} else {
+							error = new Error("user is not part of the sphere!");
+							return cb(error);
+						}
+						// for (access of objects) {
+						// 	if (access.role in ["member", "guest"]) {
+						// 		access.
+						// 	}
+						// }
+					})
+				} else {
+					error = new Error("not allowed to change owners. Use /changeOwnership instead!");
+					return cb(error);
+				}
+			});
+
+
+		});
+
+		// model.findById(id, {include: {relation: "users", scope: {where: {email: email}}}}, function(err, user) {
+		// 	if (err) return cb(err);
+
+		// 	const SphereAccess = loopback.findModel("SphereAccess");
+		// 	SphereAccess.updateAll({userId: user.id}, {role: role}, function(err, info) {
+		// 		if (err) return cb(err);
+		// 		debug(info);
+		// 		cb();
+		// 	})
+		// });
+	}
+
+	model.remoteMethod(
+		'changeRole',
+		{
+			http: {path: '/:id/role', verb: 'put'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+				{arg: 'email', type: 'string', required: true, http: { source : 'query' }},
+				{arg: 'role', type: 'string', required: true, http: { source : 'query' }}
+			],
+			description: "Change role of User"
+		}
+	);
+
 	/************************************
 	 **** Sending Emails
 	 ************************************/
@@ -843,7 +1158,7 @@ module.exports = function(model) {
 		const User = loopback.findModel('user');
 		User.findById(context.args.fk, function(err, user) {
 			if (err || !user) return debug("did not find user to send notification email");
-			util.sendRemovedFromGroupEmail(user, context.instance, next);
+			util.sendRemovedFromSphereEmail(user, context.instance, next);
 		});
 	});
 
@@ -854,7 +1169,7 @@ module.exports = function(model) {
 		const User = loopback.findModel('user');
 		User.findById(context.args.fk, function(err, user) {
 			if (err || !user) return debug("did not find user to send notification email");
-			util.sendAddedToGroupEmail(user, context.instance, next);
+			util.sendAddedToSphereEmail(user, context.instance, next);
 		});
 	});
 
@@ -866,9 +1181,9 @@ module.exports = function(model) {
 		User.findOne({where: {email: context.args.email}}, function(err, user) {
 			if (err || !user) return debug("did not find user to send notification email");
 
-			model.findById(context.args.id, function(err, group) {
-				if (err || !group) return debug("did not find group to send notification email");
-				util.sendAddedToGroupEmail(user, group, next);
+			model.findById(context.args.id, function(err, sphere) {
+				if (err || !sphere) return debug("did not find sphere to send notification email");
+				util.sendAddedToSphereEmail(user, sphere, next);
 			});
 		});
 	});
@@ -881,9 +1196,9 @@ module.exports = function(model) {
 		User.findOne({where: {email: context.args.email}}, function(err, user) {
 			if (err || !user) return debug("did not find user to send notification email");
 
-			model.findById(context.args.id, function(err, group) {
-				if (err || !group) return debug("did not find group to send notification email");
-				util.sendAddedToGroupEmail(user, group, next);
+			model.findById(context.args.id, function(err, sphere) {
+				if (err || !sphere) return debug("did not find sphere to send notification email");
+				util.sendAddedToSphereEmail(user, sphere, next);
 			});
 		});
 	});

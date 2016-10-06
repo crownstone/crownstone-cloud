@@ -7,9 +7,9 @@
   },
   "mixins": {
     "Cascade": {
-      "GroupAccess": "userId"
+      "SphereAccess": "userId"
     },
-    "TimeStamp": {
+    "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
@@ -49,11 +49,11 @@
       "foreignKey": "ownerId",
       "through": "Device"
     },
-    "groups": {
+    "spheres": {
       "type": "hasMany",
-      "model": "Group",
+      "model": "Sphere",
       "foreignKey": "userId",
-      "through": "GroupAccess",
+      "through": "SphereAccess",
       "keyThrough": ""
     }
   },

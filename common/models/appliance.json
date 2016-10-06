@@ -6,17 +6,20 @@
     "validateUpsert": true
   },
   "mixins": {
-    "GroupContent": true,
+    "SphereContent": true,
     "Cascade": {
       "ApplianceStone": "applianceId"
     },
-    "TimeStamp": {
+    "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
   },
   "properties": {
     "name": {
+      "type": "string"
+    },
+    "icon": {
       "type": "string"
     },
     "json": {
@@ -29,11 +32,6 @@
       "type": "hasAndBelongsToMany",
       "model": "Stone",
       "foreignKey": "applianceId"
-    },
-    "location": {
-      "type": "belongsTo",
-      "model": "Location",
-      "foreignKey": "locationId"
     }
   },
   "acls": [],

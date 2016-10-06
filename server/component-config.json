@@ -5,11 +5,11 @@
   "loopback-component-access-groups": {
     "userModel": "user",
     "roleModel": "Role",
-    "groupModel": "Group",
-    "foreignKey": "groupId",
+    "groupModel": "Sphere",
+    "groupAccessModel": "SphereAccess",
+    "foreignKey": "sphereId",
     "groupRoles": [
       "$group:admin",
-      "$group:owner",
       "$group:member",
       "$group:guest"
     ]

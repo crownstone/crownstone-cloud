@@ -1,12 +1,12 @@
 {
-  "name": "GroupAccess",
+  "name": "SphereAccess",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
     "validateUpsert": true
   },
   "properties": {
-    "groupId": {
+    "sphereId": {
       "type": "string",
       "required": true
     },
@@ -21,10 +21,10 @@
   },
   "validations": [],
   "relations": {
-    "group": {
+    "sphere": {
       "type": "belongsTo",
-      "model": "Group",
-      "foreignKey": "groupId"
+      "model": "Sphere",
+      "foreignKey": "sphereId"
     },
     "user": {
       "type": "belongsTo",

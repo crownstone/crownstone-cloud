@@ -4,9 +4,9 @@ const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	// make sure role is actually part of the defined group roles. do not accept
+	// make sure role is actually part of the defined sphere roles. do not accept
 	// any other role
-	var roles = Array.from(groupRoles, groupRole => groupRole.split(':')[1]);
+	var roles = Array.from(groupRoles, groupRoles => groupRoles.split(':')[1]);
 	model.validatesInclusionOf('role', {in: roles});
 
 };

@@ -4,13 +4,34 @@ const debug = require('debug')('loopback:dobots');
 
 var util = {
 
-	sendRemovedFromGroupEmail : function(user, group, next) {
+	sendStoneRecoveredEmail : function(user, stone) {
 
 		const Email = loopback.findModel('Email');
 
 		var app = require('../../server/server');
 		var currentUser = app.accessUtils.getCurrentUser();
-		var html = 'You were removed from the group <b>' + group.name + '</b> by ' +
+		var html = 'The stone with uid <b>' + stone.uid + '</b>, ' +
+				   'major <b>' + stone.major + '</b> ' +
+				   'and minor <b>' + stone.minor + '</b> was recovered and ' +
+				   'added to a new group'
+		Email.send({
+			to: user.email,
+			from: 'noreply@crownstone.rocks',
+			subject: 'Notification email',
+			html: html
+		}, function(err) {
+			if (err) return debug('failed to send stone recovery notification email');
+			debug('sending stone recovery notification email to:', user.email);
+		});
+	},
+
+	sendRemovedFromSphereEmail : function(user, sphere, next) {
+
+		const Email = loopback.findModel('Email');
+
+		var app = require('../../server/server');
+		var currentUser = app.accessUtils.getCurrentUser();
+		var html = 'You were removed from the sphere <b>' + sphere.name + '</b> by ' +
 					currentUser.firstName + ' ' + currentUser.lastName;
 		Email.send({
 			to: user.email,
@@ -23,13 +44,13 @@ var util = {
 		});
 	},
 
-	sendAddedToGroupEmail : function(user, group, next) {
+	sendAddedToSphereEmail : function(user, sphere, next) {
 
 		const Email = loopback.findModel('Email');
 
 		var app = require('../../server/server');
 		var currentUser = app.accessUtils.getCurrentUser();
-		var html = 'You were added to the group <b>' + group.name + '</b> by ' +
+		var html = 'You were added to the sphere <b>' + sphere.name + '</b> by ' +
 					currentUser.firstName + ' ' + currentUser.lastName;
 		Email.send({
 			to: user.email,

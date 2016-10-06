@@ -4,6 +4,8 @@ var crypto = require('crypto');
 
 const debug = require('debug')('loopback:dobots');
 
+var util = require('../../server/emails/util');
+
 module.exports = function(model) {
 
 	var app = require('../../server/server');
@@ -11,7 +13,7 @@ module.exports = function(model) {
 
 		//***************************
 		// GENERAL, ADMIN and OWNER
-		//  see group-conent.js
+		//  see sphere-content.js
 		//***************************
 
 		//***************************
@@ -165,11 +167,12 @@ module.exports = function(model) {
 
 
 	// address has to be unique to a stone
-	model.validatesUniquenessOf('address', {message: 'a stone with this address was already added!'});
-	model.validatesUniquenessOf('uid', {scopedTo: ['groupId'], message: 'a stone with this uid was already added'});
-	model.validatesUniquenessOf('major', {scopedTo: ['groupId', 'minor'], message: 'a stone with this major minor combination was already added'});
+	model.validatesUniquenessOf('address', {scopedTo: ['sphereId'], message: 'a stone with this address was already added!'});
+	model.validatesUniquenessOf('uid', {scopedTo: ['sphereId'], message: 'a stone with this uid was already added'});
+	model.validatesUniquenessOf('major', {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
 	model.disableRemoteMethod('updateAll', true);
+	model.disableRemoteMethod('upsert', true);
 	model.disableRemoteMethod('createChangeStream', true);
 
 	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
@@ -192,13 +195,15 @@ module.exports = function(model) {
 
 	function initStone(ctx, next) {
 		debug("initStone");
+		// debug("ctx", ctx);
 
 		if (ctx.instance) {
 			injectMajorMinor(ctx.instance);
 			injectUID(ctx.instance, next);
 		} else {
-			injectMajorMinor(ctx.data);
-			injectUID(ctx.data, next);
+			// injectMajorMinor(ctx.data);
+			// injectUID(ctx.data, next);
+			next();
 		}
 	}
 
@@ -217,7 +222,7 @@ module.exports = function(model) {
 	function injectUID(item, next) {
 		if (!item.uid) {
 			debug("inject uid");
-			model.find({where: {groupId: item.groupId}, order: "uid DESC", limit: "1"}, function(err, instances) {
+			model.find({where: {sphereId: item.sphereId}, order: "uid DESC", limit: "1"}, function(err, instances) {
 				if (err) return next(err);
 
 				if (instances.length > 0) {
@@ -342,7 +347,7 @@ module.exports = function(model) {
 		debug("stone:", stone);
 		debug("energyUsage:", energyUsage);
 
-		energyUsage.groupId = stone.groupId;
+		energyUsage.sphereId = stone.sphereId;
 
 		stone.energyUsageHistory.create(energyUsage, function(err, energyUsageInstance) {
 			if (next) {
@@ -406,7 +411,7 @@ module.exports = function(model) {
 		debug("stone:", stone);
 		debug("powerUsage:", powerUsage);
 
-		powerUsage.groupId = stone.groupId;
+		powerUsage.sphereId = stone.sphereId;
 
 		stone.powerUsageHistory.create(powerUsage, function(err, powerUsageInstance) {
 			if (next) {
@@ -470,7 +475,7 @@ module.exports = function(model) {
 		debug("stone:", stone);
 		debug("powerCurve:", powerCurve);
 
-		powerCurve.groupId = stone.groupId;
+		powerCurve.sphereId = stone.sphereId;
 
 		stone.powerCurveHistory.create(powerCurve, function(err, powerCurveInstance) {
 			if (next) {
@@ -639,4 +644,53 @@ module.exports = function(model) {
 		}
 	);
 
+	/************************************
+	 **** Other
+	 ************************************/
+
+	model.notifyOnRecovery = function(stoneId, next) {
+		debug("notifyOnRecovery");
+
+		model.findById(stoneId, {include: "owner"}, function(err, stone) {
+			if (err) return next(err);
+
+			debug("stone", stone);
+			debug("owner", stone.owner());
+
+			sphere = stone.owner();
+
+			const SphereAccess = loopback.getModel('SphereAccess');
+			SphereAccess.find({where: {and: [{sphereId: sphere.id}, {role: "admin"}]}, include: "user"}, function(err, access) {
+				if (err) return next(err);
+
+				debug("access", access);
+				for (acc of access) {
+					// debug("acc", acc);
+					// debug("user", acc.user());
+					util.sendStoneRecoveredEmail(acc.user(), stone);
+				}
+				next();
+			})
+
+			// if (stone) {
+			// 	util.sendStoneRecoveredEmail(stone, next);
+			// } else {
+			// 	error = new Error("no stone found with this id");
+			// 	return next(error);
+			// }
+			// next();
+		});
+
+	}
+
+	model.remoteMethod(
+		'notifyOnRecovery',
+		{
+			http: {path: '/:id/notifyOnRecovery', verb: 'head'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
+			],
+			description: "Notify admin about stone recovery"
+		}
+	);
 };

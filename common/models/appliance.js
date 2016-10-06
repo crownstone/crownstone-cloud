@@ -9,7 +9,7 @@ module.exports = function(model) {
 
 		//***************************
 		// GENERAL, ADMIN and OWNER
-		//  see group-conent.js
+		//  see sphere-content.js
 		//***************************
 
 		//***************************
@@ -38,6 +38,7 @@ module.exports = function(model) {
 	}
 
 	model.disableRemoteMethod('updateAll', true);
+	model.disableRemoteMethod('upsert', true);
 	model.disableRemoteMethod('createChangeStream', true);
 
 	model.disableRemoteMethod('__destroyById__stones', false);

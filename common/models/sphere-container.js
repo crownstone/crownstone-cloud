@@ -9,7 +9,7 @@ const DEBUG = true;
 
 module.exports = function(model) {
 
-	var userGroups = null;
+	var userSpheres = null;
 
 	var getContainerName = function(id) {
 		if (typeof id === 'object') {
@@ -21,28 +21,28 @@ module.exports = function(model) {
 		}
 	}
 
-	var retreiveUserGroups = function(next) {
+	var retreiveUserSpheres = function(next) {
 		if (DEBUG) {
-			userGroups = null;
+			userSpheres = null;
 		} else {
-			userGroups = [];
+			userSpheres = [];
 		}
 		var currentUser = model.app.accessUtils.getCurrentUser();
 		// debug("currentUser:", currentUser);
 		if (currentUser) {
 			if (currentUser.role !== 'superuser') {
-				debug("getUserGroups");
-					// model.app.accessUtils.getUserGroups(currentUser.getId())
-					// 	.then(userGroups => {
-					// 		debug("groups:", groups);
-				//       userGroups = Array.from(userGroups, group => group[model.app.accessUtils.options.foreignKey]);
-					// 		debug("userGroups:", userGroups);
-				//       // filter[this.options.foreignKey] = { inq: userGroups };
+				debug("getUserSpheres");
+					// model.app.accessUtils.getUserSpheres(currentUser.getId())
+					// 	.then(userSpheres => {
+					// 		debug("spheres:", spheres);
+				//       userSpheres = Array.from(userSpheres, sphere => sphere[model.app.accessUtils.options.foreignKey]);
+					// 		debug("userSpheres:", userSpheres);
+				//       // filter[this.options.foreignKey] = { inq: userSpheres };
 				//       // return filter;
 				//     });
-				groups = model.app.accessUtils.getCurrentUserGroups();
-				userGroups = Array.from(groups, group => new String(group[model.app.accessUtils.options.foreignKey]).valueOf());
-				debug("userGroups:", userGroups);
+				spheres = model.app.accessUtils.getCurrentUserSpheres();
+				userSpheres = Array.from(spheres, sphere => new String(sphere[model.app.accessUtils.options.foreignKey]).valueOf());
+				debug("userSpheres:", userSpheres);
 			}
 			next();
 			// } else if (DEBUG) {
@@ -53,11 +53,11 @@ module.exports = function(model) {
 			// 			debug("fatal error");
 			// 		} else {
 			// 			currentUser = res[0];
-			// 			model.app.accessUtils.getUserGroups(currentUser.id, false, function(err, res) {
+			// 			model.app.accessUtils.getUserSpheres(currentUser.id, false, function(err, res) {
 			// 				if (err) return next(err);
 			// 				// debug("res:", res);
-			// 				userGroups = Array.from(res, group => new String(group[model.app.accessUtils.options.foreignKey]).valueOf());
-			// 				debug("userGroups:", userGroups);
+			// 				userSpheres = Array.from(res, sphere => new String(sphere[model.app.accessUtils.options.foreignKey]).valueOf());
+			// 				debug("userSpheres:", userSpheres);
 
 			// 				next();
 			// 			});
@@ -71,10 +71,10 @@ module.exports = function(model) {
 	var checkAccess = function(id, cb) {
 
 		var containerName = getContainerName(id);
-		retreiveUserGroups(function() {
+		retreiveUserSpheres(function() {
 			// debug("id", id);
-			// debug("userGroups.indexOf(id)", userGroups.indexOf(containerName));
-			if (userGroups && userGroups.indexOf(containerName) < 0) {
+			// debug("userSpheres.indexOf(id)", userSpheres.indexOf(containerName));
+			if (userSpheres && userSpheres.indexOf(containerName) < 0) {
 				debug("Access denied");
 				cb("Access denied");
 			} else {
@@ -90,7 +90,7 @@ module.exports = function(model) {
 	});
 
 	model.beforeRemote('getContainers', function(ctx, instance, next) {
-		retreiveUserGroups(next);
+		retreiveUserSpheres(next);
 	});
 
 	model.afterRemote('getContainers', function(ctx, instance, next) {
@@ -99,16 +99,16 @@ module.exports = function(model) {
 		// // instance = ["yabadaba"];
 		// // ctx.instance = ["yabadaba"];
 		// // ctx.result = ["yabadaba"];
-		// debug("userGroups:", userGroups);
-		// instance.forEach(i => debug(i, userGroups.indexOf(i)))
-		// result = instance.filter(res => userGroups.indexOf(res) >= 0)
+		// debug("userSpheres:", userSpheres);
+		// instance.forEach(i => debug(i, userSpheres.indexOf(i)))
+		// result = instance.filter(res => userSpheres.indexOf(res) >= 0)
 		// ctx.result = result;
 		// // debug("ctx:", ctx);
 		// debug("result:", result)
 
-		if (userGroups || !DEBUG) {
+		if (userSpheres || !DEBUG) {
 			var containerName = getContainerName(id);
-			ctx.result = instance.filter(res => userGroups.indexOf(containerName) >= 0)
+			ctx.result = instance.filter(res => userSpheres.indexOf(containerName) >= 0)
 		}
 		// debug("after remote get containers");
 		next();

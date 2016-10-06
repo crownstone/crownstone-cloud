@@ -46,7 +46,7 @@
       "emailVerificationRequired": true
     }
   },
-  "Group": {
+  "Sphere": {
     "dataSource": "userDs",
     "public": true
   },
@@ -94,11 +94,11 @@
     "dataSource": "mongoDs",
     "public": true
   },
-  "GroupAccess": {
+  "SphereAccess": {
     "dataSource": "userDs",
     "public": true
   },
-  "GroupContainer": {
+  "SphereContainer": {
     "dataSource": "filesDs",
     "public": true
   },

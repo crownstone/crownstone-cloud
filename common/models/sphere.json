@@ -1,5 +1,5 @@
 {
-  "name": "Group",
+  "name": "Sphere",
   "base": "PersistedModel",
   "idInjection": true,
   "options": {
@@ -7,16 +7,16 @@
   },
   "mixins": {
     "Cascade": {
-      "GroupAccess": "groupId",
-      "Location": "groupId"
+      "SphereAccess": "sphereId",
+      "Location": "sphereId"
     },
-    "TimeStamp": {
+    "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
   },
   "hidden": [
-    "ownerEncryptionKey",
+    "adminEncryptionKey",
     "memberEncryptionKey",
     "guestEncryptionKey"
   ],
@@ -29,7 +29,7 @@
       "type": "string",
       "required": true
     },
-    "ownerEncryptionKey": {
+    "adminEncryptionKey": {
       "type": "string"
     },
     "memberEncryptionKey": {
@@ -49,13 +49,18 @@
     "ownedLocations": {
       "type": "hasMany",
       "model": "Location",
-      "foreignKey": "groupId"
+      "foreignKey": "sphereId"
+    },
+    "ownedAppliances": {
+      "type": "hasMany",
+      "model": "Appliance",
+      "foreignKey": "sphereId"
     },
     "users": {
       "type": "hasMany",
       "model": "user",
-      "foreignKey": "groupId",
-      "through": "GroupAccess",
+      "foreignKey": "sphereId",
+      "through": "SphereAccess",
       "keyThrough": ""
     }
   },

@@ -5,7 +5,7 @@ module.exports = function(model) {
 
 		//***************************
 		// GENERAL, ADMIN and OWNER
-		//  see group-conent.js
+		//  see sphere-content.js
 		//***************************
 
 		//***************************

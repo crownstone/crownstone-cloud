@@ -6,11 +6,11 @@
     "validateUpsert": true
   },
   "mixins": {
-    "GroupContent": true,
+    "SphereContent": true,
     "Cascade": {
       "StoneLocation": "stoneId"
     },
-    "TimeStamp": {
+    "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
@@ -43,6 +43,9 @@
     },
     "uid": {
       "type": "number"
+    },
+    "icon": {
+      "type": "string"
     },
     "json": {
       "type": "string"

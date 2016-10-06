@@ -22,10 +22,10 @@
   "PowerCurve": {
     "public": false
   },
-  "GroupAccess": {
+  "SphereAccess": {
     "public": false
   },
-  "GroupContainer": {
+  "SphereContainer": {
     "public": false
   },
   "UserContainer": {

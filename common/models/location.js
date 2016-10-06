@@ -9,7 +9,7 @@ module.exports = function(model) {
 
 		//***************************
 		// GENERAL, ADMIN and OWNER
-		//  see group-conent.js
+		//  see sphere-content.js
 		//***************************
 
 		//***************************
@@ -84,6 +84,7 @@ module.exports = function(model) {
 
 
 	model.disableRemoteMethod('updateAll', true);
+	model.disableRemoteMethod('upsert', true);
 	model.disableRemoteMethod('createChangeStream', true);
 
 	model.disableRemoteMethod('__link__presentPeople', false);
@@ -98,15 +99,15 @@ module.exports = function(model) {
 	 **** Model Validation
 	 ************************************/
 
-	model.validatesUniquenessOf('name', {scopedTo: ['groupId'], message: 'a location with this name was already added'});
+	model.validatesUniquenessOf('name', {scopedTo: ['sphereId'], message: 'a location with this name was already added'});
 
 	/************************************
 	 **** Cascade
 	 ************************************/
 
-	// if the group is deleted, delete also all files stored for this group
+	// if the sphere is deleted, delete also all files stored for this sphere
 	model.observe('before delete', function(context, next) {
-		model.deleteIcon(context.where.id, function() {
+		model.deleteImage(context.where.id, function() {
 			next();
 		});
 	});
@@ -124,28 +125,28 @@ module.exports = function(model) {
 		// debug("ctx:", ctx);
 		// debug("instance:", instance);
 		if (ctx.args.data) {
-			ctx.args.data.groupId = ctx.instance.groupId;
+			ctx.args.data.sphereId = ctx.instance.sphereId;
 		}
 		next();
 	});
 
 	/************************************
-	 **** Icon Methods
+	 **** Image Methods
 	 ************************************/
 
-	model.uploadIcon = function(id, req, next) {
-		debug("uploadIcon");
+	model.uploadImage = function(id, req, next) {
+		debug("uploadImage");
 
-		const Group = loopback.getModel('Group');
+		const Sphere = loopback.getModel('Sphere');
 
 		var upload = function(location, req) {
 
 			// upload the file
-			Group.uploadFile(location.groupId, req, function(err, file) {
+			Sphere.uploadFile(location.sphereId, req, function(err, file) {
 				if (err) return next(err);
 
 				// and set the id as profilePicId
-				location.iconId = file._id;
+				location.imageId = file._id;
 				location.save();
 
 				next(null, file);
@@ -157,8 +158,8 @@ module.exports = function(model) {
 			if (err) return next(err);
 
 			// if there is already an uploaded, delete the old one first
-			if (location.iconId) {
-				Group.deleteFile(location.groupId, location.iconId, function(err, file) {
+			if (location.imageId) {
+				Sphere.deleteFile(location.sphereId, location.imageId, function(err, file) {
 					if (err) return next(err);
 					upload(location, req);
 				});
@@ -170,22 +171,22 @@ module.exports = function(model) {
 	}
 
 	model.remoteMethod(
-		'uploadIcon',
+		'uploadImage',
 		{
-			http: {path: '/:id/icon', verb: 'post'},
+			http: {path: '/:id/image', verb: 'post'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 				{arg: 'req', type: 'object', http: { source: 'req' }}
 			],
 			returns: {arg: 'file', type: 'object', root: true},
-			description: "Upload icon to location"
+			description: "Upload image to location"
 		}
 	);
 
-	model.downloadIcon = function(id, res, next) {
-		debug("downloadIcon");
+	model.downloadImage = function(id, res, next) {
+		debug("downloadImage");
 
-		const Group = loopback.getModel('Group');
+		const Sphere = loopback.getModel('Sphere');
 
 		// get the location instance
 		model.findById(id, function(err, location) {
@@ -198,26 +199,26 @@ module.exports = function(model) {
 				return next(error);
 			}
 
-			Group.downloadFile(location.groupId, location.iconId, res, next);
+			Sphere.downloadFile(location.sphereId, location.imageId, res, next);
 		});
 	}
 
 	model.remoteMethod(
-		'downloadIcon',
+		'downloadImage',
 		{
-			http: {path: '/:id/icon', verb: 'get'},
+			http: {path: '/:id/image', verb: 'get'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 				{arg: 'res', type: 'object', 'http': { source: 'res' }}
 			],
-			description: "Download profile pic of User"
+			description: "Download image of the location"
 		}
 	);
 
-	model.deleteIcon = function(id, next) {
-		debug("deleteIcon");
+	model.deleteImage = function(id, next) {
+		debug("deleteImage");
 
-		const Group = loopback.getModel('Group');
+		const Sphere = loopback.getModel('Sphere');
 
 		// get the location instance
 		model.findById(id, function(err, location) {
@@ -230,18 +231,18 @@ module.exports = function(model) {
 				return next(error);
 			}
 
-			Group.deleteFile(location.groupId, location.iconId, next);
+			Sphere.deleteFile(location.sphereId, location.imageId, next);
 		});
 	}
 
 	model.remoteMethod(
-		'deleteIcon',
+		'deleteImage',
 		{
-			http: {path: '/:id/icon/:fk', verb: 'delete'},
+			http: {path: '/:id/image/:fk', verb: 'delete'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
-			description: "Delete icon of location"
+			description: "Delete image of the location"
 		}
 	);
 

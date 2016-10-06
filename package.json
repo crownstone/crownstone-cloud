@@ -24,7 +24,6 @@
     "loopback-connector-mongodb": "^1.13.0",
     "loopback-connector-sendgrid": "1.2.3",
     "loopback-datasource-juggler": "^2.39.0",
-    "loopback-ds-timestamp-mixin": "^3.2.4",
     "node-uuid": "*",
     "serve-favicon": "^2.0.1",
     "util": "*"

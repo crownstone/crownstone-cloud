@@ -6,11 +6,11 @@
     "validateUpsert": true
   },
   "mixins": {
-    "GroupContent": true,
+    "SphereContent": true,
     "Cascade": {
       "StoneLocation": "locationId"
     },
-    "TimeStamp": {
+    "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
@@ -27,7 +27,10 @@
     "groundTruth": {
       "type": "boolean"
     },
-    "iconId": {
+    "icon": {
+      "type": "string"
+    },
+    "imageId": {
       "type": "any"
     }
   },

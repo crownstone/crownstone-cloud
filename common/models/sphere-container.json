@@ -1,5 +1,5 @@
 {
-  "name": "GroupContainer",
+  "name": "SphereContainer",
   "base": "Model",
   "properties": {},
   "validations": [],

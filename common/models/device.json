@@ -6,7 +6,7 @@
     "validateUpsert": true
   },
   "mixins": {
-    "TimeStamp": {
+    "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
