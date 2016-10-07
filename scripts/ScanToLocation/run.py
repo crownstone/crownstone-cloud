@@ -13,7 +13,7 @@ from pprint import pprint;
 from termcolor import colored;
 
 # crownstone_base_url = "http://0.0.0.0:3000"
-crownstone_base_url = "http://crownstone-cloud.herokuapp.com"
+crownstone_base_url = "https://cloud.crownstone.rocks"
 crownstone_api_url = "%s/api" %crownstone_base_url
 
 date_time_format = "%Y-%m-%dT%H:%M:%S.000Z"
