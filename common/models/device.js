@@ -68,10 +68,11 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__unlink__coordinatesHistory', false);
 	model.disableRemoteMethod('__exists__coordinatesHistory', false);
 	model.disableRemoteMethod('__findById__coordinatesHistory', false);
+	model.disableRemoteMethod('__delete__coordinatesHistory', false);
 
 	model.disableRemoteMethod('__updateById__locationsHistory', false);
 	// model.disableRemoteMethod('__create__locationsHistory', false);
-	// model.disableRemoteMethod('__delete__locationsHistory', false);
+	model.disableRemoteMethod('__delete__locationsHistory', false);
 	model.disableRemoteMethod('__link__locationsHistory', false);
 	model.disableRemoteMethod('__unlink__locationsHistory', false);
 	model.disableRemoteMethod('__exists__locationsHistory', false);
@@ -79,6 +80,7 @@ module.exports = function(model) {
 
 	model.disableRemoteMethod('__updateById__scans', false);
 	model.disableRemoteMethod('__findById__scans', false);
+	model.disableRemoteMethod('__delete__scans', false);
 
 	model.disableRemoteMethod('createChangeStream', true);
 	model.disableRemoteMethod('upsert', true);
@@ -269,6 +271,66 @@ module.exports = function(model) {
 			],
 			returns: {arg: 'data', type: 'Coordinate', root: true},
 			description: "Add current coordinate of the device"
+		}
+	);
+
+	model.deleteCoordinatesHistory = function(id, cb) {
+		model.findById(id, {include: "coordinatesHistory"}, function(err, device) {
+			if (err) return cb(err);
+			device.coordinatesHistory.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteCoordinatesHistory',
+		{
+			http: {path: '/:id/deleteCoordinatesHistory', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete coordinates history of Device"
+		}
+	);
+
+	model.deleteLocationsHistory = function(id, cb) {
+		model.findById(id, {include: "locationsHistory"}, function(err, device) {
+			if (err) return cb(err);
+			device.locationsHistory.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteLocationsHistory',
+		{
+			http: {path: '/:id/deleteLocationsHistory', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete locations history of Device"
+		}
+	);
+
+	model.deleteAllScans = function(id, cb) {
+		model.findById(id, {include: "scans"}, function(err, device) {
+			if (err) return cb(err);
+			device.scans.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteAllScans',
+		{
+			http: {path: '/:id/deleteAllScans', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete all scans of Device"
 		}
 	);
 

@@ -1074,7 +1074,7 @@ module.exports = function(model) {
 	model.remoteMethod(
 		'deleteAllFiles',
 		{
-			http: {path: '/:id/files', verb: 'delete'},
+			http: {path: '/:id/deleteAllFiles', verb: 'delete'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
@@ -1145,6 +1145,66 @@ module.exports = function(model) {
 				{arg: 'res', type: 'object', 'http': { source: 'res' }}
 			],
 			description: "Download profile pic of User"
+		}
+	);
+
+	model.deleteAllLocations = function(id, cb) {
+		model.findById(id, {include: "ownedLocations"}, function(err, sphere) {
+			if (err) return cb(err);
+			sphere.ownedLocations.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteAllLocations',
+		{
+			http: {path: '/:id/deleteAllLocations', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete all locations of Sphere"
+		}
+	);
+
+	model.deleteAllStones = function(id, cb) {
+		model.findById(id, {include: "ownedStones"}, function(err, sphere) {
+			if (err) return cb(err);
+			sphere.ownedStones.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteAllStones',
+		{
+			http: {path: '/:id/deleteAllStones', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete all stones of Sphere"
+		}
+	);
+
+	model.deleteAllAppliances = function(id, cb) {
+		model.findById(id, {include: "ownedAppliances"}, function(err, sphere) {
+			if (err) return cb(err);
+			sphere.ownedAppliances.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteAllAppliances',
+		{
+			http: {path: '/:id/deleteAllAppliances', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete all appliances of Sphere"
 		}
 	);
 

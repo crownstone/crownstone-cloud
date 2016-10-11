@@ -699,6 +699,10 @@ module.exports = function(model) {
 
 	}
 
+	/************************************
+	 **** Delete ALL functions
+	 ************************************/
+
 	model.remoteMethod(
 		'notifyOnRecovery',
 		{
@@ -709,4 +713,105 @@ module.exports = function(model) {
 			description: "Notify admin about stone recovery"
 		}
 	);
+
+	model.deleteCoordinatesHistory = function(id, cb) {
+		model.findById(id, {include: "coordinatesHistory"}, function(err, stone) {
+			if (err) return cb(err);
+			stone.coordinatesHistory.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteCoordinatesHistory',
+		{
+			http: {path: '/:id/deleteCoordinatesHistory', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete coordinates history of Stone"
+		}
+	);
+
+	model.deleteEnergyUsageHistory = function(id, cb) {
+		model.findById(id, {include: "energyUsageHistory"}, function(err, stone) {
+			if (err) return cb(err);
+			stone.energyUsageHistory.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteEnergyUsageHistory',
+		{
+			http: {path: '/:id/deleteEnergyUsageHistory', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete energy usage history of Stone"
+		}
+	);
+
+	model.deletePowerUsageHistory = function(id, cb) {
+		model.findById(id, {include: "powerUsageHistory"}, function(err, stone) {
+			if (err) return cb(err);
+			stone.powerUsageHistory.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deletePowerUsageHistory',
+		{
+			http: {path: '/:id/deletePowerUsageHistory', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete power usage history of Stone"
+		}
+	);
+
+	model.deletePowerCurveHistory = function(id, cb) {
+		model.findById(id, {include: "powerCurveHistory"}, function(err, stone) {
+			if (err) return cb(err);
+			stone.powerCurveHistory.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deletePowerCurveHistory',
+		{
+			http: {path: '/:id/deletePowerCurveHistory', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete power curve history of Stone"
+		}
+	);
+
+	model.deleteAllScans = function(id, cb) {
+		model.findById(id, {include: "scans"}, function(err, stone) {
+			if (err) return cb(err);
+			stone.scans.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteAllScans',
+		{
+			http: {path: '/:id/deleteAllScans', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete all scans of Stone"
+		}
+	);
+
 };

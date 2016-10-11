@@ -90,12 +90,17 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__deleteById__currentLocation', false);
 	model.disableRemoteMethod('__destroyById__currentLocation', false);
 	model.disableRemoteMethod('__count__currentLocation', false);
+	model.disableRemoteMethod('__link__currentLocation', false);
+	model.disableRemoteMethod('__unlink__currentLocation', false);
+	model.disableRemoteMethod('__findById__currentLocation', false);
 
 	model.disableRemoteMethod('__delete__spheres', false);
 	model.disableRemoteMethod('__create__spheres', false);
 	model.disableRemoteMethod('__updateById__spheres', false);
 	model.disableRemoteMethod('__destroyById__spheres', false);
 	model.disableRemoteMethod('__link__spheres', false);
+
+	model.disableRemoteMethod('__delete__devices', false);
 
 	/************************************
 	 **** Model Validation
@@ -366,22 +371,6 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllFiles = function(id, cb) {
-		const Container = loopback.getModel('UserContainer');
-		Container._deleteContainer(id, cb);
-	}
-
-	model.remoteMethod(
-		'deleteAllFiles',
-		{
-			http: {path: '/:id/files', verb: 'delete'},
-			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
-			],
-			description: "Delete all files of User"
-		}
-	);
-
 	model.downloadFile = function(id, fk, res, cb) {
 		const Container = loopback.getModel('UserContainer');
 		Container._download(id, fk, res, cb);
@@ -541,6 +530,66 @@ module.exports = function(model) {
 			accepts: {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 			returns: {arg: 'data', type: ['object'], root: true},
 			description: "Returns encryption keys per Sphere of User"
+		}
+	);
+
+	/************************************
+	 **** Delete ALL functions
+	 ************************************/
+
+	model.deleteAllDevices = function(id, cb) {
+		model.findById(id, {include: "devices"}, function(err, user) {
+			if (err) return cb(err);
+			user.devices.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteAllDevices',
+		{
+			http: {path: '/:id/deleteAllDevices', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete all devices of User"
+		}
+	);
+
+	model.deleteAllFiles = function(id, cb) {
+		const Container = loopback.getModel('UserContainer');
+		Container._deleteContainer(id, cb);
+	}
+
+	model.remoteMethod(
+		'deleteAllFiles',
+		{
+			http: {path: '/:id/deleteAllFiles', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			description: "Delete all files of User"
+		}
+	);
+
+	model.deleteAllSpheres = function(id, cb) {
+		model.findById(id, {include: "spheres"}, function(err, user) {
+			if (err) return cb(err);
+			user.spheres.destroyAll(function(err) {
+				cb(err);
+			});
+		})
+	}
+
+	model.remoteMethod(
+		'deleteAllSpheres',
+		{
+			http: {path: '/:id/deleteAllSpheres', verb: 'delete'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+			],
+			description: "Delete all spheres of User"
 		}
 	);
 
