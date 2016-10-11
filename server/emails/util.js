@@ -97,6 +97,26 @@ var util = {
 		};
 
 		return options;
+	},
+
+	sendInviteEmail: function(sphere, email, url, token) {
+
+		const Email = loopback.findModel('Email');
+
+		var html = 'You have been invited to the sphere <b>' + sphere.name + '</b>. ' +
+				'You can use the following link to follow up on the registration:<br>' +
+				url + '?access_token=' + token
+
+		Email.send({
+			to: email,
+			from: 'noreply@crownstone.rocks',
+			subject: 'Invitation to sphere ' + sphere.name,
+			html: html
+		}, function(err) {
+			if (err) return debug('error sending invitation email');
+			debug('sending invitation email to:', email);
+		});
+
 	}
 }
 

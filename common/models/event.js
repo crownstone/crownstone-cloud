@@ -15,7 +15,7 @@ module.exports = function(model) {
 		//***************************
 		model.settings.acls.push(
 			{
-				"accessType": "*",
+				"accessType": "EXECUTE",
 				"principalType": "ROLE",
 				"principalId": "$group:member",
 				"permission": "ALLOW"

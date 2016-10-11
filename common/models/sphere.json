@@ -1,6 +1,7 @@
 {
   "name": "Sphere",
   "base": "PersistedModel",
+  "strictDelete": true,
   "idInjection": true,
   "options": {
     "validateUpsert": true
@@ -29,6 +30,9 @@
       "type": "string",
       "required": true
     },
+    "meshAccessAddress": {
+      "type": "string"
+    },
     "adminEncryptionKey": {
       "type": "string"
     },
@@ -49,6 +53,11 @@
     "ownedLocations": {
       "type": "hasMany",
       "model": "Location",
+      "foreignKey": "sphereId"
+    },
+    "ownedStones": {
+      "type": "hasMany",
+      "model": "Stone",
       "foreignKey": "sphereId"
     },
     "ownedAppliances": {

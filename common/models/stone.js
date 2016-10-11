@@ -30,12 +30,13 @@ module.exports = function(model) {
 		//***************************
 		model.settings.acls.push(
 			{
-				"accessType": "*",
+				"accessType": "EXECUTE",
 				"principalType": "ROLE",
 				"principalId": "$group:member",
 				"permission": "ALLOW"
 			}
 		);
+
 		model.settings.acls.push(
 			{
 				"principalType": "ROLE",
@@ -124,6 +125,7 @@ module.exports = function(model) {
 				"property": "deleteById"
 			}
 		);
+
 		//***************************
 		// GUEST:
 		//   - read
@@ -138,14 +140,14 @@ module.exports = function(model) {
 				"permission": "ALLOW"
 			}
 		);
-		model.settings.acls.push(
-			{
-				"principalType": "ROLE",
-				"principalId": "$group:guest",
-				"permission": "ALLOW",
-				"property": "updateAttributes"
-			}
-		);
+		// model.settings.acls.push(
+		// 	{
+		// 		"principalType": "ROLE",
+		// 		"principalId": "$group:guest",
+		// 		"permission": "ALLOW",
+		// 		"property": "updateAttributes"
+		// 	}
+		// );
 		model.settings.acls.push(
 			{
 				"principalType": "ROLE",
@@ -156,11 +158,18 @@ module.exports = function(model) {
 		);
 		model.settings.acls.push(
 			{
-				"accessType": "WRITE",
 				"principalType": "ROLE",
 				"principalId": "$group:guest",
 				"permission": "ALLOW",
 				"property": "updateSwitchState"
+			}
+		);
+		model.settings.acls.push(
+			{
+				"principalType": "ROLE",
+				"principalId": "$group:guest",
+				"permission": "ALLOW",
+				"property": "notifyOnRecovery"
 			}
 		);
 	}
@@ -185,13 +194,20 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__delete__locations', false);
 	model.disableRemoteMethod('__updateById__locations', false);
 	model.disableRemoteMethod('__deleteById__locations', false);
+	model.disableRemoteMethod('__destroyById__locations', false);
 
 	// do we need these? since it is historical data, it should not be updateable once it is uploaded?
 	model.disableRemoteMethod('__updateById__scans', false);
-	model.disableRemoteMethod('__updateById__powerUsageHistory', false);
-	model.disableRemoteMethod('__updateById__energyUsageHistory', false);
 	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
+	model.disableRemoteMethod('__updateById__energyUsageHistory', false);
 	model.disableRemoteMethod('__updateById__powerCurveHistory', false);
+	model.disableRemoteMethod('__updateById__powerUsageHistory', false);
+
+	model.disableRemoteMethod('__delete__scans', false);
+	model.disableRemoteMethod('__delete__coordinatesHistory', false);
+	model.disableRemoteMethod('__delete__energyUsageHistory', false);
+	model.disableRemoteMethod('__delete__powerCurveHistory', false);
+	model.disableRemoteMethod('__delete__powerUsageHistory', false);
 
 	function initStone(ctx, next) {
 		debug("initStone");

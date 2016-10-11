@@ -1,6 +1,7 @@
 {
   "name": "PowerUsage",
   "base": "PersistedModel",
+  "strictDelete": true,
   "idInjection": true,
   "options": {
     "validateUpsert": true

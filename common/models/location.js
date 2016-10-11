@@ -21,12 +21,13 @@ module.exports = function(model) {
 		//***************************
 		model.settings.acls.push(
 			{
-				"accessType": "*",
+				"accessType": "EXECUTE",
 				"principalType": "ROLE",
 				"principalId": "$group:member",
 				"permission": "ALLOW"
 			}
 		);
+
 		model.settings.acls.push(
 			{
 				"principalType": "ROLE",
@@ -72,14 +73,14 @@ module.exports = function(model) {
 				"permission": "ALLOW"
 			}
 		);
-		model.settings.acls.push(
-			{
-				"principalType": "ROLE",
-				"principalId": "$group:guest",
-				"permission": "ALLOW",
-				"property": "__updateById__stones"
-			}
-		);
+		// model.settings.acls.push(
+		// 	{
+		// 		"principalType": "ROLE",
+		// 		"principalId": "$group:guest",
+		// 		"permission": "ALLOW",
+		// 		"property": "__updateById__stones"
+		// 	}
+		// );
 	}
 
 
@@ -94,6 +95,10 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__destroyById__presentPeople', false);
 	model.disableRemoteMethod('__create__presentPeople', false);
 	model.disableRemoteMethod('__delete__presentPeople', false);
+
+	model.disableRemoteMethod('__delete__stones', false);
+	model.disableRemoteMethod('__deleteById__stones', false);
+	model.disableRemoteMethod('__destroyById__stones', false);
 
 	/************************************
 	 **** Model Validation

@@ -1,0 +1,26 @@
+<section>
+  <form action="/profile-setup?access_token=<%= accessToken %>" method="post">
+    <fieldset>
+      <legend>Setup profile form</legend>
+      <div>
+        <label for="firstName">First Name:</label>
+        <input type="text" name="firstName">
+      </div>
+      <div>
+        <label for="lastName">Last Name:</label>
+        <input type="text" name="lastName">
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input type="password" name="password">
+      </div>
+      <div>
+        <label for="confirmation">Confirm password:</label>
+        <input type="password" name="confirmation">
+      </div>
+      <div>
+        <input type="submit" value="Sign up"/>
+      </div>
+    </fieldset>
+  </form>
+</section

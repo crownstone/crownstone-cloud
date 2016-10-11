@@ -1,5 +1,11 @@
+var sha1 = require('sha1');
+
 module.exports = function(app) {
   var User = app.models.user;
+
+  function hashPassword(password) {
+    return sha1(password);
+  }
 
   //login page
   app.get('/', function(req, res) {
@@ -20,7 +26,7 @@ module.exports = function(app) {
   app.post('/login', function(req, res) {
     User.login({
       email: req.body.email,
-      password: req.body.password
+      password: hashPassword(req.body.password)
     }, 'user', function(err, token) {
       if (err) {
         if (err.code === 'LOGIN_FAILED_EMAIL_NOT_VERIFIED') {
@@ -114,7 +120,8 @@ module.exports = function(app) {
 
     User.findById(req.accessToken.userId, function(err, user) {
       if (err) return res.sendStatus(404);
-      user.updateAttribute('password', req.body.password, function(err, user) {
+      user.updateAttribute('password', hashPassword(req.body.password), function(err, user) {
+      // user.updateAttribute('password', req.body.password, function(err, user) {
       if (err) return res.sendStatus(404);
         console.log('> password reset processed successfully');
         res.render('response', {
@@ -126,6 +133,64 @@ module.exports = function(app) {
       });
     });
   });
+
+  //show profile setup form
+  app.get('/profile-setup', function(req, res, next) {
+    if (!req.accessToken) return res.sendStatus(401);
+
+    User.findById(req.accessToken.userId, function(err, user) {
+      if (user.emailVerified) {
+        console.log("already verified!");
+        res.render('response', {
+          title: 'Bad Request',
+          content: 'User is already successfully set up',
+          redirectTo: '/',
+          redirectToLinkText: 'Log in'
+        });
+        // return res.sendStatus(400, new Error("User is already successfully set up"));
+      } else {
+        res.render('profile-setup', {
+          accessToken: req.accessToken.id
+        });
+      }
+    });
+  });
+
+  //reset the user's pasword
+  app.post('/profile-setup', function(req, res, next) {
+    if (!req.accessToken) return res.sendStatus(401);
+
+    //verify passwords match
+    if (!req.body.firstName || !req.body.lastName) {
+      return res.sendStatus(400, new Error('First and last name have to be filled in!'))
+    }
+    if (!req.body.password ||
+        !req.body.confirmation ||
+        req.body.password !== req.body.confirmation) {
+      return res.sendStatus(400, new Error('Passwords do not match'));
+    }
+
+    User.findById(req.accessToken.userId, function(err, user) {
+      if (err) return res.sendStatus(404);
+
+      user.emailVerified = true;
+      user.firstName = req.body.firstName;
+      user.lastName = req.body.lastName;
+      user.password = hashPassword(req.body.password);
+      user.save(function(err, user) {
+
+        if (err) return res.sendStatus(404);
+        console.log('> signup successful');
+        res.render('response', {
+          title: 'Signup success',
+          content: 'You successfully completed the signup process',
+          redirectTo: '/',
+          redirectToLinkText: 'Log in'
+        });
+      });
+    });
+  });
+
 
 
 };

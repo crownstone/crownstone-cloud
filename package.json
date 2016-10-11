@@ -26,6 +26,7 @@
     "loopback-datasource-juggler": "^2.39.0",
     "node-uuid": "*",
     "serve-favicon": "^2.0.1",
+    "sha1": "^1.1.1",
     "util": "*"
   },
   "devDependencies": {

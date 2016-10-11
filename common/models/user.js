@@ -88,6 +88,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__delete__currentLocation', false);
 	model.disableRemoteMethod('__updateById__currentLocation', false);
 	model.disableRemoteMethod('__deleteById__currentLocation', false);
+	model.disableRemoteMethod('__destroyById__currentLocation', false);
 	model.disableRemoteMethod('__count__currentLocation', false);
 
 	model.disableRemoteMethod('__delete__spheres', false);
@@ -179,6 +180,7 @@ module.exports = function(model) {
 
 		// console.log("options: " + JSON.stringify(options));
 
+		debug("sending verification");
 		user.verify(options, cb);
 	};
 

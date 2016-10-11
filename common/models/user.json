@@ -1,6 +1,7 @@
 {
   "name": "user",
   "base": "User",
+  "strictDelete": true,
   "idInjection": true,
   "options": {
     "validateUpsert": true
@@ -25,15 +26,17 @@
       "type": "any"
     },
     "firstName": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "lastName": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "json": {
       "type": "string"
+    },
+    "new": {
+      "type": "boolean",
+      "default": "true"
     }
   },
   "validations": [],
