@@ -38,6 +38,6 @@
   },
   "description": "Crownstone",
   "engines": {
-    "node": "5.0.0"
+    "node": "*"
   }
 }
