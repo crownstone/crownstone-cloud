@@ -21,7 +21,7 @@ module.exports = function(model) {
 		}
 	}
 
-	var retreiveUserSpheres = function(next) {
+	var retrieveUserSpheres = function(next) {
 		if (DEBUG) {
 			userSpheres = null;
 		} else {
@@ -40,7 +40,7 @@ module.exports = function(model) {
 				//       // filter[this.options.foreignKey] = { inq: userSpheres };
 				//       // return filter;
 				//     });
-				spheres = model.app.accessUtils.getCurrentUserSpheres();
+				spheres = model.app.accessUtils.getCurrentUserGroups();
 				userSpheres = Array.from(spheres, sphere => new String(sphere[model.app.accessUtils.options.foreignKey]).valueOf());
 				debug("userSpheres:", userSpheres);
 			}
@@ -71,7 +71,7 @@ module.exports = function(model) {
 	var checkAccess = function(id, cb) {
 
 		var containerName = getContainerName(id);
-		retreiveUserSpheres(function() {
+		retrieveUserSpheres(function() {
 			// debug("id", id);
 			// debug("userSpheres.indexOf(id)", userSpheres.indexOf(containerName));
 			if (userSpheres && userSpheres.indexOf(containerName) < 0) {
@@ -90,7 +90,7 @@ module.exports = function(model) {
 	});
 
 	model.beforeRemote('getContainers', function(ctx, instance, next) {
-		retreiveUserSpheres(next);
+		retrieveUserSpheres(next);
 	});
 
 	model.afterRemote('getContainers', function(ctx, instance, next) {
