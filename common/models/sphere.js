@@ -265,8 +265,8 @@ module.exports = function(model) {
 	// check that a sphere is not deleted as long as there are crownstones assigned
 	model.observe('before delete', function(context, next) {
 
-		model.countOwnedStones(context.where.id, function(err, count) {
-			if (count > 0) {
+		model.findById(context.where.id, {include: 'ownedStones'}, function(err, sphere) {
+			if (sphere.ownedStones().length > 0) {
 				error = new Error("Can't delete a sphere with assigned crownstones.")
 				next(error);
 			} else {
@@ -397,49 +397,6 @@ module.exports = function(model) {
 	// 	debug("ctx:", ctx);
 	// 	next();
 	// });
-
-	// model.ownedStones = function(id, cb) {
-
-	// 	var Stone = loopback.getModel('Stone');
-	// 	Stone.find({where: {"sphereId": id}}, function(err, stones) {
-	// 		if (err) return cb(err);
-	// 		cb(null, stones);
-	// 	});
-
-	// }
-
-	// model.remoteMethod(
-	// 	'ownedStones',
-	// 	{
-	// 		http: {path: '/:id/ownedStones', verb: 'get'},
-	// 		accepts: [
-	// 			{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
-	// 		],
-	// 		returns: {arg: 'data', type: ['Stone'], root: true},
-	// 		description: "Queries stones owned by Sphere"
-	// 	}
-	// );
-
-	// model.countOwnedStones = function(id, cb) {
-
-	// 	model.ownedStones(id, function(err, stones) {
-	// 		if (err) return cb(err);
-
-	// 		cb(null, stones.length);
-	// 	})
-	// }
-
-	// model.remoteMethod(
-	// 	'countOwnedStones',
-	// 	{
-	// 		http: {path: '/:id/ownedStones/count', verb: 'get'},
-	// 		accepts: [
-	// 			{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
-	// 		],
-	// 		returns: {arg: 'count', type: 'number'},
-	// 		description: "Counts ownedStones of Sphere"
-	// 	}
-	// );
 
 	/************************************
 	 **** Membership Methods
