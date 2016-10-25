@@ -30,7 +30,7 @@
   "validations": [],
   "relations": {
     "stones": {
-      "type": "hasAndBelongsToMany",
+      "type": "hasMany",
       "model": "Stone",
       "foreignKey": "applianceId"
     }

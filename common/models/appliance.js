@@ -45,7 +45,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__updateById__stones', false);
 	model.disableRemoteMethod('__delete__stones', false);
 	model.disableRemoteMethod('__create__stones', false);
-	model.disableRemoteMethod('__link__stones', false);
+	// model.disableRemoteMethod('__link__stones', false);
 	// model.disableRemoteMethod('__unlink__stones', false);
 
 

@@ -22,8 +22,7 @@
       "required": true
     },
     "description": {
-      "type": "string",
-      "required": false
+      "type": "string"
     },
     "groundTruth": {
       "type": "boolean"
@@ -33,6 +32,10 @@
     },
     "imageId": {
       "type": "any"
+    },
+    "metaLevel": {
+      "type": "number",
+      "default": 0
     }
   },
   "validations": [],
