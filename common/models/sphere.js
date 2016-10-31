@@ -228,6 +228,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__delete__users', false);
 	model.disableRemoteMethod('__destroyById__users', false);
 	model.disableRemoteMethod('__updateById__users', false);
+	model.disableRemoteMethod('__link__users', false);
 
 	model.disableRemoteMethod('__delete__ownedLocations', false);
 	model.disableRemoteMethod('__delete__ownedStones', false);
@@ -490,7 +491,8 @@ module.exports = function(model) {
 		sphere.users.add(user, {
 			sphereId: sphere.id,
 			userId: user.id,
-			role: access
+			role: access,
+			invitePending: true
 		},
 		function(err, access) {
 			debug("err", err);
@@ -532,7 +534,18 @@ module.exports = function(model) {
 						} else {
 							if (user) {
 								debug("user:", user);
-								addSphereAccess(user, sphere, access, cb);
+								// user.invitePending = id;
+								// user.save();
+
+								addSphereAccess(user, sphere, access, function(err) {
+									if (err) return cb(err);
+
+									var acceptUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/accept-invite'
+									var declineUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/decline-invite'
+
+									util.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
+									cb();
+								});
 							} else {
 								error = new Error("no user found with this email");
 								cb(error);
@@ -565,9 +578,14 @@ module.exports = function(model) {
 			user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
 				if (err) return next(err);
 
-				var url = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/profile-setup'
-				util.sendInviteEmail(sphere, email, url, accessToken.id);
-				next();
+				addSphereAccess(user, sphere, access, function(err) {
+					if (err) return cb(err);
+
+					var acceptUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/profile-setup'
+					var declineUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/decline-invite-new'
+					util.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
+					next();
+				});
 			});
 		});
 	}
@@ -585,8 +603,10 @@ module.exports = function(model) {
 					if (err) return next(err);
 
 					if (!user) {
+						debug("create new user")
 						createAndInviteUser(sphere, email, access, next);
 					} else {
+						debug("add existing user")
 						addExistingUser(email, sphereId, access, next);
 					}
 				});
@@ -652,6 +672,22 @@ module.exports = function(model) {
 		}
 	);
 
+	model.beforeRemote("*.__get__users", function(context, instance, next) {
+		// do not need to wait for result of email
+		// filter = {invitePending: {neq: true}}
+		// const where = context.args.filter ? {
+  //         and: [ context.args.filter, filter ]
+  //       } : filter;
+
+		// debug("context.args before", context.args);
+
+  //       context.args.filter = where;
+
+		debug("context.args", context.args);
+		// debug("instance", instance);
+		next();
+	});
+
 	function findUsersWithRole(id, access, cb) {
 
 		model.findById(id, function(err, instance) {
@@ -665,7 +701,7 @@ module.exports = function(model) {
 
 				const SphereAccess = loopback.getModel('SphereAccess');
 				SphereAccess.find(
-					{where: {and: [{sphereId: id}, {role: access}]}, field: "userId"},
+					{where: {and: [{sphereId: id}, {role: access}, {invitePending: {neq: true}}]}, field: "userId"},
 					function(err, res) {
 						if (err) return cb(err);
 
@@ -1180,16 +1216,24 @@ module.exports = function(model) {
 		});
 	});
 
-	model.afterRemote("*.__link__users", function(context, instance, next) {
-		// do not need to wait for result of email
-		next();
+	// model.afterRemote("*.__link__users", function(context, instance, next) {
+	// 	debug("link users");
 
-		const User = loopback.findModel('user');
-		User.findById(context.args.fk, function(err, user) {
-			if (err || !user) return debug("did not find user to send notification email");
-			util.sendAddedToSphereEmail(user, context.instance, next);
-		});
-	});
+	// 	// do not need to wait for result of email
+	// 	next();
+
+	// 	const User = loopback.findModel('user');
+	// 	User.findById(context.args.fk, function(err, user) {
+	// 		if (err || !user) return debug("did not find user to send notification email");
+
+	// 		var acceptUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/accept-invite'
+	// 		var declineUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/decline-invite'
+
+	// 		util.sendExistingUserInviteEmail(user, context.instance, acceptUrl, declineUrl);
+
+	// 		// util.sendAddedToSphereEmail(user, context.instance, next);
+	// 	});
+	// });
 
 	// model.afterRemote("addMember", function(context, instance, next) {
 	// 	// do not need to wait for result of email

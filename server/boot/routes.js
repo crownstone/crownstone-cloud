@@ -2,6 +2,8 @@ var sha1 = require('sha1');
 
 module.exports = function(app) {
   var User = app.models.user;
+  var Sphere = app.models.Sphere;
+  var SphereAccess = app.models.SphereAccess;
 
   function hashPassword(password) {
     return sha1(password);
@@ -9,7 +11,7 @@ module.exports = function(app) {
 
   //login page
   app.get('/', function(req, res) {
-    res.render('login', {
+    res.render('main', {
       firstName: "",
       lastName: "",
       email: "",
@@ -134,6 +136,171 @@ module.exports = function(app) {
     });
   });
 
+  app.get('/decline-invite-new', function(req, res, next) {
+    if (!req.accessToken) return res.sendStatus(401);
+
+    User.findById(req.accessToken.userId, function(err, user) {
+      if (user.emailVerified) {
+        console.log('err, user already verified');
+        // return res.sendStatus(400, new Error("User already verified"));
+
+        res.render('response', {
+          title: 'Bad Request',
+          content: 'User is already verified',
+          redirectTo: '/',
+          redirectToLinkText: 'Log in'
+        });
+        // console.log('remove again from sphere');
+        // SphereAccess.destroyAll({sphereId: sphereId, userId: req.accessToken.userId}, function(err) {
+        //   if (err) return res.sendStatus(400, "Failed to remove again from sphere");
+        //   next();
+        // })
+      } else {
+        SphereAccess.destroyAll({sphereId: req.sphereId, userId: user.id}, function(err) {
+          if (err) console.log("failed to remove user from sphere");
+          user.destroy(function(err, info) {
+            if (err) console.log("failed to delete user");
+
+            res.render('response', {
+              title: 'Invite declined',
+              content: 'You have declined the invitation',
+              redirectTo: '/',
+              redirectToLinkText: 'Log in'
+            });
+          });
+        })
+      }
+    });
+  });
+
+  app.get('/accept-invite', function(req, res, next) {
+    res.render('login', {
+      email: "",
+      password: "",
+      loginPostUrl: "/accept-invite",
+      sphereId: req.sphereId
+    });
+  });
+
+  //log a user in
+  app.post('/accept-invite', function(req, res) {
+    User.login({
+      email: req.body.email,
+      password: hashPassword(req.body.password)
+    }, 'user', function(err, token) {
+      if (err) {
+        if (err.code === 'LOGIN_FAILED_EMAIL_NOT_VERIFIED') {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/resend-verification',
+            redirectToLinkText: 'Resend verification'
+          });
+        } else {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/',
+            redirectToLinkText: 'Try again'
+          });
+        }
+        return;
+      }
+
+      // User.findById(token.userId, function(err, user) {
+      //   user.invitePending = null;
+      //   user.save();
+      // });
+      SphereAccess.updateAll(
+        {sphereId: req.body.sphereId, userId: token.userId, invitePending: true},
+        {invitePending: false}, 
+        function(err, info) {
+          if (err) console.log("failed to update sphere access");
+
+          if (info.count == 0) {
+            res.render('response', {
+              title: 'Bad Request',
+              content: 'No pending invitation found',
+              redirectTo: '/',
+              redirectToLinkText: 'Log in'
+            });
+          } else {
+            res.render('response', {
+              title: 'Invite accepted',
+              content: 'You have accepted the invitation',
+              redirectTo: '/',
+              redirectToLinkText: 'Log in'
+            });
+          }
+      });
+
+    });
+  });
+
+
+  app.get('/decline-invite', function(req, res, next) {
+    res.render('login', {
+      email: "",
+      password: "",
+      loginPostUrl: "/decline-invite",
+      sphereId: req.sphereId
+    });
+  });
+
+  //log a user in
+  app.post('/decline-invite', function(req, res) {
+    User.login({
+      email: req.body.email,
+      password: hashPassword(req.body.password)
+    }, 'user', function(err, token) {
+      if (err) {
+        if (err.code === 'LOGIN_FAILED_EMAIL_NOT_VERIFIED') {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/resend-verification',
+            redirectToLinkText: 'Resend verification'
+          });
+        } else {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/',
+            redirectToLinkText: 'Try again'
+          });
+        }
+        return;
+      }
+
+      // User.findById(token.userId, function(err, user) {
+      //   user.invitePending = null;
+      //   user.save();
+      // });
+
+      SphereAccess.destroyAll(
+        {sphereId: req.body.sphereId, userId: token.userId, invitePending: true}, 
+        function(err, info) {
+          if (err) console.log("failed to remove user from sphere");
+
+          if (info.count == 0) {
+            res.render('response', {
+              title: 'Bad Request',
+              content: 'No pending invitation found',
+              redirectTo: '/',
+              redirectToLinkText: 'Log in'
+            });
+          } else {
+            res.render('response', {
+              title: 'Invite declined',
+              content: 'You have declined the invitation',
+              redirectTo: '/',
+              redirectToLinkText: 'Log in'
+            });
+          }
+      })
+    });
+  });
+
   //show profile setup form
   app.get('/profile-setup', function(req, res, next) {
     if (!req.accessToken) return res.sendStatus(401);
@@ -150,7 +317,8 @@ module.exports = function(app) {
         // return res.sendStatus(400, new Error("User is already successfully set up"));
       } else {
         res.render('profile-setup', {
-          accessToken: req.accessToken.id
+          accessToken: req.accessToken.id,
+          sphereId: req.sphereId
         });
       }
     });
@@ -178,8 +346,13 @@ module.exports = function(app) {
       user.lastName = req.body.lastName;
       user.password = hashPassword(req.body.password);
       user.save(function(err, user) {
-
         if (err) return res.sendStatus(404);
+
+        SphereAccess.updateAll({sphereId: req.body.sphereId, userId: token.userId},
+          {invitePending: false}, function(err, info) {
+            if (err) console.log("failed to update sphere access");
+        });
+
         console.log('> signup successful');
         res.render('response', {
           title: 'Signup success',

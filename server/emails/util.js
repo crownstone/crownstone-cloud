@@ -44,25 +44,6 @@ var util = {
 		});
 	},
 
-	sendAddedToSphereEmail : function(user, sphere, next) {
-
-		const Email = loopback.findModel('Email');
-
-		var app = require('../../server/server');
-		var currentUser = app.accessUtils.getCurrentUser();
-		var html = 'You were added to the sphere <b>' + sphere.name + '</b> by ' +
-					currentUser.firstName + ' ' + currentUser.lastName;
-		Email.send({
-			to: user.email,
-			from: 'noreply@crownstone.rocks',
-			subject: 'Notification email',
-			html: html
-		}, function(err) {
-			if (err) return debug('failed to send notification email');
-			debug('sending add notification email to:', user.email);
-		});
-	},
-
 	sendResetPasswordRequest : function(url, token, email) {
 
 		const Email = loopback.findModel('Email');
@@ -99,13 +80,15 @@ var util = {
 		return options;
 	},
 
-	sendInviteEmail: function(sphere, email, url, token) {
+	sendNewUserInviteEmail: function(sphere, email, acceptUrl, declineUrl, token) {
 
 		const Email = loopback.findModel('Email');
 
 		var html = 'You have been invited to the sphere <b>' + sphere.name + '</b>. ' +
 				'You can use the following link to follow up on the registration:<br>' +
-				url + '?access_token=' + token
+				acceptUrl + '?access_token=' + token + '&sphere_id=' + sphere.id + '<br>' +
+				'Or click here to decline:<br>' + 
+				declineUrl + '?access_token=' + token + '&sphere_id=' + sphere.id;
 
 		Email.send({
 			to: email,
@@ -115,6 +98,51 @@ var util = {
 		}, function(err) {
 			if (err) return debug('error sending invitation email');
 			debug('sending invitation email to:', email);
+		});
+
+	},
+
+	// sendAddedToSphereEmail : function(user, sphere, next) {
+
+	// 	const Email = loopback.findModel('Email');
+
+	// 	var app = require('../../server/server');
+	// 	var currentUser = app.accessUtils.getCurrentUser();
+	// 	var html = 'You were added to the sphere <b>' + sphere.name + '</b> by ' +
+	// 				currentUser.firstName + ' ' + currentUser.lastName;
+	// 	Email.send({
+	// 		to: user.email,
+	// 		from: 'noreply@crownstone.rocks',
+	// 		subject: 'Notification email',
+	// 		html: html
+	// 	}, function(err) {
+	// 		if (err) return debug('failed to send notification email');
+	// 		debug('sending add notification email to:', user.email);
+	// 	});
+	// },
+
+	sendExistingUserInviteEmail: function(user, sphere, acceptUrl, declineUrl) {
+
+		const Email = loopback.findModel('Email');
+
+		var app = require('../../server/server');
+		var currentUser = app.accessUtils.getCurrentUser();
+
+		var html = 'You have been invited to the sphere <b>' + sphere.name + '</b> by ' +
+					currentUser.firstName + ' ' + currentUser.lastName + '. ' +
+					'To complete the process, please click the following link to accept:<br>' +
+					acceptUrl + '?sphere_id=' + sphere.id + '<br>' +
+					'Or click here to decline:<br>' + 
+					declineUrl + '?sphere_id=' + sphere.id;
+
+		Email.send({
+			to: user.email,
+			from: 'noreply@crownstone.rocks',
+			subject: 'Invitation to sphere ' + sphere.name,
+			html: html
+		}, function(err) {
+			if (err) return debug('error sending invitation email');
+			debug('sending invitation email to:', user.email);
 		});
 
 	}
