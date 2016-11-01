@@ -213,7 +213,7 @@ module.exports = function(app) {
       // });
       SphereAccess.updateAll(
         {sphereId: req.body.sphereId, userId: token.userId, invitePending: true},
-        {invitePending: false}, 
+        {invitePending: false},
         function(err, info) {
           if (err) console.log("failed to update sphere access");
 
@@ -278,7 +278,7 @@ module.exports = function(app) {
       // });
 
       SphereAccess.destroyAll(
-        {sphereId: req.body.sphereId, userId: token.userId, invitePending: true}, 
+        {sphereId: req.body.sphereId, userId: token.userId, invitePending: true},
         function(err, info) {
           if (err) console.log("failed to remove user from sphere");
 
@@ -348,7 +348,8 @@ module.exports = function(app) {
       user.save(function(err, user) {
         if (err) return res.sendStatus(404);
 
-        SphereAccess.updateAll({sphereId: req.body.sphereId, userId: token.userId},
+        SphereAccess.updateAll(
+          {sphereId: req.body.sphereId, userId: req.accessToken.userId, invitePending: true},
           {invitePending: false}, function(err, info) {
             if (err) console.log("failed to update sphere access");
         });
