@@ -365,6 +365,53 @@ module.exports = function(app) {
     });
   });
 
+  // register a new user
+  app.post('/register', function(req, res, next) {
+
+    //verify passwords match
+    if (!req.body.firstName || !req.body.lastName) {
+      return res.render('response', {
+        title: 'Bad Request',
+        content: 'First and last name have to be filled in!',
+        redirectTo: '/',
+        redirectToLinkText: 'Try again'
+      });
+    }
+    if (!req.body.password ||
+        !req.body.confirmation ||
+        req.body.password !== req.body.confirmation) {
+
+      return res.render('response', {
+        title: 'Bad Request',
+        content: 'Passwords do not match',
+        redirectTo: '/',
+        redirectToLinkText: 'Try again'
+      });
+
+    }
+
+    User.create(
+      {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: hashPassword(req.body.password)
+      }, function(err, user) {
+        if (err) {
+          console.log(err)
+          return res.render('response', {
+            title: 'Bad Request',
+            content: "Email already exists",
+            redirectTo: '/',
+            redirectToLinkText: 'Try again'
+          });
+        }
+
+        User.onCreate({res: res}, user, next);
+      }
+    );
+  });
+
 
 
 };

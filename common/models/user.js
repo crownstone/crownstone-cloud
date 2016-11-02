@@ -189,9 +189,7 @@ module.exports = function(model) {
 		user.verify(options, cb);
 	};
 
-	//send verification email after registration
-	model.afterRemote('create', function(context, user, next) {
-		console.log('> user.afterRemote triggered');
+	model.onCreate = function(context, user, cb) {
 
 		if (model.settings.emailVerificationRequired) {
 			model.sendVerification(user, null, function(err, response) {
@@ -210,6 +208,12 @@ module.exports = function(model) {
 		} else {
 			next();
 		}
+	}
+
+	//send verification email after registration
+	model.afterRemote('create', function(context, user, next) {
+		console.log('> user.afterRemote triggered');
+		model.onCreate(context, user, next);
 		// next();
 	});
 

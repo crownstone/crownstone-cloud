@@ -19,7 +19,7 @@
 
 
 <section>
-  <form action="/api/users" method="post">
+  <form action="/register" method="post">
     <fieldset>
       <legend>Sign up form</legend>
       <div>
@@ -37,6 +37,10 @@
       <div>
         <label for="password">Password:</label>
         <input type="password" name="password" value="<%= password %>"/>
+      </div>
+      <div>
+        <label for="confirmation">Confirm password:</label>
+        <input type="password" name="confirmation">
       </div>
       <div>
         <input type="submit" value="Sign up"/>
