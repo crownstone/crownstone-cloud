@@ -540,8 +540,8 @@ module.exports = function(model) {
 								addSphereAccess(user, sphere, access, function(err) {
 									if (err) return cb(err);
 
-									var acceptUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/accept-invite'
-									var declineUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/decline-invite'
+									var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
+									var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
 
 									util.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
 									cb();
@@ -581,8 +581,8 @@ module.exports = function(model) {
 				addSphereAccess(user, sphere, access, function(err) {
 					if (err) return cb(err);
 
-					var acceptUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/profile-setup'
-					var declineUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/decline-invite-new'
+					var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
+					var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
 					util.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
 					next();
 				});
@@ -1226,8 +1226,8 @@ module.exports = function(model) {
 	// 	User.findById(context.args.fk, function(err, user) {
 	// 		if (err || !user) return debug("did not find user to send notification email");
 
-	// 		var acceptUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/accept-invite'
-	// 		var declineUrl = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/decline-invite'
+	// 		var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
+	// 		var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
 
 	// 		util.sendExistingUserInviteEmail(user, context.instance, acceptUrl, declineUrl);
 

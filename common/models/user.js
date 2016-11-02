@@ -215,7 +215,7 @@ module.exports = function(model) {
 
 	//send password reset link when requested
 	model.on('resetPasswordRequest', function(info) {
-		var url = (process.env.BASE_URL || ('http://' + config.host + ':' + config.port)) + '/reset-password'
+		var url = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/reset-password'
 		var token = info.accessToken.id;
 		var email = info.email;
 		util.sendResetPasswordRequest(url, token, email);

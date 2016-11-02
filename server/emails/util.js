@@ -73,8 +73,8 @@ var util = {
 			template: path.resolve(__dirname, '../../server/emails/verify.ejs'),
 			redirect: '/verified',
 			user: user,
-			protocol: 'http',
-			port: 80
+			protocol: 'https',
+			port: 443
 		};
 
 		return options;
@@ -87,7 +87,7 @@ var util = {
 		var html = 'You have been invited to the sphere <b>' + sphere.name + '</b>. ' +
 				'You can use the following link to follow up on the registration:<br>' +
 				acceptUrl + '?access_token=' + token + '&sphere_id=' + sphere.id + '<br>' +
-				'Or click here to decline:<br>' + 
+				'Or click here to decline:<br>' +
 				declineUrl + '?access_token=' + token + '&sphere_id=' + sphere.id;
 
 		Email.send({
@@ -132,7 +132,7 @@ var util = {
 					currentUser.firstName + ' ' + currentUser.lastName + '. ' +
 					'To complete the process, please click the following link to accept:<br>' +
 					acceptUrl + '?sphere_id=' + sphere.id + '<br>' +
-					'Or click here to decline:<br>' + 
+					'Or click here to decline:<br>' +
 					declineUrl + '?sphere_id=' + sphere.id;
 
 		Email.send({
