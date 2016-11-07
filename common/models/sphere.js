@@ -459,7 +459,7 @@ module.exports = function(model) {
 				if (err) return next(err);
 
 				// make the owner admin of the group
-				addSphereAccess(user, ctx.instance, "admin",
+				addSphereAccess(user, ctx.instance, "admin", false,
 					function(err, res) {
 
 					}
@@ -476,7 +476,7 @@ module.exports = function(model) {
 	// 	user.findOne({where: {role: "superuser"}}, function(err, res) {
 	// 		if (err || !res) return debug("failed to find superuser");
 
-	// 		addSphereAccess(res.id, ctx.instance.id, "admin",
+	// 		addSphereAccess(res.id, ctx.instance.id, "admin", true,
 	// 			function(err, res) {
 
 	// 			}
@@ -485,14 +485,14 @@ module.exports = function(model) {
 
 	// }
 
-	function addSphereAccess(user, sphere, access, cb) {
+	function addSphereAccess(user, sphere, access, invite, cb) {
 		debug("addSphereAccess");
 
 		sphere.users.add(user, {
 			sphereId: sphere.id,
 			userId: user.id,
 			role: access,
-			invitePending: true
+			invitePending: invite
 		},
 		function(err, access) {
 			debug("err", err);
@@ -537,7 +537,7 @@ module.exports = function(model) {
 								// user.invitePending = id;
 								// user.save();
 
-								addSphereAccess(user, sphere, access, function(err) {
+								addSphereAccess(user, sphere, access, true, function(err) {
 									if (err) return cb(err);
 
 									var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
@@ -578,7 +578,7 @@ module.exports = function(model) {
 			user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
 				if (err) return next(err);
 
-				addSphereAccess(user, sphere, access, function(err) {
+				addSphereAccess(user, sphere, access, true, function(err) {
 					if (err) return cb(err);
 
 					var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
@@ -837,7 +837,7 @@ module.exports = function(model) {
 				// 	if (err) return cb(err);
 				// 	debug("info", info);
 
-				// 	addSphereAccess(user, sphere, "owner", function(err) {
+				// 	addSphereAccess(user, sphere, "owner", false, function(err) {
 				// 		if (err) return cb(err);
 
 				// 		debug("added sphere access");
