@@ -282,9 +282,6 @@ module.exports = function(model) {
 		Sphere.create(data, cb);
 	}
 
-	// var app = require('../../server/server');
-	// var Sphere = app.models.Sphere;
-
 	model.remoteMethod(
 		'createNewSphere',
 		{
@@ -295,6 +292,37 @@ module.exports = function(model) {
 			],
 			returns: {arg: 'data', type: 'Sphere', root: true},
 			description: "Creates a new instance in spheres of this model"
+		}
+	);
+
+	model.notifyDevices = function(message, id, cb) {
+		debug("notifyDevices:", message);
+
+		const Notification = loopback.getModel('Notification');
+		var notification = new Notification({
+			expirationInterval: 3600, // Expires 1 hour from now.
+			alert: message,
+			message: message,
+			messageFrom: 'loopback'
+		});
+
+		const Push = loopback.getModel('Push');
+		Push.notifyByQuery({userId: id}, notification, function(err) {
+			if (err) return cb(err);
+			cb();
+		});
+
+	}
+
+	model.remoteMethod(
+		'notifyDevices',
+		{
+			http: {path: '/:id/notifyDevices', verb: 'post'},
+			accepts: [
+				{arg: 'message', type: 'string', 'http': {source: 'query'}},
+				{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
+			],
+			description: "Push notification to all Devices of user"
 		}
 	);
 

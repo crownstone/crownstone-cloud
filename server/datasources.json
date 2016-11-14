@@ -18,5 +18,12 @@
   "filesDs": {
     "name": "filesDs",
     "connector": "memory"
+  },
+  "pushDs": {
+    "name": "pushDs",
+    "connector": "loopback-component-push",
+    "installation": "Installation",
+    "notification": "Notification",
+    "application": "Application"
   }
 }

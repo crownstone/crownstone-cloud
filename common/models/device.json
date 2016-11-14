@@ -55,6 +55,11 @@
       "type": "hasMany",
       "model": "Coordinate",
       "foreignKey": "deviceId"
+    },
+    "installation": {
+      "type": "belongsTo",
+      "model": "Installation",
+      "foreignKey": "installationId"
     }
   },
   "acls": [],

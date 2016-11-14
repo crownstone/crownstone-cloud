@@ -113,5 +113,21 @@
   "Appliance": {
     "dataSource": "mongoDs",
     "public": true
+  },
+  "Push": {
+    "dataSource": "pushDs",
+    "public": true
+  },
+  "Notification": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "Installation": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "Application": {
+    "dataSource": "mongoDs",
+    "public": true
   }
 }

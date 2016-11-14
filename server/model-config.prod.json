@@ -33,5 +33,17 @@
   },
   "Event": {
     "public": false
+  },
+  "Push": {
+    "public": false
+  },
+  "Notification": {
+    "public": false
+  },
+  "Installation": {
+    "public": false
+  },
+  "Application": {
+    "public": false
   }
 }

@@ -85,7 +85,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('createChangeStream', true);
 	model.disableRemoteMethod('upsert', true);
 	model.disableRemoteMethod('count', true);
-	model.disableRemoteMethod('findOne', true);
+	// model.disableRemoteMethod('findOne', true);
 	model.disableRemoteMethod('updateAll', true);
 
 	var initDevice = function(ctx, next) {
@@ -99,12 +99,19 @@ module.exports = function(model) {
 	}
 
 	var injectOwner = function(ctx, next) {
+		// debug("ctx", ctx);
+		// debug("next", next);
 
 		var item;
 		if (ctx.isNewInstance) {
 			item = ctx.instance;
 		} else {
 			item = ctx.data;
+
+			if (!item) {
+				debug("ctx.data is NULL!!");
+				item = ctx.instance;
+			}
 		}
 
 		if (!item.ownerId) {
@@ -160,31 +167,70 @@ module.exports = function(model) {
 	 **** Location
 	 ************************************/
 
+    var badge = 1;
+
 	model.setCurrentLocation = function(device, locationId, next) {
-		if (device.currentLocationId === locationId) return;
+		if (device.currentLocationId === locationId) return next();
 
-		debug("setCurrentLocation");
+		if (new String(device.currentLocationId).valueOf() === new String(locationId).valueOf()) return next();
 
-		debug("device:", device);
-		debug("new location:", locationId);
+		Location = loopback.getModel('Location');
+		Location.findById(locationId, function(err, location) {
+			if (err) return;
 
-		device.currentLocationId = locationId;
-
-		device.locationsHistory.create({
-			locationId: locationId
-		}, function(err, instance) {
-			if (next) {
-				if (err) return next(err);
-				next();
+			if (!location) {
+				next(new Error("no location found with this id"));
+				return;
 			}
+
+			debug("setCurrentLocation");
+
+			debug("device:", device);
+			debug("new location:", locationId);
+
+			debug("notify location change")
+
+			PushModel = loopback.getModel('Push');
+			Notification = loopback.getModel('Notification');
+
+			debug("location: ", location);
+
+			var note = new Notification({
+		        expirationInterval: 3600, // Expires 1 hour from now.
+		        badge: badge++,
+		        sound: 'ping.aiff',
+		        alert: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
+		        message: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
+		        messageFrom: 'Me'
+		    });
+
+			PushModel.notifyById(device.installationId, note, function (err) {
+				if (err) {
+					debug('Cannot notify %j: %s', device.installationId, err.stack);
+					return;
+				}
+				debug('pushing notification to %j', device.installationId);
+			});
+
+			device.currentLocationId = locationId;
+
+			device.locationsHistory.create({
+				locationId: locationId
+			}, function(err, instance) {
+				if (next) {
+					if (err) return next(err);
+					next();
+				}
+			});
+
+			device.save(function(err, deviceInstance) {
+				if (next) {
+					if (err) return next(err);
+					next();
+				}
+			})
+
 		});
-
-		device.save(function(err, deviceInstance) {
-			if (next) {
-				if (err) return next(err);
-				next();
-			}
-		})
 	}
 
 	model.remoteSetCurrentLocation = function(locationId, deviceId, next) {

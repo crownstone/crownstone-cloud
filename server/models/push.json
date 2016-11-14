@@ -1,0 +1,10 @@
+{
+  "name": "Push",
+  "base": "Model",
+  "plural": "Push",
+  "properties": {},
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": []
+}

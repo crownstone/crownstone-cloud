@@ -18,17 +18,18 @@
     "loopback-boot": "^2.6.5",
     "loopback-component-access-groups": "^0.1.1",
     "loopback-component-explorer": "^2.1.0",
+    "loopback-component-push": "^1.7.0",
     "loopback-component-storage": "^1.7.0",
     "loopback-component-storage-gridfs": "eggerdo/loopback-component-storage-gridfs",
     "loopback-component-storage-mongo": "^1.5.0",
     "loopback-connector-mongodb": "^1.13.0",
     "loopback-connector-sendgrid": "1.2.3",
     "loopback-datasource-juggler": "^2.39.0",
+    "minimatch": "^3.0.2",
     "node-uuid": "*",
     "serve-favicon": "^2.0.1",
     "sha1": "^1.1.1",
-    "util": "*",
-    "minimatch": "^3.0.2"
+    "util": "*"
   },
   "devDependencies": {
     "jshint": "^2.5.6"
