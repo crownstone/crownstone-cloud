@@ -17,8 +17,7 @@
       "type": "string"
     },
     "address": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "description": {
       "type": "string"
@@ -57,9 +56,9 @@
       "foreignKey": "deviceId"
     },
     "installation": {
-      "type": "belongsTo",
+      "type": "hasOne",
       "model": "Installation",
-      "foreignKey": "installationId"
+      "foreignKey": "deviceId"
     }
   },
   "acls": [],

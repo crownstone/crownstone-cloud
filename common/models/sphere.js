@@ -970,7 +970,7 @@ module.exports = function(model) {
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
 			],
 			returns: {arg: 'count', type: 'number'},
-			description: "Queries users of Sphere"
+			description: "Count users of Sphere"
 		}
 	);
 

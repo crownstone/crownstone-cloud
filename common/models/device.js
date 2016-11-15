@@ -85,7 +85,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('createChangeStream', true);
 	model.disableRemoteMethod('upsert', true);
 	model.disableRemoteMethod('count', true);
-	// model.disableRemoteMethod('findOne', true);
+	model.disableRemoteMethod('findOne', true);
 	model.disableRemoteMethod('updateAll', true);
 
 	var initDevice = function(ctx, next) {

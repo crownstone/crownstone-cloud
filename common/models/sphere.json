@@ -41,6 +41,12 @@
     },
     "guestEncryptionKey": {
       "type": "string"
+    },
+    "aiName": {
+      "type": "string"
+    },
+    "aiSex": {
+      "type": "string"
     }
   },
   "validations": [],
