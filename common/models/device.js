@@ -170,17 +170,18 @@ module.exports = function(model) {
     var badge = 1;
 
 	model.setCurrentLocation = function(device, locationId, next) {
-		if (device.currentLocationId === locationId) return next();
-
-		if (new String(device.currentLocationId).valueOf() === new String(locationId).valueOf()) return next();
+		if ((device.currentLocationId === locationId) ||
+			(new String(device.currentLocationId).valueOf() === new String(locationId).valueOf())) {
+			debug("location == current location, nothing to do!");
+			return next();
+		}
 
 		Location = loopback.getModel('Location');
 		Location.findById(locationId, function(err, location) {
-			if (err) return;
+			if (err) return next(err);
 
 			if (!location) {
-				next(new Error("no location found with this id"));
-				return;
+				return next(new Error("no location found with this id"));
 			}
 
 			debug("setCurrentLocation");
@@ -204,33 +205,58 @@ module.exports = function(model) {
 		        messageFrom: 'Me'
 		    });
 
-			PushModel.notifyById(device.installationId, note, function (err) {
-				if (err) {
-					debug('Cannot notify %j: %s', device.installationId, err.stack);
-					return;
-				}
-				debug('pushing notification to %j', device.installationId);
-			});
+		    debug("installation: ", device.installation());
+
+		    Installation = loopback.getModel('Installation');
+		    Installation.findOne({where: {deviceId: device.id}}, function(err, installation) {
+		    	if (err || !installation) {
+		    		debug("no installation found for device");
+		    		return;
+		    	}
+
+		    	PushModel.notifyById(installation.id, note, function (err) {
+					if (err) {
+						debug('Cannot notify %j: %s', installation.id, err.stack);
+						return;
+					}
+					debug('pushing notification to %j', installation.id);
+				});
+		    })
 
 			device.currentLocationId = locationId;
 
 			device.locationsHistory.create({
 				locationId: locationId
 			}, function(err, instance) {
-				if (next) {
-					if (err) return next(err);
-					next();
-				}
+				// if (next) {
+				// 	if (err) return next(err);
+				// 	next();
+				// }
 			});
 
 			device.save(function(err, deviceInstance) {
-				if (next) {
-					if (err) return next(err);
-					next();
-				}
+				next(err);
+				// if (next) {
+				// 	if (err) return next(err);
+				// 	next();
+				// }
 			})
 
 		});
+	}
+
+	model.clearCurrentLocation = function(device, next) {
+
+		debug("clearing current location");
+		device.currentLocationId = null;
+
+		device.save(function(err, deviceInstance) {
+			if (next) {
+				if (err) return next(err);
+				next();
+			}
+		})
+
 	}
 
 	model.remoteSetCurrentLocation = function(locationId, deviceId, next) {
@@ -240,7 +266,11 @@ module.exports = function(model) {
 			if (err) return next(err);
 
 			if (device) {
-				model.setCurrentLocation(device, locationId, next);
+				if (locationId) {
+					model.setCurrentLocation(device, locationId, next);
+				} else {
+					model.clearCurrentLocation(device, next);
+				}
 			} else {
 				return next({"message":"no device found"})
 			}
