@@ -61,7 +61,7 @@ module.exports = function(model) {
 	}
 
 	// address has to be unique to a stone
-	model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
+	// model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
 
 	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
 	model.disableRemoteMethod('__link__coordinatesHistory', false);
