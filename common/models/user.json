@@ -13,7 +13,8 @@
     "TimeStamps": {
       "required": false,
       "validateUpsert": true
-    }
+    },
+    "Util": true
   },
   "hidden": [
     "role"

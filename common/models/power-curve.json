@@ -7,7 +7,8 @@
     "validateUpsert": true
   },
   "mixins": {
-    "SphereContent": true
+    "SphereContent": true,
+    "Util": true
   },
   "properties": {
     "timestamp": {

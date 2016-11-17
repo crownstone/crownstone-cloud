@@ -121,28 +121,12 @@ module.exports = function(model) {
 			const loopbackContext = loopback.getCurrentContext();
 			var currentUser = loopbackContext.get('currentUser');
 
-			inject = function(item, user, next) {
-				debug("user:", user);
-				item.ownerId = user.id;
-				debug("ctx.instance: ", item.instance);
-				next();
+			if (!currentUser) {
+				return next(new Error("Not logged in!"));
 			}
 
-			// only for DEBUG purposes
-			if (currentUser == null) {
-
-				const user = loopback.getModel('user');
-				user.find({where: {email: "dominik@dobots.nl"}}, function(err, res) {
-					if (err) {
-						debug("fatal error");
-					} else {
-						currentUser = res[0];
-						inject(item, currentUser, next);
-					}
-				})
-			} else {
-				inject(item, currentUser, next)
-			}
+			item.ownerId = currentUser.id;
+			next();
 		} else {
 			next();
 		}
@@ -179,10 +163,7 @@ module.exports = function(model) {
 		Location = loopback.getModel('Location');
 		Location.findById(locationId, function(err, location) {
 			if (err) return next(err);
-
-			if (!location) {
-				return next(new Error("no location found with this id"));
-			}
+			if (Location.checkForNullError(location, next, "id: " + locationId)) return;
 
 			debug("setCurrentLocation");
 
@@ -264,15 +245,12 @@ module.exports = function(model) {
 
 		model.findById(deviceId, function(err, device) {
 			if (err) return next(err);
+			if (model.checkForNullError(device, next, "id: " + deviceId)) return;
 
-			if (device) {
-				if (locationId) {
-					model.setCurrentLocation(device, locationId, next);
-				} else {
-					model.clearCurrentLocation(device, next);
-				}
+			if (locationId) {
+				model.setCurrentLocation(device, locationId, next);
 			} else {
-				return next({"message":"no device found"})
+				model.clearCurrentLocation(device, next);
 			}
 		})
 
@@ -302,21 +280,19 @@ module.exports = function(model) {
 		debug("coordinate:", coordinate);
 
 		device.coordinatesHistory.create(coordinate, function(err, coordinateInstance) {
-			if (next) {
-				if (err) return next(err);
+			if (err) return next(err);
 
-				if (coordinateInstance) {
-					device.currentCoordinateId = coordinateInstance.id;
+			if (coordinateInstance) {
+				device.currentCoordinateId = coordinateInstance.id;
 
-					device.save(function(err, deviceInstance) {
-						if (next) {
-							if (err) return next(err);
-							next(null, coordinateInstance);
-						}
-					})
-				} else {
-					next({"message": "failed to create coordinate"});
-				}
+				device.save(function(err, deviceInstance) {
+					if (next) {
+						if (err) return next(err);
+						next(null, coordinateInstance);
+					}
+				})
+			} else {
+				next({"message": "failed to create coordinate"});
 			}
 		});
 
@@ -327,12 +303,9 @@ module.exports = function(model) {
 
 		model.findById(deviceId, function(err, device) {
 			if (err) return next(err);
+			if (model.checkForNullError(device, next, "id: " + deviceId)) return;
 
-			if (device) {
-				model.setCurrentCoordinate(device, coordinate, next);
-			} else {
-				return next({"message":"no device found with this id"})
-			}
+			model.setCurrentCoordinate(device, coordinate, next);
 		})
 
 	}
@@ -353,6 +326,8 @@ module.exports = function(model) {
 	model.deleteCoordinatesHistory = function(id, cb) {
 		model.findById(id, {include: "coordinatesHistory"}, function(err, device) {
 			if (err) return cb(err);
+			if (model.checkForNullError(device, cb, "id: " + id)) return;
+
 			device.coordinatesHistory.destroyAll(function(err) {
 				cb(err);
 			});
@@ -373,6 +348,8 @@ module.exports = function(model) {
 	model.deleteLocationsHistory = function(id, cb) {
 		model.findById(id, {include: "locationsHistory"}, function(err, device) {
 			if (err) return cb(err);
+			if (model.checkForNullError(device, cb, "id: " + id)) return;
+
 			device.locationsHistory.destroyAll(function(err) {
 				cb(err);
 			});
@@ -393,6 +370,8 @@ module.exports = function(model) {
 	model.deleteAllScans = function(id, cb) {
 		model.findById(id, {include: "scans"}, function(err, device) {
 			if (err) return cb(err);
+			if (model.checkForNullError(device, cb, "id: " + id)) return;
+
 			device.scans.destroyAll(function(err) {
 				cb(err);
 			});

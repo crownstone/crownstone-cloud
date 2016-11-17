@@ -196,13 +196,7 @@ module.exports = function(model) {
 		// get the location instance
 		model.findById(id, function(err, location) {
 			if (err) return next(err);
-
-			if (!location) {
-				error = new Error("no location found with this id");
-				error.statusCode = 404;
-    			error.code = 'MODEL_NOT_FOUND';
-				return next(error);
-			}
+			if (model.checkForNullError(location, next, "id: " + id)) return;
 
 			Sphere.downloadFile(location.sphereId, location.imageId, res, next);
 		});
@@ -228,13 +222,7 @@ module.exports = function(model) {
 		// get the location instance
 		model.findById(id, function(err, location) {
 			if (err) return next(err);
-
-			if (!location) {
-				error = new Error("no location found with this id");
-				error.statusCode = 404;
-    			error.code = 'MODEL_NOT_FOUND';
-				return next(error);
-			}
+			if (model.checkForNullError(location, next, "id: " + id)) return;
 
 			Sphere.deleteFile(location.sphereId, location.imageId, next);
 		});

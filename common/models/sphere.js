@@ -5,7 +5,7 @@ var crypto = require('crypto');
 const debug = require('debug')('loopback:dobots');
 
 var config = require('../../server/config.json');
-var util = require('../../server/emails/util');
+var emailUtil = require('../../server/emails/util');
 var mesh = require('../../server/middleware/mesh-access-address')
 
 var DEFAULT_TTL = 1209600; // 2 weeks in seconds
@@ -526,12 +526,12 @@ module.exports = function(model) {
 			var acceptUrl = baseUrl + '/profile-setup'
 			var declineUrl = baseUrl + '/decline-invite-new'
 
-			util.sendNewUserInviteEmail(sphere, user.email, acceptUrl, declineUrl, accessTokenId);
+			emailUtil.sendNewUserInviteEmail(sphere, user.email, acceptUrl, declineUrl, accessTokenId);
 		} else {
 			var acceptUrl = baseUrl + '/accept-invite'
 			var declineUrl = baseUrl + '/decline-invite'
 
-			util.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
+			emailUtil.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
 		}
 	}
 
@@ -562,7 +562,7 @@ module.exports = function(model) {
 									// var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
 									// var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
 
-									// util.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
+									// emailUtil.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
 									sendInvite(user, sphere, false);
 									cb();
 								});
@@ -601,7 +601,7 @@ module.exports = function(model) {
 
 					// var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
 					// var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
-					// util.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
+					// emailUtil.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
 					sendInvite(user, sphere, true, accessToken.id);
 					next();
 				});
@@ -1058,6 +1058,7 @@ module.exports = function(model) {
 
 		model.findById(sphereId, function(err, sphere) {
 			if (err) return cb(err);
+			if (model.checkForNullError(sphere, cb, "id: " + sphereId)) return;
 
 			if (role === "owner") {
 				cb(null, false);
@@ -1073,7 +1074,7 @@ module.exports = function(model) {
 		const User = loopback.findModel('user');
 		User.findOne({where: {email: email}}, function(err, user) {
 			if (err) return cb(err);
-			debug("user", user);
+			if (User.checkForNullError(user, cb, "email: " + email)) return;
 
 			const SphereAccess = loopback.findModel("SphereAccess");
 			SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
@@ -1103,7 +1104,7 @@ module.exports = function(model) {
 		const User = loopback.findModel('user');
 		User.findOne({where: {email: email}}, function(err, user) {
 			if (err) return cb(err);
-			debug("user", user);
+			if (User.checkForNullError(user, cb, "email: " + email)) return;
 
 			verifyChangeRole(id, user, role, function(err, success) {
 				if (err) return cb(err);
@@ -1307,7 +1308,7 @@ module.exports = function(model) {
 	model.downloadProfilePicOfUser = function(id, email, res, cb) {
 		model.findById(id, function(err, sphere) {
 			if (err) return next(err);
-			if (!sphere) return cb(new Error("sphere not found"));
+			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
 
 			sphere.users({where: {email: email}}, function(err, users) {
 				if (err) return cb(err);
@@ -1337,6 +1338,8 @@ module.exports = function(model) {
 	model.deleteAllLocations = function(id, cb) {
 		model.findById(id, {include: "ownedLocations"}, function(err, sphere) {
 			if (err) return cb(err);
+			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
+
 			sphere.ownedLocations.destroyAll(function(err) {
 				cb(err);
 			});
@@ -1357,6 +1360,8 @@ module.exports = function(model) {
 	model.deleteAllStones = function(id, cb) {
 		model.findById(id, {include: "ownedStones"}, function(err, sphere) {
 			if (err) return cb(err);
+			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
+
 			sphere.ownedStones.destroyAll(function(err) {
 				cb(err);
 			});
@@ -1377,6 +1382,8 @@ module.exports = function(model) {
 	model.deleteAllAppliances = function(id, cb) {
 		model.findById(id, {include: "ownedAppliances"}, function(err, sphere) {
 			if (err) return cb(err);
+			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
+
 			sphere.ownedAppliances.destroyAll(function(err) {
 				cb(err);
 			});
@@ -1408,7 +1415,7 @@ module.exports = function(model) {
 				debug("did not find user to send notification email");
 				return next(new Error("did not find user to send notification email"));
 			}
-			util.sendRemovedFromSphereEmail(user, context.instance, next);
+			emailUtil.sendRemovedFromSphereEmail(user, context.instance, next);
 		});
 	});
 
@@ -1425,9 +1432,9 @@ module.exports = function(model) {
 	// 		var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
 	// 		var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
 
-	// 		util.sendExistingUserInviteEmail(user, context.instance, acceptUrl, declineUrl);
+	// 		emailUtil.sendExistingUserInviteEmail(user, context.instance, acceptUrl, declineUrl);
 
-	// 		// util.sendAddedToSphereEmail(user, context.instance, next);
+	// 		// emailUtil.sendAddedToSphereEmail(user, context.instance, next);
 	// 	});
 	// });
 
@@ -1441,7 +1448,7 @@ module.exports = function(model) {
 
 	// 		model.findById(context.args.id, function(err, sphere) {
 	// 			if (err || !sphere) return debug("did not find sphere to send notification email");
-	// 			util.sendAddedToSphereEmail(user, sphere, next);
+	// 			emailUtil.sendAddedToSphereEmail(user, sphere, next);
 	// 		});
 	// 	});
 	// });
@@ -1456,7 +1463,7 @@ module.exports = function(model) {
 
 	// 		model.findById(context.args.id, function(err, sphere) {
 	// 			if (err || !sphere) return debug("did not find sphere to send notification email");
-	// 			util.sendAddedToSphereEmail(user, sphere, next);
+	// 			emailUtil.sendAddedToSphereEmail(user, sphere, next);
 	// 		});
 	// 	});
 	// });

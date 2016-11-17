@@ -302,22 +302,20 @@ module.exports = function(model) {
 		debug("coordinate:", coordinate);
 
 		stone.coordinatesHistory.create(coordinate, function(err, coordinateInstance) {
-			if (next) {
-				if (err) return next(err);
+			if (err) return next(err);
 
-				if (coordinateInstance) {
-					stone.currentCoordinateId = coordinateInstance.id;
+			if (coordinateInstance) {
+				stone.currentCoordinateId = coordinateInstance.id;
 
-					stone.save(function(err, stoneInstance) {
-						if (next) {
-							if (err) return next(err);
-							next(null, coordinateInstance);
-						}
-					})
-				} else {
-					error = new Error("failed to create coordinate");
-					return next(error);
-				}
+				stone.save(function(err, stoneInstance) {
+					if (next) {
+						if (err) return next(err);
+						next(null, coordinateInstance);
+					}
+				})
+			} else {
+				error = new Error("failed to create coordinate");
+				return next(error);
 			}
 		});
 
@@ -328,13 +326,9 @@ module.exports = function(model) {
 
 		model.findById(stoneId, function(err, stone) {
 			if (err) return next(err);
+			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			if (stone) {
-				model.setCurrentCoordinate(stone, coordinate, next);
-			} else {
-				error = new Error("no stone found with this id");
-				return next(error);
-			}
+			model.setCurrentCoordinate(stone, coordinate, next);
 		})
 
 	}
@@ -366,22 +360,20 @@ module.exports = function(model) {
 		energyUsage.sphereId = stone.sphereId;
 
 		stone.energyUsageHistory.create(energyUsage, function(err, energyUsageInstance) {
-			if (next) {
-				if (err) return next(err);
+			if (err) return next(err);
 
-				if (energyUsageInstance) {
-					stone.currentEnergyUsageId = energyUsageInstance.id;
+			if (energyUsageInstance) {
+				stone.currentEnergyUsageId = energyUsageInstance.id;
 
-					stone.save(function(err, stoneInstance) {
-						if (next) {
-							if (err) return next(err);
-							next(null, energyUsageInstance);
-						}
-					})
-				} else {
-					error = new Error("failed to create energyUsage");
-					return next(error);
-				}
+				stone.save(function(err, stoneInstance) {
+					if (next) {
+						if (err) return next(err);
+						next(null, energyUsageInstance);
+					}
+				})
+			} else {
+				error = new Error("failed to create energyUsage");
+				return next(error);
 			}
 		});
 
@@ -392,13 +384,9 @@ module.exports = function(model) {
 
 		model.findById(stoneId, function(err, stone) {
 			if (err) return next(err);
+			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			if (stone) {
-				model.setCurrentEnergyUsage(stone, energyUsage, next);
-			} else {
-				error = new Error("no stone found with this id");
-				return next(error);
-			}
+			model.setCurrentEnergyUsage(stone, energyUsage, next);
 		})
 
 	}
@@ -430,22 +418,20 @@ module.exports = function(model) {
 		powerUsage.sphereId = stone.sphereId;
 
 		stone.powerUsageHistory.create(powerUsage, function(err, powerUsageInstance) {
-			if (next) {
-				if (err) return next(err);
+			if (err) return next(err);
 
-				if (powerUsageInstance) {
-					stone.currentPowerUsageId = powerUsageInstance.id;
+			if (powerUsageInstance) {
+				stone.currentPowerUsageId = powerUsageInstance.id;
 
-					stone.save(function(err, stoneInstance) {
-						if (next) {
-							if (err) return next(err);
-							next(null, powerUsageInstance);
-						}
-					})
-				} else {
-					error = new Error("failed to create powerUsage");
-					return next(error);
-				}
+				stone.save(function(err, stoneInstance) {
+					if (next) {
+						if (err) return next(err);
+						next(null, powerUsageInstance);
+					}
+				})
+			} else {
+				error = new Error("failed to create powerUsage");
+				return next(error);
 			}
 		});
 
@@ -456,13 +442,9 @@ module.exports = function(model) {
 
 		model.findById(stoneId, function(err, stone) {
 			if (err) return next(err);
+			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			if (stone) {
-				model.setCurrentPowerUsage(stone, powerUsage, next);
-			} else {
-				error = new Error("no stone found with this id");
-				return next(error);
-			}
+			model.setCurrentPowerUsage(stone, powerUsage, next);
 		})
 
 	}
@@ -494,22 +476,20 @@ module.exports = function(model) {
 		powerCurve.sphereId = stone.sphereId;
 
 		stone.powerCurveHistory.create(powerCurve, function(err, powerCurveInstance) {
-			if (next) {
-				if (err) return next(err);
+			if (err) return next(err);
 
-				if (powerCurveInstance) {
-					stone.currentPowerCurveId = powerCurveInstance.id;
+			if (powerCurveInstance) {
+				stone.currentPowerCurveId = powerCurveInstance.id;
 
-					stone.save(function(err, stoneInstance) {
-						if (next) {
-							if (err) return next(err);
-							next(null, powerCurveInstance);
-						}
-					})
-				} else {
-					error = new Error("failed to create powerCurve");
-					return next(error);
-				}
+				stone.save(function(err, stoneInstance) {
+					if (next) {
+						if (err) return next(err);
+						next(null, powerCurveInstance);
+					}
+				})
+			} else {
+				error = new Error("failed to create powerCurve");
+				return next(error);
 			}
 		});
 
@@ -520,13 +500,9 @@ module.exports = function(model) {
 
 		model.findById(stoneId, function(err, stone) {
 			if (err) return next(err);
+			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			if (stone) {
-				model.setCurrentPowerCurve(stone, powerCurve, next);
-			} else {
-				error = new Error("no stone found with this id");
-				return next(error);
-			}
+			model.setCurrentPowerCurve(stone, powerCurve, next);
 		})
 
 	}
@@ -553,6 +529,7 @@ module.exports = function(model) {
 		const Appliance = loopback.getModel('Appliance');
 		Appliance.findById(applianceId, function(err, appliance) {
 			if (err) return next(err);
+			if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
 
 			stone.applianceId = undefined;
 			stone.save();
@@ -579,11 +556,8 @@ module.exports = function(model) {
 		const Appliance = loopback.getModel('Appliance');
 		Appliance.findById(applianceId, function(err, appliance) {
 			if (err) return next(err);
+			if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
 
-			if (!appliance) {
-				error = new Error("no appliance found with id");
-				next(error);
-			}
 			stone.applianceId = applianceId;
 			stone.save();
 			appliance.stones.add(stone, function(err) {
@@ -598,19 +572,15 @@ module.exports = function(model) {
 
 		model.findById(stoneId, function(err, stone) {
 			if (err) return next(err);
+			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			if (stone) {
-				if (stone.applianceId) {
-					removeApplianceFromStone(stone, stone.applianceId, function(err) {
-						if (err) return next(err);
-						addApplianceToStone(stone, applianceId, next);
-					})
-				} else {
+			if (stone.applianceId) {
+				removeApplianceFromStone(stone, stone.applianceId, function(err) {
+					if (err) return next(err);
 					addApplianceToStone(stone, applianceId, next);
-				}
+				})
 			} else {
-				error = new Error("no stone found with this id");
-				return next(error);
+				addApplianceToStone(stone, applianceId, next);
 			}
 		});
 
@@ -634,16 +604,12 @@ module.exports = function(model) {
 		const Appliance = loopback.getModel('Appliance');
 		model.findById(stoneId, function(err, stone) {
 			if (err) return next(err);
+			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			if (stone) {
-				removeApplianceFromStone(stone, applianceId, function(err) {
-					if (err) return next(err);
-					next();
-				});
-			} else {
-				error = new Error("no stone found with this id");
-				return next(error);
-			}
+			removeApplianceFromStone(stone, applianceId, function(err) {
+				if (err) return next(err);
+				next();
+			});
 		});
 
 	}
@@ -669,9 +635,7 @@ module.exports = function(model) {
 
 		model.findById(stoneId, {include: "owner"}, function(err, stone) {
 			if (err) return next(err);
-
-			debug("stone", stone);
-			debug("owner", stone.owner());
+			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
 			sphere = stone.owner();
 
@@ -717,6 +681,8 @@ module.exports = function(model) {
 	model.deleteCoordinatesHistory = function(id, cb) {
 		model.findById(id, {include: "coordinatesHistory"}, function(err, stone) {
 			if (err) return cb(err);
+			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+
 			stone.coordinatesHistory.destroyAll(function(err) {
 				cb(err);
 			});
@@ -737,6 +703,8 @@ module.exports = function(model) {
 	model.deleteEnergyUsageHistory = function(id, cb) {
 		model.findById(id, {include: "energyUsageHistory"}, function(err, stone) {
 			if (err) return cb(err);
+			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+
 			stone.energyUsageHistory.destroyAll(function(err) {
 				cb(err);
 			});
@@ -757,6 +725,8 @@ module.exports = function(model) {
 	model.deletePowerUsageHistory = function(id, cb) {
 		model.findById(id, {include: "powerUsageHistory"}, function(err, stone) {
 			if (err) return cb(err);
+			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+
 			stone.powerUsageHistory.destroyAll(function(err) {
 				cb(err);
 			});
@@ -777,6 +747,8 @@ module.exports = function(model) {
 	model.deletePowerCurveHistory = function(id, cb) {
 		model.findById(id, {include: "powerCurveHistory"}, function(err, stone) {
 			if (err) return cb(err);
+			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+
 			stone.powerCurveHistory.destroyAll(function(err) {
 				cb(err);
 			});
@@ -797,6 +769,8 @@ module.exports = function(model) {
 	model.deleteAllScans = function(id, cb) {
 		model.findById(id, {include: "scans"}, function(err, stone) {
 			if (err) return cb(err);
+			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+
 			stone.scans.destroyAll(function(err) {
 				cb(err);
 			});

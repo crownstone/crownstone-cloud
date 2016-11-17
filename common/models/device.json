@@ -10,7 +10,8 @@
     "TimeStamps": {
       "required": false,
       "validateUpsert": true
-    }
+    },
+    "Util": true
   },
   "properties": {
     "name": {

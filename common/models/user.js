@@ -227,6 +227,9 @@ module.exports = function(model) {
 
 	model.resendVerification = function(email, cb) {
 		model.findOne({where: {email: email}}, function(err, user) {
+			if (err) return cb(err);
+			if (model.checkForNullError(user, cb, "email: " + email)) return;
+
 			if (!user.emailVerified) {
 				model.sendVerification(user,
 					function(user, cb) {
@@ -307,10 +310,7 @@ module.exports = function(model) {
 		});
 
 		const Push = loopback.getModel('Push');
-		Push.notifyByQuery({userId: id}, notification, function(err) {
-			if (err) return cb(err);
-			cb();
-		});
+		Push.notifyByQuery({userId: id}, notification, cb);
 
 	}
 
@@ -459,6 +459,7 @@ module.exports = function(model) {
 		// get the user instance
 		model.findById(id, function(err, user) {
 			if (err) return cb(err);
+			if (model.checkForNullError(user, cb, "id: " + id)) return;
 
 			// if there is already a profile picture uploaded, delete the old one first
 			if (user.profilePicId) {
@@ -491,6 +492,7 @@ module.exports = function(model) {
 
 		model.findById(id, function(err, user) {
 			if (err) return cb(err);
+			if (model.checkForNullError(user, cb, "id: " + id)) return;
 
 			model.downloadFile(id, user.profilePicId, res, cb);
 		});
@@ -513,6 +515,7 @@ module.exports = function(model) {
 
 		model.findById(id, function(err, user) {
 			if (err) return cb(err);
+			if (model.checkForNullError(user, cb, "id: " + id)) return;
 
 			model.deleteFile(id, user.profilePicId, res, cb);
 		});
@@ -572,6 +575,8 @@ module.exports = function(model) {
 	model.deleteAllDevices = function(id, cb) {
 		model.findById(id, {include: "devices"}, function(err, user) {
 			if (err) return cb(err);
+			if (model.checkForNullError(user, cb, "id: " + id)) return;
+
 			user.devices.destroyAll(function(err) {
 				cb(err);
 			});
@@ -608,6 +613,8 @@ module.exports = function(model) {
 	model.deleteAllSpheres = function(id, cb) {
 		model.findById(id, {include: "spheres"}, function(err, user) {
 			if (err) return cb(err);
+			if (model.checkForNullError(user, cb, "id: " + id)) return;
+
 			user.spheres.destroyAll(function(err) {
 				cb(err);
 			});
