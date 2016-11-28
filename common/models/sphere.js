@@ -828,6 +828,7 @@ module.exports = function(model) {
 
 		model.findById(id, function(err, instance) {
 			if (err) return cb(err);
+			if (model.checkForNullError(instance, cb, "id: " + id)) return;
 
 			// instance.users({where: {role: "member"}}, cb);
 			instance.users(function(err, users) {

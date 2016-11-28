@@ -99,6 +99,8 @@ module.exports = function(model) {
 	model.disableRemoteMethod('__updateById__spheres', false);
 	model.disableRemoteMethod('__destroyById__spheres', false);
 	model.disableRemoteMethod('__link__spheres', false);
+	model.disableRemoteMethod('__count__spheres', false);
+	model.disableRemoteMethod('__get__spheres', false);
 
 	model.disableRemoteMethod('__delete__devices', false);
 
@@ -295,6 +297,77 @@ module.exports = function(model) {
 			],
 			returns: {arg: 'data', type: 'Sphere', root: true},
 			description: "Creates a new instance in spheres of this model"
+		}
+	);
+
+	model.spheres = function(id, cb) {
+
+		model.findById(id, function(err, instance) {
+			if (err) return cb(err);
+			if (model.checkForNullError(instance, cb, "id: " + id)) return;
+
+			instance.spheres(function(err, spheres) {
+				if (err) return cb(err);
+
+				// debug("spheres:", spheres);
+
+				const SphereAccess = loopback.getModel('SphereAccess');
+				SphereAccess.find(
+					{where: {and: [{userId: id}, {invitePending: {neq: true}}]}, field: "sphereId"},
+					function(err, res) {
+						if (err) return cb(err);
+
+						// debug("sphereMembers:", res);
+
+						var filteredSpheres = [];
+						for (i = 0; i < spheres.length; ++i) {
+							var sphere = spheres[i];
+							// debug("  sphere.id " + i + ":", sphere.id.valueOf() );
+							for (j = 0; j < res.length; ++j) {
+								access = res[j];
+								// debug("member.id " + j + ":", member.sphereId.valueOf());
+								if (new String(sphere.id).valueOf() === new String(access.sphereId).valueOf()) {
+									filteredSpheres.push(sphere);
+									break;
+								}
+							}
+						}
+						debug("found spheres: ", filteredSpheres);
+						cb(null, filteredSpheres);
+					}
+				);
+			});
+		});
+	}
+
+	model.remoteMethod(
+		'spheres',
+		{
+			http: {path: '/:id/spheres', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'data', type: ['Sphere'], root: true},
+			description: "Queries spheres of user"
+		}
+	);
+
+	model.countSpheres = function(id, cb) {
+		model.spheres(id, function(err, res) {
+			if (err) cb(err);
+			cb(null, res.length);
+		})
+	}
+
+	model.remoteMethod(
+		'countSpheres',
+		{
+			http: {path: '/:id/spheres/count', verb: 'get'},
+			accepts: [
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+			],
+			returns: {arg: 'count', type: 'number'},
+			description: "Count spheres of user"
 		}
 	);
 
