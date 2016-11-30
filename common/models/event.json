@@ -13,11 +13,13 @@
   "properties": {
     "timestamp": {
       "type": "date",
-      "required": true
+      "default": "$now"
     },
-    "description": {
-      "type": "string",
-      "required": true
+    "action": {
+      "type": "string"
+    },
+    "json": {
+      "type": "string"
     }
   },
   "validations": [],

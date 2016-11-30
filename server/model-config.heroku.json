@@ -31,9 +31,6 @@
   "UserContainer": {
     "public": false
   },
-  "Event": {
-    "public": false
-  },
   "Push": {
     "public": false
   },
