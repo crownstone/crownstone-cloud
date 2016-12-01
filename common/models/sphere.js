@@ -625,8 +625,19 @@ module.exports = function(model) {
 						debug("create new user")
 						createAndInviteUser(sphere, email, access, next);
 					} else {
-						debug("add existing user")
-						addExistingUser(email, sphereId, access, next);
+						// user exists, check if he is already part of the sphere
+						sphere.users.exists(user.id, function(err, exists) {
+							if (exists) {
+								debug("user is already part of the sphere")
+								error = new Error("user is already part of the sphere");
+	    						error.statusCode = error.status = 200;
+	    						next(error);
+							} else {
+								debug("add existing user")
+								addExistingUser(email, sphereId, access, next);
+							}
+						})
+
 					}
 				});
 			} else {

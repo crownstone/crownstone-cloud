@@ -37,6 +37,9 @@
     "metaLevel": {
       "type": "number",
       "default": 0
+    },
+    "fingerprint": {
+      "type": "string"
     }
   },
   "validations": [],

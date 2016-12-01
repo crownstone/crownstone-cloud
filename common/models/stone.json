@@ -51,6 +51,15 @@
     },
     "json": {
       "type": "string"
+    },
+    "touchToToggle": {
+      "type": "boolean"
+    },
+    "nearRange": {
+      "type": "number"
+    },
+    "lastSeenAt": {
+      "type": "date"
     }
   },
   "validations": [],
