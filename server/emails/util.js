@@ -17,6 +17,7 @@ var util = {
 		Email.send({
 			to: user.email,
 			from: 'noreply@crownstone.rocks',
+			fromname: 'Crownstone',
 			subject: 'Notification email',
 			html: html
 		}, function(err) {
@@ -36,6 +37,7 @@ var util = {
 		Email.send({
 			to: user.email,
 			from: 'noreply@crownstone.rocks',
+			fromname: 'Crownstone',
 			subject: 'Notification email',
 			html: html
 		}, function(err) {
@@ -54,6 +56,7 @@ var util = {
 		Email.send({
 			to: email,
 			from: 'noreply@crownstone.rocks',
+			fromname: 'Crownstone',
 			subject: 'Password reset',
 			html: html
 		}, function(err) {
@@ -69,6 +72,7 @@ var util = {
 			type: 'email',
 			to: user.email,
 			from: 'noreply@crownstone.rocks',
+			fromname: 'Crownstone',
 			subject: 'Thanks for registering.',
 			template: path.resolve(__dirname, '../../server/emails/verify.ejs'),
 			redirect: '/verified',
@@ -93,6 +97,7 @@ var util = {
 		Email.send({
 			to: email,
 			from: 'noreply@crownstone.rocks',
+			fromname: 'Crownstone',
 			subject: 'Invitation to sphere ' + sphere.name,
 			html: html
 		}, function(err) {
@@ -138,6 +143,7 @@ var util = {
 		Email.send({
 			to: user.email,
 			from: 'noreply@crownstone.rocks',
+			fromname: 'Crownstone',
 			subject: 'Invitation to sphere ' + sphere.name,
 			html: html
 		}, function(err) {
