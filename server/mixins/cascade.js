@@ -25,6 +25,8 @@ module.exports = function(Model, options) {
 
             where[foreignKey] = id;
 
+            console.log("CASCADE delete ", where);
+
             promises.push(linkModel.destroyAll(where));
         });
 

@@ -679,6 +679,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteCoordinatesHistory = function(id, cb) {
+		debug("deleteCoordinatesHistory");
 		model.findById(id, {include: "coordinatesHistory"}, function(err, stone) {
 			if (err) return cb(err);
 			if (model.checkForNullError(stone, cb, "id: " + id)) return;
@@ -701,6 +702,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteEnergyUsageHistory = function(id, cb) {
+		debug("deleteEnergyUsageHistory");
 		model.findById(id, {include: "energyUsageHistory"}, function(err, stone) {
 			if (err) return cb(err);
 			if (model.checkForNullError(stone, cb, "id: " + id)) return;
@@ -723,6 +725,7 @@ module.exports = function(model) {
 	);
 
 	model.deletePowerUsageHistory = function(id, cb) {
+		debug("deletePowerUsageHistory");
 		model.findById(id, {include: "powerUsageHistory"}, function(err, stone) {
 			if (err) return cb(err);
 			if (model.checkForNullError(stone, cb, "id: " + id)) return;
@@ -745,6 +748,7 @@ module.exports = function(model) {
 	);
 
 	model.deletePowerCurveHistory = function(id, cb) {
+		debug("deletePowerCurveHistory");
 		model.findById(id, {include: "powerCurveHistory"}, function(err, stone) {
 			if (err) return cb(err);
 			if (model.checkForNullError(stone, cb, "id: " + id)) return;
@@ -767,6 +771,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllScans = function(id, cb) {
+		debug("deleteAllScans");
 		model.findById(id, {include: "scans"}, function(err, stone) {
 			if (err) return cb(err);
 			if (model.checkForNullError(stone, cb, "id: " + id)) return;

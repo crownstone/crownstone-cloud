@@ -1348,6 +1348,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllLocations = function(id, cb) {
+		debug("deleteAllLocations");
 		model.findById(id, {include: "ownedLocations"}, function(err, sphere) {
 			if (err) return cb(err);
 			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
@@ -1370,6 +1371,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllStones = function(id, cb) {
+		debug("deleteAllStones");
 		model.findById(id, {include: "ownedStones"}, function(err, sphere) {
 			if (err) return cb(err);
 			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
@@ -1392,6 +1394,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllAppliances = function(id, cb) {
+		debug("deleteAllAppliances");
 		model.findById(id, {include: "ownedAppliances"}, function(err, sphere) {
 			if (err) return cb(err);
 			if (model.checkForNullError(sphere, cb, "id: " + id)) return;

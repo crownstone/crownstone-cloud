@@ -153,6 +153,22 @@ module.exports = function(model) {
 		});
 	});
 
+	model.afterRemoteError('confirm', function(ctx, next) {
+		debug('confirmation failed!', ctx.error);
+		debug(ctx.res)
+
+		// ctx.req.args.uid
+
+		ctx.res.render('response', {
+			title: 'Verification failed',
+			content: ctx.error,
+			redirectTo: '/resend-verification',
+			redirectToLinkText: 'Resend verification'
+		});
+		// next(null);
+		// next();
+	});
+
 	/************************************
 	 **** Cascade
 	 ************************************/
@@ -646,6 +662,7 @@ module.exports = function(model) {
 	 ************************************/
 
 	model.deleteAllDevices = function(id, cb) {
+		debug("deleteAllDevices");
 		model.findById(id, {include: "devices"}, function(err, user) {
 			if (err) return cb(err);
 			if (model.checkForNullError(user, cb, "id: " + id)) return;
@@ -668,6 +685,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllFiles = function(id, cb) {
+		debug("deleteAllFiles");
 		const Container = loopback.getModel('UserContainer');
 		Container._deleteContainer(id, cb);
 	}
@@ -684,6 +702,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllSpheres = function(id, cb) {
+		debug("deleteAllSpheres");
 		model.findById(id, {include: "spheres"}, function(err, user) {
 			if (err) return cb(err);
 			if (model.checkForNullError(user, cb, "id: " + id)) return;

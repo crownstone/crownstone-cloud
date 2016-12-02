@@ -324,6 +324,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteCoordinatesHistory = function(id, cb) {
+		debug("deleteCoordinatesHistory");
 		model.findById(id, {include: "coordinatesHistory"}, function(err, device) {
 			if (err) return cb(err);
 			if (model.checkForNullError(device, cb, "id: " + id)) return;
@@ -346,6 +347,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteLocationsHistory = function(id, cb) {
+		debug("deleteLocationsHistory");
 		model.findById(id, {include: "locationsHistory"}, function(err, device) {
 			if (err) return cb(err);
 			if (model.checkForNullError(device, cb, "id: " + id)) return;
@@ -368,6 +370,7 @@ module.exports = function(model) {
 	);
 
 	model.deleteAllScans = function(id, cb) {
+		debug("deleteAllScans");
 		model.findById(id, {include: "scans"}, function(err, device) {
 			if (err) return cb(err);
 			if (model.checkForNullError(device, cb, "id: " + id)) return;
