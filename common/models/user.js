@@ -211,7 +211,7 @@ module.exports = function(model) {
 
 		if (model.settings.emailVerificationRequired) {
 			model.sendVerification(user, null, function(err, response) {
-				if (err) return next(err);
+				if (err) return cb(err);
 
 				console.log('> verification email sent:', response);
 				// todo: return this only if request is coming from website?
@@ -224,7 +224,7 @@ module.exports = function(model) {
 				});
 			})
 		} else {
-			next();
+			cb();
 		}
 	}
 
@@ -249,14 +249,20 @@ module.exports = function(model) {
 			if (model.checkForNullError(user, cb, "email: " + email)) return;
 
 			if (!user.emailVerified) {
-				model.sendVerification(user,
-					function(user, cb) {
-						cb(null, user.verificationToken);
-					},
-					function(err, response) {
-						cb();
-					}
-				);
+				if (user.verificationToken) {
+					model.sendVerification(user,
+						function(user, cb) {
+							cb(null, user.verificationToken);
+						},
+						function(err, response) {
+							cb(err);
+						}
+					);
+				} else {
+					model.sendVerification(user, null, function(err, response) {
+						cb(err);
+					});
+				}
 			} else {
 				var err = new Error("user already verified");
 				err.statusCode = 400;

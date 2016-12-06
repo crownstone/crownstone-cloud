@@ -656,9 +656,16 @@ module.exports = function(model) {
 			function(err, objects) {
 				if (err) return cb(err);
 
-				pendingInvites = Array.from(objects, function(access) {
-					return {role: access.role, email: access.user().email};
-				});
+				// [06.12.16] Bug? access.user() was null and app crashed on access.user().email
+				//   shouldn't happen?! But to avoid future crashes, array is first filtered for
+				//   elements where access.user() returns a user object
+				pendingInvites = Array.from(objects)
+					.filter(function(access) {
+						return (access.user())
+					})
+					.map(function(access) {
+						return {role: access.role, email: access.user().email};
+					});
 				debug("pendingInvites", pendingInvites);
 
 				cb(null, pendingInvites);
