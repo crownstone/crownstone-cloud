@@ -270,12 +270,14 @@ module.exports = function(model) {
 	model.observe('before delete', function(context, next) {
 
 		model.findById(context.where.id, {include: 'ownedStones'}, function(err, sphere) {
-			if (sphere.ownedStones().length > 0) {
-				error = new Error("Can't delete a sphere with assigned crownstones.")
-				next(error);
-			} else {
-				next();
+
+			if (sphere) {
+				if (sphere.ownedStones().length > 0) {
+					error = new Error("Can't delete a sphere with assigned crownstones.")
+					return next(error);
+				}
 			}
+			next();
 		});
 	});
 

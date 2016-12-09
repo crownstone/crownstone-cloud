@@ -58,6 +58,10 @@
     "dataSource": "mongoDs",
     "public": true
   },
+  "StoneLocation": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
   "ScannedDevice": {
     "dataSource": null,
     "public": false

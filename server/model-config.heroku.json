@@ -42,5 +42,8 @@
   },
   "Application": {
     "public": false
+  },
+  "StoneLocation": {
+    "public": false
   }
 }

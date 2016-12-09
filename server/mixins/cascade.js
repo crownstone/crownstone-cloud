@@ -17,18 +17,42 @@ module.exports = function(Model, options) {
             id = ctx.where.id,
             keys = Object.keys(options);
 
-        _.each(keys, function(model) {
+        if (id) {
+            _.each(keys, function(model) {
 
-            var foreignKey = options[model],
-                linkModel = loopback.getModelByType(model),
-                where = {};
+                var foreignKey = options[model],
+                    linkModel = loopback.getModelByType(model),
+                    where = {};
 
-            where[foreignKey] = id;
+                where[foreignKey] = id;
 
-            console.log("CASCADE delete ", where);
+                console.log("CASCADE delete ", linkModel.modelName, " where ", where);
 
-            promises.push(linkModel.destroyAll(where));
-        });
+                promises.push(linkModel.destroyAll(where));
+            });
+
+        } else if (ctx.where.sphereId) {
+            // console.log("ctx.where", ctx.where);
+
+            // this is a special case for our setup. objects that belong the a sphere
+            // can be deleted through the sphere, in which case they are deleted in a
+            // batch based on the sphereId. So if there is no id specified, we check
+            // also if there is a sphereId specified, and use that instead of the
+            // id/foreignKey
+
+            _.each(keys, function(model) {
+
+                var linkModel = loopback.getModelByType(model),
+                    where = {};
+
+                where["sphereId"] = ctx.where.sphereId;
+
+                console.log("CASCADE delete ", linkModel.modelName, " where ", where);
+
+                promises.push(linkModel.destroyAll(where));
+            });
+
+        }
 
         Promise.all(promises)
             .then(function() {

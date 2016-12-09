@@ -1,0 +1,28 @@
+{
+  "name": "StoneLocation",
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "SphereContent": true
+  },
+  "properties": {},
+  "validations": [],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    },
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

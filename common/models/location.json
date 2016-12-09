@@ -47,7 +47,8 @@
     "stones": {
       "type": "hasAndBelongsToMany",
       "model": "Stone",
-      "foreignKey": "locationId"
+      "foreignKey": "locationId",
+      "through": "StoneLocation"
     },
     "presentPeople": {
       "type": "hasMany",
