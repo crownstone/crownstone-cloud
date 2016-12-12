@@ -2,7 +2,7 @@ var updateDS = require('./updateDS.js');
 
 module.exports = function() {
 
-	return function udpate(req, res, next) {
+	return function update(req, res, next) {
 		// console.log(req.accessToken)
 		// if (!req.accessToken) {
 		// 	// return next();

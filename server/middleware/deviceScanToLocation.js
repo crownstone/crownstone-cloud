@@ -5,13 +5,13 @@ const debug = require('debug')('loopback:dobots');
 var runner = {
 
 	update : function(scan, deviceInstance, user) {
-		debug('udpate location based on scans from device', deviceInstance.name);
+		// debug('update location based on scans from device', deviceInstance.name);
 		this.useClosestBeacon(scan, deviceInstance, user);
 	},
 
 	useClosestBeacon : function(scan, deviceInstance, user) {
 		// console.log('scan:', scan);
-		debug('scan.scannedDevices:', scan.scannedDevices);
+		// debug('scan.scannedDevices:', scan.scannedDevices);
 
 		var Stone = loopback.getModel('Stone');
 		var Device = loopback.getModel('Device');
@@ -27,11 +27,11 @@ var runner = {
 			}
 		}
 
-		debug("closest: ", closest);
+		// debug("closest: ", closest);
 
 		Stone.findLocation(null, closest.addlocationss, function(err, locations) {
 			if (!err && locations) {
-				console.log('location: ' + locations[0].name );
+				// console.log('location: ' + locations[0].name );
 
 				Device.setCurrentLocation(deviceInstance, locations[0].id);
 

@@ -226,18 +226,18 @@ module.exports = function(model) {
 	function injectMajorMinor(item, next) {
 		buf = crypto.randomBytes(4);
 		if (!item.major) {
-			debug("inject major");
+			// debug("inject major");
 			item.major = buf.readUInt16BE(0);
 		}
 		if (!item.minor) {
-			debug("inject minor");
+			// debug("inject minor");
 			item.minor = buf.readUInt16BE(2);
 		}
 	}
 
 	function injectUID(item, next) {
 		if (!item.uid) {
-			debug("inject uid");
+			// debug("inject uid");
 			model.find({where: {sphereId: item.sphereId}, order: "uid DESC", limit: "1"}, function(err, instances) {
 				if (err) return next(err);
 
@@ -247,7 +247,7 @@ module.exports = function(model) {
 				} else {
 					item.uid = 1;
 				}
-				debug("uid:", item.uid);
+				// debug("uid:", item.uid);
 				next();
 			})
 		} else {
@@ -261,7 +261,7 @@ module.exports = function(model) {
 	model.findLocation = function(stoneAddress, cb) {
 		model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
 			if (stones.length > 0 && stones[0].locations.length > 0) {
-				debug('found location: ' + JSON.stringify(stones[0].locations));
+				// debug('found location: ' + JSON.stringify(stones[0].locations));
 				cb(null, stones[0].locations);
 			} else {
 				error = new Error("no stone found with address: " + stoneAddress);
@@ -284,9 +284,9 @@ module.exports = function(model) {
 
 		next();
 
-		const loopbackContext = loopback.getCurrentContext();
-		var currentUser = loopbackContext.get('currentUser');
-		stl.update(ctx.args.data, ctx.instance, currentUser);
+		// const loopbackContext = loopback.getCurrentContext();
+		// var currentUser = loopbackContext.get('currentUser');
+		// stl.update(ctx.args.data, ctx.instance, currentUser);
 
 	});
 
@@ -298,8 +298,8 @@ module.exports = function(model) {
 
 		debug("setCurrentCoordinate");
 
-		debug("stone:", stone);
-		debug("coordinate:", coordinate);
+		// debug("stone:", stone);
+		// debug("coordinate:", coordinate);
 
 		stone.coordinatesHistory.create(coordinate, function(err, coordinateInstance) {
 			if (err) return next(err);
@@ -354,8 +354,8 @@ module.exports = function(model) {
 
 		debug("setCurrentEnergyUsage");
 
-		debug("stone:", stone);
-		debug("energyUsage:", energyUsage);
+		// debug("stone:", stone);
+		// debug("energyUsage:", energyUsage);
 
 		energyUsage.sphereId = stone.sphereId;
 
@@ -412,8 +412,8 @@ module.exports = function(model) {
 
 		debug("setCurrentPowerUsage");
 
-		debug("stone:", stone);
-		debug("powerUsage:", powerUsage);
+		// debug("stone:", stone);
+		// debug("powerUsage:", powerUsage);
 
 		powerUsage.sphereId = stone.sphereId;
 
@@ -470,8 +470,8 @@ module.exports = function(model) {
 
 		debug("setCurrentPowerCurve");
 
-		debug("stone:", stone);
-		debug("powerCurve:", powerCurve);
+		// debug("stone:", stone);
+		// debug("powerCurve:", powerCurve);
 
 		powerCurve.sphereId = stone.sphereId;
 
@@ -643,7 +643,7 @@ module.exports = function(model) {
 			SphereAccess.find({where: {and: [{sphereId: sphere.id}, {role: "admin"}]}, include: "user"}, function(err, access) {
 				if (err) return next(err);
 
-				debug("access", access);
+				// debug("access", access);
 				for (acc of access) {
 					// debug("acc", acc);
 					// debug("user", acc.user());

@@ -116,7 +116,7 @@ module.exports = function(model) {
 
 		if (!item.ownerId) {
 			debug("injectOwner");
-			debug("ctx.instance: ", item);
+			// debug("ctx.instance: ", item);
 
 			const loopbackContext = loopback.getCurrentContext();
 			var currentUser = loopbackContext.get('currentUser');
@@ -141,9 +141,9 @@ module.exports = function(model) {
 
 		next();
 
-		const loopbackContext = loopback.getCurrentContext();
-		var currentUser = loopbackContext.get('currentUser');
-		stl.update(ctx.args.data, ctx.instance, currentUser);
+		// const loopbackContext = loopback.getCurrentContext();
+		// var currentUser = loopbackContext.get('currentUser');
+		// stl.update(ctx.args.data, ctx.instance, currentUser);
 
 	});
 
@@ -167,15 +167,15 @@ module.exports = function(model) {
 
 			debug("setCurrentLocation");
 
-			debug("device:", device);
-			debug("new location:", locationId);
+			// debug("device:", device);
+			// debug("new location:", locationId);
 
 			debug("notify location change")
 
 			PushModel = loopback.getModel('Push');
 			Notification = loopback.getModel('Notification');
 
-			debug("location: ", location);
+			// debug("location: ", location);
 
 			var note = new Notification({
 		        expirationInterval: 3600, // Expires 1 hour from now.
@@ -186,7 +186,7 @@ module.exports = function(model) {
 		        messageFrom: 'Me'
 		    });
 
-		    debug("installation: ", device.installation());
+		    // debug("installation: ", device.installation());
 
 		    Installation = loopback.getModel('Installation');
 		    Installation.findOne({where: {deviceId: device.id}}, function(err, installation) {
@@ -276,8 +276,8 @@ module.exports = function(model) {
 
 		debug("setCurrentCoordinate");
 
-		debug("device:", device);
-		debug("coordinate:", coordinate);
+		// debug("device:", device);
+		// debug("coordinate:", coordinate);
 
 		device.coordinatesHistory.create(coordinate, function(err, coordinateInstance) {
 			if (err) return next(err);

@@ -154,8 +154,8 @@ module.exports = function(model) {
 	});
 
 	model.afterRemoteError('confirm', function(ctx, next) {
-		debug('confirmation failed!', ctx.error);
-		debug(ctx.res)
+		// debug('confirmation failed!', ctx.error);
+		// debug(ctx.res)
 
 		// ctx.req.args.uid
 
@@ -282,11 +282,11 @@ module.exports = function(model) {
 	);
 
 	model.me = function(cb) {
-		debug("me");
+		// debug("me");
 		const loopbackContext = loopback.getCurrentContext();
 		var currentUser = loopbackContext.get('currentUser');
 
-		debug("currentUser", currentUser)
+		// debug("currentUser", currentUser)
 		if (currentUser) {
 			cb(null, currentUser);
 		} else {
@@ -304,7 +304,7 @@ module.exports = function(model) {
 	);
 
 	model.createNewSphere = function(data, id, cb) {
-		debug("createNewSphere:", data);
+		// debug("createNewSphere:", data);
 		const Sphere = loopback.getModel('Sphere');
 		Sphere.create(data, cb);
 	}
@@ -354,7 +354,7 @@ module.exports = function(model) {
 								}
 							}
 						}
-						debug("found spheres: ", filteredSpheres);
+						// debug("found spheres: ", filteredSpheres);
 						cb(null, filteredSpheres);
 					}
 				);
@@ -394,7 +394,7 @@ module.exports = function(model) {
 	);
 
 	model.notifyDevices = function(message, id, cb) {
-		debug("notifyDevices:", message);
+		// debug("notifyDevices:", message);
 
 		const Notification = loopback.getModel('Notification');
 		var notification = new Notification({

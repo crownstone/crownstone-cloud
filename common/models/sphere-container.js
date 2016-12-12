@@ -42,7 +42,7 @@ module.exports = function(model) {
 				//     });
 				spheres = model.app.accessUtils.getCurrentUserGroups();
 				userSpheres = Array.from(spheres, sphere => new String(sphere[model.app.accessUtils.options.foreignKey]).valueOf());
-				debug("userSpheres:", userSpheres);
+				// debug("userSpheres:", userSpheres);
 			}
 			next();
 			// } else if (DEBUG) {
@@ -84,10 +84,10 @@ module.exports = function(model) {
 		});
 	}
 
-	model.beforeRemote('**', function(ctx, instance, next) {
-		debug("method.name: ", ctx.method.name);
-		next();
-	});
+	// model.beforeRemote('**', function(ctx, instance, next) {
+	// 	debug("method.name: ", ctx.method.name);
+	// 	next();
+	// });
 
 	model.beforeRemote('getContainers', function(ctx, instance, next) {
 		retrieveUserSpheres(next);
@@ -141,8 +141,8 @@ module.exports = function(model) {
 
 			debug("getFiles", containerName);
 			model.getFiles(containerName, function(err, succ) {
-				debug("err", err);
-				debug("succ", succ);
+				// debug("err", err);
+				// debug("succ", succ);
 				next(err, succ);
 			});
 		})
@@ -155,8 +155,8 @@ module.exports = function(model) {
 			if (err) return next(err);
 
 			model.getFile(containerName, fileId, function(err, succ) {
-				debug("err", err);
-				debug("succ", succ);
+				// debug("err", err);
+				// debug("succ", succ);
 				next(err, succ);
 			});
 		})

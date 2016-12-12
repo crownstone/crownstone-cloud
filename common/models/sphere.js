@@ -298,7 +298,7 @@ module.exports = function(model) {
 
 	function initSphere(ctx, next) {
 		debug("initSphere");
-		debug("ctx", ctx);
+		// debug("ctx", ctx);
 
 		if (ctx.isNewInstance) {
 			injectUUID(ctx.instance);
@@ -394,10 +394,10 @@ module.exports = function(model) {
 	// model.afterRemote('create', updateOwnerAccess);
 	model.observe('after save', afterSave);
 
-	model.beforeRemote('**', function(ctx, instance, next) {
-		debug("method.name: ", ctx.method.name);
-		next();
-	});
+	// model.beforeRemote('**', function(ctx, instance, next) {
+	// 	debug("method.name: ", ctx.method.name);
+	// 	next();
+	// });
 
 	// model.beforeRemote('*.__get__users', function(ctx, instance, next) {
 	// 	debug("ctx:", ctx);
@@ -411,39 +411,39 @@ module.exports = function(model) {
 	function injectOwner(item, next) {
 		if (!item.ownerId) {
 			debug("injectOwner");
-			debug("ctx.instance: ", item);
+			// debug("ctx.instance: ", item);
 
 			const loopbackContext = loopback.getCurrentContext();
 			var currentUser = loopbackContext.get('currentUser');
 
 			inject = function(item, user, next) {
-				debug("user:", user);
+				// debug("user:", user);
 				item.ownerId = user.id;
-				debug("ctx.instance: ", item.instance);
+				// debug("ctx.instance: ", item.instance);
 				next();
 			}
 
-			// only for DEBUG purposes
-			if (currentUser == null) {
+			// // only for DEBUG purposes
+			// if (currentUser == null) {
 
-				const User = loopback.getModel('user');
-				User.findOne({where: {email: "dominik@dobots.nl"}}, function(err, currentUser) {
-					if (err) {
-						debug("fatal error");
-					} else {
-						inject(item, currentUser, next);
-					}
-				})
-			} else {
+			// 	const User = loopback.getModel('user');
+			// 	User.findOne({where: {email: "dominik@dobots.nl"}}, function(err, currentUser) {
+			// 		if (err) {
+			// 			debug("fatal error");
+			// 		} else {
+			// 			inject(item, currentUser, next);
+			// 		}
+			// 	})
+			// } else {
 				inject(item, currentUser, next)
-			}
+			// }
 		} else {
 			next();
 		}
 	};
 
 	function updateOwnerAccess(ctx, next) {
-		debug("instance: ", ctx.instance);
+		// debug("instance: ", ctx.instance);
 
 		// const SphereAccess = loopback.getModel('SphereAccess');
 		// SphereAccess.create({
@@ -500,8 +500,8 @@ module.exports = function(model) {
 			invitePending: invite
 		},
 		function(err, access) {
-			debug("err", err);
-			debug("access", access);
+			// debug("err", err);
+			// debug("access", access);
 			cb(err);
 		})
 
@@ -545,7 +545,7 @@ module.exports = function(model) {
 			} else {
 				var sphere = instance;
 				if (sphere) {
-					debug("sphere:", sphere);
+					// debug("sphere:", sphere);
 					// var encryptionKey = sphere[access + "EncryptionKey"];
 
 					User.findOne({where: {email: email}}, function(err, user) {
@@ -554,7 +554,7 @@ module.exports = function(model) {
 							cb(err);
 						} else {
 							if (user) {
-								debug("user:", user);
+								// debug("user:", user);
 								// user.invitePending = id;
 								// user.save();
 
@@ -575,7 +575,7 @@ module.exports = function(model) {
 						}
 					});
 				} else {
-					debug("no sphere", sphere, sphereId)
+					// debug("no sphere", sphere, sphereId)
 					error = new Error("no sphere found with this id");
 					cb(error);
 				}
@@ -589,7 +589,7 @@ module.exports = function(model) {
 
 		const User = loopback.getModel('user');
 		tempPassword = crypto.randomBytes(8).toString('base64');
-		debug("tempPassword", tempPassword);
+		// debug("tempPassword", tempPassword);
 		userData = {email: email, password: tempPassword};
 		User.create(userData, function(err, user) {
 			if (err) return next(err);
@@ -616,7 +616,7 @@ module.exports = function(model) {
 		model.findById(sphereId, function(err, sphere) {
 			if (err) return next(err);
 
-			debug("sphere", sphere);
+			// debug("sphere", sphere);
 
 			if (sphere) {
 				const User = loopback.getModel('user');
@@ -668,7 +668,7 @@ module.exports = function(model) {
 					.map(function(access) {
 						return {role: access.role, email: access.user().email};
 					});
-				debug("pendingInvites", pendingInvites);
+				// debug("pendingInvites", pendingInvites);
 
 				cb(null, pendingInvites);
 			}
@@ -695,7 +695,7 @@ module.exports = function(model) {
 			const User = loopback.findModel('user');
 			User.findOne({where: {email: email}}, function(err, user) {
 				if (err) return cb(err);
-				debug("user", user);
+				// debug("user", user);
 
 				const SphereAccess = loopback.getModel('SphereAccess');
 				SphereAccess.findOne(
@@ -828,7 +828,7 @@ module.exports = function(model) {
 		}
 	);
 
-	model.beforeRemote("*.__get__users", function(context, instance, next) {
+	// model.beforeRemote("*.__get__users", function(context, instance, next) {
 		// do not need to wait for result of email
 		// filter = {invitePending: {neq: true}}
 		// const where = context.args.filter ? {
@@ -839,10 +839,10 @@ module.exports = function(model) {
 
   //       context.args.filter = where;
 
-		debug("context.args", context.args);
+		// debug("context.args", context.args);
 		// debug("instance", instance);
-		next();
-	});
+	// 	next();
+	// });
 
 	function findUsersWithRole(id, access, cb) {
 
@@ -877,7 +877,7 @@ module.exports = function(model) {
 								}
 							}
 						}
-						debug("found users: ", filteredUsers);
+						// debug("found users: ", filteredUsers);
 						cb(null, filteredUsers);
 					}
 				);
@@ -1003,8 +1003,8 @@ module.exports = function(model) {
 			const User = loopback.findModel('user');
 			User.findOne({where: {email: email}}, function(err, user) {
 				if (err) return cb(err);
-				debug("user", user);
-				debug("sphere", sphere);
+				// debug("user", user);
+				// debug("sphere", sphere);
 
 				const loopbackContext = loopback.getCurrentContext();
 				var currentUser = loopbackContext.get('currentUser');
@@ -1100,7 +1100,7 @@ module.exports = function(model) {
 			const SphereAccess = loopback.findModel("SphereAccess");
 			SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
 				if (err) return cb(err);
-				debug(objects);
+				// debug(objects);
 				roles = Array.from(objects, access => access.role)
 				cb(null, roles);
 			});

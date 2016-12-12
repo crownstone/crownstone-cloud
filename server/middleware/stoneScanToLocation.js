@@ -5,7 +5,7 @@ const debug = require('debug')('loopback:dobots');
 var runner = {
 
 	update : function(scan, stoneInstance, user) {
-		debug('udpate location based on scans from stone', stoneInstance.name);
+		// debug('update location based on scans from stone', stoneInstance.name);
 		this.useClosest(scan, stoneInstance, user);
 	},
 
@@ -14,7 +14,7 @@ var runner = {
 	},
 
 	updateDeviceLocation : function(closest, stone) {
-		debug("updateDeviceLocation");
+		// debug("updateDeviceLocation");
 		var Device = loopback.getModel('Device');
 		var Stone = loopback.getModel('Stone');
 
@@ -35,7 +35,7 @@ var runner = {
 							return debug("No location found with this address");
 						}
 
-						debug('location: ' + locations[0].name );
+						// debug('location: ' + locations[0].name );
 
 						if (!runner.compareId(device.currentLocationId, locations[0].id)) {
 
@@ -82,7 +82,7 @@ var runner = {
 			if (scannedDevices.length > 0) {
 
 				// debug('scan.scannedDevices:', scan.scannedDevices);
-				debug("filtered scannedDevices:", scannedDevices)
+				// debug("filtered scannedDevices:", scannedDevices)
 
 				var ClosestStone = loopback.getModel('ClosestStone');
 				ClosestStone.find(function(err, stones) {
@@ -92,7 +92,7 @@ var runner = {
 
 					for (i = 0; i < scannedDevices.length; ++i) {
 						var sd = scannedDevices[i];
-						debug("sd:", sd);
+						// debug("sd:", sd);
 						var found = false;
 						for (j = 0; j < stones.length; ++j) {
 							var closest = stones[j];
@@ -100,7 +100,7 @@ var runner = {
 							if (sd.address === closest.deviceAddress) {
 								found = true;
 								if (sd.rssi > closest.rssi) {
-									debug('closer', closest);
+									// debug('closer', closest);
 									closest.rssi = sd.rssi;
 									closest.stoneId = stoneInstance.id;
 									// updates.push(j);
@@ -109,7 +109,7 @@ var runner = {
 								} else if (sd.rssi < closest.rssi &&
 										   runner.compareId(stoneInstance.id, closest.stoneId))
 								{
-									debug('farther', closest);
+									// debug('farther', closest);
 									closest.rssi = sd.rssi;
 									updates.push(closest);
 									// updates.push(j);
@@ -118,14 +118,14 @@ var runner = {
 						}
 
 						if (!found) {
-							debug("creating")
+							// debug("creating")
 							ClosestStone.create(
 								{deviceAddress: sd.address, rssi: sd.rssi, stoneId: stoneInstance.id},
 								function(err, instance) {
 									if (err) {
 										debug("Error, failed to create closest stone")
 									}
-									debug("success");
+									// debug("success");
 									runner.updateDeviceLocation(instance, stoneInstance);
 								}
 							);
@@ -136,7 +136,7 @@ var runner = {
 					// var Stone = loopback.getModel('Stone');
 
 					for (i = 0; i < updates.length; ++i) {
-						debug("save closest:", updates[i]);
+						// debug("save closest:", updates[i]);
 						updates[i].save();
 
 						runner.updateDeviceLocation(updates[i], stoneInstance);
