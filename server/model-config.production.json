@@ -1,0 +1,49 @@
+{
+  "user": {
+    "options": {
+      "emailVerificationRequired": true
+    }
+  },
+  "Scan": {
+    "public": false
+  },
+  "TimedLocation": {
+    "public": false
+  },
+  "PowerUsage": {
+    "public": false
+  },
+  "Coordinate": {
+    "public": false
+  },
+  "EnergyUsage": {
+    "public": false
+  },
+  "PowerCurve": {
+    "public": false
+  },
+  "SphereAccess": {
+    "public": false
+  },
+  "SphereContainer": {
+    "public": false
+  },
+  "UserContainer": {
+    "public": false
+  },
+  "Push": {
+    "public": false
+  },
+  "Notification": {
+    "public": false
+  },
+  "Installation": {
+    "public": false
+  },
+  "Application": {
+    "public": false
+  },
+  "StoneLocation": {
+    "public": false
+  }
+}
