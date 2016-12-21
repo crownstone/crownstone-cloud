@@ -524,48 +524,51 @@ module.exports = function(model) {
 	 **** Appliance
 	 ************************************/
 
-	function removeApplianceFromStone(stone, applianceId, next) {
+	// function removeApplianceFromStone(stone, applianceId, next) {
 
-		const Appliance = loopback.getModel('Appliance');
-		Appliance.findById(applianceId, function(err, appliance) {
-			if (err) return next(err);
-			if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
+	// 	const Appliance = loopback.getModel('Appliance');
+	// 	Appliance.findById(applianceId, function(err, appliance) {
+	// 		if (err) return next(err);
+	// 		if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
 
-			stone.applianceId = undefined;
-			stone.save();
+	// 		stone.applianceId = undefined;
+	// 		stone.save();
 
-			if (!appliance) {
-				// this is not necessarily a fatal error, could happen
-				// if the appliance was deleted but stone still has the link
-				// if a new appliance should be added we don't care if the
-				// stone can't be removed from the old one because it was not
-				// found
-				debug("no appliance found with id");
-				return next();
-			} else {
-				appliance.stones.remove(stone, function(err) {
-					if (err) return next(err);
-					next();
-				});
-			}
-		});
-	}
+	// 		if (!appliance) {
+	// 			// this is not necessarily a fatal error, could happen
+	// 			// if the appliance was deleted but stone still has the link
+	// 			// if a new appliance should be added we don't care if the
+	// 			// stone can't be removed from the old one because it was not
+	// 			// found
+	// 			debug("no appliance found with id");
+	// 			return next();
+	// 		} else {
+	// 			appliance.stones.remove(stone, function(err) {
+	// 				if (err) return next(err);
+	// 				next();
+	// 			});
+	// 		}
+	// 	});
+	// }
 
-	function addApplianceToStone(stone, applianceId, next) {
+	// function addApplianceToStone(stone, applianceId, next) {
 
-		const Appliance = loopback.getModel('Appliance');
-		Appliance.findById(applianceId, function(err, appliance) {
-			if (err) return next(err);
-			if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
+	// 	const Appliance = loopback.getModel('Appliance');
+	// 	Appliance.findById(applianceId, function(err, appliance) {
+	// 		if (err) return next(err);
+	// 		if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
 
-			stone.applianceId = applianceId;
-			stone.save();
-			appliance.stones.add(stone, function(err) {
-				if (err) return next(err);
-				next();
-			});
-		});
-	}
+	// 		stone.applianceId = applianceId;
+	// 		stone.save(function(err) {
+	// 			if (err) return next(err);
+	// 			next();
+	// 		});
+	// 		// appliance.stones.add(stone, function(err) {
+	// 		// 	if (err) return next(err);
+	// 		// 	next();
+	// 		// });
+	// 	});
+	// }
 
 	model.remoteSetAppliance = function(stoneId, applianceId, next) {
 		debug("remoteSetAppliance");
@@ -574,14 +577,19 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			if (stone.applianceId) {
-				removeApplianceFromStone(stone, stone.applianceId, function(err) {
-					if (err) return next(err);
-					addApplianceToStone(stone, applianceId, next);
-				})
-			} else {
-				addApplianceToStone(stone, applianceId, next);
-			}
+			stone.applianceId = applianceId;
+			stone.save(function(err) {
+				if (err) return next(err);
+				next();
+			});
+			// if (stone.applianceId) {
+			// 	removeApplianceFromStone(stone, stone.applianceId, function(err) {
+			// 		if (err) return next(err);
+			// 		addApplianceToStone(stone, applianceId, next);
+			// 	})
+			// } else {
+			// 	addApplianceToStone(stone, applianceId, next);
+			// }
 		});
 
 	}
@@ -606,10 +614,16 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			removeApplianceFromStone(stone, applianceId, function(err) {
+			stone.applianceId = undefined;
+			stone.save(function(err) {
 				if (err) return next(err);
 				next();
 			});
+
+			// removeApplianceFromStone(stone, applianceId, function(err) {
+			// 	if (err) return next(err);
+			// 	next();
+			// });
 		});
 
 	}
