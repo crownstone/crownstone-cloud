@@ -1,18 +1,12 @@
 module.exports = {
-  // mongoDsRealm: {
-  //   "connector": "loopback-connector-mongodb",
-  //   "url": "mongodb://" + process.env.MONGODB_USER + ":"
-  //                       + process.env.MONGODB_PASSWORD + "@"
-  //                       + process.env.MONGODB_HOST + ":"
-  //                       + process.env.MONGODB_PORT + "/%s?authSource=admin"
-  // },
   mongoDs: {
     "connector": "loopback-connector-mongodb",
     "name": "dev",
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
-                        + process.env.MONGODB_PORT + "/dev?authSource=admin&ssl=true",
+                        + process.env.MONGODB_PORT + "/"
+                        + process.env.DATA_TABLE + "?authSource=admin&ssl=true",
     "server": {
       "sslValidate": false
     }
@@ -23,7 +17,8 @@ module.exports = {
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
-                        + process.env.MONGODB_PORT + "/users?authSource=admin&ssl=true",
+                        + process.env.MONGODB_PORT + "/"
+                        + process.env.USER_TABLE + "?authSource=admin&ssl=true",
     "server": {
       "sslValidate": false
     }
@@ -34,7 +29,8 @@ module.exports = {
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
-                        + process.env.MONGODB_PORT + "/files?authSource=admin&ssl=true",
+                        + process.env.MONGODB_PORT + "/"
+                        + process.env.FILES_TABLE + "?authSource=admin&ssl=true",
     "server": {
       "sslValidate": false
     }
