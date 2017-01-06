@@ -1,7 +1,7 @@
 module.exports = {
   mongoDs: {
     "connector": "loopback-connector-mongodb",
-    "name": "dev",
+    "name": process.env.DATA_TABLE,
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
@@ -13,7 +13,7 @@ module.exports = {
   },
   userDs: {
     "connector": "loopback-connector-mongodb",
-    "name": "user",
+    "name": process.env.USER_TABLE,
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
@@ -25,7 +25,7 @@ module.exports = {
   },
   filesDs: {
     "connector": "loopback-component-storage-gridfs",
-    "name": "files",
+    "name": process.env.FILES_TABLE,
     "url": "mongodb://" + process.env.MONGODB_USER + ":"
                         + process.env.MONGODB_PASSWORD + "@"
                         + process.env.MONGODB_HOST + ":"
