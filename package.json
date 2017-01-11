@@ -14,7 +14,7 @@
     "debug": "*",
     "errorhandler": "^1.1.1",
     "lodash": "*",
-    "loopback": "^2.22.0",
+    "loopback": "2.26.2",
     "loopback-boot": "^2.6.5",
     "loopback-component-access-groups": "^0.1.1",
     "loopback-component-explorer": "^2.1.0",
@@ -40,6 +40,6 @@
   },
   "description": "Crownstone",
   "engines": {
-    "node": "5.11.1"
+    "node": "6.6.0"
   }
 }
