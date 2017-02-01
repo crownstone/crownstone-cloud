@@ -48,6 +48,10 @@
     },
     "aiSex": {
       "type": "string"
+    },
+    "exitDelay": {
+      "type": "number",
+      "default": 120
     }
   },
   "validations": [],

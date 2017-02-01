@@ -61,6 +61,12 @@
     },
     "lastSeenAt": {
       "type": "date"
+    },
+    "firmwareVersion": {
+      "type": "string"
+    },
+    "bootloaderVersion": {
+      "type": "string"
     }
   },
   "validations": [],
