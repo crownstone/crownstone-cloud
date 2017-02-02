@@ -67,6 +67,9 @@
     },
     "bootloaderVersion": {
       "type": "string"
+    },
+    "onlyOnWhenDark": {
+      "type": "boolean"
     }
   },
   "validations": [],

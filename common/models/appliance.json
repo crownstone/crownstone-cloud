@@ -23,6 +23,9 @@
     },
     "json": {
       "type": "string"
+    },
+    "onlyOnWhenDark": {
+      "type": "boolean"
     }
   },
   "validations": [],

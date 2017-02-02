@@ -52,6 +52,9 @@
     "exitDelay": {
       "type": "number",
       "default": 120
+    },
+    "gpsLocation": {
+      "type": "GeoPoint"
     }
   },
   "validations": [],
