@@ -70,6 +70,9 @@
     },
     "onlyOnWhenDark": {
       "type": "boolean"
+    },
+    "meshNetworkId" : {
+      "type": "number"
     }
   },
   "validations": [],
