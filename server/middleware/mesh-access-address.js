@@ -56,10 +56,10 @@ var runner = {
 			transition = -1;
 			lastBit = -1;
 			for (i = 0; i < 32; i++) {
-				debug('address: ' + address);
+				// debug('address: ' + address);
 				bit = address >>> 31;
-				debug('bit: ' + bit);
-				debug('  last0: ' + last0 + ' last1: ' + last1 + ' trans: ' + transition);
+				// debug('bit: ' + bit);
+				// debug('  last0: ' + last0 + ' last1: ' + last1 + ' trans: ' + transition);
 				if (bit != lastBit) {
 					transition++;
 				}

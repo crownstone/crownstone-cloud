@@ -712,10 +712,26 @@ module.exports = function(model) {
 		model.findById(id, {include: "spheres"}, function(err, user) {
 			if (err) return cb(err);
 			if (model.checkForNullError(user, cb, "id: " + id)) return;
+			if (user.spheres().length == 0) return cb();
 
-			user.spheres.destroyAll(function(err) {
-				cb(err);
-			});
+			var successfulDeletes = 0;
+			for (var i = 0; i < user.spheres().length; ++i) {
+				user.spheres()[i].destroy(function(err) {
+					if (err) {
+						return cb(err);
+					} else {
+						++successfulDeletes;
+						if (successfulDeletes == user.spheres().length) {
+							return cb();
+						}
+					}
+				});
+
+			}
+
+			// user.spheres.destroyAll(function(err) {
+			// 	cb(err);
+			// });
 		})
 	}
 
