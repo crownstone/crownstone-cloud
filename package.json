@@ -27,6 +27,7 @@
     "loopback-datasource-juggler": "2.54.0",
     "minimatch": "^3.0.2",
     "node-uuid": "*",
+    "request": "^2.79.0",
     "serve-favicon": "^2.0.1",
     "sha1": "^1.1.1",
     "util": "*"
