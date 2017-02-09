@@ -133,5 +133,9 @@
   "Application": {
     "dataSource": "mongoDs",
     "public": true
+  },
+  "Firmware": {
+    "dataSource": false,
+    "public": true
   }
 }
