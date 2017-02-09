@@ -22,6 +22,9 @@
     },
     "description": {
       "type": "string"
+    },
+    "tapToToggleCalibration": {
+      "type": "number"
     }
   },
   "validations": [],
