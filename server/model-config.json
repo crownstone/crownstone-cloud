@@ -47,7 +47,7 @@
     }
   },
   "Sphere": {
-    "dataSource": "userDs",
+    "dataSource": "mongoDs",
     "public": true
   },
   "Location": {
@@ -99,7 +99,7 @@
     "public": true
   },
   "SphereAccess": {
-    "dataSource": "userDs",
+    "dataSource": "mongoDs",
     "public": true
   },
   "SphereContainer": {
