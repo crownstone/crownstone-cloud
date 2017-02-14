@@ -22,7 +22,7 @@
     "loopback-component-storage": "^1.7.0",
     "loopback-component-storage-gridfs": "eggerdo/loopback-component-storage-gridfs",
     "loopback-component-storage-mongo": "^1.5.0",
-    "loopback-connector-mongodb": "1.17.0",
+    "loopback-connector-mongodb": "1.13.3",
     "loopback-connector-sendgrid": "1.2.3",
     "loopback-datasource-juggler": "2.54.0",
     "minimatch": "^3.0.2",
