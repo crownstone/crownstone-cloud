@@ -38,6 +38,18 @@
     "new": {
       "type": "boolean",
       "default": true
+    },
+    "uploadLocation": {
+      "type": "boolean",
+      "default": false
+    },
+    "uploadSwitchState": {
+      "type": "boolean",
+      "default": false
+    },
+    "uploadPowerUsage": {
+      "type": "boolean",
+      "default": false
     }
   },
   "validations": [],
