@@ -1,16 +1,18 @@
-var config = require('../../server/config.json');
-var path = require('path');
-var loopback = require('loopback');
+"use strict";
+
+const config = require('../../server/config.json');
+const path = require('path');
+const loopback = require('loopback');
 
 const debug = require('debug')('loopback:dobots');
 
-var util = require('../../server/emails/util');
+const util = require('../../server/emails/util');
 
 module.exports = function(model) {
 
 	///// put the acls by default, since the base model user
 	///// already has the ACLs set anyway
-	// var app = require('../../server/server');
+	// let app = require('../../server/server');
 	// if (app.get('acl_enabled')) {
 
 		//***************************
@@ -130,7 +132,7 @@ module.exports = function(model) {
 			if (!sphere) return next();
 
 			if (new String(sphere.ownerId).valueOf() === new String(context.instance.id).valueOf()) {
-				error = new Error("can't exit from sphere where user with id is the owner");
+				let error = new Error("can't exit from sphere where user with id is the owner");
 				return next(error);
 			} else {
 				next();
@@ -145,7 +147,7 @@ module.exports = function(model) {
 		Sphere.find({where:{ownerId: context.where.id}}, function(err, spheres) {
 			if (err) return next(err);
 			if (spheres.length > 0) {
-				error = new Error("Can't delete user as long as he is owner of a sphere");
+				let error = new Error("Can't delete user as long as he is owner of a sphere");
 				next(error);
 			} else {
 				next();
@@ -184,11 +186,11 @@ module.exports = function(model) {
 	 **** Custom functions
 	 ************************************/
 
-	model.sendVerification = function(user, func, cb) {
+	model.sendVerification = function(user, tokenGenerator, callback) {
 
-		var options = util.getVerificationEmailOptions(user);
-		options.generateVerificationToken = func;
-		// var options = {
+		let options = util.getVerificationEmailOptions(user);
+		options.generateVerificationToken = tokenGenerator;
+		// let options = {
 		// 	type: 'email',
 		// 	to: user.email,
 		// 	from: 'noreply@crownstone.rocks',
@@ -204,16 +206,16 @@ module.exports = function(model) {
 		// console.log("options: " + JSON.stringify(options));
 
 		debug("sending verification");
-		user.verify(options, cb);
+		user.verify(options, callback);
 	};
 
-	model.onCreate = function(context, user, cb) {
+	model.onCreate = function(context, user, callback) {
 
 		if (model.settings.emailVerificationRequired) {
 			model.sendVerification(user, null, function(err, response) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 
-				console.log('> verification email sent:', response);
+				debug('> verification email sent:', response);
 				// todo: return this only if request is coming from website?
 				context.res.render('response', {
 					title: 'Signed up successfully',
@@ -224,9 +226,9 @@ module.exports = function(model) {
 				});
 			})
 		} else {
-			cb();
+			callback();
 		}
-	}
+	};
 
 	//send verification email after registration
 	model.afterRemote('create', function(context, user, next) {
@@ -237,40 +239,40 @@ module.exports = function(model) {
 
 	//send password reset link when requested
 	model.on('resetPasswordRequest', function(info) {
-		var url = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/reset-password'
-		var token = info.accessToken.id;
-		var email = info.email;
+		let url = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/reset-password';
+		let token = info.accessToken.id;
+		let email = info.email;
 		util.sendResetPasswordRequest(url, token, email);
 	});
 
-	model.resendVerification = function(email, cb) {
+	model.resendVerification = function(email, callback) {
 		model.findOne({where: {email: email}}, function(err, user) {
-			if (err) return cb(err);
-			if (model.checkForNullError(user, cb, "email: " + email)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(user, callback, "email: " + email)) return;
 
 			if (!user.emailVerified) {
 				if (user.verificationToken) {
 					model.sendVerification(user,
-						function(user, cb) {
-							cb(null, user.verificationToken);
+						function(user, tokenProvider) {
+							tokenProvider(null, user.verificationToken);
 						},
 						function(err, response) {
-							cb(err);
+							callback(err);
 						}
 					);
 				} else {
 					model.sendVerification(user, null, function(err, response) {
-						cb(err);
+						callback(err);
 					});
 				}
 			} else {
-				var err = new Error("user already verified");
+				let err = new Error("user already verified");
 				err.statusCode = 400;
 				err.code = 'ALREADY_VERIFIED';
-				cb(err);
+				callback(err);
 			}
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'resendVerification',
@@ -284,7 +286,7 @@ module.exports = function(model) {
 	model.me = function(cb) {
 		// debug("me");
 		const loopbackContext = loopback.getCurrentContext();
-		var currentUser = loopbackContext.get('currentUser');
+		let currentUser = loopbackContext.get('currentUser');
 
 		// debug("currentUser", currentUser)
 		if (currentUser) {
@@ -292,7 +294,7 @@ module.exports = function(model) {
 		} else {
 			cb({message: "WTF: user not found??"});
 		}
-	}
+	};
 
 	model.remoteMethod(
 		'me',
@@ -307,7 +309,7 @@ module.exports = function(model) {
 		// debug("createNewSphere:", data);
 		const Sphere = loopback.getModel('Sphere');
 		Sphere.create(data, cb);
-	}
+	};
 
 	model.remoteMethod(
 		'createNewSphere',
@@ -341,13 +343,14 @@ module.exports = function(model) {
 
 						// debug("sphereMembers:", res);
 
-						var filteredSpheres = [];
-						for (i = 0; i < spheres.length; ++i) {
-							var sphere = spheres[i];
+						let filteredSpheres = [];
+						for (let i = 0; i < spheres.length; ++i) {
+							let sphere = spheres[i];
 							// debug("  sphere.id " + i + ":", sphere.id.valueOf() );
-							for (j = 0; j < res.length; ++j) {
-								access = res[j];
-								// debug("member.id " + j + ":", member.sphereId.valueOf());
+							for (let j = 0; j < res.length; ++j) {
+								let access = res[j];
+								// debug("member.id " + j + ":", member.sphereId.valueOf());\
+                // TODO: check why this check is required
 								if (new String(sphere.id).valueOf() === new String(access.sphereId).valueOf()) {
 									filteredSpheres.push(sphere);
 									break;
@@ -360,7 +363,7 @@ module.exports = function(model) {
 				);
 			});
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'spheres',
@@ -379,7 +382,7 @@ module.exports = function(model) {
 			if (err) cb(err);
 			cb(null, res.length);
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'countSpheres',
@@ -397,7 +400,7 @@ module.exports = function(model) {
 		// debug("notifyDevices:", message);
 
 		const Notification = loopback.getModel('Notification');
-		var notification = new Notification({
+		let notification = new Notification({
 			expirationInterval: 3600, // Expires 1 hour from now.
 			alert: message,
 			message: message,
@@ -407,7 +410,7 @@ module.exports = function(model) {
 		const Push = loopback.getModel('Push');
 		Push.notifyByQuery({userId: id}, notification, cb);
 
-	}
+	};
 
 	model.remoteMethod(
 		'notifyDevices',
@@ -428,7 +431,7 @@ module.exports = function(model) {
 	model.listFiles = function(id, cb) {
 		const Container = loopback.getModel('UserContainer');
 		Container._getFiles(id, cb);
-	}
+	};
 
 	model.remoteMethod(
 		'listFiles',
@@ -449,7 +452,7 @@ module.exports = function(model) {
 
 			cb(null, res.length);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'countFiles',
@@ -484,7 +487,7 @@ module.exports = function(model) {
 	model.deleteFile = function(id, fk, cb) {
 		const Container = loopback.getModel('UserContainer');
 		Container._deleteFile(id, fk, cb);
-	}
+	};
 
 	model.remoteMethod(
 		'deleteFile',
@@ -501,7 +504,7 @@ module.exports = function(model) {
 	model.downloadFile = function(id, fk, res, cb) {
 		const Container = loopback.getModel('UserContainer');
 		Container._download(id, fk, res, cb);
-	}
+	};
 
 	model.remoteMethod(
 		'downloadFile',
@@ -519,7 +522,7 @@ module.exports = function(model) {
 	model.uploadFile = function(id, req, cb) {
 		const Container = loopback.getModel('UserContainer');
 		Container._upload(id, req, cb);
-	}
+	};
 
 	model.remoteMethod(
 		'uploadFile',
@@ -534,32 +537,32 @@ module.exports = function(model) {
 		}
 	);
 
-	model.uploadProfilePic = function(id, req, cb) {
+	model.uploadProfilePic = function(id, req, callback) {
 		// debug("uploadProfilePic");
 
-		var upload = function(user, req) {
+		let upload = function(user, req) {
 
 			// upload the file
 			model.uploadFile(user.id, req, function(err, file) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 
 				// and set the id as profilePicId
 				user.profilePicId = file._id;
 				user.save();
 
-				cb(null, file);
+				callback(null, file);
 			});
-		}
+		};
 
 		// get the user instance
 		model.findById(id, function(err, user) {
-			if (err) return cb(err);
-			if (model.checkForNullError(user, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(user, callback, "id: " + id)) return;
 
 			// if there is already a profile picture uploaded, delete the old one first
 			if (user.profilePicId) {
 				model.deleteFile(user.id, user.profilePicId, function(err, file) {
-					if (err) return cb(err);
+					if (err) return callback(err);
 					upload(user, req);
 				});
 			} else {
@@ -567,7 +570,7 @@ module.exports = function(model) {
 			}
 
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'uploadProfilePic',
@@ -591,7 +594,7 @@ module.exports = function(model) {
 
 			model.downloadFile(id, user.profilePicId, res, cb);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'downloadProfilePicById',
@@ -614,7 +617,7 @@ module.exports = function(model) {
 
 			model.deleteFile(id, user.profilePicId, res, cb);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'deleteProfilePicById',
@@ -635,7 +638,7 @@ module.exports = function(model) {
 		const SphereAccess = loopback.getModel('SphereAccess');
 		SphereAccess.find({where: {userId: id}, include: "sphere"}, function(err, objects) {
 			keys = Array.from(objects, function(access) {
-				el = { sphereId: access.sphereId, keys: {}};
+				let el = { sphereId: access.sphereId, keys: {}};
 				switch (access.role) {
 					case "admin": {
 						el.keys.admin = access.sphere().adminEncryptionKey;
@@ -651,7 +654,7 @@ module.exports = function(model) {
 			});
 			cb(null, keys);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'getEncryptionKeys',
@@ -677,7 +680,7 @@ module.exports = function(model) {
 				cb(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteAllDevices',
@@ -694,7 +697,7 @@ module.exports = function(model) {
 		debug("deleteAllFiles");
 		const Container = loopback.getModel('UserContainer');
 		Container._deleteContainer(id, cb);
-	}
+	};
 
 	model.remoteMethod(
 		'deleteAllFiles',
@@ -707,33 +710,60 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllSpheres = function(id, cb) {
+	model.deleteAllSpheres = function(id, callback) {
 		debug("deleteAllSpheres");
-		model.findById(id, {include: "spheres"}, function(err, user) {
-			if (err) return cb(err);
-			if (model.checkForNullError(user, cb, "id: " + id)) return;
-			if (user.spheres().length == 0) return cb();
 
-			var successfulDeletes = 0;
-			for (var i = 0; i < user.spheres().length; ++i) {
-				user.spheres()[i].destroy(function(err) {
-					if (err) {
-						return cb(err);
-					} else {
-						++successfulDeletes;
-						if (successfulDeletes == user.spheres().length) {
-							return cb();
-						}
-					}
-				});
+		// get a reference to the sphere model which we need to query for stones.
+    const sphereModel = loopback.getModel("Sphere");
 
-			}
+    // get all spheres from the user
+		model.findById(id, {include: "spheres"})
+      .then((user) => {
+		    let userSpheres = user.spheres();
+        if (model.checkForNullError(user, callback, "id: " + id)) return;
+        if (userSpheres.length == 0) return callback();
 
-			// user.spheres.destroyAll(function(err) {
-			// 	cb(err);
-			// });
-		})
-	}
+        let promisesPerSphere = [];
+        let spheresWithStones = 0;
+        let sphereObjectWithStones = {}; // used for error message.
+        for (let i = 0; i < userSpheres.length; i++) {
+          let sphere = user.spheres()[i];
+          promisesPerSphere.push(sphereModel.findById(sphere.id, {include: "ownedStones"})
+            .then((sphereData) => {
+              let ownedStones = sphereData.ownedStones();
+              if (ownedStones.length > 0) {
+                spheresWithStones += 1;
+                sphereObjectWithStones = sphere;
+              }
+            })
+          );
+        }
+        return Promise.all(promisesPerSphere).then(() => {
+          if (spheresWithStones > 0) {
+            throw new Error('Stones detected in sphere ' + sphereObjectWithStones.name + ' (' + sphereObjectWithStones.id + '). Can not delete all Spheres until they all have their stones removed.')
+          }
+          return userSpheres;
+        })
+      })
+      .then((userSpheres) => {
+		    let removalPromises = [];
+		    userSpheres.forEach((sphere) => {
+          removalPromises.push(sphere.destroy());
+        });
+		    return Promise.all(removalPromises)
+      })
+      .then(() => {
+        return callback();
+      })
+      .catch((err) => {
+        return callback(err);
+      });
+
+
+        // user.spheres.destroyAll(function(err) {
+        // 	cb(err);
+        // });
+	};
 
 	model.remoteMethod(
 		'deleteAllSpheres',

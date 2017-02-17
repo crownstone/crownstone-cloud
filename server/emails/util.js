@@ -1,25 +1,22 @@
 var loopback = require('loopback');
 var path = require('path');
 const debug = require('debug')('loopback:dobots');
+const Email = loopback.findModel('Email');
+var app = require('../../server/server');
 
 var util = {
 
 	sendStoneRecoveredEmail : function(user, stone) {
-
-		const Email = loopback.findModel('Email');
-
-		var app = require('../../server/server');
 		var currentUser = app.accessUtils.getCurrentUser();
-		var html = 'The stone with uid <b>' + stone.uid + '</b>, ' +
-				   'major <b>' + stone.major + '</b> ' +
-				   'and minor <b>' + stone.minor + '</b> was recovered and ' +
-				   'added to a new group'
 		Email.send({
 			to: user.email,
 			from: 'noreply@crownstone.rocks',
 			fromname: 'Crownstone',
 			subject: 'Notification email',
-			html: html
+      template: path.resolve(__dirname, './stoneRecoveredEmail.ejs'),
+      uid: stone.uid,
+      major: stone.major,
+      minor: stone.minor,
 		}, function(err) {
 			if (err) return debug('failed to send stone recovery notification email');
 			debug('sending stone recovery notification email to:', user.email);
@@ -27,10 +24,6 @@ var util = {
 	},
 
 	sendRemovedFromSphereEmail : function(user, sphere, next) {
-
-		const Email = loopback.findModel('Email');
-
-		var app = require('../../server/server');
 		var currentUser = app.accessUtils.getCurrentUser();
 		var html = 'You were removed from the sphere <b>' + sphere.name + '</b> by ' +
 					currentUser.firstName + ' ' + currentUser.lastName;
@@ -38,6 +31,7 @@ var util = {
 			to: user.email,
 			from: 'noreply@crownstone.rocks',
 			fromname: 'Crownstone',
+			from_name: 'Crownstone',
 			subject: 'Notification email',
 			html: html
 		}, function(err) {
@@ -47,9 +41,6 @@ var util = {
 	},
 
 	sendResetPasswordRequest : function(url, token, email) {
-
-		const Email = loopback.findModel('Email');
-
 		var html = 'Click <a href="' + url + '?access_token=' +
 				token + '">here</a> to reset your password';
 
@@ -74,7 +65,7 @@ var util = {
 			from: 'noreply@crownstone.rocks',
 			fromname: 'Crownstone',
 			subject: 'Thanks for registering.',
-			template: path.resolve(__dirname, '../../server/emails/verify.ejs'),
+			template: path.resolve(__dirname, './verificationEmail.ejs'),
 			redirect: '/verified',
 			user: user,
 			protocol: 'https',
@@ -85,9 +76,6 @@ var util = {
 	},
 
 	sendNewUserInviteEmail: function(sphere, email, acceptUrl, declineUrl, token) {
-
-		const Email = loopback.findModel('Email');
-
 		var html = 'You have been invited to the sphere <b>' + sphere.name + '</b>. ' +
 				'You can use the following link to follow up on the registration:<br>' +
 				acceptUrl + '?access_token=' + token + '&sphere_id=' + sphere.id + '<br>' +
@@ -127,9 +115,6 @@ var util = {
 	// },
 
 	sendExistingUserInviteEmail: function(user, sphere, acceptUrl, declineUrl) {
-
-		const Email = loopback.findModel('Email');
-
 		var app = require('../../server/server');
 		var currentUser = app.accessUtils.getCurrentUser();
 
@@ -152,6 +137,6 @@ var util = {
 		});
 
 	}
-}
+};
 
 module.exports = util;
