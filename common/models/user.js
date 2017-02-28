@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 
 const config = require('../../server/config.json');
 const path = require('path');
@@ -142,7 +142,6 @@ module.exports = function(model) {
 
 	// check that a user is not deleted as long as he is owner of a sphere
 	model.observe('before delete', function(context, next) {
-
 		const Sphere = loopback.findModel('Sphere');
 		Sphere.find({where:{ownerId: context.where.id}}, function(err, spheres) {
 			if (err) return next(err);
@@ -634,25 +633,25 @@ module.exports = function(model) {
 	 **** Keys Methods
 	 ************************************/
 
-	model.getEncryptionKeys = function(id, cb) {
+	model.getEncryptionKeys = function(id, callback) {
 		const SphereAccess = loopback.getModel('SphereAccess');
 		SphereAccess.find({where: {userId: id}, include: "sphere"}, function(err, objects) {
-			keys = Array.from(objects, function(access) {
-				let el = { sphereId: access.sphereId, keys: {}};
-				switch (access.role) {
-					case "admin": {
-						el.keys.admin = access.sphere().adminEncryptionKey;
-					}
-					case "member": {
-						el.keys.member = access.sphere().memberEncryptionKey;
-					}
-					case "guest": {
-						el.keys.guest = access.sphere().guestEncryptionKey;
-					}
-				}
-				return el
-			});
-			cb(null, keys);
+      let keys = Array.from(objects, function(access) {
+        let sphere = { sphereId: access.sphereId, keys: {}};
+        switch (access.role) {
+          case "admin": {
+            sphere.keys.admin = access.sphere().adminEncryptionKey;
+          }
+          case "member": {
+            sphere.keys.member = access.sphere().memberEncryptionKey;
+          }
+          case "guest": {
+            sphere.keys.guest = access.sphere().guestEncryptionKey;
+          }
+        }
+        return sphere
+      });
+			callback(null, keys);
 		});
 	};
 
