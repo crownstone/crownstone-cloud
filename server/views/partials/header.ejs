@@ -1,0 +1,25 @@
+<!-- views/partials/header.ejs -->
+
+<nav class="navbar navbar-default navbar-static-top" role="navigation">
+    <div class="container navContainer">
+
+        <div class="navbar-header">
+			<!-- Show logo only on extremely small devices -->
+			<div class="visible-xs">
+				<img class="topLogo xs" src="<%= base_url %>/images/logo_crownstone.png" width="120px" height="120px"/>
+			</div>
+        </div>
+
+        <ul class="nav navbar-nav">
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+        </ul>
+      
+    </div>
+</nav>
+
+<div class="container">
+	<div class="hidden-lg-down">
+		<img src="<%= base_url %>/images/logo_crownstone.png" width="120px" height="120px" style="float:right"/>
+	</div>
+</div>

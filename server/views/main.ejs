@@ -1,66 +1,83 @@
-<section>
-  <form action="/login" method="post">
-    <fieldset>
-      <legend>Login form</legend>
-      <div>
-        <label for="email">Email:</label>
-        <input type="text" name="email" value="<%= email %>"/>
-      </div>
-      <div>
-        <label for="password">Password:</label>
-        <input type="password" name="password" value="<%= password %>"/>
-      </div>
-      <div>
-        <input type="submit" value="Login"/>
-      </div>
-    </fieldset>
-  </form>
-</section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include partials/head %>
+</head>
+<body>
+
+    <% include partials/header %>
+
+    <div class="container">
+	
+		<section>
+		  <form class="cf" action="/login" method="post">
+			<fieldset>
+			  <legend>Login form</legend>
+			  <div class="half left cf">
+				<label for="email">Email:</label>
+				<input type="text" name="email" value="<%= email %>"/>
+			  </div>
+			  <div class="half right cf">
+				<label for="password">Password:</label>
+				<input type="password" name="password" value="<%= password %>"/>
+			  </div>
+			  <div>
+				<input id="input-submit" type="submit" value="Login"/>
+			  </div>
+			</fieldset>
+		  </form>
+		</section>
+
+		<section>
+		  <form class="cf" action="/register" method="post">
+			<fieldset>
+			  <legend>Sign up form</legend>
+			  <div class="half left cf">
+				<label for="firstName">First Name:</label>
+				<input type="text" name="firstName" value="<%= firstName %>"/>
+			  </div>
+			  <div class="half right cf">
+				<label for="lastName">Last Name:</label>
+				<input type="text" name="lastName" value="<%= lastName %>"/>
+			  </div>
+			  <div class="entire-width cf">
+				<label for="email">Email:</label>
+				<input type="text" name="email" value="<%= email %>"/>
+			  </div>
+			  <div class="half left cf">
+				<label for="password">Password:</label>
+				<input type="password" name="password" value="<%= password %>"/>
+			  </div>
+			  <div class="half right cf">
+				<label for="confirmation">Confirm password:</label>
+				<input type="password" name="confirmation">
+			  </div>
+			  <div>
+				<input id="input-submit" type="submit" value="Sign up"/>
+			  </div>
+			</fieldset>
+		  </form>
+		</section>
 
 
-<section>
-  <form action="/register" method="post">
-    <fieldset>
-      <legend>Sign up form</legend>
-      <div>
-        <label for="firstName">First Name:</label>
-        <input type="text" name="firstName" value="<%= firstName %>"/>
-      </div>
-      <div>
-        <label for="lastName">Last Name:</label>
-        <input type="text" name="lastName" value="<%= lastName %>"/>
-      </div>
-      <div>
-        <label for="email">Email:</label>
-        <input type="text" name="email" value="<%= email %>"/>
-      </div>
-      <div>
-        <label for="password">Password:</label>
-        <input type="password" name="password" value="<%= password %>"/>
-      </div>
-      <div>
-        <label for="confirmation">Confirm password:</label>
-        <input type="password" name="confirmation">
-      </div>
-      <div>
-        <input type="submit" value="Sign up"/>
-      </div>
-    </fieldset>
-  </form>
-</section>
+		<section>
+		  <form class="cf" action="/request-password-reset" method="post">
+			<fieldset>
+			  <legend>Reset password form</legend>
+			  <div>
+				<label for="email">Email:</label>
+				<input type="text" name="email" value="<%= email %>"/>
+			  </div>
+			  <div>
+				<input id="input-submit" type="submit" value="Reset password"/>
+			  </div>
+			</fieldset>
+		  </form>
+		</section>
 
+    </div>
 
-<section>
-  <form action="/request-password-reset" method="post">
-    <fieldset>
-      <legend>Reset password form</legend>
-      <div>
-        <label for="email">Email:</label>
-        <input type="text" name="email" value="<%= email %>"/>
-      </div>
-      <div>
-        <input type="submit" value="Reset password"/>
-      </div>
-    </fieldset>
-  </form>
-</section>
+    <% include partials/footer %>
+    
+</body>
+</html>

@@ -1,14 +1,32 @@
-<section>
-  <form action="/request-verification" method="post">
-    <fieldset>
-      <legend>Resend Verification form</legend>
-      <div>
-        <label for="email">Email:</label>
-        <input type="text" name="email" value="<%= email %>"/>
-      </div>
-      <div>
-        <input type="submit" value="Resend verification">
-      </div>
-    </fieldset>
-  </form>
-</section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include partials/head %>
+</head>
+<body>
+
+    <% include partials/header %>
+
+    <div class="container">
+
+      <section>
+        <form action="/request-verification" method="post">
+          <fieldset>
+            <legend>Resend Verification form</legend>
+            <div>
+              <label for="email">Email:</label>
+              <input type="text" name="email" value="<%= email %>"/>
+            </div>
+            <div>
+              <input type="submit" value="Resend verification">
+            </div>
+          </fieldset>
+        </form>
+      </section>
+
+    </div>
+
+    <% include partials/footer %>
+    
+</body>
+</html>

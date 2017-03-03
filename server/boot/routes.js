@@ -16,13 +16,32 @@ module.exports = function(app) {
 			firstName: "",
 			lastName: "",
 			email: "",
-			password: ""
+			password: "",
+			base_url: res.URL
 		});
 	});
 
 	//verified
 	app.get('/verified', function(req, res) {
-		res.render('verified');
+		res.render('verified', {
+			base_url: res.URL
+		});
+	});
+	
+	//about
+	app.get('/about', function(req, res) {
+		res.render('about', {
+			base_url: res.URL
+		});
+	});
+
+	app.get('/login', function(req, res) {
+		res.render('response', {
+			title: 'Sorry, we need a username and password (in a POST request)',
+			redirectTo: '/',
+			redirectToLinkText: 'Try again',
+			base_url: res.URL
+		});
 	});
 
 	//log a user in
@@ -37,14 +56,16 @@ module.exports = function(app) {
 						title: 'Login failed',
 						content: err,
 						redirectTo: '/resend-verification',
-						redirectToLinkText: 'Resend verification'
+						redirectToLinkText: 'Resend verification',
+						base_url: res.URL
 					});
 				} else {
 					res.render('response', {
 						title: 'Login failed',
 						content: err,
 						redirectTo: '/',
-						redirectToLinkText: 'Try again'
+						redirectToLinkText: 'Try again',
+						base_url: res.URL
 					});
 				}
 				return;
@@ -52,7 +73,8 @@ module.exports = function(app) {
 
 			res.render('home', {
 				email: req.body.email,
-				accessToken: token.id
+				accessToken: token.id,
+				base_url: res.URL
 			});
 		});
 	});
@@ -68,7 +90,8 @@ module.exports = function(app) {
 
 	app.get('/resend-verification', function(req, res) {
 		res.render('resend-verification', {
-			email: ""
+			email: "",
+			base_url: res.URL
 		});
 	});
 
@@ -81,7 +104,8 @@ module.exports = function(app) {
 				content: 'Please check your email and click on the verification link ' +
 				'before logging in.',
 				redirectTo: '/',
-				redirectToLinkText: 'Log in'
+				redirectToLinkText: 'Log in',
+				base_url: res.URL
 			});
 		});
 	});
@@ -97,7 +121,8 @@ module.exports = function(app) {
 				title: 'Password reset requested',
 				content: 'Check your email for further instructions',
 				redirectTo: '/',
-				redirectToLinkText: 'Log in'
+				redirectToLinkText: 'Log in',
+				base_url: res.URL
 			});
 		});
 	});
@@ -109,12 +134,14 @@ module.exports = function(app) {
 				title: 'Bad Request',
 				content: 'Access Token is expired, please try again',
 				redirectTo: '/',
-				redirectToLinkText: 'Try again'
+				redirectToLinkText: 'Try again',
+				base_url: res.URL
 			});
 		}
 
 		res.render('password-reset', {
-			accessToken: req.accessToken.id
+			accessToken: req.accessToken.id,
+			base_url: res.URL
 		});
 	});
 
@@ -139,7 +166,8 @@ module.exports = function(app) {
 					title: 'Password reset success',
 					content: 'Your password has been reset successfully',
 					redirectTo: '/',
-					redirectToLinkText: 'Log in'
+					redirectToLinkText: 'Log in',
+					base_url: res.URL
 				});
 			});
 		});
@@ -151,7 +179,8 @@ module.exports = function(app) {
 				title: 'Bad Request',
 				content: 'Invitation is expired, ask an admin of the sphere to resend the invitation',
 				redirectTo: '/',
-				redirectToLinkText: 'Back'
+				redirectToLinkText: 'Back',
+				base_url: res.URL
 			});
 		}
 
@@ -164,7 +193,8 @@ module.exports = function(app) {
 					title: 'Bad Request',
 					content: 'User is already verified',
 					redirectTo: '/',
-					redirectToLinkText: 'Log in'
+					redirectToLinkText: 'Log in',
+					base_url: res.URL
 				});
 				// console.log('remove again from sphere');
 				// SphereAccess.destroyAll({sphereId: sphereId, userId: req.accessToken.userId}, function(err) {
@@ -181,7 +211,8 @@ module.exports = function(app) {
 							title: 'Invite declined',
 							content: 'You have declined the invitation',
 							redirectTo: '/',
-							redirectToLinkText: 'Log in'
+							redirectToLinkText: 'Log in',
+							base_url: res.URL
 						});
 					});
 				})
@@ -194,6 +225,7 @@ module.exports = function(app) {
 			email: "",
 			password: "",
 			loginPostUrl: "/accept-invite?sphere_id=" + req.query.sphere_id,
+			base_url: res.URL
 		});
 	});
 
@@ -209,14 +241,16 @@ module.exports = function(app) {
 						title: 'Login failed',
 						content: err,
 						redirectTo: '/resend-verification',
-						redirectToLinkText: 'Resend verification'
+						redirectToLinkText: 'Resend verification',
+						base_url: res.URL
 					});
 				} else {
 					res.render('response', {
 						title: 'Login failed',
 						content: err,
 						redirectTo: '/',
-						redirectToLinkText: 'Try again'
+						redirectToLinkText: 'Try again',
+						base_url: res.URL
 					});
 				}
 				return;
@@ -233,14 +267,16 @@ module.exports = function(app) {
 							title: 'Bad Request',
 							content: 'No pending invitation found',
 							redirectTo: '/',
-							redirectToLinkText: 'Log in'
+							redirectToLinkText: 'Log in',
+							base_url: res.URL
 						});
 					} else {
 						res.render('response', {
 							title: 'Invite accepted',
 							content: 'You have accepted the invitation',
 							redirectTo: '/',
-							redirectToLinkText: 'Log in'
+							redirectToLinkText: 'Log in',
+							base_url: res.URL
 						});
 					}
 			});
@@ -253,7 +289,8 @@ module.exports = function(app) {
 		res.render('login', {
 			email: "",
 			password: "",
-			loginPostUrl: "/decline-invite?sphere_id=" + req.query.sphere_id
+			loginPostUrl: "/decline-invite?sphere_id=" + req.query.sphere_id,
+			base_url: res.URL
 		});
 	});
 
@@ -269,14 +306,16 @@ module.exports = function(app) {
 						title: 'Login failed',
 						content: err,
 						redirectTo: '/resend-verification',
-						redirectToLinkText: 'Resend verification'
+						redirectToLinkText: 'Resend verification',
+						base_url: res.URL
 					});
 				} else {
 					res.render('response', {
 						title: 'Login failed',
 						content: err,
 						redirectTo: '/',
-						redirectToLinkText: 'Try again'
+						redirectToLinkText: 'Try again',
+						base_url: res.URL
 					});
 				}
 				return;
@@ -292,14 +331,16 @@ module.exports = function(app) {
 							title: 'Bad Request',
 							content: 'No pending invitation found',
 							redirectTo: '/',
-							redirectToLinkText: 'Log in'
+							redirectToLinkText: 'Log in',
+							base_url: res.URL
 						});
 					} else {
 						res.render('response', {
 							title: 'Invite declined',
 							content: 'You have declined the invitation',
 							redirectTo: '/',
-							redirectToLinkText: 'Log in'
+							redirectToLinkText: 'Log in',
+							base_url: res.URL
 						});
 					}
 			})
@@ -313,7 +354,8 @@ module.exports = function(app) {
 				title: 'Bad Request',
 				content: 'Invitation is expired, ask an admin of the sphere to resend the invitation',
 				redirectTo: '/',
-				redirectToLinkText: 'Back'
+				redirectToLinkText: 'Back',
+				base_url: res.URL
 			});
 		}
 
@@ -324,13 +366,15 @@ module.exports = function(app) {
 					title: 'Bad Request',
 					content: 'User is already successfully set up',
 					redirectTo: '/',
-					redirectToLinkText: 'Log in'
+					redirectToLinkText: 'Log in',
+					base_url: res.URL
 				});
 				// return res.sendStatus(400, new Error("User is already successfully set up"));
 			} else {
 				res.render('profile-setup', {
 					accessToken: req.accessToken.id,
-					sphereId: req.query.sphere_id
+					sphereId: req.query.sphere_id,
+					base_url: res.URL
 				});
 			}
 		});
@@ -346,7 +390,8 @@ module.exports = function(app) {
 				title: 'Failure',
 				content: 'First and last name have to be filled in!',
 				redirectTo: '/',
-				redirectToLinkText: 'Back'
+				redirectToLinkText: 'Back',
+				base_url: res.URL
 			});
 		}
 		if (!req.body.password ||
@@ -356,7 +401,8 @@ module.exports = function(app) {
 				title: 'Failure',
 				content: 'Passwords do not match',
 				redirectTo: '/',
-				redirectToLinkText: 'Back'
+				redirectToLinkText: 'Back',
+				base_url: res.URL
 			});
 		}
 
@@ -398,7 +444,8 @@ module.exports = function(app) {
 								title: 'Signup success',
 								content: 'You successfully completed the signup process',
 								redirectTo: '/',
-								redirectToLinkText: 'Log in'
+								redirectToLinkText: 'Log in',
+								base_url: res.URL
 							});
 						});
 					}
@@ -416,7 +463,8 @@ module.exports = function(app) {
 				title: 'Bad Request',
 				content: 'First and last name have to be filled in!',
 				redirectTo: '/',
-				redirectToLinkText: 'Try again'
+				redirectToLinkText: 'Try again',
+				base_url: res.URL
 			});
 		}
 		if (!req.body.password ||
@@ -427,7 +475,8 @@ module.exports = function(app) {
 				title: 'Bad Request',
 				content: 'Passwords do not match',
 				redirectTo: '/',
-				redirectToLinkText: 'Try again'
+				redirectToLinkText: 'Try again',
+				base_url: res.URL
 			});
 
 		}
@@ -445,7 +494,8 @@ module.exports = function(app) {
 						title: 'Bad Request',
 						content: "Email already exists",
 						redirectTo: '/',
-						redirectToLinkText: 'Try again'
+						redirectToLinkText: 'Try again',
+						base_url: res.URL
 					});
 				}
 

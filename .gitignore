@@ -10,6 +10,9 @@
 *.swp
 *.tgz
 *.xml
+*.sh
+*.log
+*.logs
 .DS_Store
 .idea
 .project
