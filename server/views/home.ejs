@@ -1,5 +1,45 @@
-<main>
-  <h1>Hi <%= email %>.</h1>
-  <p>Your accessToken is: <%= accessToken %></p>
-  <a href="/logout?access_token=<%= accessToken %>">Log out</a>
-</main>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include partials/head %>
+    
+</head>
+<body>
+
+    <% include partials/header %>
+
+    <div class="container">
+	<h1>Thanks for logging in!</h1>
+	<p>Your account data:</p>
+	<ul>
+	    <li>Account: <%= email %></li>
+	    <li>Access token: <textarea class="js-textareacopybtn" rows="1" readonly><%= accessToken %></textarea></li>
+	</ul>
+
+	<h2>Explore the Crownstone API</h2>
+	<p>Store the access token and navigate to the <a href="/explorer/">Crownstone REST API explorer</a>.
+
+	<h2>Log out again</h2>
+	<p>Just click to <a href="/logout?access_token=<%= accessToken %>">log out</a>
+    </div>
+
+    <% include partials/footer %>
+    
+    <script>
+	let copyTextareaBtn = document.querySelector('.js-textareacopybtn');
+
+	copyTextareaBtn.addEventListener('click', function(event) {
+	    var copyTextarea = document.querySelector('.js-copytextarea');
+	    copyTextarea.select();
+
+	    try {
+		var successful = document.execCommand('copy');
+		var msg = successful ? 'successful' : 'unsuccessful';
+		console.log('Copying text command was ' + msg);
+	    } catch (err) {
+		console.log('Oops, unable to copy');
+	    }
+	});
+    </script>
+</body>
+</html>
