@@ -2,6 +2,7 @@
   "name": "Crownstone",
   "version": "1.1.0",
   "main": "server/server.js",
+  "license": "(LGPL-3.0 OR Apache-2.0 OR MIT)",
   "scripts": {
     "start": "node ./server/server.js",
     "pretest": "jshint ."
@@ -26,6 +27,7 @@
     "loopback-connector-mongodb": "1.13.3",
     "loopback-connector-sendgrid": "1.2.3",
     "loopback-datasource-juggler": "2.54.0",
+    "strong-supervisor": "^6.0.0",
     "minimatch": "^3.0.2",
     "node-uuid": "*",
     "request": "^2.79.0",
