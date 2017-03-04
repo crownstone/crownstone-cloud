@@ -14,7 +14,7 @@
 	<ul>
 	    <li>Account: <%= email %></li>
 	    <li>Access token: 
-		<textarea class="js-textareacopyarea" rows="1" readonly><%= accessToken %></textarea>
+		<textarea class="js-textareacopyarea" rows="1" cols="200" readonly><%= accessToken %></textarea>
 		<button class="js-textareacopybtn">Clipboard</button>
 	    </li>
 	</ul>
@@ -32,7 +32,7 @@
 	let copyTextareaBtn = document.querySelector('.js-textareacopybtn');
 
 	copyTextareaBtn.addEventListener('click', function(event) {
-	    var copyTextarea = document.querySelector('.js-copytextarea');
+	    var copyTextarea = document.querySelector('.js-textareacopyarea');
 	    copyTextarea.select();
 
 	    try {
