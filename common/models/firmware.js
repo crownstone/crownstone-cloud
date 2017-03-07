@@ -14,7 +14,7 @@ function validateType(index, type) {
     }
 
     let errString = "Could not find type " + type + ". Available types are: " + availableTypes[0];
-    for (let i = 0; i < availableTypes.length; i++) {
+    for (let i = 1; i < availableTypes.length; i++) {
       errString += ', ' + availableTypes[i]
     }
     return errString;
