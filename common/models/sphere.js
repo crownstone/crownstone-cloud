@@ -1,19 +1,21 @@
-var loopback = require('loopback');
-var uuid = require('node-uuid');
-var crypto = require('crypto');
+// "use strict";
+
+let loopback = require('loopback');
+let uuid = require('node-uuid');
+let crypto = require('crypto');
 
 const debug = require('debug')('loopback:dobots');
 
-var config = require('../../server/config.json');
-var emailUtil = require('../../server/emails/util');
-var mesh = require('../../server/middleware/mesh-access-address')
+let config = require('../../server/config.json');
+let emailUtil = require('../../server/emails/util');
+let mesh = require('../../server/middleware/mesh-access-address');
 
-var DEFAULT_TTL = 1209600; // 2 weeks in seconds
-var DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
+let DEFAULT_TTL = 1209600; // 2 weeks in seconds
+let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
 
 module.exports = function(model) {
 
-	var app = require('../../server/server');
+	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 		model.disableRemoteMethod('find', true);
 
@@ -258,8 +260,7 @@ module.exports = function(model) {
 			if (!user) return next();
 
 			if (new String(user.id).valueOf() === new String(context.instance.ownerId).valueOf()) {
-				error = new Error("can't remove owner from sphere");
-				return next(error);
+				return next(new Error("can't remove owner from sphere"));
 			} else {
 				next();
 			}
@@ -273,8 +274,7 @@ module.exports = function(model) {
 
 			if (sphere) {
 				if (sphere.ownedStones().length > 0) {
-					error = new Error("Can't delete a sphere with assigned crownstones.")
-					return next(error);
+					return next(new Error("Can't delete a sphere with assigned crownstones."));
 				}
 			}
 			next();
@@ -326,17 +326,17 @@ module.exports = function(model) {
 		}
 	}
 
-	function createKey(cb) {
+	function createKey(callback) {
 		return crypto.randomBytes(16).toString('hex');
 		// crypto.randomBytes(16, function(err, buf) {
-		// 	if (err) return cb(err);
+		// 	if (err) return callback(err);
 		// 	if (!buf) {
-		// 		var error = new Error("could not generate encryption key");
+		// 		let error = new Error("could not generate encryption key");
 		// 		error.code = 'ENCRYPTION_KEY_GENERATION_FAILED';
-		// 		cb(error);
+		// 		callback(error);
 		// 	}
 
-		// 	cb(null, buf.toString('hex'));
+		// 	callback(null, buf.toString('hex'));
 		// })
 	}
 
@@ -414,14 +414,14 @@ module.exports = function(model) {
 			// debug("ctx.instance: ", item);
 
 			const loopbackContext = loopback.getCurrentContext();
-			var currentUser = loopbackContext.get('currentUser');
+			let currentUser = loopbackContext.get('currentUser');
 
-			inject = function(item, user, next) {
+			let inject = function(item, user, next) {
 				// debug("user:", user);
 				item.ownerId = user.id;
 				// debug("ctx.instance: ", item.instance);
 				next();
-			}
+			};
 
 			// // only for DEBUG purposes
 			// if (currentUser == null) {
@@ -435,14 +435,13 @@ module.exports = function(model) {
 			// 		}
 			// 	})
 			// } else {
-				inject(item, currentUser, next)
+				inject(item, currentUser, next);
 			// }
 		} else {
 			next();
 		}
-	};
-
-	function updateOwnerAccess(ctx, next) {
+  }
+  function updateOwnerAccess(ctx, next) {
 		// debug("instance: ", ctx.instance);
 
 		// const SphereAccess = loopback.getModel('SphereAccess');
@@ -473,9 +472,8 @@ module.exports = function(model) {
 		}
 
 		next();
-	};
-
-	// var addSuperUser = function(ctx) {
+  }
+  // let addSuperUser = function(ctx) {
 
 	// 	user = loopback.getModel('user');
 	// 	user.findOne({where: {role: "superuser"}}, function(err, res) {
@@ -490,7 +488,7 @@ module.exports = function(model) {
 
 	// }
 
-	function addSphereAccess(user, sphere, access, invite, cb) {
+	function addSphereAccess(user, sphere, access, invite, callback) {
 		debug("addSphereAccess");
 
 		sphere.users.add(user, {
@@ -502,8 +500,8 @@ module.exports = function(model) {
 		function(err, access) {
 			// debug("err", err);
 			// debug("access", access);
-			cb(err);
-		})
+			callback(err);
+		});
 
 		// const SphereAccess = loopback.getModel('SphereAccess');
 		// SphereAccess.create({
@@ -513,45 +511,44 @@ module.exports = function(model) {
 		// }, function(err, res) {
 		// 	if (err) {
 		// 		debug("Error: ", err);
-		// 		cb(err);
+		// 		callback(err);
 		// 	} else {
 		// 		debug("OK");
-		// 		cb();
+		// 		callback();
 		// 	}
 		// });
-	};
+  }
+  function sendInvite(user, sphere, isNew, accessTokenId) {
 
-	function sendInvite(user, sphere, isNew, accessTokenId) {
-
-		var baseUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port));
+		let baseUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port));
 		if (isNew) {
-			var acceptUrl = baseUrl + '/profile-setup'
-			var declineUrl = baseUrl + '/decline-invite-new'
+			let acceptUrl = baseUrl + '/profile-setup';
+			let declineUrl = baseUrl + '/decline-invite-new';
 
 			emailUtil.sendNewUserInviteEmail(sphere, user.email, acceptUrl, declineUrl, accessTokenId);
 		} else {
-			var acceptUrl = baseUrl + '/accept-invite'
-			var declineUrl = baseUrl + '/decline-invite'
+			let acceptUrl = baseUrl + '/accept-invite';
+			let declineUrl = baseUrl + '/decline-invite';
 
 			emailUtil.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
 		}
 	}
 
-	function addExistingUser(email, id, access, cb) {
+	function addExistingUser(email, id, access, callback) {
 		const User = loopback.getModel('user');
 		model.findById(id, function(err, instance) {
 			if (err) {
-				cb(err, null);
+				callback(err, null);
 			} else {
-				var sphere = instance;
+				let sphere = instance;
 				if (sphere) {
 					// debug("sphere:", sphere);
-					// var encryptionKey = sphere[access + "EncryptionKey"];
+					// let encryptionKey = sphere[access + "EncryptionKey"];
 
 					User.findOne({where: {email: email}}, function(err, user) {
 						if (err) {
 							debug("did not find user with this email");
-							cb(err);
+							callback(err);
 						} else {
 							if (user) {
 								// debug("user:", user);
@@ -559,50 +556,47 @@ module.exports = function(model) {
 								// user.save();
 
 								addSphereAccess(user, sphere, access, true, function(err) {
-									if (err) return cb(err);
+									if (err) return callback(err);
 
-									// var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
-									// var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
+									// let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
+									// let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
 
 									// emailUtil.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
 									sendInvite(user, sphere, false);
-									cb();
+									callback();
 								});
 							} else {
-								error = new Error("no user found with this email");
-								cb(error);
+								callback(new Error("no user found with this email"));
 							}
 						}
 					});
 				} else {
 					// debug("no sphere", sphere, sphereId)
-					error = new Error("no sphere found with this id");
-					cb(error);
+					callback(new Error("no sphere found with this id"));
 				}
 			}
 		});
-	};
-
-	function createAndInviteUser(sphere, email, access, next) {
+  }
+  function createAndInviteUser(sphere, email, access, next) {
 
 		debug("createAndInviteUser");
 
 		const User = loopback.getModel('user');
-		tempPassword = crypto.randomBytes(8).toString('base64');
+		let tempPassword = crypto.randomBytes(8).toString('base64');
 		// debug("tempPassword", tempPassword);
-		userData = {email: email, password: tempPassword};
+		let userData = {email: email, password: tempPassword};
 		User.create(userData, function(err, user) {
 			if (err) return next(err);
 
-			var ttl = DEFAULT_TTL;
+			let ttl = DEFAULT_TTL;
 			user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
 				if (err) return next(err);
 
 				addSphereAccess(user, sphere, access, true, function(err) {
 					if (err) return next(err);
 
-					// var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
-					// var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
+					// let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
+					// let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
 					// emailUtil.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
 					sendInvite(user, sphere, true, accessToken.id);
 					next();
@@ -624,18 +618,18 @@ module.exports = function(model) {
 					if (err) return next(err);
 
 					if (!user) {
-						debug("create new user")
+						debug("create new user");
 						createAndInviteUser(sphere, email, access, next);
 					} else {
 						// user exists, check if he is already part of the sphere
 						sphere.users.exists(user.id, function(err, exists) {
 							if (exists) {
-								debug("user is already part of the sphere")
-								error = new Error("user is already part of the sphere");
+								debug("user is already part of the sphere");
+								let error = new Error("user is already part of the sphere");
 	    						error.statusCode = error.status = 200;
 	    						next(error);
 							} else {
-								debug("add existing user")
+								debug("add existing user");
 								addExistingUser(email, sphereId, access, next);
 							}
 						})
@@ -644,24 +638,22 @@ module.exports = function(model) {
 				});
 			} else {
 				debug("no sphere");
-				error = new Error("no sphere found with this id");
-				next(error);
+				next(new Error("no sphere found with this id"));
 			}
 		});
-	};
-
-	model.pendingInvites = function(id, cb) {
+  }
+  model.pendingInvites = function(id, callback) {
 
 		const SphereAccess = loopback.getModel('SphereAccess');
 		SphereAccess.find(
 			{where: {and: [{sphereId: id}, {invitePending: true}]}, include: "user"},
 			function(err, objects) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 
 				// [06.12.16] Bug? access.user() was null and app crashed on access.user().email
 				//   shouldn't happen?! But to avoid future crashes, array is first filtered for
 				//   elements where access.user() returns a user object
-				pendingInvites = Array.from(objects)
+				let pendingInvites = Array.from(objects)
 					.filter(function(access) {
 						return (access.user())
 					})
@@ -670,10 +662,10 @@ module.exports = function(model) {
 					});
 				// debug("pendingInvites", pendingInvites);
 
-				cb(null, pendingInvites);
+				callback(null, pendingInvites);
 			}
 		);
-	}
+	};
 
 	model.remoteMethod(
 		'pendingInvites',
@@ -687,33 +679,33 @@ module.exports = function(model) {
 		}
 	);
 
-	model.resendInvite = function(id, email, cb) {
+	model.resendInvite = function(id, email, callback) {
 
 		model.findById(id, function(err, sphere) {
-			if (err) return cb(err);
+			if (err) return callback(err);
 
 			const User = loopback.findModel('user');
 			User.findOne({where: {email: email}}, function(err, user) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 				// debug("user", user);
 
 				const SphereAccess = loopback.getModel('SphereAccess');
 				SphereAccess.findOne(
 					{where: {and: [{sphereId: id}, {userId: user.id}, {invitePending: true}]}},
 					function(err, access) {
-						if (err) return cb(err);
-						if (!access) return cb(new Error("User not found in invites"));
+						if (err) return callback(err);
+						if (!access) return callback(new Error("User not found in invites"));
 
 						if (user.new) {
 							user.accessTokens.destroyAll(function(err, info) {
 								if (err) debug("failed to remove old access token");
 
-								var ttl = DEFAULT_TTL;
+								let ttl = DEFAULT_TTL;
 								user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
-									if (err) return cb(err);
+									if (err) return callback(err);
 
 									sendInvite(user, sphere, true, accessToken.id);
-									cb();
+									callback();
 								});
 
 							})
@@ -721,12 +713,12 @@ module.exports = function(model) {
 							sendInvite(user, sphere, false);
 						}
 
-						cb();
+						callback();
 					}
 				);
 			});
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'resendInvite',
@@ -740,25 +732,25 @@ module.exports = function(model) {
 		}
 	);
 
-	model.removeInvite = function(id, email, cb) {
+	model.removeInvite = function(id, email, callback) {
 
 		const User = loopback.findModel('user');
 		User.findOne({where: {email: email}}, function(err, user) {
-			if (err) return cb(err);
-			if (!user) return cb(new Error("could not find user with this email"));
+			if (err) return callback(err);
+			if (!user) return callback(new Error("could not find user with this email"));
 
 			const SphereAccess = loopback.getModel('SphereAccess');
 			SphereAccess.findOne(
 				{where: {and: [{sphereId: id}, {userId: user.id}, {invitePending: true}]}},
 				function(err, access) {
-					if (err) return cb(err);
-					if (!access) return cb(new Error("could not find user in invites"));
+					if (err) return callback(err);
+					if (!access) return callback(new Error("could not find user in invites"));
 
-					SphereAccess.deleteById(access.id, cb);
+					SphereAccess.deleteById(access.id, callback);
 				}
 			);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'removeInvite',
@@ -774,10 +766,10 @@ module.exports = function(model) {
 
 
 
-	model.addGuest = function(email, id, cb) {
+	model.addGuest = function(email, id, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		invite(id, email, "guest", cb);
+		invite(id, email, "guest", callback);
 	};
 
 	model.remoteMethod(
@@ -792,10 +784,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.addMember = function(email, id, cb) {
+	model.addMember = function(email, id, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		invite(id, email, "member", cb);
+		invite(id, email, "member", callback);
 	};
 
 	model.remoteMethod(
@@ -810,10 +802,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.addAdmin = function(email, id, cb) {
+	model.addAdmin = function(email, id, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		invite(id, email, "admin", cb);
+		invite(id, email, "admin", callback);
 	};
 
 	model.remoteMethod(
@@ -844,15 +836,15 @@ module.exports = function(model) {
 	// 	next();
 	// });
 
-	function findUsersWithRole(id, access, cb) {
+	function findUsersWithRole(id, access, callback) {
 
 		model.findById(id, function(err, instance) {
-			if (err) return cb(err);
-			if (model.checkForNullError(instance, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(instance, callback, "id: " + id)) return;
 
-			// instance.users({where: {role: "member"}}, cb);
+			// instance.users({where: {role: "member"}}, callback);
 			instance.users(function(err, users) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 
 				// debug("users:", users);
 
@@ -860,15 +852,15 @@ module.exports = function(model) {
 				SphereAccess.find(
 					{where: {and: [{sphereId: id}, {role: access}, {invitePending: {neq: true}}]}, field: "userId"},
 					function(err, res) {
-						if (err) return cb(err);
+						if (err) return callback(err);
 
 						// debug("sphereMembers:", res);
 
-						var filteredUsers = [];
-						for (i = 0; i < users.length; ++i) {
-							var user = users[i];
+						let filteredUsers = [];
+						for (let i = 0; i < users.length; ++i) {
+							let user = users[i];
 							// debug("  user.id " + i + ":", user.id.valueOf() );
-							for (j = 0; j < res.length; ++j) {
+							for (let j = 0; j < res.length; ++j) {
 								access = res[j];
 								// debug("member.id " + j + ":", member.userId.valueOf());
 								if (new String(user.id).valueOf() === new String(access.userId).valueOf()) {
@@ -878,17 +870,17 @@ module.exports = function(model) {
 							}
 						}
 						// debug("found users: ", filteredUsers);
-						cb(null, filteredUsers);
+						callback(null, filteredUsers);
 					}
 				);
 			});
 		});
 	}
 
-	model.guests = function(id, cb) {
+	model.guests = function(id, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		findUsersWithRole(id, 'guest', cb);
+		findUsersWithRole(id, 'guest', callback);
 	};
 
 	model.remoteMethod(
@@ -903,10 +895,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.members = function(id, cb) {
+	model.members = function(id, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		findUsersWithRole(id, 'member', cb);
+		findUsersWithRole(id, 'member', callback);
 	};
 
 	model.remoteMethod(
@@ -921,10 +913,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.admins = function(id, cb) {
+	model.admins = function(id, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		findUsersWithRole(id, 'admin', cb);
+		findUsersWithRole(id, 'admin', callback);
 	};
 
 	model.remoteMethod(
@@ -939,28 +931,28 @@ module.exports = function(model) {
 		}
 	);
 
-	model.users = function(id, cb) {
-		result = {};
+	model.users = function(id, callback) {
+		let result = {};
 		findUsersWithRole(id, 'admin', function(err, admins) {
-			if (err) cb(err);
+			if (err) callback(err);
 
 			result.admins = admins;
 
 			findUsersWithRole(id, 'member', function(err, members) {
-				if (err) cb(err);
+				if (err) callback(err);
 
 				result.members = members;
 
 				findUsersWithRole(id, 'guest', function(err, guests) {
-					if (err) cb(err);
+					if (err) callback(err);
 
 					result.guests = guests;
 
-					cb(null, result);
+					callback(null, result);
 				});
 			});
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'users',
@@ -974,14 +966,14 @@ module.exports = function(model) {
 		}
 	);
 
-	model.countUsers = function(id, cb) {
+	model.countUsers = function(id, callback) {
 		model.users(id, function(err, res) {
-			if (err) cb(err);
+			if (err) callback(err);
 
-			count = res.admins.length + res.members.length + res.guests.length;
-			cb(null, count);
+			let amountOfUsers = res.admins.length + res.members.length + res.guests.length;
+			callback(null, amountOfUsers);
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'countUsers',
@@ -995,44 +987,43 @@ module.exports = function(model) {
 		}
 	);
 
-	model.changeOwnership = function(id, email, cb) {
+	model.changeOwnership = function(id, email, callback) {
 
 		model.findById(id, function(err, sphere) {
-			if (err) return cb(err);
+			if (err) return callback(err);
 
 			const User = loopback.findModel('user');
 			User.findOne({where: {email: email}}, function(err, user) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 				// debug("user", user);
 				// debug("sphere", sphere);
 
 				const loopbackContext = loopback.getCurrentContext();
-				var currentUser = loopbackContext.get('currentUser');
+				let currentUser = loopbackContext.get('currentUser');
 
 				if (new String(sphere.ownerId).valueOf() === new String(currentUser.id).valueOf()) {
 
 					const SphereAccess = loopback.findModel("SphereAccess");
 					SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-						if (err) return cb(err);
+						if (err) return callback(err);
 
 						if (objects.length = 1) {
 							objects[0].role = "admin";
 							objects[0].save(function(err, instance) {
-								if (err) return cb(err);
+								if (err) return callback(err);
 
 								sphere.ownerId = user.id;
 								sphere.save(function(err, inst) {
-									if (err) return cb(err);
+									if (err) return callback(err);
 
-									cb(null, true);
+									callback(null, true);
 								});
 							});
 
 						} else {
-							error = new Error("user is not part of the sphere!");
-							return cb(error);
+							return callback(new Error("user is not part of the sphere!"));
 						}
-						// for (access of objects) {
+						// for (let access of objects) {
 						// 	if (access.role in ["member", "guest"]) {
 						// 		access.
 						// 	}
@@ -1041,26 +1032,26 @@ module.exports = function(model) {
 				} else {
 
 					debug("Error: Authorization required!");
-					error = new Error("Authorization Required");
+					let error = new Error("Authorization Required");
 					error.status = 401;
-					return cb(error);
+					return callback(error);
 				}
 
 				// SphereAccess.destroyAll({and: [{userId: sphere.ownerId}, {sphereId: id}, {role: "owner"}]}, function(err, info) {
-				// 	if (err) return cb(err);
+				// 	if (err) return callback(err);
 				// 	debug("info", info);
 
 				// 	addSphereAccess(user, sphere, "owner", false, function(err) {
-				// 		if (err) return cb(err);
+				// 		if (err) return callback(err);
 
 				// 		debug("added sphere access");
 
-				// 		cb(null, true);
+				// 		callback(null, true);
 				// 	});
 				// });
 			});
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'changeOwnership',
@@ -1075,37 +1066,37 @@ module.exports = function(model) {
 		}
 	);
 
-	function verifyChangeRole(sphereId, user, role, cb) {
+	function verifyChangeRole(sphereId, user, role, callback) {
 
 		model.findById(sphereId, function(err, sphere) {
-			if (err) return cb(err);
-			if (model.checkForNullError(sphere, cb, "id: " + sphereId)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(sphere, callback, "id: " + sphereId)) return;
 
 			if (role === "owner") {
-				cb(null, false);
+				callback(null, false);
 			} else {
-				cb(null, user.id != sphere.ownerId)
+				callback(null, user.id != sphere.ownerId)
 			}
 		});
 
 	}
 
-	model.getRole = function(id, email, cb) {
+	model.getRole = function(id, email, callback) {
 
 		const User = loopback.findModel('user');
 		User.findOne({where: {email: email}}, function(err, user) {
-			if (err) return cb(err);
-			if (User.checkForNullError(user, cb, "email: " + email)) return;
+			if (err) return callback(err);
+			if (User.checkForNullError(user, callback, "email: " + email)) return;
 
 			const SphereAccess = loopback.findModel("SphereAccess");
 			SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 				// debug(objects);
-				roles = Array.from(objects, access => access.role)
-				cb(null, roles);
+				let roles = Array.from(objects, access => access.role);
+				callback(null, roles);
 			});
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'getRole',
@@ -1120,51 +1111,49 @@ module.exports = function(model) {
 		}
 	);
 
-	model.changeRole = function(id, email, role, cb) {
+	model.changeRole = function(id, email, role, callback) {
 
 		const User = loopback.findModel('user');
 		User.findOne({where: {email: email}}, function(err, user) {
-			if (err) return cb(err);
-			if (User.checkForNullError(user, cb, "email: " + email)) return;
+			if (err) return callback(err);
+			if (User.checkForNullError(user, callback, "email: " + email)) return;
 
 			verifyChangeRole(id, user, role, function(err, success) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 
 				if (success) {
 					const SphereAccess = loopback.findModel("SphereAccess");
 					// SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-					// 	if (err) return cb(err);
+					// 	if (err) return callback(err);
 					// 	debug(objects);
 					// 	roles = Array.from(objects, access => access.role)
-					// 	cb(null, roles);
+					// 	callback(null, roles);
 					// })
 					// SphereAccess.updateAll({and: [{userId: user.id}, {sphereId: id}]}, {role: role}, function(err, info) {
-					// 	if (err) return cb(err);
+					// 	if (err) return callback(err);
 					// 	debug(info);
-					// 	cb();
+					// 	callback();
 					// })
 					SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-						if (err) return cb(err);
+						if (err) return callback(err);
 
 						if (objects.length = 1) {
 							objects[0].role = role;
 							objects[0].save(function(err, instance) {
-								if (err) return cb(err);
-								cb();
+								if (err) return callback(err);
+								callback();
 							});
 						} else {
-							error = new Error("user is not part of the sphere!");
-							return cb(error);
+							return callback(new Error("user is not part of the sphere!"));
 						}
-						// for (access of objects) {
+						// for (let access of objects) {
 						// 	if (access.role in ["member", "guest"]) {
 						// 		access.
 						// 	}
 						// }
 					})
 				} else {
-					error = new Error("not allowed to change owners. Use /changeOwnership instead!");
-					return cb(error);
+					return callback(new Error("not allowed to change owners. Use /changeOwnership instead!"));
 				}
 			});
 
@@ -1172,16 +1161,16 @@ module.exports = function(model) {
 		});
 
 		// model.findById(id, {include: {relation: "users", scope: {where: {email: email}}}}, function(err, user) {
-		// 	if (err) return cb(err);
+		// 	if (err) return callback(err);
 
 		// 	const SphereAccess = loopback.findModel("SphereAccess");
 		// 	SphereAccess.updateAll({userId: user.id}, {role: role}, function(err, info) {
-		// 		if (err) return cb(err);
+		// 		if (err) return callback(err);
 		// 		debug(info);
-		// 		cb();
+		// 		callback();
 		// 	})
 		// });
-	}
+	};
 
 	model.remoteMethod(
 		'changeRole',
@@ -1201,10 +1190,10 @@ module.exports = function(model) {
 	 **** Container Methods
 	 ************************************/
 
-	model.listFiles = function(id, cb) {
+	model.listFiles = function(id, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._getFiles(id, cb);
-	}
+		Container._getFiles(id, callback);
+	};
 
 	model.remoteMethod(
 		'listFiles',
@@ -1218,14 +1207,14 @@ module.exports = function(model) {
 		}
 	);
 
-	model.countFiles = function(id, cb) {
+	model.countFiles = function(id, callback) {
 		const Container = loopback.getModel('SphereContainer');
 		Container._getFiles(id, function(err, res) {
-			if (err) return cb(err);
+			if (err) return callback(err);
 
-			cb(null, res.length);
+			callback(null, res.length);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'countFiles',
@@ -1239,9 +1228,9 @@ module.exports = function(model) {
 		}
 	);
 
-	// model.listFile = function(id, fk, cb) {
+	// model.listFile = function(id, fk, callback) {
 	// 	const Container = loopback.getModel('SphereContainer');
-	// 	Container.getFile(id, fk, cb);
+	// 	Container.getFile(id, fk, callback);
 	// }
 
 	// model.remoteMethod(
@@ -1257,10 +1246,10 @@ module.exports = function(model) {
 	// 	}
 	// );
 
-	model.deleteFile = function(id, fk, cb) {
+	model.deleteFile = function(id, fk, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._deleteFile(id, fk, cb);
-	}
+		Container._deleteFile(id, fk, callback);
+	};
 
 	model.remoteMethod(
 		'deleteFile',
@@ -1274,10 +1263,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllFiles = function(id, cb) {
+	model.deleteAllFiles = function(id, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._deleteContainer(id, cb);
-	}
+		Container._deleteContainer(id, callback);
+	};
 
 	model.remoteMethod(
 		'deleteAllFiles',
@@ -1290,10 +1279,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.downloadFile = function(id, fk, res, cb) {
+	model.downloadFile = function(id, fk, res, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._download(id, fk, res, cb);
-	}
+		Container._download(id, fk, res, callback);
+	};
 
 	model.remoteMethod(
 		'downloadFile',
@@ -1308,10 +1297,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.uploadFile = function(id, req, cb) {
+	model.uploadFile = function(id, req, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._upload(id, req, cb);
-	}
+		Container._upload(id, req, callback);
+	};
 
 	model.remoteMethod(
 		'uploadFile',
@@ -1326,22 +1315,22 @@ module.exports = function(model) {
 		}
 	);
 
-	model.downloadProfilePicOfUser = function(id, email, res, cb) {
+	model.downloadProfilePicOfUser = function(id, email, res, callback) {
 		model.findById(id, function(err, sphere) {
 			if (err) return next(err);
-			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
+			if (model.checkForNullError(sphere, callback, "id: " + id)) return;
 
 			sphere.users({where: {email: email}}, function(err, users) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 
-				if (users.length == 0) return cb(new Error("user not found"));
-				var user = users[0];
+				if (users.length == 0) return callback(new Error("user not found"));
+				let user = users[0];
 
 				const User = loopback.getModel('user');
-				User.downloadFile(user.id, user.profilePicId, res, cb);
+				User.downloadFile(user.id, user.profilePicId, res, callback);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'downloadProfilePicOfUser',
@@ -1356,17 +1345,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllLocations = function(id, cb) {
+	model.deleteAllLocations = function(id, callback) {
 		debug("deleteAllLocations");
 		model.findById(id, {include: "ownedLocations"}, function(err, sphere) {
-			if (err) return cb(err);
-			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(sphere, callback, "id: " + id)) return;
 
 			sphere.ownedLocations.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteAllLocations',
@@ -1379,17 +1368,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllStones = function(id, cb) {
+	model.deleteAllStones = function(id, callback) {
 		debug("deleteAllStones");
 		model.findById(id, {include: "ownedStones"}, function(err, sphere) {
-			if (err) return cb(err);
-			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(sphere, callback, "id: " + id)) return;
 
 			sphere.ownedStones.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteAllStones',
@@ -1402,17 +1391,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllAppliances = function(id, cb) {
+	model.deleteAllAppliances = function(id, callback) {
 		debug("deleteAllAppliances");
 		model.findById(id, {include: "ownedAppliances"}, function(err, sphere) {
-			if (err) return cb(err);
-			if (model.checkForNullError(sphere, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(sphere, callback, "id: " + id)) return;
 
 			sphere.ownedAppliances.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteAllAppliances',
@@ -1453,8 +1442,8 @@ module.exports = function(model) {
 	// 	User.findById(context.args.fk, function(err, user) {
 	// 		if (err || !user) return debug("did not find user to send notification email");
 
-	// 		var acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
-	// 		var declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
+	// 		let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
+	// 		let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
 
 	// 		emailUtil.sendExistingUserInviteEmail(user, context.instance, acceptUrl, declineUrl);
 

@@ -1,11 +1,13 @@
-var stl = require('../../server/middleware/deviceScanToLocation');
-var loopback = require('loopback');
+// "use strict";
+
+let stl = require('../../server/middleware/deviceScanToLocation');
+let loopback = require('loopback');
 
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	var app = require('../../server/server');
+	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 		model.disableRemoteMethod('find', true);
 
@@ -88,7 +90,7 @@ module.exports = function(model) {
 	model.disableRemoteMethod('findOne', true);
 	model.disableRemoteMethod('updateAll', true);
 
-	var initDevice = function(ctx, next) {
+	let initDevice = function(ctx, next) {
 		debug("initDevice");
 
 		if (ctx.isNewInstance) {
@@ -96,13 +98,13 @@ module.exports = function(model) {
 		} else {
 			injectOwner(ctx.data, next);
 		}
-	}
+	};
 
-	var injectOwner = function(ctx, next) {
+	let injectOwner = function(ctx, next) {
 		// debug("ctx", ctx);
 		// debug("next", next);
 
-		var item;
+		let item;
 		if (ctx.isNewInstance) {
 			item = ctx.instance;
 		} else {
@@ -119,7 +121,7 @@ module.exports = function(model) {
 			// debug("ctx.instance: ", item);
 
 			const loopbackContext = loopback.getCurrentContext();
-			var currentUser = loopbackContext.get('currentUser');
+			let currentUser = loopbackContext.get('currentUser');
 
 			if (!currentUser) {
 				return next(new Error("Not logged in!"));
@@ -142,7 +144,7 @@ module.exports = function(model) {
 		next();
 
 		// const loopbackContext = loopback.getCurrentContext();
-		// var currentUser = loopbackContext.get('currentUser');
+		// let currentUser = loopbackContext.get('currentUser');
 		// stl.update(ctx.args.data, ctx.instance, currentUser);
 
 	});
@@ -151,7 +153,7 @@ module.exports = function(model) {
 	 **** Location
 	 ************************************/
 
-    var badge = 1;
+    let badge = 1;
 
 	model.setCurrentLocation = function(device, locationId, next) {
 		if ((device.currentLocationId === locationId) ||
@@ -160,7 +162,7 @@ module.exports = function(model) {
 			return next();
 		}
 
-		Location = loopback.getModel('Location');
+		let Location = loopback.getModel('Location');
 		Location.findById(locationId, function(err, location) {
 			if (err) return next(err);
 			if (Location.checkForNullError(location, next, "id: " + locationId)) return;
@@ -170,39 +172,39 @@ module.exports = function(model) {
 			// debug("device:", device);
 			// debug("new location:", locationId);
 
-			debug("notify location change")
+			debug("notify location change");
 
-			PushModel = loopback.getModel('Push');
+			let PushModel = loopback.getModel('Push');
 			Notification = loopback.getModel('Notification');
 
 			// debug("location: ", location);
 
-			var note = new Notification({
-		        expirationInterval: 3600, // Expires 1 hour from now.
-		        badge: badge++,
-		        sound: 'ping.aiff',
-		        alert: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
-		        message: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
-		        messageFrom: 'Me'
-		    });
+			let note = new Notification({
+        expirationInterval: 3600, // Expires 1 hour from now.
+        badge: badge++,
+        sound: 'ping.aiff',
+        alert: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
+        message: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
+        messageFrom: 'Me'
+      });
 
-		    // debug("installation: ", device.installation());
+      // debug("installation: ", device.installation());
 
-		    Installation = loopback.getModel('Installation');
-		    Installation.findOne({where: {deviceId: device.id}}, function(err, installation) {
-		    	if (err || !installation) {
-		    		debug("no installation found for device");
-		    		return;
-		    	}
+      let Installation = loopback.getModel('Installation');
+      Installation.findOne({where: {deviceId: device.id}}, function(err, installation) {
+        if (err || !installation) {
+          debug("no installation found for device");
+          return;
+        }
 
-		    	PushModel.notifyById(installation.id, note, function (err) {
-					if (err) {
-						debug('Cannot notify %j: %s', installation.id, err.stack);
-						return;
-					}
-					debug('pushing notification to %j', installation.id);
-				});
-		    })
+        PushModel.notifyById(installation.id, note, function (err) {
+          if (err) {
+            debug('Cannot notify %j: %s', installation.id, err.stack);
+            return;
+          }
+          debug('pushing notification to %j', installation.id);
+        });
+      });
 
 			device.currentLocationId = locationId;
 
@@ -224,7 +226,7 @@ module.exports = function(model) {
 			})
 
 		});
-	}
+	};
 
 	model.clearCurrentLocation = function(device, next) {
 
@@ -238,7 +240,7 @@ module.exports = function(model) {
 			}
 		})
 
-	}
+	};
 
 	model.remoteSetCurrentLocation = function(locationId, deviceId, next) {
 		debug("remoteSetCurrentLocation");
@@ -254,7 +256,7 @@ module.exports = function(model) {
 			}
 		})
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteSetCurrentLocation',
@@ -296,7 +298,7 @@ module.exports = function(model) {
 			}
 		});
 
-	}
+	};
 
 	model.remoteSetCurrentCoordinate = function(coordinate, deviceId, next) {
 		debug("remoteSetCurrentCoordinate");
@@ -308,7 +310,7 @@ module.exports = function(model) {
 			model.setCurrentCoordinate(device, coordinate, next);
 		})
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteSetCurrentCoordinate',
@@ -323,17 +325,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteCoordinatesHistory = function(id, cb) {
+	model.deleteCoordinatesHistory = function(id, callback) {
 		debug("deleteCoordinatesHistory");
 		model.findById(id, {include: "coordinatesHistory"}, function(err, device) {
-			if (err) return cb(err);
-			if (model.checkForNullError(device, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(device, callback, "id: " + id)) return;
 
 			device.coordinatesHistory.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteCoordinatesHistory',
@@ -346,17 +348,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteLocationsHistory = function(id, cb) {
+	model.deleteLocationsHistory = function(id, callback) {
 		debug("deleteLocationsHistory");
 		model.findById(id, {include: "locationsHistory"}, function(err, device) {
-			if (err) return cb(err);
-			if (model.checkForNullError(device, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(device, callback, "id: " + id)) return;
 
 			device.locationsHistory.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteLocationsHistory',
@@ -369,17 +371,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllScans = function(id, cb) {
+	model.deleteAllScans = function(id, callback) {
 		debug("deleteAllScans");
 		model.findById(id, {include: "scans"}, function(err, device) {
-			if (err) return cb(err);
-			if (model.checkForNullError(device, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(device, callback, "id: " + id)) return;
 
 			device.scans.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteAllScans',

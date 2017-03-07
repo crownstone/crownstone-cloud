@@ -131,7 +131,12 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (!sphere) return next();
 
-			if (new String(sphere.ownerId).valueOf() === new String(context.instance.id).valueOf()) {
+			if ((new String(sphere.ownerId).valueOf() === new String(context.instance.id).valueOf()) !== (sphere.ownerId === context.instance.id)) {
+        debug("COMPARISON HAS FAILED WITH THESE IDs: sphere.ownerId(" + sphere.ownerId + ') + context.instance.id(' + context.instance.id + ')')
+      }
+
+
+			if (sphere.ownerId === context.instance.id) {
 				let error = new Error("can't exit from sphere where user with id is the owner");
 				return next(error);
 			} else {
@@ -282,16 +287,16 @@ module.exports = function(model) {
 		}
 	);
 
-	model.me = function(cb) {
+	model.me = function(callback) {
 		// debug("me");
 		const loopbackContext = loopback.getCurrentContext();
 		let currentUser = loopbackContext.get('currentUser');
 
 		// debug("currentUser", currentUser)
 		if (currentUser) {
-			cb(null, currentUser);
+			callback(null, currentUser);
 		} else {
-			cb({message: "WTF: user not found??"});
+			callback({message: "WTF: user not found??"});
 		}
 	};
 
@@ -304,10 +309,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.createNewSphere = function(data, id, cb) {
+	model.createNewSphere = function(data, id, callback) {
 		// debug("createNewSphere:", data);
 		const Sphere = loopback.getModel('Sphere');
-		Sphere.create(data, cb);
+		Sphere.create(data, callback);
 	};
 
 	model.remoteMethod(
@@ -323,14 +328,14 @@ module.exports = function(model) {
 		}
 	);
 
-	model.spheres = function(id, cb) {
+	model.spheres = function(id, callback) {
 
 		model.findById(id, function(err, instance) {
-			if (err) return cb(err);
-			if (model.checkForNullError(instance, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(instance, callback, "id: " + id)) return;
 
 			instance.spheres(function(err, spheres) {
-				if (err) return cb(err);
+				if (err) return callback(err);
 
 				// debug("spheres:", spheres);
 
@@ -338,7 +343,7 @@ module.exports = function(model) {
 				SphereAccess.find(
 					{where: {and: [{userId: id}, {invitePending: {neq: true}}]}, field: "sphereId"},
 					function(err, res) {
-						if (err) return cb(err);
+						if (err) return callback(err);
 
 						// debug("sphereMembers:", res);
 
@@ -357,7 +362,7 @@ module.exports = function(model) {
 							}
 						}
 						// debug("found spheres: ", filteredSpheres);
-						cb(null, filteredSpheres);
+						callback(null, filteredSpheres);
 					}
 				);
 			});
@@ -376,10 +381,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.countSpheres = function(id, cb) {
+	model.countSpheres = function(id, callback) {
 		model.spheres(id, function(err, res) {
-			if (err) cb(err);
-			cb(null, res.length);
+			if (err) callback(err);
+			callback(null, res.length);
 		})
 	};
 
@@ -395,7 +400,7 @@ module.exports = function(model) {
 		}
 	);
 
-	model.notifyDevices = function(message, id, cb) {
+	model.notifyDevices = function(message, id, callback) {
 		// debug("notifyDevices:", message);
 
 		const Notification = loopback.getModel('Notification');
@@ -407,7 +412,7 @@ module.exports = function(model) {
 		});
 
 		const Push = loopback.getModel('Push');
-		Push.notifyByQuery({userId: id}, notification, cb);
+		Push.notifyByQuery({userId: id}, notification, callback);
 
 	};
 
@@ -427,9 +432,9 @@ module.exports = function(model) {
 	 **** Container Methods
 	 ************************************/
 
-	model.listFiles = function(id, cb) {
+	model.listFiles = function(id, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._getFiles(id, cb);
+		Container._getFiles(id, callback);
 	};
 
 	model.remoteMethod(
@@ -444,12 +449,12 @@ module.exports = function(model) {
 		}
 	);
 
-	model.countFiles = function(id, cb) {
+	model.countFiles = function(id, callback) {
 		const Container = loopback.getModel('UserContainer');
 		Container._getFiles(id, function(err, res) {
-			if (err) return cb(err);
+			if (err) return callback(err);
 
-			cb(null, res.length);
+			callback(null, res.length);
 		});
 	};
 
@@ -465,9 +470,9 @@ module.exports = function(model) {
 		}
 	);
 
-	// model.listFile = function(id, fk, cb) {
+	// model.listFile = function(id, fk, callback) {
 	// 	const Container = loopback.getModel('UserContainer');
-	// 	Container.getFile(id, fk, cb);
+	// 	Container.getFile(id, fk, callback);
 	// }
 
 	// model.remoteMethod(
@@ -483,9 +488,9 @@ module.exports = function(model) {
 	// 	}
 	// );
 
-	model.deleteFile = function(id, fk, cb) {
+	model.deleteFile = function(id, fk, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._deleteFile(id, fk, cb);
+		Container._deleteFile(id, fk, callback);
 	};
 
 	model.remoteMethod(
@@ -500,9 +505,9 @@ module.exports = function(model) {
 		}
 	);
 
-	model.downloadFile = function(id, fk, res, cb) {
+	model.downloadFile = function(id, fk, res, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._download(id, fk, res, cb);
+		Container._download(id, fk, res, callback);
 	};
 
 	model.remoteMethod(
@@ -518,9 +523,9 @@ module.exports = function(model) {
 		}
 	);
 
-	model.uploadFile = function(id, req, cb) {
+	model.uploadFile = function(id, req, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._upload(id, req, cb);
+		Container._upload(id, req, callback);
 	};
 
 	model.remoteMethod(
@@ -584,14 +589,14 @@ module.exports = function(model) {
 		}
 	);
 
-	model.downloadProfilePicById = function(id, res, cb) {
+	model.downloadProfilePicById = function(id, res, callback) {
 		// debug("downloadProfilePicById");
 
 		model.findById(id, function(err, user) {
-			if (err) return cb(err);
-			if (model.checkForNullError(user, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(user, callback, "id: " + id)) return;
 
-			model.downloadFile(id, user.profilePicId, res, cb);
+			model.downloadFile(id, user.profilePicId, res, callback);
 		});
 	};
 
@@ -607,14 +612,14 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteProfilePicById = function(id, res, cb) {
+	model.deleteProfilePicById = function(id, res, callback) {
 		// debug("downloadProfilePicById");
 
 		model.findById(id, function(err, user) {
-			if (err) return cb(err);
-			if (model.checkForNullError(user, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(user, callback, "id: " + id)) return;
 
-			model.deleteFile(id, user.profilePicId, res, cb);
+			model.deleteFile(id, user.profilePicId, res, callback);
 		});
 	};
 
@@ -639,15 +644,12 @@ module.exports = function(model) {
       let keys = Array.from(objects, function(access) {
         let sphere = { sphereId: access.sphereId, keys: {}};
         switch (access.role) {
-          case "admin": {
+          case "admin":
             sphere.keys.admin = access.sphere().adminEncryptionKey;
-          }
-          case "member": {
+          case "member":
             sphere.keys.member = access.sphere().memberEncryptionKey;
-          }
-          case "guest": {
+          case "guest":
             sphere.keys.guest = access.sphere().guestEncryptionKey;
-          }
         }
         return sphere
       });
@@ -669,14 +671,14 @@ module.exports = function(model) {
 	 **** Delete ALL functions
 	 ************************************/
 
-	model.deleteAllDevices = function(id, cb) {
+	model.deleteAllDevices = function(id, callback) {
 		debug("deleteAllDevices");
 		model.findById(id, {include: "devices"}, function(err, user) {
-			if (err) return cb(err);
-			if (model.checkForNullError(user, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(user, callback, "id: " + id)) return;
 
 			user.devices.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
 	};
@@ -692,10 +694,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllFiles = function(id, cb) {
+	model.deleteAllFiles = function(id, callback) {
 		debug("deleteAllFiles");
 		const Container = loopback.getModel('UserContainer');
-		Container._deleteContainer(id, cb);
+		Container._deleteContainer(id, callback);
 	};
 
 	model.remoteMethod(
@@ -760,7 +762,7 @@ module.exports = function(model) {
 
 
         // user.spheres.destroyAll(function(err) {
-        // 	cb(err);
+        // 	callback(err);
         // });
 	};
 

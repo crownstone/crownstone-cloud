@@ -1,3 +1,5 @@
+// "use strict";
+
 const loopback = require('loopback');
 const debug = require('debug')('loopback:dobots');
 
@@ -10,7 +12,7 @@ module.exports = function(model) {
 			if (err) next(err);
 			ctx.instance.sphereId = stone.sphereId;
 			next();
-		})
+		});
 
 		// next();
 	});

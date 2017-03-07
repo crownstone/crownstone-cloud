@@ -1,10 +1,12 @@
-var loopback = require('loopback');
+// "use strict";
+
+let loopback = require('loopback');
 
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	var app = require('../../server/server');
+	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 
 		//***************************
@@ -144,7 +146,7 @@ module.exports = function(model) {
 
 		const Sphere = loopback.getModel('Sphere');
 
-		var upload = function(location, req) {
+		let upload = function(location, req) {
 
 			// upload the file
 			Sphere.uploadFile(location.sphereId, req, function(err, file) {
@@ -156,7 +158,7 @@ module.exports = function(model) {
 
 				next(null, file);
 			});
-		}
+		};
 
 		// get the location instance
 		model.findById(id, function(err, location) {
@@ -173,7 +175,7 @@ module.exports = function(model) {
 			}
 
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'uploadImage',
@@ -200,7 +202,7 @@ module.exports = function(model) {
 
 			Sphere.downloadFile(location.sphereId, location.imageId, res, next);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'downloadImage',
@@ -226,7 +228,7 @@ module.exports = function(model) {
 
 			Sphere.deleteFile(location.sphereId, location.imageId, next);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'deleteImage',

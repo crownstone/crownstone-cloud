@@ -1,14 +1,16 @@
-var stl = require('../../server/middleware/stoneScanToLocation');
-var loopback = require('loopback');
-var crypto = require('crypto');
+// "use strict";
+
+let stl = require('../../server/middleware/stoneScanToLocation');
+let loopback = require('loopback');
+let crypto = require('crypto');
 
 const debug = require('debug')('loopback:dobots');
 
-var util = require('../../server/emails/util');
+let util = require('../../server/emails/util');
 
 module.exports = function(model) {
 
-	var app = require('../../server/server');
+	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 
 		//***************************
@@ -224,7 +226,7 @@ module.exports = function(model) {
 	}
 
 	function injectMajorMinor(item, next) {
-		buf = crypto.randomBytes(4);
+		let buf = crypto.randomBytes(4);
 		if (!item.major) {
 			// debug("inject major");
 			item.major = buf.readUInt16BE(0);
@@ -242,7 +244,7 @@ module.exports = function(model) {
 				if (err) return next(err);
 
 				if (instances.length > 0) {
-					stone = instances[0];
+					let stone = instances[0];
 					item.uid = stone.uid + 1;
 				} else {
 					item.uid = 1;
@@ -258,17 +260,16 @@ module.exports = function(model) {
 	// populate some of the elements like uid, major, minor, if not already provided
 	model.observe('before save', initStone);
 
-	model.findLocation = function(stoneAddress, cb) {
+	model.findLocation = function(stoneAddress, callback) {
 		model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
 			if (stones.length > 0 && stones[0].locations.length > 0) {
 				// debug('found location: ' + JSON.stringify(stones[0].locations));
-				cb(null, stones[0].locations);
+				callback(null, stones[0].locations);
 			} else {
-				error = new Error("no stone found with address: " + stoneAddress);
-				return cb(error);
+				return callback(new Error("no stone found with address: " + stoneAddress));
 			}
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'findLocation',
@@ -285,7 +286,7 @@ module.exports = function(model) {
 		next();
 
 		// const loopbackContext = loopback.getCurrentContext();
-		// var currentUser = loopbackContext.get('currentUser');
+		// let currentUser = loopbackContext.get('currentUser');
 		// stl.update(ctx.args.data, ctx.instance, currentUser);
 
 	});
@@ -314,12 +315,11 @@ module.exports = function(model) {
 					}
 				})
 			} else {
-				error = new Error("failed to create coordinate");
-				return next(error);
+				return next(new Error("failed to create coordinate"));
 			}
 		});
 
-	}
+	};
 
 	model.remoteSetCurrentCoordinate = function(coordinate, stoneId, next) {
 		debug("remoteSetCurrentCoordinate");
@@ -331,7 +331,7 @@ module.exports = function(model) {
 			model.setCurrentCoordinate(stone, coordinate, next);
 		})
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteSetCurrentCoordinate',
@@ -372,12 +372,11 @@ module.exports = function(model) {
 					}
 				})
 			} else {
-				error = new Error("failed to create energyUsage");
-				return next(error);
+				return next(new Error("failed to create energyUsage"));
 			}
 		});
 
-	}
+	};
 
 	model.remoteSetCurrentEnergyUsage = function(energyUsage, stoneId, next) {
 		debug("remoteSetCurrentEnergyUsage");
@@ -389,7 +388,7 @@ module.exports = function(model) {
 			model.setCurrentEnergyUsage(stone, energyUsage, next);
 		})
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteSetCurrentEnergyUsage',
@@ -430,12 +429,11 @@ module.exports = function(model) {
 					}
 				})
 			} else {
-				error = new Error("failed to create powerUsage");
-				return next(error);
+				return next(new Error("failed to create powerUsage"));
 			}
 		});
 
-	}
+	};
 
 	model.remoteSetCurrentPowerUsage = function(powerUsage, stoneId, next) {
 		debug("remoteSetCurrentPowerUsage");
@@ -447,7 +445,7 @@ module.exports = function(model) {
 			model.setCurrentPowerUsage(stone, powerUsage, next);
 		})
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteSetCurrentPowerUsage',
@@ -488,12 +486,11 @@ module.exports = function(model) {
 					}
 				})
 			} else {
-				error = new Error("failed to create powerCurve");
-				return next(error);
+				return next(new Error("failed to create powerCurve"));
 			}
 		});
 
-	}
+	};
 
 	model.remoteSetCurrentPowerCurve = function(powerCurve, stoneId, next) {
 		debug("remoteSetCurrentPowerCurve");
@@ -505,7 +502,7 @@ module.exports = function(model) {
 			model.setCurrentPowerCurve(stone, powerCurve, next);
 		})
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteSetCurrentPowerCurve',
@@ -592,7 +589,7 @@ module.exports = function(model) {
 			// }
 		});
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteSetAppliance',
@@ -626,7 +623,7 @@ module.exports = function(model) {
 			// });
 		});
 
-	}
+	};
 
 	model.remoteMethod(
 		'remoteRemoveAppliance',
@@ -651,20 +648,20 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-			sphere = stone.owner();
+			let sphere = stone.owner();
 
 			const SphereAccess = loopback.getModel('SphereAccess');
 			SphereAccess.find({where: {and: [{sphereId: sphere.id}, {role: "admin"}]}, include: "user"}, function(err, access) {
 				if (err) return next(err);
 
 				// debug("access", access);
-				for (acc of access) {
+				for (let acc of access) {
 					// debug("acc", acc);
 					// debug("user", acc.user());
 					util.sendStoneRecoveredEmail(acc.user(), stone);
 				}
 				next();
-			})
+			});
 
 			// if (stone) {
 			// 	util.sendStoneRecoveredEmail(stone, next);
@@ -675,7 +672,7 @@ module.exports = function(model) {
 			// next();
 		});
 
-	}
+	};
 
 	/************************************
 	 **** Delete ALL functions
@@ -692,17 +689,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteCoordinatesHistory = function(id, cb) {
+	model.deleteCoordinatesHistory = function(id, callback) {
 		debug("deleteCoordinatesHistory");
 		model.findById(id, {include: "coordinatesHistory"}, function(err, stone) {
-			if (err) return cb(err);
-			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
 			stone.coordinatesHistory.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteCoordinatesHistory',
@@ -715,17 +712,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteEnergyUsageHistory = function(id, cb) {
+	model.deleteEnergyUsageHistory = function(id, callback) {
 		debug("deleteEnergyUsageHistory");
 		model.findById(id, {include: "energyUsageHistory"}, function(err, stone) {
-			if (err) return cb(err);
-			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
 			stone.energyUsageHistory.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteEnergyUsageHistory',
@@ -738,17 +735,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deletePowerUsageHistory = function(id, cb) {
+	model.deletePowerUsageHistory = function(id, callback) {
 		debug("deletePowerUsageHistory");
 		model.findById(id, {include: "powerUsageHistory"}, function(err, stone) {
-			if (err) return cb(err);
-			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
 			stone.powerUsageHistory.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deletePowerUsageHistory',
@@ -761,17 +758,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deletePowerCurveHistory = function(id, cb) {
+	model.deletePowerCurveHistory = function(id, callback) {
 		debug("deletePowerCurveHistory");
 		model.findById(id, {include: "powerCurveHistory"}, function(err, stone) {
-			if (err) return cb(err);
-			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
 			stone.powerCurveHistory.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deletePowerCurveHistory',
@@ -784,17 +781,17 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllScans = function(id, cb) {
+	model.deleteAllScans = function(id, callback) {
 		debug("deleteAllScans");
 		model.findById(id, {include: "scans"}, function(err, stone) {
-			if (err) return cb(err);
-			if (model.checkForNullError(stone, cb, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
 			stone.scans.destroyAll(function(err) {
-				cb(err);
+				callback(err);
 			});
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'deleteAllScans',

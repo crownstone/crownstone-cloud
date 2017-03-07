@@ -1,10 +1,12 @@
-var loopback = require('loopback');
+// "use strict";
+
+let loopback = require('loopback');
 
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
 
-	var app = require('../../server/server');
+	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 
 		//***************************

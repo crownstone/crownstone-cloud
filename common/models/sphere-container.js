@@ -1,33 +1,35 @@
+// "use strict";
+
 const debug = require('debug')('loopback:dobots');
 const createPromiseCallback = require('loopback-datasource-juggler/lib/utils').createPromiseCallback;
 const _defaults = require('lodash').defaults;
 const _get = require('lodash').get;
 const Promise = require("bluebird");
-var loopback = require('loopback');
+let loopback = require('loopback');
 
 const DEBUG = true;
 
 module.exports = function(model) {
 
-	var userSpheres = null;
+	let userSpheres = null;
 
-	var getContainerName = function(id) {
+	let getContainerName = function(id) {
 		if (typeof id === 'object') {
-			return new String(id).valueOf()
+			return new String(id).valueOf();
 		// } else if (typeof id === 'string') {
 		// 	return id;
 		} else {
 			return id;
 		}
-	}
+	};
 
-	var retrieveUserSpheres = function(next) {
+	let retrieveUserSpheres = function(next) {
 		if (DEBUG) {
 			userSpheres = null;
 		} else {
 			userSpheres = [];
 		}
-		var currentUser = model.app.accessUtils.getCurrentUser();
+		let currentUser = model.app.accessUtils.getCurrentUser();
 		// debug("currentUser:", currentUser);
 		if (currentUser) {
 			if (currentUser.role !== 'superuser') {
@@ -40,7 +42,7 @@ module.exports = function(model) {
 				//       // filter[this.options.foreignKey] = { inq: userSpheres };
 				//       // return filter;
 				//     });
-				spheres = model.app.accessUtils.getCurrentUserGroups();
+				let spheres = model.app.accessUtils.getCurrentUserGroups();
 				userSpheres = Array.from(spheres, sphere => new String(sphere[model.app.accessUtils.options.foreignKey]).valueOf());
 				// debug("userSpheres:", userSpheres);
 			}
@@ -66,23 +68,23 @@ module.exports = function(model) {
 		} else {
 			next();
 		}
-	}
+	};
 
-	var checkAccess = function(id, cb) {
+	let checkAccess = function(id, callback) {
 
-		var containerName = getContainerName(id);
+		let containerName = getContainerName(id);
 		retrieveUserSpheres(function() {
 			// debug("id", id);
 			// debug("userSpheres.indexOf(id)", userSpheres.indexOf(containerName));
 			if (userSpheres && userSpheres.indexOf(containerName) < 0) {
 				debug("Access denied");
-				cb("Access denied");
+				callback("Access denied");
 			} else {
 				debug("Access ok");
-				cb();
+				callback();
 			}
 		});
-	}
+	};
 
 	// model.beforeRemote('**', function(ctx, instance, next) {
 	// 	debug("method.name: ", ctx.method.name);
@@ -107,7 +109,7 @@ module.exports = function(model) {
 		// debug("result:", result)
 
 		if (userSpheres || !DEBUG) {
-			var containerName = getContainerName(id);
+			let containerName = getContainerName(id);
 			ctx.result = instance.filter(res => userSpheres.indexOf(containerName) >= 0)
 		}
 		// debug("after remote get containers");
@@ -125,17 +127,17 @@ module.exports = function(model) {
 
 	model._deleteContainer = function (id, next) {
 
-		var containerName = getContainerName(id);
+		let containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
 			model.deleteContainer(containerName, next);
 		})
-	}
+	};
 
 	model._getFiles = function (id, next) {
 
-		var containerName = getContainerName(id);
+		let containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
@@ -146,11 +148,11 @@ module.exports = function(model) {
 				next(err, succ);
 			});
 		})
-	}
+	};
 
 	model._getFile = function (id, fileId, next) {
 
-		var containerName = getContainerName(id);
+		let containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
@@ -160,37 +162,37 @@ module.exports = function(model) {
 				next(err, succ);
 			});
 		})
-	}
+	};
 
 	model._deleteFile = function (id, fileId, next) {
 
-		var containerName = getContainerName(id);
+		let containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
 			model.deleteFile(containerName, fileId, next);
 		})
-	}
+	};
 
 	model._upload = function (id, req, next) {
 
-		var containerName = getContainerName(id);
+		let containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
 			model.upload(containerName, req, next);
 		})
-	}
+	};
 
 	model._download = function (id, fileId, res, next) {
 
-		var containerName = getContainerName(id);
+		let containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);
 
 			model.download(containerName, fileId, res, next);
 		})
-	}
+	};
 
 	// model.observe('access', (ctx, next) => {
 	// 	const currentUser = accessUtils.getCurrentUser();

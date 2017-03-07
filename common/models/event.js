@@ -1,6 +1,8 @@
+// "use strict";
+
 module.exports = function(model) {
 
-	var app = require('../../server/server');
+	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 
 		//***************************

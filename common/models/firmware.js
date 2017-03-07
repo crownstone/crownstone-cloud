@@ -1,37 +1,63 @@
+// "use strict";
+
 const request = require('request');
 const format = require('util').format;
 const debug = require('debug')('loopback:dobots');
 
+
+function validateType(index, type) {
+  "use strict";
+  if (index[type] === undefined) {
+    let availableTypes = Object.keys(index);
+    if (availableTypes.length === 0) {
+      return "No types are currently available."
+    }
+
+    let errString = "Could not find type " + type + ". Available types are: " + availableTypes[0];
+    for (let i = i; i < availableTypes.length; i++) {
+      errString += ', ' + availableTypes[i]
+    }
+    return errString;
+  }
+  return false;
+}
+
 module.exports = function(model) {
 
-	const BASE_URL = 'https://raw.githubusercontent.com/crownstone/bluenet-release/master/'
+	const BASE_URL = 'https://raw.githubusercontent.com/crownstone/bluenet-release/master/';
 	const INDEX_URL = BASE_URL + 'index.json';
-	const HEX_URL = BASE_URL + "%s_%s/bin/%s.hex"
+	const HEX_URL = BASE_URL + "%s_%s/bin/%s.hex";
 
-	model.getIndex = function(cb) {
+	model.getIndex = function(callback) {
 		debug("INDEX_URL", INDEX_URL);
-		var options = {
+		let options = {
 			url: INDEX_URL,
 			headers: {
 				'Cache-Control': 'no-cache, no-store, must-revalidate'
 			}
 		};
 		request(options, function(error, response, body) {
-			if (error) return cb(error);
+			if (error) return callback(error);
 
 			debug("index", body);
 
-			cb(null, JSON.parse(body));
+			callback(null, JSON.parse(body));
 		});
-	}
+	};
 
-	model.checkVersion = function(type, version, cb) {
+	model.checkVersion = function(type, version, callback) {
 		model.getIndex(function(err, index) {
-			if (err) return cb(err);
+			if (err) return callback(err);
 
-			cb(null, index[type].versions.indexOf(version) >= 0);
+			// check if the provided type exists
+			let typeIsUnknown = validateType(index,type);
+			if (typeIsUnknown) {
+			  return callback(new Error(typeIsUnknown))
+      }
+
+			callback(null, index[type].versions.indexOf(version) >= 0);
 		})
-	}
+	};
 
 	model.getFileUrl = function(type, version) {
 		if (type == 'crownstone') {
@@ -40,28 +66,34 @@ module.exports = function(model) {
 		} else {
 			return format(HEX_URL, type, version, type);
 		}
-	}
+	};
 
-	model.downloadLatest = function(type, res, cb) {
+	model.downloadLatest = function(type, res, callback) {
 		debug("downloadLatest");
 
 		model.getIndex(function(err, index) {
 			if (err) {
-				debug("error", error);
-				// var error = new Error("Could not retrieve index");
+				debug("error", err);
+				// let error = new Error("Could not retrieve index");
 				// error.statusCode = 400;
-				// return cb(error);
-				return cb(err);
+				// return callback(error);
+				return callback(err);
 			}
 
-			var version = index[type].latest;
+      // check if the provided type exists
+      let typeIsUnknown = validateType(index,type);
+      if (typeIsUnknown) {
+        return callback(new Error(typeIsUnknown))
+      }
 
-			var url = model.getFileUrl(type, version);
+			let version = index[type].latest;
+
+			let url = model.getFileUrl(type, version);
 			debug("url", url);
 			res.redirect(url);
 
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'downloadLatest',
@@ -75,26 +107,32 @@ module.exports = function(model) {
 		}
 	);
 
-	model.downloadStable = function(type, res, cb) {
+	model.downloadStable = function(type, res, callback) {
 		debug("downloadStable");
 
 		model.getIndex(function(err, index) {
 			if (err) {
-				debug("error", error);
-				// var error = new Error("Could not retrieve index");
+				debug("error", err);
+				// let error = new Error("Could not retrieve index");
 				// error.statusCode = 400;
-				// return cb(error);
-				return cb(err);
+				// return callback(error);
+				return callback(err);
 			}
 
-			var version = index[type].stable;
+      // check if the provided type exists
+      let typeIsUnknown = validateType(index,type);
+      if (typeIsUnknown) {
+        return callback(new Error(typeIsUnknown))
+      }
 
-			var url = model.getFileUrl(type, version);
+			let version = index[type].stable;
+
+			let url = model.getFileUrl(type, version);
 			debug("url", url);
 			res.redirect(url);
 
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'downloadStable',
@@ -108,33 +146,39 @@ module.exports = function(model) {
 		}
 	);
 
-	model.getVersions = function(type, since, cb) {
+	model.getVersions = function(type, since, callback) {
 		debug("getVersions");
 
 		model.getIndex(function(err, index) {
 			if (err) {
-				debug("error", error);
-				// var error = new Error("Could not retrieve index");
+				debug("error", err);
+				// let error = new Error("Could not retrieve index");
 				// error.statusCode = 400;
-				// return cb(error);
-				return cb(err);
+				// return callback(error);
+				return callback(err);
 			}
+
+      // check if the provided type exists
+      let typeIsUnknown = validateType(index,type);
+      if (typeIsUnknown) {
+        return callback(new Error(typeIsUnknown))
+      }
 
 			if (since) {
 				debug("since", since);
-				filteredVersions = Array.from(index[type].versions)
+				let filteredVersions = Array.from(index[type].versions)
 					.filter(function(version) {
 						// filter all versions for versions released after since timestamp
 						return since < new Date(index[type].time[version])
 					});
-				cb(null, filteredVersions);
+				callback(null, filteredVersions);
 
 			} else {
 				// no timestamp, return all versions
-				cb(null, index[type].versions);
+				callback(null, index[type].versions);
 			}
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'getVersions',
@@ -151,21 +195,27 @@ module.exports = function(model) {
 		}
 	);
 
-	model.getLastModified = function(type, cb) {
+	model.getLastModified = function(type, callback) {
 		debug("getLastModified");
 
 		model.getIndex(function(err, index) {
 			if (err) {
-				debug("error", error);
-				// var error = new Error("Could not retrieve index");
+				debug("error", err);
+				// let error = new Error("Could not retrieve index");
 				// error.statusCode = 400;
-				// return cb(error);
-				return cb(err);
+				// return callback(error);
+				return callback(err);
 			}
 
-			cb(null, index[type].time.modified);
+      // check if the provided type exists
+      let typeIsUnknown = validateType(index,type);
+      if (typeIsUnknown) {
+        return callback(new Error(typeIsUnknown))
+      }
+
+			callback(null, index[type].time.modified);
 		});
-	}
+	};
 
 	model.remoteMethod(
 		'getLastModified',
@@ -181,24 +231,24 @@ module.exports = function(model) {
 		}
 	);
 
-	model.downloadVersion = function(version, type, res, cb) {
+	model.downloadVersion = function(version, type, res, callback) {
 		debug("downloadVersion");
 
 		model.checkVersion(type, version, function(err, found) {
-			if (err) return cb(err);
+			if (err) return callback(err);
 
 			if (!found) {
-				var error = new Error(format("Could not find version '%s' for type '%s'", version, type));
+				let error = new Error(format("Could not find version '%s' for type '%s'", version, type));
 				error.statusCode = 400;
-				return cb(error);
+				return callback(error);
 			} else {
 
-				var url = model.getFileUrl(type, version);
+				let url = model.getFileUrl(type, version);
 				debug("url", url);
 				res.redirect(url);
 			}
 		})
-	}
+	};
 
 	model.remoteMethod(
 		'downloadVersion',
