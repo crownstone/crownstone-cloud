@@ -51,22 +51,22 @@ var runner = {
 		);
 	},
 
-	filterDevices : function(scan, cb) {
+	filterDevices : function(scan, callback) {
 
 		const Device = loopback.getModel('Device');
 		Device.find(function(err, devices) {
-			if (err) return cb(err);
+			if (err) return callback(err);
 
-			scanAddresses = Array.from(scan.scannedDevices, dev => dev.address);
+			let scanAddresses = Array.from(scan.scannedDevices, dev => dev.address);
 			// debug("scanAddresses:", scanAddresses);
-			deviceAddresses = Array.from(devices, dev => dev.address);
+			let deviceAddresses = Array.from(devices, dev => dev.address);
 			// debug("deviceAddresses:", deviceAddresses)
 
-			scannedDevices = scan.scannedDevices.filter(dev => deviceAddresses.indexOf(dev.address) >= 0);
+			let scannedDevices = scan.scannedDevices.filter(dev => deviceAddresses.indexOf(dev.address) >= 0);
 
 			// debug("filtered scannedDevices:", scannedDevices)
 
-			cb(null, scannedDevices);
+			callback(null, scannedDevices);
 		});
 	},
 
@@ -90,11 +90,11 @@ var runner = {
 
 					// debug('closestStones:', stones);
 
-					for (i = 0; i < scannedDevices.length; ++i) {
+					for (let i = 0; i < scannedDevices.length; ++i) {
 						var sd = scannedDevices[i];
 						// debug("sd:", sd);
 						var found = false;
-						for (j = 0; j < stones.length; ++j) {
+						for (let j = 0; j < stones.length; ++j) {
 							var closest = stones[j];
 							// debug("closest:", closest);
 							if (sd.address === closest.deviceAddress) {
@@ -135,7 +135,7 @@ var runner = {
 					// var Device = loopback.getModel('Device');
 					// var Stone = loopback.getModel('Stone');
 
-					for (i = 0; i < updates.length; ++i) {
+					for (let i = 0; i < updates.length; ++i) {
 						// debug("save closest:", updates[i]);
 						updates[i].save();
 

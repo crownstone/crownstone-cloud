@@ -1,10 +1,10 @@
-var sha1 = require('sha1');
-var request = require('request');
+let sha1 = require('sha1');
+let request = require('request');
 
 module.exports = function(app) {
-	var User = app.models.user;
-	var Sphere = app.models.Sphere;
-	var SphereAccess = app.models.SphereAccess;
+	let User = app.models.user;
+	let Sphere = app.models.Sphere;
+	let SphereAccess = app.models.SphereAccess;
 
 	function hashPassword(password) {
 		return sha1(password);
@@ -46,6 +46,17 @@ module.exports = function(app) {
 
 	//log a user in
 	app.post('/login', function(req, res) {
+		if (!req.body.email || !req.body.password) {
+      res.render('response', {
+        title: 'Login failed',
+        content: 'err',
+        redirectTo: '/',
+        redirectToLinkText: 'Email and/or password not provided',
+        base_url: res.URL
+      });
+      return;
+		}
+
 		User.login({
 			email: req.body.email,
 			password: hashPassword(req.body.password)

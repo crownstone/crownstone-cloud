@@ -14,13 +14,13 @@ For Debug purposes, the rest api can be run locally. It can still connect to the
 
 After cloning the repo, call
 
-	npm install
+	yarn
 
 to install all node dependencies.
 
 Once that completes, the api can be started with
 
-	node .
+	npm start
 
 in which case it starts the debug version where all endpoints are open. To get the same production version, use
 

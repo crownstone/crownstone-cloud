@@ -1,17 +1,19 @@
-var loopback = require('loopback');
-var boot = require('loopback-boot');
-var path = require('path');
-var bodyParser = require('body-parser');
-var express = require('express');
-// var updateDS = require('./updateDS.js');
+let loopback = require('loopback');
+let boot = require('loopback-boot');
+let path = require('path');
+let bodyParser = require('body-parser');
 
-var app = module.exports = loopback();
+let oauth2 = require('loopback-component-oauth2');
+let express = require('express');
+// let updateDS = require('./updateDS.js');
+
+let app = module.exports = loopback();
 
 // configure view handler
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.static('public'))
+app.use(express.static('public'));
 
 // configure body parser
 app.use(bodyParser.urlencoded({extended: true}));
@@ -35,7 +37,7 @@ app.use(loopback.token());
 //     if (!user) {
 //       return next(new Error('No user with this access token was found.'));
 //     }
-//     // var loopbackContext = loopback.getCurrentContext();
+//     // let loopbackContext = loopback.getCurrentContext();
 //     // if (loopbackContext) {
 //     //   loopbackContext.set('currentUser', user);
 //     // }
@@ -63,13 +65,13 @@ app.use(loopback.token());
 
 app.start = function() {
   // start the web server
-  var port = process.env.PORT || 3000;
+  let port = process.env.PORT || 3000;
   return app.listen(port, function () {
     app.emit('started');
-    var baseUrl = app.get('url').replace(/\/$/, '');
+    let baseUrl = app.get('url').replace(/\/$/, '');
     console.log('Web server listening at: %s', baseUrl);
     if (app.get('loopback-component-explorer')) {
-      var explorerPath = app.get('loopback-component-explorer').mountPath;
+      let explorerPath = app.get('loopback-component-explorer').mountPath;
       console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
     }
   });
@@ -84,3 +86,15 @@ boot(app, __dirname, function(err) {
   if (require.main === module)
     app.start();
 });
+
+
+let options = {
+  dataSource: app.dataSources.db, // Data source for oAuth2 metadata persistence
+  loginPage: '/login', // The login page URL
+  loginPath: '/login' // The login form processing URL
+};
+
+oauth2.oAuth2Provider(
+  app, // The app instance
+  options // The options
+);
