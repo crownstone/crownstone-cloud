@@ -87,6 +87,9 @@ permissionModel.destroyAll()
 .then((data) => {
   console.log("data", data);
 })
+.catch((err) => {
+  console.log("couldnt create client", err)
+})
 
 
 //http://localhost:3000/oauth/authorize?response_type=code&client_id=2282804de9ae0a3581e017533f0831d9&redirect_uri=http://www.google.com

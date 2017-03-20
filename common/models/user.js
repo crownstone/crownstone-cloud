@@ -289,10 +289,23 @@ module.exports = function(model) {
 
 	model.me = function(access_token, callback) {
     // debug("me");
+
 	  const AccessToken = loopback.getModel('AccessToken');
 	  AccessToken.findById(access_token)
       .then((tokenProps) => {
-        return model.findById(tokenProps.userId);
+	      // fallback for OAUTH use:
+	      if (tokenProps === null) {
+          const loopbackContext = loopback.getCurrentContext();
+          if (loopbackContext) {
+            return loopbackContext.get('currentUser');
+          }
+          else {
+            throw new Error("Could not find user.")
+          }
+        }
+        else {
+          return model.findById(tokenProps.userId);
+        }
       })
       .then((user) => {
 	      callback(null, user);

@@ -29,7 +29,7 @@
     }
   },
   "auth": {
-    "loopback-component-oauth2#authenticate": { "paths" : "/api/users/logout" }
+    "loopback-component-oauth2#authenticate": { "paths" : "/api/users/me" }
   },
   "auth:after": {
     "loopback-component-access-groups/lib/middleware/user-context": {}
