@@ -2,6 +2,14 @@
   "loopback-component-explorer": {
     "mountPath": "/explorer"
   },
+  "loopback-component-oauth2": {
+    "dataSource": "db",
+    "resourceServer": true,
+    "authorizationServer": true,
+    "loginPage": "/loginOauth",
+    "loginPath": "/loginOauthStep2",
+    "tokenPath": "/oauth/token"
+  },
   "loopback-component-access-groups": {
     "userModel": "user",
     "roleModel": "Role",
@@ -14,4 +22,5 @@
       "$group:guest"
     ]
   }
+
 }

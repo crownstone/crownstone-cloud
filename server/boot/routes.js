@@ -21,6 +21,11 @@ module.exports = function(app) {
 		});
 	});
 
+  //callback page
+  app.get('/callback', function(req, res) {
+    res.render('callback');
+  });
+
 	//verified
 	app.get('/verified', function(req, res) {
 		res.render('verified', {
@@ -36,17 +41,45 @@ module.exports = function(app) {
 	});
 
 	app.get('/login', function(req, res) {
-		res.render('response', {
-			title: 'Sorry, we need a username and password (in a POST request)',
+		res.render('login', {
+			title: 'Please log in',
 			redirectTo: '/',
-			redirectToLinkText: 'Try again',
+			loginPostUrl: '/login',
 			base_url: res.URL
 		});
 	});
 
+  app.get('/loginOauth', function(req, res) {
+    res.render('login', {
+      title: 'Please log in (Oauth2)',
+      redirectTo: '/loginOauth',
+      loginPostUrl: '/loginOauth',
+      base_url: res.URL
+    });
+  });
+
 	//log a user in
-	app.post('/login', function(req, res) {
+	app.post('/loginOauth', function(req, res) {
 		if (!req.body.email || !req.body.password) {
+      res.render('response', {
+        title: 'Login failed',
+        content: 'Email and/or password not provided',
+        redirectTo: '/loginOauth',
+        redirectToLinkText: 'Email and/or password not provided',
+        base_url: res.URL
+      });
+      return;
+		}
+    let baseUrl = app.get('url').replace(/\/$/, '');
+		req.body = {username: req.body.email, password: hashPassword(req.body.password)};
+		req.url = baseUrl + '/loginOauthStep2'
+
+    app.handle(req,res);
+
+	});
+
+  app.post('/login', function(req, res) {
+    if (!req.body.email || !req.body.password) {
       res.render('response', {
         title: 'Login failed',
         content: 'err',
@@ -55,40 +88,40 @@ module.exports = function(app) {
         base_url: res.URL
       });
       return;
-		}
+    }
 
-		User.login({
-			email: req.body.email,
-			password: hashPassword(req.body.password)
-		}, 'user', function(err, token) {
-			if (err) {
-				if (err.code === 'LOGIN_FAILED_EMAIL_NOT_VERIFIED') {
-					res.render('response', {
-						title: 'Login failed',
-						content: err,
-						redirectTo: '/resend-verification',
-						redirectToLinkText: 'Resend verification',
-						base_url: res.URL
-					});
-				} else {
-					res.render('response', {
-						title: 'Login failed',
-						content: err,
-						redirectTo: '/',
-						redirectToLinkText: 'Try again',
-						base_url: res.URL
-					});
-				}
-				return;
-			}
+    User.login({
+      email: req.body.email,
+      password: hashPassword(req.body.password)
+    }, 'user', function(err, token) {
+      if (err) {
+        if (err.code === 'LOGIN_FAILED_EMAIL_NOT_VERIFIED') {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/resend-verification',
+            redirectToLinkText: 'Resend verification',
+            base_url: res.URL
+          });
+        } else {
+          res.render('response', {
+            title: 'Login failed',
+            content: err,
+            redirectTo: '/',
+            redirectToLinkText: 'Try again',
+            base_url: res.URL
+          });
+        }
+        return;
+      }
 
-			res.render('home', {
-				email: req.body.email,
-				accessToken: token.id,
-				base_url: res.URL
-			});
-		});
-	});
+      res.render('home', {
+        email: req.body.email,
+        accessToken: token.id,
+        base_url: res.URL
+      });
+    });
+  });
 
 	//log a user out
 	app.get('/logout', function(req, res, next) {

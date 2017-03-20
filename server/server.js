@@ -1,13 +1,15 @@
-let loopback = require('loopback');
-let boot = require('loopback-boot');
-let path = require('path');
-let bodyParser = require('body-parser');
+"use strict";
 
-let oauth2 = require('loopback-component-oauth2');
-let express = require('express');
+const loopback = require('loopback');
+const boot = require('loopback-boot');
+const path = require('path');
+const bodyParser = require('body-parser');
+
+const oauth2 = require('loopback-component-oauth2');
+const express = require('express');
 // let updateDS = require('./updateDS.js');
 
-let app = module.exports = loopback();
+const app = module.exports = loopback();
 
 // configure view handler
 app.set('view engine', 'ejs');
@@ -25,43 +27,6 @@ loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { i
 
 app.use(loopback.context());
 app.use(loopback.token());
-// app.use(function setCurrentUser(req, res, next) {
-//   if (!req.accessToken) {
-//     return next();
-//   }
-//   console.log("set user");
-//   app.models.user.findById(req.accessToken.userId, function(err, user) {
-//     if (err) {
-//       return next(err);
-//     }
-//     if (!user) {
-//       return next(new Error('No user with this access token was found.'));
-//     }
-//     // let loopbackContext = loopback.getCurrentContext();
-//     // if (loopbackContext) {
-//     //   loopbackContext.set('currentUser', user);
-//     // }
-//     req.currentUser = user;
-//     next();
-//   });
-// });
-
-// app.middleware('routes:before', function(req, res, next) {
-//   // console.log(req);
-//   console.log("access token:", req.accessToken);
-//   if (!req.accessToken) {
-//     return next();
-//   }
-//   app.models.user.findById(req.accessToken.userId, function(err, user) {
-//     if (err) {
-//       return next(err);
-//     }
-//     // if (!user) {
-//     //   return next(new Error('No user with this access token was found.'));
-//     // }
-//     updateDS.updateUserDS(user, app, next);
-//   });
-// });
 
 app.start = function() {
   // start the web server
@@ -77,6 +42,7 @@ app.start = function() {
   });
 };
 
+
 // Bootstrap the application, configure models, datasources and middleware.
 // Sub-apps like REST API are mounted via boot scripts.
 boot(app, __dirname, function(err) {
@@ -86,15 +52,41 @@ boot(app, __dirname, function(err) {
   if (require.main === module)
     app.start();
 });
-
-
+//
 let options = {
   dataSource: app.dataSources.db, // Data source for oAuth2 metadata persistence
-  loginPage: '/login', // The login page URL
-  loginPath: '/login' // The login form processing URL
+  resourceServer: true,
+  authorizationServer: true,
+  loginPage: '/loginOauth', // The login page URL
+  loginPath: '/loginOauthStep2', // The login form processing URL
+  tokenPath: "/oauth/token",
+  addHttpHeaders: "X-"
 };
 
 oauth2.oAuth2Provider(
   app, // The app instance
   options // The options
 );
+//
+
+let permissionModel = app.dataSources.db.getModel('OAuthClientApplication');
+
+permissionModel.destroyAll()
+  .then(() => {
+    return permissionModel.create({
+      id: 'Crownstone',
+      name:"Crownstone",
+      scopes: ['read-all','write-all'],
+      clientSecret: 'secret',
+      issuedAt: new Date()
+    })
+  })
+.then(() => {
+  return permissionModel.find();
+})
+.then((data) => {
+  console.log("data", data);
+})
+
+
+//http://localhost:3000/oauth/authorize?response_type=code&client_id=2282804de9ae0a3581e017533f0831d9&redirect_uri=http://www.google.com

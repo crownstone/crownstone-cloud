@@ -19,10 +19,21 @@
       }
     }
   },
-  "session": {},
+  "session": {
+    "express-session": {
+      "params": {
+        "saveUninitialized": true,
+        "resave": true,
+        "secret": "keyboard cat"
+      }
+    }
+  },
+  "auth": {
+    "loopback-component-oauth2#authenticate": { "paths" : "/api/users/logout" }
+  },
   "auth:after": {
-      "loopback-component-access-groups/lib/middleware/user-context": {}
-    },
+    "loopback-component-access-groups/lib/middleware/user-context": {}
+  },
   "parse": {},
   "routes:before": {
       "loopback-component-access-groups/lib/middleware/access-logger": {}
