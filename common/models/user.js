@@ -287,23 +287,29 @@ module.exports = function(model) {
 		}
 	);
 
-	model.me = function(callback) {
-		// debug("me");
-		const loopbackContext = loopback.getCurrentContext();
-		let currentUser = loopbackContext.get('currentUser');
+	model.me = function(access_token, callback) {
+    // debug("me");
+	  const AccessToken = loopback.getModel('AccessToken');
+	  AccessToken.findById(access_token)
+      .then((tokenProps) => {
+        return model.findById(tokenProps.userId);
+      })
+      .then((user) => {
+	      callback(null, user);
+      })
+      .catch((err) => {
+	      callback(err);
+      });
 
-		// debug("currentUser", currentUser)
-		if (currentUser) {
-			callback(null, currentUser);
-		} else {
-			callback({message: "WTF: user not found??"});
-		}
 	};
 
 	model.remoteMethod(
 		'me',
 		{
 			http: {path: '/me', verb: 'get'},
+      accepts: [
+        {arg: 'access_token', type: 'string', 'http': {source: 'query'}},
+      ],
 			returns: {arg: 'data', type: 'user', root: true},
 			description: "Return instance of authenticated User"
 		}
