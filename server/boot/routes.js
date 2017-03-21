@@ -17,7 +17,6 @@ module.exports = function(app) {
 			lastName: "",
 			email: "",
 			password: "",
-			base_url: res.URL
 		});
 	});
 
@@ -28,16 +27,12 @@ module.exports = function(app) {
 
 	//verified
 	app.get('/verified', function(req, res) {
-		res.render('verified', {
-			base_url: res.URL
-		});
+		res.render('verified', {});
 	});
 	
 	//about
 	app.get('/about', function(req, res) {
-		res.render('about', {
-			base_url: res.URL
-		});
+		res.render('about', {});
 	});
 
 	app.get('/login', function(req, res) {
@@ -45,7 +40,6 @@ module.exports = function(app) {
 			title: 'Please log in',
 			redirectTo: '/',
 			loginPostUrl: '/login',
-			base_url: res.URL
 		});
 	});
 
@@ -54,7 +48,6 @@ module.exports = function(app) {
       title: 'Please log in (Oauth2)',
       redirectTo: '/loginOauth',
       loginPostUrl: '/loginOauth',
-      base_url: res.URL
     });
   });
 
@@ -66,13 +59,12 @@ module.exports = function(app) {
         content: 'Email and/or password not provided',
         redirectTo: '/loginOauth',
         redirectToLinkText: 'Email and/or password not provided',
-        base_url: res.URL
       });
       return;
 		}
     let baseUrl = app.get('url').replace(/\/$/, '');
 		req.body = {username: req.body.email, password: hashPassword(req.body.password)};
-		req.url = baseUrl + '/loginOauthStep2'
+		req.url = baseUrl + '/loginOauthStep2';
 
     app.handle(req,res);
 
@@ -85,7 +77,6 @@ module.exports = function(app) {
         content: 'err',
         redirectTo: '/',
         redirectToLinkText: 'Email and/or password not provided',
-        base_url: res.URL
       });
       return;
     }
@@ -101,7 +92,6 @@ module.exports = function(app) {
             content: err,
             redirectTo: '/resend-verification',
             redirectToLinkText: 'Resend verification',
-            base_url: res.URL
           });
         } else {
           res.render('response', {
@@ -109,7 +99,6 @@ module.exports = function(app) {
             content: err,
             redirectTo: '/',
             redirectToLinkText: 'Try again',
-            base_url: res.URL
           });
         }
         return;
@@ -118,7 +107,6 @@ module.exports = function(app) {
       res.render('home', {
         email: req.body.email,
         accessToken: token.id,
-        base_url: res.URL
       });
     });
   });
@@ -133,10 +121,7 @@ module.exports = function(app) {
 	});
 
 	app.get('/resend-verification', function(req, res) {
-		res.render('resend-verification', {
-			email: "",
-			base_url: res.URL
-		});
+		res.render('resend-verification', {	email: ''	});
 	});
 
 	app.post('/request-verification', function(req, res, next) {
@@ -149,7 +134,6 @@ module.exports = function(app) {
 				'before logging in.',
 				redirectTo: '/',
 				redirectToLinkText: 'Log in',
-				base_url: res.URL
 			});
 		});
 	});
@@ -166,7 +150,6 @@ module.exports = function(app) {
 				content: 'Check your email for further instructions',
 				redirectTo: '/',
 				redirectToLinkText: 'Log in',
-				base_url: res.URL
 			});
 		});
 	});
@@ -179,13 +162,11 @@ module.exports = function(app) {
 				content: 'Access Token is expired, please try again',
 				redirectTo: '/',
 				redirectToLinkText: 'Try again',
-				base_url: res.URL
 			});
 		}
 
 		res.render('password-reset', {
 			accessToken: req.accessToken.id,
-			base_url: res.URL
 		});
 	});
 
@@ -205,13 +186,11 @@ module.exports = function(app) {
 			user.updateAttribute('password', hashPassword(req.body.password), function(err, user) {
 			// user.updateAttribute('password', req.body.password, function(err, user) {
 			if (err) return res.sendStatus(404);
-				console.log('> password reset processed successfully');
 				res.render('response', {
 					title: 'Password reset success',
 					content: 'Your password has been reset successfully',
 					redirectTo: '/',
 					redirectToLinkText: 'Log in',
-					base_url: res.URL
 				});
 			});
 		});
@@ -224,13 +203,11 @@ module.exports = function(app) {
 				content: 'Invitation is expired, ask an admin of the sphere to resend the invitation',
 				redirectTo: '/',
 				redirectToLinkText: 'Back',
-				base_url: res.URL
 			});
 		}
 
 		User.findById(req.accessToken.userId, function(err, user) {
 			if (user.emailVerified) {
-				console.log('err, user already verified');
 				// return res.sendStatus(400, new Error("User already verified"));
 
 				res.render('response', {
@@ -238,13 +215,7 @@ module.exports = function(app) {
 					content: 'User is already verified',
 					redirectTo: '/',
 					redirectToLinkText: 'Log in',
-					base_url: res.URL
 				});
-				// console.log('remove again from sphere');
-				// SphereAccess.destroyAll({sphereId: sphereId, userId: req.accessToken.userId}, function(err) {
-				//   if (err) return res.sendStatus(400, "Failed to remove again from sphere");
-				//   next();
-				// })
 			} else {
 				SphereAccess.destroyAll({sphereId: req.query.sphere_id, userId: user.id}, function(err) {
 					if (err) console.log("failed to remove user from sphere");
@@ -256,7 +227,6 @@ module.exports = function(app) {
 							content: 'You have declined the invitation',
 							redirectTo: '/',
 							redirectToLinkText: 'Log in',
-							base_url: res.URL
 						});
 					});
 				})
@@ -269,7 +239,6 @@ module.exports = function(app) {
 			email: "",
 			password: "",
 			loginPostUrl: "/accept-invite?sphere_id=" + req.query.sphere_id,
-			base_url: res.URL
 		});
 	});
 
@@ -286,7 +255,6 @@ module.exports = function(app) {
 						content: err,
 						redirectTo: '/resend-verification',
 						redirectToLinkText: 'Resend verification',
-						base_url: res.URL
 					});
 				} else {
 					res.render('response', {
@@ -294,7 +262,6 @@ module.exports = function(app) {
 						content: err,
 						redirectTo: '/',
 						redirectToLinkText: 'Try again',
-						base_url: res.URL
 					});
 				}
 				return;
@@ -312,7 +279,6 @@ module.exports = function(app) {
 							content: 'No pending invitation found',
 							redirectTo: '/',
 							redirectToLinkText: 'Log in',
-							base_url: res.URL
 						});
 					} else {
 						res.render('response', {
@@ -320,7 +286,6 @@ module.exports = function(app) {
 							content: 'You have accepted the invitation',
 							redirectTo: '/',
 							redirectToLinkText: 'Log in',
-							base_url: res.URL
 						});
 					}
 			});
@@ -334,7 +299,6 @@ module.exports = function(app) {
 			email: "",
 			password: "",
 			loginPostUrl: "/decline-invite?sphere_id=" + req.query.sphere_id,
-			base_url: res.URL
 		});
 	});
 
@@ -351,7 +315,6 @@ module.exports = function(app) {
 						content: err,
 						redirectTo: '/resend-verification',
 						redirectToLinkText: 'Resend verification',
-						base_url: res.URL
 					});
 				} else {
 					res.render('response', {
@@ -359,7 +322,6 @@ module.exports = function(app) {
 						content: err,
 						redirectTo: '/',
 						redirectToLinkText: 'Try again',
-						base_url: res.URL
 					});
 				}
 				return;
@@ -376,7 +338,6 @@ module.exports = function(app) {
 							content: 'No pending invitation found',
 							redirectTo: '/',
 							redirectToLinkText: 'Log in',
-							base_url: res.URL
 						});
 					} else {
 						res.render('response', {
@@ -384,7 +345,6 @@ module.exports = function(app) {
 							content: 'You have declined the invitation',
 							redirectTo: '/',
 							redirectToLinkText: 'Log in',
-							base_url: res.URL
 						});
 					}
 			})
@@ -399,7 +359,6 @@ module.exports = function(app) {
 				content: 'Invitation is expired, ask an admin of the sphere to resend the invitation',
 				redirectTo: '/',
 				redirectToLinkText: 'Back',
-				base_url: res.URL
 			});
 		}
 
@@ -411,14 +370,12 @@ module.exports = function(app) {
 					content: 'User is already successfully set up',
 					redirectTo: '/',
 					redirectToLinkText: 'Log in',
-					base_url: res.URL
 				});
 				// return res.sendStatus(400, new Error("User is already successfully set up"));
 			} else {
 				res.render('profile-setup', {
 					accessToken: req.accessToken.id,
 					sphereId: req.query.sphere_id,
-					base_url: res.URL
 				});
 			}
 		});
@@ -435,7 +392,6 @@ module.exports = function(app) {
 				content: 'First and last name have to be filled in!',
 				redirectTo: '/',
 				redirectToLinkText: 'Back',
-				base_url: res.URL
 			});
 		}
 		if (!req.body.password ||
@@ -446,7 +402,6 @@ module.exports = function(app) {
 				content: 'Passwords do not match',
 				redirectTo: '/',
 				redirectToLinkText: 'Back',
-				base_url: res.URL
 			});
 		}
 
@@ -489,7 +444,6 @@ module.exports = function(app) {
 								content: 'You successfully completed the signup process',
 								redirectTo: '/',
 								redirectToLinkText: 'Log in',
-								base_url: res.URL
 							});
 						});
 					}
@@ -508,7 +462,6 @@ module.exports = function(app) {
 				content: 'First and last name have to be filled in!',
 				redirectTo: '/',
 				redirectToLinkText: 'Try again',
-				base_url: res.URL
 			});
 		}
 		if (!req.body.password ||
@@ -520,7 +473,6 @@ module.exports = function(app) {
 				content: 'Passwords do not match',
 				redirectTo: '/',
 				redirectToLinkText: 'Try again',
-				base_url: res.URL
 			});
 
 		}
@@ -533,13 +485,11 @@ module.exports = function(app) {
 				password: hashPassword(req.body.password)
 			}, function(err, user) {
 				if (err) {
-					console.log(err)
 					return res.render('response', {
 						title: 'Bad Request',
 						content: "Email already exists",
 						redirectTo: '/',
 						redirectToLinkText: 'Try again',
-						base_url: res.URL
 					});
 				}
 

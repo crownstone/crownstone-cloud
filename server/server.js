@@ -52,7 +52,8 @@ boot(app, __dirname, function(err) {
   if (require.main === module)
     app.start();
 });
-//
+
+
 let options = {
   dataSource: app.dataSources.db, // Data source for oAuth2 metadata persistence
   resourceServer: true,
@@ -60,14 +61,12 @@ let options = {
   loginPage: '/loginOauth', // The login page URL
   loginPath: '/loginOauthStep2', // The login form processing URL
   tokenPath: "/oauth/token",
-  addHttpHeaders: "X-"
 };
 
 oauth2.oAuth2Provider(
   app, // The app instance
   options // The options
 );
-//
 
 let permissionModel = app.dataSources.db.getModel('OAuthClientApplication');
 
@@ -76,7 +75,7 @@ permissionModel.destroyAll()
     return permissionModel.create({
       id: 'Crownstone',
       name:"Crownstone",
-      scopes: ['read-all','write-all'],
+      scopes: ['read_only','write_only','read_write','all'],
       clientSecret: 'secret',
       issuedAt: new Date()
     })

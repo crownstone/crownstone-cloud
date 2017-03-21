@@ -29,7 +29,36 @@
     }
   },
   "auth": {
-    "loopback-component-oauth2#authenticate": { "paths" : "/api/users/me" }
+    "loopback-component-oauth2#authenticate": { "paths" : ["/api"], "params": [{
+        "oauthACLgateway" : true,
+        "scopes": {
+          "read_only": [
+            {
+              "methods": "get",
+              "path": "/api"
+            }
+          ],
+          "write_only": [
+            {
+              "methods": "post",
+              "path": "/api"
+            }
+          ],
+          "read_write": [
+            {
+              "methods": ["get","post"],
+              "path": "/api"
+            }
+          ],
+          "all": [
+            {
+              "methods": "all",
+              "path": "/api"
+            }
+          ]
+        }
+      }]
+    }
   },
   "auth:after": {
     "loopback-component-access-groups/lib/middleware/user-context": {}

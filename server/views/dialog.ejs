@@ -1,14 +1,65 @@
-<h1>Request Permissions</h1>
-<p>Hi <b><%= user.username + (user.email ? (' (' + user.email + ')') : '') %></b>!</p>
-<p>Client application <b><%= client.name %></b> is requesting access to your account.</p>
-<p>Permissions requested: <b><%= scopes %></b></p>
-<p>Redirect URI: <b><%= redirectURI %></b></p>
-<p>Do you approve?</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <% include partials/head %>
+</head>
+<body>
 
-<form action="/oauth/authorize/decision" method="post">
-    <input name="transaction_id" type="hidden" value="<%= transactionId %>">
-    <div>
-        <input type="submit" value="Allow" id="allow">
-        <input type="submit" value="Deny" name="cancel" id="deny">
+    <% include partials/header %>
+
+    <div class="container">
+        <section>
+            <h1>Request Permissions</h1>
+            <p>Hi <b id="username"></b>!</p>
+            <p>Client application <b><%= client.name %></b> is requesting access to your account.</p>
+            <p>Permissions requested:</p>
+            <ul id="permissionList"></ul>
+            <p>Redirect URI: <b><%= redirectURI %></b></p>
+            <p>Do you approve?</p>
+
+
+            <form action="/oauth/authorize/decision" method="post">
+                <input name="transaction_id" type="hidden" value="<%= transactionId %>">
+                <div>
+                    <input type="submit" value="Allow" id="allow">
+                    <input type="submit" value="Deny" name="cancel" id="deny">
+                </div>
+                <span id="test"></span>
+            </form>
+
+            <div id="firstName" style="display:none"><%= user.firstName %></div>
+            <div id="lastName" style="display:none"><%= user.lastName %></div>
+            <div id="email" style="display:none"><%= user.email %></div>
+            <div id="permissions" style="display:none"><%= scopes %></div>
+
+        </section>
     </div>
-</form>
+
+    <script>
+      var firstName = document.getElementById('firstName').innerHTML;
+      var lastName = document.getElementById('lastName').innerHTML;
+      var email = document.getElementById('email').innerHTML;
+      var permissions = document.getElementById('permissions').innerHTML;
+
+      var username = firstName ? firstName + (lastName? ' ' + lastName : '') : email;
+      var permissionArray = permissions.split(",");
+
+      var permissionMap = {
+        read_only: 'Read only (GET) permissions',
+        write_only: 'Create only (POST) permissions for everything tied to your account.',
+        read_write: 'Read (GET) and create (POST) permissions for everything tied to your account. Deleting data is not allowed.',
+        all: 'Full read/write/update/delete permissions for everything tied to your account.',
+      };
+
+      var permissionList = document.getElementById('permissionList');
+      for (var i = 0; i < permissionArray.length; i++) {
+        var listElement = document.createElement('li');
+        listElement.innerHTML = permissionMap[permissionArray[i]];
+        permissionList.appendChild(listElement);
+      }
+
+      document.getElementById("username").innerHTML = username;
+
+    </script>
+</body>
+</html>

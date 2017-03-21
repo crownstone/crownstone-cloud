@@ -22,7 +22,7 @@
     "loopback-boot": "^2.6.5",
     "loopback-component-access-groups": "^0.1.1",
     "loopback-component-explorer": "^2.1.0",
-    "loopback-component-oauth2": "^3.0.0",
+    "loopback-component-oauth2": "git://github.com/crownstone/loopback-component-oauth2#master",
     "loopback-component-push": "^1.7.0",
     "loopback-component-storage": "^1.7.0",
     "loopback-component-storage-gridfs": "eggerdo/loopback-component-storage-gridfs",

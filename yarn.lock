@@ -1442,7 +1442,7 @@ lodash-compat@^3.5.0:
   version "3.10.2"
   resolved "https://registry.yarnpkg.com/lodash-compat/-/lodash-compat-3.10.2.tgz#c6940128a9d30f8e902cd2cf99fd0cba4ecfc183"
 
-lodash@*, lodash@4.x, lodash@^4.0.0, lodash@^4.14.0, lodash@^4.14.1, lodash@^4.15.0, lodash@^4.6.1:
+lodash@*, lodash@4.x, lodash@^4.14.0, lodash@^4.14.1, lodash@^4.15.0, lodash@^4.6.1:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -1514,9 +1514,9 @@ loopback-component-explorer@^2.1.0:
     strong-globalize "^2.6.2"
     strong-swagger-ui "^21.0.0"
 
-loopback-component-oauth2@^3.0.0:
+"loopback-component-oauth2@git://github.com/crownstone/loopback-component-oauth2#master":
   version "3.0.0"
-  resolved "https://registry.yarnpkg.com/loopback-component-oauth2/-/loopback-component-oauth2-3.0.0.tgz#cd244704557e59243804abc9aa68f49821997d4b"
+  resolved "git://github.com/crownstone/loopback-component-oauth2#071683102e2a52e9c571628cb9e6a0691298eb5e"
   dependencies:
     async "^1.5.2"
     body-parser "^1.15.2"
@@ -2363,13 +2363,9 @@ safe-buffer@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.0.1.tgz#d263ca54696cd8a306b5ca6551e92de57918fbe7"
 
-sax@1.1.5:
+sax@1.1.5, sax@>=0.1.1, sax@>=0.6.0:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.1.5.tgz#1da50a8d00cdecd59405659f5ff85349fe773743"
-
-sax@>=0.1.1, sax@>=0.6.0:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.2.tgz#fd8631a23bc7826bef5d871bdb87378c95647828"
 
 "semver@2 || 3 || 4 || 5", semver@^4.1.0:
   version "4.3.6"
@@ -3012,31 +3008,18 @@ xml2js@0.1.x:
   dependencies:
     sax ">=0.1.1"
 
-xml2js@0.4.15:
+xml2js@0.4.15, xml2js@^0.4.8:
   version "0.4.15"
   resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.4.15.tgz#95cd03ff2dd144ec28bc6273bf2b2890c581ad0c"
   dependencies:
     sax ">=0.6.0"
     xmlbuilder ">=2.4.6"
 
-xml2js@^0.4.8:
-  version "0.4.17"
-  resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.4.17.tgz#17be93eaae3f3b779359c795b419705a8817e868"
-  dependencies:
-    sax ">=0.6.0"
-    xmlbuilder "^4.1.0"
-
-xmlbuilder@2.6.2:
+xmlbuilder@2.6.2, xmlbuilder@>=2.4.6:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-2.6.2.tgz#f916f6d10d45dc171b1be2e6e673fb6e0cc35d0a"
   dependencies:
     lodash "~3.5.0"
-
-xmlbuilder@>=2.4.6, xmlbuilder@^4.1.0:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-4.2.1.tgz#aa58a3041a066f90eaa16c2f5389ff19f3f461a5"
-  dependencies:
-    lodash "^4.0.0"
 
 xmlhttprequest-ssl@1.5.3:
   version "1.5.3"
