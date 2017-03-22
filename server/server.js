@@ -55,7 +55,7 @@ boot(app, __dirname, function(err) {
 
 
 let options = {
-  dataSource: app.dataSources.db, // Data source for oAuth2 metadata persistence
+  dataSource: app.dataSources.userDs, // Data source for oAuth2 metadata persistence
   resourceServer: true,
   authorizationServer: true,
   loginPage: '/loginOauth', // The login page URL
@@ -68,27 +68,26 @@ oauth2.oAuth2Provider(
   options // The options
 );
 
-let permissionModel = app.dataSources.db.getModel('OAuthClientApplication');
 
-permissionModel.destroyAll()
-  .then(() => {
-    return permissionModel.create({
-      id: 'Crownstone',
-      name:"Crownstone",
-      scopes: ['read_only','write_only','read_write','all'],
-      clientSecret: 'secret',
-      issuedAt: new Date()
-    })
-  })
-.then(() => {
-  return permissionModel.find();
-})
-.then((data) => {
-  console.log("data", data);
-})
-.catch((err) => {
-  console.log("couldnt create client", err)
-})
+// ADDING AN OAUTH2 CLIENT:
+// let permissionModel = app.dataSources.userDs.getModel('OAuthClientApplication');
+//
+// permissionModel.destroyAll()
+//   .then(() => {
+//     return permissionModel.create({
+//       name:"Crownstone",
+//       scopes: ['all'],
+//       clientSecret: 'secret',
+//       issuedAt: new Date()
+//     })
+//   })
+// .then(() => {
+//   return permissionModel.find();
+// })
+// .then((data) => {
+//   console.log("data", data);
+// })
+// .catch((err) => {
+//   console.log("Couldn't create client", err)
+// });
 
-
-//http://localhost:3000/oauth/authorize?response_type=code&client_id=2282804de9ae0a3581e017533f0831d9&redirect_uri=http://www.google.com

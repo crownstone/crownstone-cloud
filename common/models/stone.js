@@ -804,4 +804,50 @@ module.exports = function(model) {
 		}
 	);
 
+
+  model.setSwitchStateRemotely = function(id, switchState, switchStateUpdatedAt, updatedAt, callback) {
+    "use strict";
+    debug("setSwitchStateRemotely");
+    model.findById(id)
+			.then((stone) => {
+    		if (stone === null) {
+    			callback("Could not find this stone.");
+    			return;
+				}
+    		if (!switchStateUpdatedAt) {
+    			switchStateUpdatedAt = new Date();
+				}
+
+				stone.switchStateUpdatedAt = switchStateUpdatedAt;
+				stone.switchState = Math.max(0,Math.min(1, switchState));
+
+    		if (updatedAt) {
+          stone.updatedAt = updatedAt;
+				}
+
+				// todo: insert PUSH command here
+
+				return stone.save();
+			})
+			.then((stoneInstance) => {
+    		callback();
+			})
+			.catch((err) => {
+    		callback(err);
+			});
+  };
+
+  model.remoteMethod(
+    'setSwitchStateRemotely',
+    {
+      http: {path: '/:id/setSwitchStateRemotely', verb: 'put'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
+        {arg: 'switchStateUpdatedAt', type: 'date', required: false, http: { source : 'query' }},
+        {arg: 'updatedAt', type: 'date', required: false, http: { source : 'query' }},
+      ],
+      description: "Set the switchState of a stone. Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming. If the stone does not support dimming (or is configured that way), anything over 0 is full on."
+    }
+  );
 };

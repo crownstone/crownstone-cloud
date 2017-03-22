@@ -25,7 +25,7 @@
     "loopback-component-oauth2": "git://github.com/crownstone/loopback-component-oauth2#master",
     "loopback-component-push": "^1.7.0",
     "loopback-component-storage": "^1.7.0",
-    "loopback-component-storage-gridfs": "eggerdo/loopback-component-storage-gridfs",
+    "loopback-component-storage-gridfs": "^1.1.1",
     "loopback-component-storage-mongo": "^1.5.0",
     "loopback-connector-mongodb": "1.13.3",
     "loopback-connector-sendgrid": "1.2.3",

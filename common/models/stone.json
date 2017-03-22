@@ -33,7 +33,10 @@
       "type": "string"
     },
     "switchState": {
-      "type": "boolean"
+      "type": "number"
+    },
+    "switchStateUpdatedAt": {
+      "type": "date"
     },
     "deviceType": {
       "type": "string"

@@ -32,22 +32,28 @@
     "loopback-component-oauth2#authenticate": { "paths" : ["/api"], "params": [{
         "oauthACLgateway" : true,
         "scopes": {
-          "read_only": [
+          "user_location": [
             {
               "methods": "get",
-              "path": "/api"
+              "path": "/api/users/:id/currentLocation"
             }
           ],
-          "write_only": [
+          "stone_information": [
             {
-              "methods": "post",
-              "path": "/api"
+              "methods": "get",
+              "path": "/api/Stones/"
             }
           ],
-          "read_write": [
+          "switch_stone": [
             {
-              "methods": ["get","post"],
-              "path": "/api"
+              "methods": "put",
+              "path": "/api/Stones/:id/setSwitchStateRemotely"
+            }
+          ],
+          "power_consumption": [
+            {
+              "methods": "get",
+              "path": "/api/Stones/:id/currentEnergyUsage"
             }
           ],
           "all": [

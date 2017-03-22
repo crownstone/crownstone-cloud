@@ -988,7 +988,6 @@ module.exports = function(model) {
 	);
 
 	model.changeOwnership = function(id, email, callback) {
-
 		model.findById(id, function(err, sphere) {
 			if (err) return callback(err);
 
@@ -1007,7 +1006,7 @@ module.exports = function(model) {
 					SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
 						if (err) return callback(err);
 
-						if (objects.length = 1) {
+						if (objects.length === 1) {
 							objects[0].role = "admin";
 							objects[0].save(function(err, instance) {
 								if (err) return callback(err);
@@ -1137,7 +1136,7 @@ module.exports = function(model) {
 					SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
 						if (err) return callback(err);
 
-						if (objects.length = 1) {
+						if (objects.length === 1) {
 							objects[0].role = role;
 							objects[0].save(function(err, instance) {
 								if (err) return callback(err);

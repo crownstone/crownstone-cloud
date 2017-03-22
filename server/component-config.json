@@ -3,7 +3,7 @@
     "mountPath": "/explorer"
   },
   "loopback-component-oauth2": {
-    "dataSource": "db",
+    "dataSource": "userDs",
     "resourceServer": true,
     "authorizationServer": true,
     "loginPage": "/loginOauth",
