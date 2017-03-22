@@ -47,9 +47,11 @@
       var permissionArray = permissions.split(",");
 
       var permissionMap = {
-        read_only: 'Read only (GET) permissions',
-        write_only: 'Create only (POST) permissions for everything tied to your account.',
-        read_write: 'Read (GET) and create (POST) permissions for everything tied to your account. Deleting data is not allowed.',
+        user_information:  'Access to your account details like name, email address, settings and preferences.',  // get /api/users/me
+        user_location:     'Access to your location within the house. ',  // get /api/users/:id/currentLocation
+        stone_information: 'Access to information about your Crownstones.',  // get /api/Stones
+        switch_stone:      'Access to switch your Crownstones.',  // put /api/Stones/:id/setSwitchStateRemotely
+        power_consumption: 'Access to the power consumption of your Crownstones.',  // get /api/Stones/:id/currentEnergyUsage
         all: 'Full read/write/update/delete permissions for everything tied to your account.',
       };
 

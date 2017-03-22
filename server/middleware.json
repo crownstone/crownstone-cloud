@@ -32,6 +32,12 @@
     "loopback-component-oauth2#authenticate": { "paths" : ["/api"], "params": [{
         "oauthACLgateway" : true,
         "scopes": {
+          "user_information": [
+            {
+              "methods": "get",
+              "path": "/api/users/me"
+            }
+          ],
           "user_location": [
             {
               "methods": "get",

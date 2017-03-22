@@ -68,26 +68,5 @@ oauth2.oAuth2Provider(
   options // The options
 );
 
-
-// ADDING AN OAUTH2 CLIENT:
-// let permissionModel = app.dataSources.userDs.getModel('OAuthClientApplication');
-//
-// permissionModel.destroyAll()
-//   .then(() => {
-//     return permissionModel.create({
-//       name:"Crownstone",
-//       scopes: ['all'],
-//       clientSecret: 'secret',
-//       issuedAt: new Date()
-//     })
-//   })
-// .then(() => {
-//   return permissionModel.find();
-// })
-// .then((data) => {
-//   console.log("data", data);
-// })
-// .catch((err) => {
-//   console.log("Couldn't create client", err)
-// });
-
+let performOauthClientOperations = require("./addOauthClient");
+performOauthClientOperations(app);
