@@ -326,18 +326,8 @@ module.exports = function(model) {
 		}
 	}
 
-	function createKey(callback) {
+	function createKey() {
 		return crypto.randomBytes(16).toString('hex');
-		// crypto.randomBytes(16, function(err, buf) {
-		// 	if (err) return callback(err);
-		// 	if (!buf) {
-		// 		let error = new Error("could not generate encryption key");
-		// 		error.code = 'ENCRYPTION_KEY_GENERATION_FAILED';
-		// 		callback(error);
-		// 	}
-
-		// 	callback(null, buf.toString('hex'));
-		// })
 	}
 
 	function injectEncryptionKeys(item, next) {
@@ -351,29 +341,6 @@ module.exports = function(model) {
 		if (!item.guestEncryptionKey) {
 			item.guestEncryptionKey = createKey();
 		}
-
-		// createKey(function(err, ownerKey) {
-		// 	if (!item.adminEncryptionKey) {
-		// 		if (err) return next(err);
-		// 		item.adminEncryptionKey = ownerKey;
-		// 	}
-
-		// 	createKey(function(err, memberKey) {
-		// 		if (!item.memberEncryptionKey) {
-		// 			if (err) return next(err);
-		// 			item.memberEncryptionKey = memberKey;
-		// 		}
-
-		// 		createKey(function(err, guestKey) {
-		// 			if (!item.getEncryptionKeys) {
-		// 				if (err) return next(err);
-		// 				item.guestEncryptionKey = guestKey;
-		// 			}
-		// 			next();
-		// 		})
-		// 	});
-		// });
-
 	}
 
 	function injectMeshAccessAddress(item, next) {
