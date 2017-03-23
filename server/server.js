@@ -68,5 +68,6 @@ oauth2.oAuth2Provider(
   options // The options
 );
 
-let performOauthClientOperations = require("./addOauthClient");
-performOauthClientOperations(app);
+// Uncomment these lines to add/remove/modify the OATUH2 clients
+// let performOauthClientOperations = require("./oauthClientOperations");
+// performOauthClientOperations(app);
