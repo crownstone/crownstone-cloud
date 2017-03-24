@@ -39,6 +39,12 @@
       "type": "boolean",
       "default": true
     },
+    "firmwareVersionAvailable": {
+      "type": "string"
+    },
+    "bootloaderVersionAvailable": {
+      "type": "string"
+    },
     "uploadLocation": {
       "type": "boolean",
       "default": false
@@ -63,7 +69,8 @@
       "type": "hasMany",
       "model": "Location",
       "foreignKey": "ownerId",
-      "through": "Device"
+      "through": "Device",
+      "keyThrough": "currentLocationId"
     },
     "spheres": {
       "type": "hasMany",

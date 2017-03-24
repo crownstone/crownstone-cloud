@@ -664,11 +664,11 @@ module.exports = function(model) {
         let sphere = { sphereId: access.sphereId, keys: {}};
         switch (access.role) {
           case "admin":
-            sphere.keys.admin = access.sphere().adminEncryptionKey;
+            sphere.keys.admin  = access.sphere().adminEncryptionKey;
           case "member":
             sphere.keys.member = access.sphere().memberEncryptionKey;
           case "guest":
-            sphere.keys.guest = access.sphere().guestEncryptionKey;
+            sphere.keys.guest  = access.sphere().guestEncryptionKey;
         }
         return sphere
       });

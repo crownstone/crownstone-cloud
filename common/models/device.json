@@ -34,15 +34,15 @@
       "model": "user",
       "foreignKey": "ownerId"
     },
-    "scans": {
-      "type": "hasMany",
-      "model": "Scan",
-      "foreignKey": ""
-    },
     "currentLocation": {
       "type": "belongsTo",
       "model": "Location",
       "foreignKey": "currentLocationId"
+    },
+    "scans": {
+      "type": "hasMany",
+      "model": "Scan",
+      "foreignKey": ""
     },
     "locationsHistory": {
       "type": "hasMany",

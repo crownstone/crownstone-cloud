@@ -383,6 +383,9 @@ module.exports = function(model) {
 		})
 	};
 
+	
+	
+	
 	model.remoteMethod(
 		'deleteAllScans',
 		{

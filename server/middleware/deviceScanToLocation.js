@@ -18,8 +18,8 @@ var runner = {
 
 		var maxRssi = -255;
 		var closest = null;
-		for (i = 0; i < scan.scannedDevices.length; ++i) {
-			sd = scan.scannedDevices[i];
+		for (let i = 0; i < scan.scannedDevices.length; ++i) {
+			let sd = scan.scannedDevices[i];
 			// debug("sd:", sd);
 			if (sd.rssi > maxRssi) {
 				maxRssi = sd.rssi;
