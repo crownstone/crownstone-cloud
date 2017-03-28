@@ -46,11 +46,12 @@ app.start = function() {
 // Bootstrap the application, configure models, datasources and middleware.
 // Sub-apps like REST API are mounted via boot scripts.
 boot(app, __dirname, function(err) {
-  if (err) throw err;
+  if (err) { throw err; }
 
   // start the server if `$ node server.js`
-  if (require.main === module)
+  if (require.main === module) {
     app.start();
+  }
 });
 
 
@@ -68,6 +69,61 @@ boot(app, __dirname, function(err) {
 //   options // The options
 // );
 
-// Uncomment these lines to add/remove/modify the OATUH2 clients
+// from middleware.json session: {
+//   "express-session": {
+//     "params": {
+//       "saveUninitialized": true,
+//         "resave": true,
+//         "secret": "keyboard cat"
+//     }
+//   }
+// }
+
+// from middleware.json auth: {
+//   "loopback-component-oauth2#authenticate": { "paths" : ["/api"], "params": [{
+//     "oauthACLgateway" : true,
+//     "scopes": {
+//       "user_information": [
+//         {
+//           "methods": "get",
+//           "path": "/api/users/me"
+//         }
+//       ],
+//       "user_location": [
+//         {
+//           "methods": "get",
+//           "path": "/api/users/:id/currentLocation"
+//         }
+//       ],
+//       "stone_information": [
+//         {
+//           "methods": "get",
+//           "path": "/api/Stones/"
+//         }
+//       ],
+//       "switch_stone": [
+//         {
+//           "methods": "put",
+//           "path": "/api/Stones/:id/setSwitchStateRemotely"
+//         }
+//       ],
+//       "power_consumption": [
+//         {
+//           "methods": "get",
+//           "path": "/api/Stones/:id/currentEnergyUsage"
+//         }
+//       ],
+//       "all": [
+//         {
+//           "methods": "all",
+//           "path": "/api"
+//         }
+//       ]
+//     }
+//   }]
+//   }
+// }
+
+// Uncomment these lines to add/remove/modify the OAUTH2 clients
 // let performOauthClientOperations = require("./oauthClientOperations");
 // performOauthClientOperations(app);
