@@ -54,19 +54,19 @@ boot(app, __dirname, function(err) {
 });
 
 
-let options = {
-  dataSource: app.dataSources.userDs, // Data source for oAuth2 metadata persistence
-  resourceServer: true,
-  authorizationServer: true,
-  loginPage: '/loginOauth', // The login page URL
-  loginPath: '/loginOauthStep2', // The login form processing URL
-  tokenPath: "/oauth/token",
-};
-
-oauth2.oAuth2Provider(
-  app, // The app instance
-  options // The options
-);
+// let options = {
+//   dataSource: app.dataSources.userDs, // Data source for oAuth2 metadata persistence
+//   resourceServer: true,
+//   authorizationServer: true,
+//   loginPage: '/loginOauth', // The login page URL
+//   loginPath: '/loginOauthStep2', // The login form processing URL
+//   tokenPath: "/oauth/token",
+// };
+//
+// oauth2.oAuth2Provider(
+//   app, // The app instance
+//   options // The options
+// );
 
 // Uncomment these lines to add/remove/modify the OATUH2 clients
 // let performOauthClientOperations = require("./oauthClientOperations");
