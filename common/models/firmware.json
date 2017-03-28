@@ -1,5 +1,6 @@
 {
   "name": "Firmware",
+  "replaceOnPUT": false,
   "base": "Model",
   "properties": {}
 }

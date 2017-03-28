@@ -9,7 +9,7 @@ module.exports = function(model) {
 
 	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
-		model.disableRemoteMethod('find', true);
+		model.disableRemoteMethodByName('find');
 
 		//***************************
 		// GENERAL:
@@ -65,45 +65,32 @@ module.exports = function(model) {
 	// address has to be unique to a stone
 	// model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
 
-	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
-	model.disableRemoteMethod('__link__coordinatesHistory', false);
-	model.disableRemoteMethod('__unlink__coordinatesHistory', false);
-	model.disableRemoteMethod('__exists__coordinatesHistory', false);
-	model.disableRemoteMethod('__findById__coordinatesHistory', false);
-	model.disableRemoteMethod('__delete__coordinatesHistory', false);
+	model.disableRemoteMethodByName('__updateById__coordinatesHistory');
+	model.disableRemoteMethodByName('__link__coordinatesHistory');
+	model.disableRemoteMethodByName('__unlink__coordinatesHistory');
+	model.disableRemoteMethodByName('__exists__coordinatesHistory');
+	model.disableRemoteMethodByName('__findById__coordinatesHistory');
+	model.disableRemoteMethodByName('__delete__coordinatesHistory');
 
-	model.disableRemoteMethod('__updateById__locationsHistory', false);
-	// model.disableRemoteMethod('__create__locationsHistory', false);
-	model.disableRemoteMethod('__delete__locationsHistory', false);
-	model.disableRemoteMethod('__link__locationsHistory', false);
-	model.disableRemoteMethod('__unlink__locationsHistory', false);
-	model.disableRemoteMethod('__exists__locationsHistory', false);
-	model.disableRemoteMethod('__findById__locationsHistory', false);
+	model.disableRemoteMethodByName('__updateById__locationsHistory');
+	// model.disableRemoteMethodByName('__create__locationsHistory');
+	model.disableRemoteMethodByName('__delete__locationsHistory');
+	model.disableRemoteMethodByName('__link__locationsHistory');
+	model.disableRemoteMethodByName('__unlink__locationsHistory');
+	model.disableRemoteMethodByName('__exists__locationsHistory');
+	model.disableRemoteMethodByName('__findById__locationsHistory');
 
-	model.disableRemoteMethod('__updateById__scans', false);
-	model.disableRemoteMethod('__findById__scans', false);
-	model.disableRemoteMethod('__delete__scans', false);
+	model.disableRemoteMethodByName('__updateById__scans');
+	model.disableRemoteMethodByName('__findById__scans');
+	model.disableRemoteMethodByName('__delete__scans');
 
-	model.disableRemoteMethod('createChangeStream', true);
-	model.disableRemoteMethod('upsert', true);
-	model.disableRemoteMethod('count', true);
-	model.disableRemoteMethod('findOne', true);
-	model.disableRemoteMethod('updateAll', true);
-
-	let initDevice = function(ctx, next) {
-		debug("initDevice");
-
-		if (ctx.isNewInstance) {
-			injectOwner(ctx.instance, next)
-		} else {
-			injectOwner(ctx.data, next);
-		}
-	};
+	model.disableRemoteMethodByName('createChangeStream');
+	model.disableRemoteMethodByName('upsert');
+	model.disableRemoteMethodByName('count');
+	model.disableRemoteMethodByName('findOne');
+	model.disableRemoteMethodByName('updateAll');
 
 	let injectOwner = function(ctx, next) {
-		// debug("ctx", ctx);
-		// debug("next", next);
-
 		let item;
 		if (ctx.isNewInstance) {
 			item = ctx.instance;
@@ -120,16 +107,17 @@ module.exports = function(model) {
 			debug("injectOwner");
 			// debug("ctx.instance: ", item);
 
-			const loopbackContext = loopback.getCurrentContext();
-			let currentUser = loopbackContext.get('currentUser');
+      const token = ctx.options && ctx.options.accessToken;
+      const userId = token && token.userId;
 
-			if (!currentUser) {
+			if (!userId) {
 				return next(new Error("Not logged in!"));
 			}
 
-			item.ownerId = currentUser.id;
+			item.ownerId = userId;
 			next();
-		} else {
+		}
+		else {
 			next();
 		}
 	};
@@ -137,23 +125,14 @@ module.exports = function(model) {
 	model.observe('before save', injectOwner);
 
 	model.afterRemote('prototype.__create__scans', function(ctx, instance, next) {
-
-		// console.log("ctx: ", ctx);
-		// console.log("instance: ", ctx.instance);
-
 		next();
-
-		// const loopbackContext = loopback.getCurrentContext();
-		// let currentUser = loopbackContext.get('currentUser');
-		// stl.update(ctx.args.data, ctx.instance, currentUser);
-
 	});
 
 	/************************************
 	 **** Location
 	 ************************************/
 
-    let badge = 1;
+	let badge = 1;
 
 	model.setCurrentLocation = function(device, locationId, next) {
 		if ((device.currentLocationId === locationId) ||

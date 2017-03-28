@@ -1,12 +1,10 @@
 {
   "restApiRoot": "/api",
   "remoting": {
-    "context": {
-      "enableHttpContext": false
-    },
     "rest": {
       "normalizeHttpPath": false,
-      "xml": false
+      "xml": false,
+      "handleErrors": false
     },
     "json": {
       "strict": false,

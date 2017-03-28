@@ -71,40 +71,40 @@ module.exports = function(model) {
 	 **** Disable Remote Methods
 	 ************************************/
 
-	model.disableRemoteMethod('find', true);
-	model.disableRemoteMethod('findOne', true);
-	model.disableRemoteMethod('updateAll', true);
-	model.disableRemoteMethod('upsert', true);
-	model.disableRemoteMethod('exists', true);
-	model.disableRemoteMethod('createChangeStream', true);
+	model.disableRemoteMethodByName('find');
+	model.disableRemoteMethodByName('findOne');
+	model.disableRemoteMethodByName('updateAll');
+	model.disableRemoteMethodByName('upsert');
+	model.disableRemoteMethodByName('exists');
+	model.disableRemoteMethodByName('createChangeStream');
 
-	model.disableRemoteMethod('__get__accessTokens', false);
-	model.disableRemoteMethod('__create__accessTokens', false);
-	model.disableRemoteMethod('__delete__accessTokens', false);
-	model.disableRemoteMethod('__count__accessTokens', false);
-	model.disableRemoteMethod('__findById__accessTokens', false);
-	model.disableRemoteMethod('__destroyById__accessTokens', false);
-	model.disableRemoteMethod('__updateById__accessTokens', false);
+	model.disableRemoteMethodByName('__get__accessTokens');
+	model.disableRemoteMethodByName('__create__accessTokens');
+	model.disableRemoteMethodByName('__delete__accessTokens');
+	model.disableRemoteMethodByName('__count__accessTokens');
+	model.disableRemoteMethodByName('__findById__accessTokens');
+	model.disableRemoteMethodByName('__destroyById__accessTokens');
+	model.disableRemoteMethodByName('__updateById__accessTokens');
 
-	model.disableRemoteMethod('__create__currentLocation', false);
-	model.disableRemoteMethod('__delete__currentLocation', false);
-	model.disableRemoteMethod('__updateById__currentLocation', false);
-	model.disableRemoteMethod('__deleteById__currentLocation', false);
-	model.disableRemoteMethod('__destroyById__currentLocation', false);
-	model.disableRemoteMethod('__count__currentLocation', false);
-	model.disableRemoteMethod('__link__currentLocation', false);
-	model.disableRemoteMethod('__unlink__currentLocation', false);
-	model.disableRemoteMethod('__findById__currentLocation', false);
+	model.disableRemoteMethodByName('__create__currentLocation');
+	model.disableRemoteMethodByName('__delete__currentLocation');
+	model.disableRemoteMethodByName('__updateById__currentLocation');
+	model.disableRemoteMethodByName('__deleteById__currentLocation');
+	model.disableRemoteMethodByName('__destroyById__currentLocation');
+	model.disableRemoteMethodByName('__count__currentLocation');
+	model.disableRemoteMethodByName('__link__currentLocation');
+	model.disableRemoteMethodByName('__unlink__currentLocation');
+	model.disableRemoteMethodByName('__findById__currentLocation');
 
-	model.disableRemoteMethod('__delete__spheres', false);
-	model.disableRemoteMethod('__create__spheres', false);
-	model.disableRemoteMethod('__updateById__spheres', false);
-	model.disableRemoteMethod('__destroyById__spheres', false);
-	model.disableRemoteMethod('__link__spheres', false);
-	model.disableRemoteMethod('__count__spheres', false);
-	model.disableRemoteMethod('__get__spheres', false);
+	model.disableRemoteMethodByName('__delete__spheres');
+	model.disableRemoteMethodByName('__create__spheres');
+	model.disableRemoteMethodByName('__updateById__spheres');
+	model.disableRemoteMethodByName('__destroyById__spheres');
+	model.disableRemoteMethodByName('__link__spheres');
+	model.disableRemoteMethodByName('__count__spheres');
+	model.disableRemoteMethodByName('__get__spheres');
 
-	model.disableRemoteMethod('__delete__devices', false);
+	model.disableRemoteMethodByName('__delete__devices');
 
 	/************************************
 	 **** Model Validation
@@ -287,33 +287,26 @@ module.exports = function(model) {
 		}
 	);
 
-	model.me = function(access_token, callback) {
+	model.me = function(options, callback) {
     // debug("me");
-
-	  const AccessToken = loopback.getModel('AccessToken');
-	  AccessToken.findById(access_token)
-      .then((tokenProps) => {
-	      // fallback for OAUTH use:
-	      if (tokenProps === null) {
-          const loopbackContext = loopback.getCurrentContext();
-          if (loopbackContext) {
-            return loopbackContext.get('currentUser');
+    let errorMessage = "Could not find user.";
+    if (options && options.accessToken && options.accessToken.userId) {
+      model.findById(options.accessToken.userId)
+        .then((user) => {
+          if (user === null) {
+            throw errorMessage;
           }
           else {
-            throw new Error("Could not find user.")
+            callback(null, user);
           }
-        }
-        else {
-          return model.findById(tokenProps.userId);
-        }
-      })
-      .then((user) => {
-	      callback(null, user);
-      })
-      .catch((err) => {
-	      callback(err);
-      });
-
+        })
+        .catch((err) => {
+          callback(err);
+        });
+    }
+    else {
+      callback(errorMessage);
+    }
 	};
 
 	model.remoteMethod(
@@ -321,31 +314,37 @@ module.exports = function(model) {
 		{
 			http: {path: '/me', verb: 'get'},
       accepts: [
-        {arg: 'access_token', type: 'string', 'http': {source: 'query'}},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
 			returns: {arg: 'data', type: 'user', root: true},
 			description: "Return instance of authenticated User"
 		}
 	);
 
-	model.createNewSphere = function(data, id, callback) {
-		// debug("createNewSphere:", data);
-		const Sphere = loopback.getModel('Sphere');
-		Sphere.create(data, callback);
-	};
-
-	model.remoteMethod(
-		'createNewSphere',
-		{
-			http: {path: '/:id/spheres', verb: 'post'},
-			accepts: [
-				{arg: 'data', type: 'Sphere', 'http': {source: 'body'}},
-				{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-			],
-			returns: {arg: 'data', type: 'Sphere', root: true},
-			description: "Creates a new instance in spheres of this model"
-		}
-	);
+	// model.createNewSphere = function(data, id, options, callback) {
+	// 	// debug("createNewSphere:", data);
+   //  console.log("test", options)
+   //  if (options && options.accessToken && options.accessToken.userId) {
+   //    console.log("Planting userId", options.accessToken.userId)
+   //    data._ownerId = options.accessToken.userId
+   //  }
+	// 	const Sphere = loopback.getModel('Sphere');
+	// 	Sphere.create(data, callback);
+	// };
+  //
+	// model.remoteMethod(
+	// 	'createNewSphere',
+	// 	{
+	// 		http: {path: '/:id/spheres', verb: 'post'},
+	// 		accepts: [
+	// 			{arg: 'data', type: 'Sphere', 'http': {source: 'body'}},
+	// 			{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}},
+   //      {arg: "options", type: "object", http: "optionsFromRequest"},
+	// 		],
+	// 		returns: {arg: 'data', type: 'Sphere', root: true},
+	// 		description: "Creates a new instance in spheres of this model"
+	// 	}
+	// );
 
 	model.spheres = function(id, callback) {
 

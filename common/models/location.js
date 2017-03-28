@@ -86,21 +86,21 @@ module.exports = function(model) {
 	}
 
 
-	model.disableRemoteMethod('updateAll', true);
-	model.disableRemoteMethod('upsert', true);
-	model.disableRemoteMethod('createChangeStream', true);
+	model.disableRemoteMethodByName('updateAll');
+	model.disableRemoteMethodByName('upsert');
+	model.disableRemoteMethodByName('createChangeStream');
 
-	model.disableRemoteMethod('__link__presentPeople', false);
-	model.disableRemoteMethod('__unlink__presentPeople', false);
-	model.disableRemoteMethod('__findById__presentPeople', false);
-	model.disableRemoteMethod('__updateById__presentPeople', false);
-	model.disableRemoteMethod('__destroyById__presentPeople', false);
-	model.disableRemoteMethod('__create__presentPeople', false);
-	model.disableRemoteMethod('__delete__presentPeople', false);
+	model.disableRemoteMethodByName('__link__presentPeople');
+	model.disableRemoteMethodByName('__unlink__presentPeople');
+	model.disableRemoteMethodByName('__findById__presentPeople');
+	model.disableRemoteMethodByName('__updateById__presentPeople');
+	model.disableRemoteMethodByName('__destroyById__presentPeople');
+	model.disableRemoteMethodByName('__create__presentPeople');
+	model.disableRemoteMethodByName('__delete__presentPeople');
 
-	model.disableRemoteMethod('__delete__stones', false);
-	model.disableRemoteMethod('__deleteById__stones', false);
-	model.disableRemoteMethod('__destroyById__stones', false);
+	model.disableRemoteMethodByName('__delete__stones');
+	model.disableRemoteMethodByName('__deleteById__stones');
+	model.disableRemoteMethodByName('__destroyById__stones');
 
 	/************************************
 	 **** Model Validation

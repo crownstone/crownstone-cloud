@@ -182,34 +182,34 @@ module.exports = function(model) {
 	model.validatesUniquenessOf('uid', {scopedTo: ['sphereId'], message: 'a stone with this uid was already added'});
 	model.validatesUniquenessOf('major', {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
-	model.disableRemoteMethod('updateAll', true);
-	model.disableRemoteMethod('upsert', true);
-	model.disableRemoteMethod('createChangeStream', true);
+	model.disableRemoteMethodByName('updateAll');
+	model.disableRemoteMethodByName('upsert');
+	model.disableRemoteMethodByName('createChangeStream');
 
-	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
-	model.disableRemoteMethod('__link__coordinatesHistory', false);
-	model.disableRemoteMethod('__unlink__coordinatesHistory', false);
-	model.disableRemoteMethod('__exists__coordinatesHistory', false);
-	model.disableRemoteMethod('__findById__coordinatesHistory', false);
+	model.disableRemoteMethodByName('__updateById__coordinatesHistory');
+	model.disableRemoteMethodByName('__link__coordinatesHistory');
+	model.disableRemoteMethodByName('__unlink__coordinatesHistory');
+	model.disableRemoteMethodByName('__exists__coordinatesHistory');
+	model.disableRemoteMethodByName('__findById__coordinatesHistory');
 
-	model.disableRemoteMethod('__create__locations', false);
-	model.disableRemoteMethod('__delete__locations', false);
-	model.disableRemoteMethod('__updateById__locations', false);
-	model.disableRemoteMethod('__deleteById__locations', false);
-	model.disableRemoteMethod('__destroyById__locations', false);
+	model.disableRemoteMethodByName('__create__locations');
+	model.disableRemoteMethodByName('__delete__locations');
+	model.disableRemoteMethodByName('__updateById__locations');
+	model.disableRemoteMethodByName('__deleteById__locations');
+	model.disableRemoteMethodByName('__destroyById__locations');
 
 	// do we need these? since it is historical data, it should not be updateable once it is uploaded?
-	model.disableRemoteMethod('__updateById__scans', false);
-	model.disableRemoteMethod('__updateById__coordinatesHistory', false);
-	model.disableRemoteMethod('__updateById__energyUsageHistory', false);
-	model.disableRemoteMethod('__updateById__powerCurveHistory', false);
-	model.disableRemoteMethod('__updateById__powerUsageHistory', false);
+	model.disableRemoteMethodByName('__updateById__scans');
+	model.disableRemoteMethodByName('__updateById__coordinatesHistory');
+	model.disableRemoteMethodByName('__updateById__energyUsageHistory');
+	model.disableRemoteMethodByName('__updateById__powerCurveHistory');
+	model.disableRemoteMethodByName('__updateById__powerUsageHistory');
 
-	model.disableRemoteMethod('__delete__scans', false);
-	model.disableRemoteMethod('__delete__coordinatesHistory', false);
-	model.disableRemoteMethod('__delete__energyUsageHistory', false);
-	model.disableRemoteMethod('__delete__powerCurveHistory', false);
-	model.disableRemoteMethod('__delete__powerUsageHistory', false);
+	model.disableRemoteMethodByName('__delete__scans');
+	model.disableRemoteMethodByName('__delete__coordinatesHistory');
+	model.disableRemoteMethodByName('__delete__energyUsageHistory');
+	model.disableRemoteMethodByName('__delete__powerCurveHistory');
+	model.disableRemoteMethodByName('__delete__powerUsageHistory');
 
 	function initStone(ctx, next) {
 		debug("initStone");
@@ -282,13 +282,7 @@ module.exports = function(model) {
 	);
 
 	model.afterRemote('*.__create__scans', function(ctx, instance, next) {
-
 		next();
-
-		// const loopbackContext = loopback.getCurrentContext();
-		// let currentUser = loopbackContext.get('currentUser');
-		// stl.update(ctx.args.data, ctx.instance, currentUser);
-
 	});
 
 	/************************************
@@ -298,9 +292,6 @@ module.exports = function(model) {
 	model.setCurrentCoordinate = function(stone, coordinate, next) {
 
 		debug("setCurrentCoordinate");
-
-		// debug("stone:", stone);
-		// debug("coordinate:", coordinate);
 
 		stone.coordinatesHistory.create(coordinate, function(err, coordinateInstance) {
 			if (err) return next(err);

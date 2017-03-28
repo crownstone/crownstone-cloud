@@ -34,37 +34,10 @@ module.exports = function(model) {
 		if (currentUser) {
 			if (currentUser.role !== 'superuser') {
 				debug("getUserSpheres");
-					// model.app.accessUtils.getUserSpheres(currentUser.getId())
-					// 	.then(userSpheres => {
-					// 		debug("spheres:", spheres);
-				//       userSpheres = Array.from(userSpheres, sphere => sphere[model.app.accessUtils.options.foreignKey]);
-					// 		debug("userSpheres:", userSpheres);
-				//       // filter[this.options.foreignKey] = { inq: userSpheres };
-				//       // return filter;
-				//     });
 				let spheres = model.app.accessUtils.getCurrentUserGroups();
 				userSpheres = Array.from(spheres, sphere => new String(sphere[model.app.accessUtils.options.foreignKey]).valueOf());
-				// debug("userSpheres:", userSpheres);
 			}
 			next();
-			// } else if (DEBUG) {
-
-			// 	const user = loopback.getModel('user');
-			// 	user.find({where: {email: "dominik@dobots.nl"}}, function(err, res) {
-			// 		if (err) {
-			// 			debug("fatal error");
-			// 		} else {
-			// 			currentUser = res[0];
-			// 			model.app.accessUtils.getUserSpheres(currentUser.id, false, function(err, res) {
-			// 				if (err) return next(err);
-			// 				// debug("res:", res);
-			// 				userSpheres = Array.from(res, sphere => new String(sphere[model.app.accessUtils.options.foreignKey]).valueOf());
-			// 				debug("userSpheres:", userSpheres);
-
-			// 				next();
-			// 			});
-			// 		}
-			// 	})
 		} else {
 			next();
 		}
@@ -92,7 +65,7 @@ module.exports = function(model) {
 	// });
 
 	model.beforeRemote('getContainers', function(ctx, instance, next) {
-		retrieveUserSpheres(next);
+		retrieveUserSpheres(ctx, instance, next);
 	});
 
 	model.afterRemote('getContainers', function(ctx, instance, next) {
@@ -126,7 +99,7 @@ module.exports = function(model) {
 	});
 
 	model._deleteContainer = function (id, next) {
-
+		console.log("HERE")
 		let containerName = getContainerName(id);
 		checkAccess(containerName, function(err) {
 			if (err) return next(err);

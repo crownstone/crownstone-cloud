@@ -9,17 +9,5 @@
     "loginPage": "/loginOauth",
     "loginPath": "/loginOauthStep2",
     "tokenPath": "/oauth/token"
-  },
-  "loopback-component-access-groups": {
-    "userModel": "user",
-    "roleModel": "Role",
-    "groupModel": "Sphere",
-    "groupAccessModel": "SphereAccess",
-    "foreignKey": "sphereId",
-    "groupRoles": [
-      "$group:admin",
-      "$group:member",
-      "$group:guest"
-    ]
   }
 }

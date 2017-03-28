@@ -17,7 +17,7 @@ module.exports = function(model) {
 
 	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
-		model.disableRemoteMethod('find', true);
+		model.disableRemoteMethodByName('find');
 
 		//***************************
 		// GENERAL:
@@ -221,23 +221,23 @@ module.exports = function(model) {
 		);
 	}
 
-	model.disableRemoteMethod('findOne', true);
-	model.disableRemoteMethod('updateAll', true);
-	model.disableRemoteMethod('count', true);
-	model.disableRemoteMethod('upsert', true);
-	model.disableRemoteMethod('createChangeStream', true);
+	model.disableRemoteMethodByName('findOne');
+	model.disableRemoteMethodByName('updateAll');
+	model.disableRemoteMethodByName('count');
+	model.disableRemoteMethodByName('upsert');
+	model.disableRemoteMethodByName('createChangeStream');
 
-	model.disableRemoteMethod('__create__users', false);
-	model.disableRemoteMethod('__delete__users', false);
-	model.disableRemoteMethod('__destroyById__users', false);
-	model.disableRemoteMethod('__updateById__users', false);
-	model.disableRemoteMethod('__link__users', false);
-	model.disableRemoteMethod('__count__users', false);
-	model.disableRemoteMethod('__get__users', false);
+	model.disableRemoteMethodByName('__create__users');
+	model.disableRemoteMethodByName('__delete__users');
+	model.disableRemoteMethodByName('__destroyById__users');
+	model.disableRemoteMethodByName('__updateById__users');
+	model.disableRemoteMethodByName('__link__users');
+	model.disableRemoteMethodByName('__count__users');
+	model.disableRemoteMethodByName('__get__users');
 
-	model.disableRemoteMethod('__delete__ownedLocations', false);
-	model.disableRemoteMethod('__delete__ownedStones', false);
-	model.disableRemoteMethod('__delete__ownedAppliances', false);
+	model.disableRemoteMethodByName('__delete__ownedLocations');
+	model.disableRemoteMethodByName('__delete__ownedStones');
+	model.disableRemoteMethodByName('__delete__ownedAppliances');
 
 	/************************************
 	 **** Model Validation
@@ -268,10 +268,8 @@ module.exports = function(model) {
 	});
 
 	// check that a sphere is not deleted as long as there are crownstones assigned
-	model.observe('before delete', function(context, next) {
-
-		model.findById(context.where.id, {include: 'ownedStones'}, function(err, sphere) {
-
+	model.observe('before delete', function(ctx, next) {
+		model.findById(ctx.where.id, {include: 'ownedStones'}, function(err, sphere) {
 			if (sphere) {
 				if (sphere.ownedStones().length > 0) {
 					return next(new Error("Can't delete a sphere with assigned crownstones."));
@@ -299,17 +297,16 @@ module.exports = function(model) {
 	function initSphere(ctx, next) {
 		debug("initSphere");
 		// debug("ctx", ctx);
-
+    const token = ctx.options && ctx.options.accessToken;
+    const userId = token && token.userId;
+    const user = userId ? 'user#' + userId : '<anonymous>';
+    
 		if (ctx.isNewInstance) {
 			injectUUID(ctx.instance);
 			injectEncryptionKeys(ctx.instance);
 			injectMeshAccessAddress(ctx.instance);
-			injectOwner(ctx.instance, next);
+			injectOwner(ctx.instance, userId, next);
 		} else {
-			// injectUUID(ctx.data);
-			// injectEncryptionKeys(ctx.data);
-			// injectOwner(ctx.data, next);
-
 			// disallow changing the owner when updating the sphere
 			// so always overwrite the ownerId with the current ownerId
 			if (ctx.data && ctx.currentInstance) {
@@ -375,85 +372,31 @@ module.exports = function(model) {
 	 **** Membership Methods
 	 ************************************/
 
-	function injectOwner(item, next) {
+	function injectOwner(item, ownerId, next) {
 		if (!item.ownerId) {
 			debug("injectOwner");
-			// debug("ctx.instance: ", item);
-
-			const loopbackContext = loopback.getCurrentContext();
-			let currentUser = loopbackContext.get('currentUser');
-
-			let inject = function(item, user, next) {
-				// debug("user:", user);
-				item.ownerId = user.id;
-				// debug("ctx.instance: ", item.instance);
-				next();
-			};
-
-			// // only for DEBUG purposes
-			// if (currentUser == null) {
-
-			// 	const User = loopback.getModel('user');
-			// 	User.findOne({where: {email: "dominik@dobots.nl"}}, function(err, currentUser) {
-			// 		if (err) {
-			// 			debug("fatal error");
-			// 		} else {
-			// 			inject(item, currentUser, next);
-			// 		}
-			// 	})
-			// } else {
-				inject(item, currentUser, next);
-			// }
+      item.ownerId = ownerId;
+      next();
 		} else {
 			next();
 		}
   }
   function updateOwnerAccess(ctx, next) {
-		// debug("instance: ", ctx.instance);
-
-		// const SphereAccess = loopback.getModel('SphereAccess');
-		// SphereAccess.create({
-		// 	sphereId: instance.id,
-		// 	userId: instance.ownerId,
-		// 	role: "owner"
-		// }, function(err, res) {
-		// 	if (err) {
-		// 		debug("Error: ", err);
-		// 	} else {
-		// 		debug("OK");
-		// 	}
-		// });
-
 		if (ctx.isNewInstance) {
 			const User = loopback.getModel('user');
 			User.findById(ctx.instance.ownerId, function(err, user) {
 				if (err) return next(err);
-
 				// make the owner admin of the group
-				addSphereAccess(user, ctx.instance, "admin", false,
-					function(err, res) {
-
-					}
-				);
+				addSphereAccess(user, ctx.instance, "admin", false, function(err, res) {
+					next(err);
+				});
 			})
 		}
+		else {
+      next();
+		}
 
-		next();
   }
-  // let addSuperUser = function(ctx) {
-
-	// 	user = loopback.getModel('user');
-	// 	user.findOne({where: {role: "superuser"}}, function(err, res) {
-	// 		if (err || !res) return debug("failed to find superuser");
-
-	// 		addSphereAccess(res.id, ctx.instance.id, "admin", true,
-	// 			function(err, res) {
-
-	// 			}
-	// 		);
-	// 	})
-
-	// }
 
 	function addSphereAccess(user, sphere, access, invite, callback) {
 		debug("addSphereAccess");
@@ -465,25 +408,8 @@ module.exports = function(model) {
 			invitePending: invite
 		},
 		function(err, access) {
-			// debug("err", err);
-			// debug("access", access);
 			callback(err);
 		});
-
-		// const SphereAccess = loopback.getModel('SphereAccess');
-		// SphereAccess.create({
-		// 	sphereId: sphereId,
-		// 	userId: userId,
-		// 	role: access
-		// }, function(err, res) {
-		// 	if (err) {
-		// 		debug("Error: ", err);
-		// 		callback(err);
-		// 	} else {
-		// 		debug("OK");
-		// 		callback();
-		// 	}
-		// });
   }
   function sendInvite(user, sphere, isNew, accessTokenId) {
 
@@ -787,24 +713,7 @@ module.exports = function(model) {
 		}
 	);
 
-	// model.beforeRemote("*.__get__users", function(context, instance, next) {
-		// do not need to wait for result of email
-		// filter = {invitePending: {neq: true}}
-		// const where = context.args.filter ? {
-  //         and: [ context.args.filter, filter ]
-  //       } : filter;
-
-		// debug("context.args before", context.args);
-
-  //       context.args.filter = where;
-
-		// debug("context.args", context.args);
-		// debug("instance", instance);
-	// 	next();
-	// });
-
 	function findUsersWithRole(id, access, callback) {
-
 		model.findById(id, function(err, instance) {
 			if (err) return callback(err);
 			if (model.checkForNullError(instance, callback, "id: " + id)) return;
@@ -830,7 +739,7 @@ module.exports = function(model) {
 							for (let j = 0; j < res.length; ++j) {
 								access = res[j];
 								// debug("member.id " + j + ":", member.userId.valueOf());
-								if (new String(user.id).valueOf() === new String(access.userId).valueOf()) {
+								if (user.id === access.userId) {
 									filteredUsers.push(user);
 									break;
 								}
@@ -954,7 +863,7 @@ module.exports = function(model) {
 		}
 	);
 
-	model.changeOwnership = function(id, email, callback) {
+	model.changeOwnership = function(id, email, options, callback) {
 		model.findById(id, function(err, sphere) {
 			if (err) return callback(err);
 
@@ -963,12 +872,12 @@ module.exports = function(model) {
 				if (err) return callback(err);
 				// debug("user", user);
 				// debug("sphere", sphere);
+				let currentUserId = options && options.accessToken && options.accessToken.userId;
+        if (!currentUserId) {
+          return callback("Can not identify user by accessToken.");
+        }
 
-				const loopbackContext = loopback.getCurrentContext();
-				let currentUser = loopbackContext.get('currentUser');
-
-				if (new String(sphere.ownerId).valueOf() === new String(currentUser.id).valueOf()) {
-
+				if (sphere.ownerId === currentUserId) {
 					const SphereAccess = loopback.findModel("SphereAccess");
 					SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
 						if (err) return callback(err);
@@ -986,35 +895,17 @@ module.exports = function(model) {
 								});
 							});
 
-						} else {
+						}
+						else {
 							return callback(new Error("user is not part of the sphere!"));
 						}
-						// for (let access of objects) {
-						// 	if (access.role in ["member", "guest"]) {
-						// 		access.
-						// 	}
-						// }
 					})
 				} else {
-
 					debug("Error: Authorization required!");
 					let error = new Error("Authorization Required");
 					error.status = 401;
 					return callback(error);
 				}
-
-				// SphereAccess.destroyAll({and: [{userId: sphere.ownerId}, {sphereId: id}, {role: "owner"}]}, function(err, info) {
-				// 	if (err) return callback(err);
-				// 	debug("info", info);
-
-				// 	addSphereAccess(user, sphere, "owner", false, function(err) {
-				// 		if (err) return callback(err);
-
-				// 		debug("added sphere access");
-
-				// 		callback(null, true);
-				// 	});
-				// });
 			});
 		});
 	};
@@ -1025,7 +916,8 @@ module.exports = function(model) {
 			http: {path: '/:id/owner', verb: 'put'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'email', type: 'string', required: true, http: { source : 'query' }}
+				{arg: 'email', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			returns: {arg: 'success', type: 'boolean', root: true},
 			description: "Change owner of Group"
@@ -1033,7 +925,6 @@ module.exports = function(model) {
 	);
 
 	function verifyChangeRole(sphereId, user, role, callback) {
-
 		model.findById(sphereId, function(err, sphere) {
 			if (err) return callback(err);
 			if (model.checkForNullError(sphere, callback, "id: " + sphereId)) return;
@@ -1041,14 +932,12 @@ module.exports = function(model) {
 			if (role === "owner") {
 				callback(null, false);
 			} else {
-				callback(null, user.id != sphere.ownerId)
+				callback(null, user.id !== sphere.ownerId)
 			}
 		});
-
 	}
 
 	model.getRole = function(id, email, callback) {
-
 		const User = loopback.findModel('user');
 		User.findOne({where: {email: email}}, function(err, user) {
 			if (err) return callback(err);
@@ -1112,11 +1001,6 @@ module.exports = function(model) {
 						} else {
 							return callback(new Error("user is not part of the sphere!"));
 						}
-						// for (let access of objects) {
-						// 	if (access.role in ["member", "guest"]) {
-						// 		access.
-						// 	}
-						// }
 					})
 				} else {
 					return callback(new Error("not allowed to change owners. Use /changeOwnership instead!"));
@@ -1289,7 +1173,7 @@ module.exports = function(model) {
 			sphere.users({where: {email: email}}, function(err, users) {
 				if (err) return callback(err);
 
-				if (users.length == 0) return callback(new Error("user not found"));
+				if (users.length === 0) return callback(new Error("user not found"));
 				let user = users[0];
 
 				const User = loopback.getModel('user');

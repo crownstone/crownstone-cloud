@@ -1,5 +1,6 @@
 {
   "name": "Stone",
+  "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,
   "idInjection": true,

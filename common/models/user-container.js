@@ -11,7 +11,7 @@ const DEBUG = true;
 
 module.exports = function(model) {
 
-	model.disableRemoteMethod('getContainers', true);
+	model.disableRemoteMethodByName('getContainers');
 
 	let getContainerName = function(id) {
 		if (typeof id === 'object') {

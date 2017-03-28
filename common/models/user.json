@@ -1,5 +1,6 @@
 {
   "name": "user",
+  "replaceOnPUT": false,
   "base": "User",
   "strictDelete": true,
   "idInjection": true,

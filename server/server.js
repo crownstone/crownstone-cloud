@@ -4,8 +4,9 @@ const loopback = require('loopback');
 const boot = require('loopback-boot');
 const path = require('path');
 const bodyParser = require('body-parser');
+const compression = require('compression');
 
-const oauth2 = require('loopback-component-oauth2');
+// const oauth2 = require('loopback-component-oauth2');
 const express = require('express');
 // let updateDS = require('./updateDS.js');
 
@@ -20,13 +21,11 @@ app.use(express.static('public'));
 // configure body parser
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.use(loopback.compress());
+app.use(compression());
 // console.log("enable compression");
 
 loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { idInjection: false });
 
-app.use(loopback.context());
-app.use(loopback.token());
 
 app.start = function() {
   // start the web server

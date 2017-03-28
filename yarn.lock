@@ -9,16 +9,16 @@ JSONStream@1.0.3:
     jsonparse "~1.0.0"
     through ">=2.2.7 <3"
 
-accepts@1.3.3, accepts@~1.3.3:
+accepts@1.3.3, accepts@^1.3.3, accepts@~1.3.3:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/accepts/-/accepts-1.3.3.tgz#c3ca7434938648c3e0d9c1e328dd68b622c284ca"
   dependencies:
     mime-types "~2.1.11"
     negotiator "0.6.1"
 
-addressparser@^0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/addressparser/-/addressparser-0.3.2.tgz#59873f35e8fcf6c7361c10239261d76e15348bb2"
+addressparser@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/addressparser/-/addressparser-1.0.1.tgz#47afbe1a2a9262191db6838e4fd1d39b40821746"
 
 after@0.8.2:
   version "0.8.2"
@@ -129,14 +129,7 @@ async-hook@^1.7.1:
   dependencies:
     stack-chain "^1.3.1"
 
-async-listener@^0.6.0:
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/async-listener/-/async-listener-0.6.4.tgz#7c93d904f69021ac10e1339eb4a4acb5aea4cd06"
-  dependencies:
-    semver "^5.3.0"
-    shimmer "^1.1.0"
-
-async@*, async@^2.0.0, async@^2.0.0-rc.2, async@^2.0.1:
+async@*, async@^2.0.0, async@^2.0.0-rc.2, async@^2.0.1, async@~2.1.4:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/async/-/async-2.1.5.tgz#e587c68580994ac67fc56ff86d3ac56bdbe810bc"
   dependencies:
@@ -149,10 +142,6 @@ async@0.9.x, async@^0.9.0, async@~0.9.0:
 async@^1.0.0, async@^1.4.2, async@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
-
-async@~1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/async/-/async-1.0.0.tgz#f8fc04ca3a13784ade9e1641af98578cfbd647a9"
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -259,7 +248,7 @@ block-stream@*:
   dependencies:
     inherits "~2.0.0"
 
-bluebird@*, bluebird@^3.3.4, bluebird@^3.4.6:
+bluebird@*, bluebird@^3.1.1, bluebird@^3.3.4, bluebird@^3.4.6:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.0.tgz#791420d7f551eea2897453a8a77653f96606d67c"
 
@@ -344,15 +333,17 @@ bufferview@~1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/bufferview/-/bufferview-1.0.1.tgz#7afd74a45f937fa422a1d338c08bbfdc76cd725d"
 
-buildmail@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/buildmail/-/buildmail-2.0.0.tgz#f0b7b0a59e9a4a1b5066bbfa051d248f3832eece"
+buildmail@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/buildmail/-/buildmail-4.0.1.tgz#877f7738b78729871c9a105e3b837d2be11a7a72"
   dependencies:
-    addressparser "^0.3.2"
-    libbase64 "^0.1.0"
-    libmime "^1.2.0"
-    libqp "^1.1.0"
-    needle "^0.10.0"
+    addressparser "1.0.1"
+    libbase64 "0.1.0"
+    libmime "3.0.0"
+    libqp "1.1.0"
+    nodemailer-fetch "1.6.0"
+    nodemailer-shared "1.1.0"
+    punycode "1.4.1"
 
 builtin-modules@^1.0.0:
   version "1.1.1"
@@ -418,7 +409,7 @@ cli@~1.0.0:
     exit "0.1.2"
     glob "^7.1.1"
 
-clone@1.0.x, clone@^1.0.2:
+clone@1.0.x:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/clone/-/clone-1.0.2.tgz#260b7a99ebb1edfe247538175f783243cb19d149"
 
@@ -531,20 +522,6 @@ content-type@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/content-type/-/content-type-1.0.2.tgz#b7d113aee7a8dd27bd21133c4dc2529df1721eed"
 
-continuation-local-storage@^3.1.3:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/continuation-local-storage/-/continuation-local-storage-3.2.0.tgz#e19fc36b597090a5d4e4a3b2ea3ebc5e29694a24"
-  dependencies:
-    async-listener "^0.6.0"
-    emitter-listener "^1.0.1"
-
-cookie-parser@^1.3.4:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/cookie-parser/-/cookie-parser-1.4.3.tgz#0fe31fa19d000b95f4aadf1f53fdc2b8a203baa5"
-  dependencies:
-    cookie "0.3.1"
-    cookie-signature "1.0.6"
-
 cookie-signature@1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.0.6.tgz#e303a882b342cc3ee8ca513a79999734dab3ae2c"
@@ -561,7 +538,7 @@ core-util-is@~1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/core-util-is/-/core-util-is-1.0.2.tgz#b5fd54220aa2bc5ab57aab7140c940754503c1a7"
 
-cors@^2.5.2, cors@^2.6.0, cors@^2.7.1:
+cors@^2.5.2, cors@^2.7.1:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/cors/-/cors-2.8.1.tgz#6181aa56abb45a2825be3304703747ae4e9d2383"
   dependencies:
@@ -754,7 +731,7 @@ eenano@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/eenano/-/eenano-1.0.0.tgz#a2444235190e76f88d0c464a317e8a4f51757e9d"
 
-ejs@^2.3.1, ejs@^2.5.5:
+ejs@^2.3.1, ejs@^2.4.2, ejs@^2.5.5:
   version "2.5.6"
   resolved "https://registry.yarnpkg.com/ejs/-/ejs-2.5.6.tgz#479636bfa3fe3b1debd52087f0acb204b4f19c88"
 
@@ -821,7 +798,7 @@ entities@^1.1.1, entities@~1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/entities/-/entities-1.1.1.tgz#6e5c2d0a5621b5dadaecef80b90edfb5cd7772f0"
 
-errorhandler@^1.1.1, errorhandler@^1.3.4:
+errorhandler@^1.1.1:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/errorhandler/-/errorhandler-1.5.0.tgz#eaba64ca5d542a311ac945f582defc336165d9f4"
   dependencies:
@@ -843,6 +820,10 @@ es6-promise@3.2.1:
 escape-html@~1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/escape-html/-/escape-html-1.0.3.tgz#0258eae4d3d0c0974de1c169188ef0051d1d1988"
+
+escape-string-regexp@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
 
 esprima@^1.2.2:
   version "1.2.5"
@@ -900,7 +881,7 @@ express-session@^1.15.1:
     uid-safe "~2.1.3"
     utils-merge "1.0.0"
 
-express@4.x, express@^4.12.2, express@^4.14.1:
+express@4.x, express@^4.14.0, express@^4.14.1:
   version "4.15.2"
   resolved "https://registry.yarnpkg.com/express/-/express-4.15.2.tgz#af107fc148504457f2dca9a6f2571d7129b97b35"
   dependencies:
@@ -1210,7 +1191,26 @@ http-signature@~1.1.0:
     jsprim "^1.2.2"
     sshpk "^1.7.0"
 
-iconv-lite@0.4.15, iconv-lite@^0.4.13, iconv-lite@^0.4.4:
+http-status@^0.2.2:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/http-status/-/http-status-0.2.5.tgz#976f91077ea7bfc15277cbcf8c80c4d5c51b49b0"
+
+http-status@^1.0.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/http-status/-/http-status-1.0.1.tgz#dc43001a8bfc50ac87d485a892f7578964bc94a2"
+
+httpntlm@1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/httpntlm/-/httpntlm-1.6.1.tgz#ad01527143a2e8773cfae6a96f58656bb52a34b2"
+  dependencies:
+    httpreq ">=0.4.22"
+    underscore "~1.7.0"
+
+httpreq@>=0.4.22:
+  version "0.4.23"
+  resolved "https://registry.yarnpkg.com/httpreq/-/httpreq-0.4.23.tgz#0f460fe0c781029bcad7f47cad08de6cc1130212"
+
+iconv-lite@0.4.15:
   version "0.4.15"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.15.tgz#fe265a218ac6a57cfe854927e9d04c19825eddeb"
 
@@ -1257,6 +1257,10 @@ ip@0.3.x:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/ip/-/ip-0.3.3.tgz#8ee8309e92f0b040d287f72efaca1a21702d3fb4"
 
+ip@^1.1.2:
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/ip/-/ip-1.1.5.tgz#bdded70114290828c0a039e72ef25f5aaec4354a"
+
 ipaddr.js@1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/ipaddr.js/-/ipaddr.js-1.2.0.tgz#8aba49c9192799585bdd643e0ccb50e8ae777ba4"
@@ -1288,6 +1292,10 @@ isarray@0.0.1:
 isarray@^1.0.0, isarray@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
+
+isemail@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/isemail/-/isemail-2.2.1.tgz#0353d3d9a62951080c262c2aa0a42b8ea8e9e2a6"
 
 isstream@~0.1.2:
   version "0.1.2"
@@ -1326,6 +1334,12 @@ js-yaml@^3.3.0:
 js2xmlparser@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/js2xmlparser/-/js2xmlparser-1.0.0.tgz#5a170f2e8d6476ce45405e04823242513782fe30"
+
+js2xmlparser@^2.0.2:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/js2xmlparser/-/js2xmlparser-2.0.2.tgz#0da96cd7cc35b5e1dfe802beaff5cc38257a8ca4"
+  dependencies:
+    xmlcreate "^0.1.1"
 
 jsbn@~0.1.0:
   version "0.1.1"
@@ -1414,6 +1428,12 @@ jwt-simple@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/jwt-simple/-/jwt-simple-0.2.0.tgz#71e4e49b45cf2e2820d4576868bc0a8e373a9670"
 
+kerberos@^0.0.23:
+  version "0.0.23"
+  resolved "https://registry.yarnpkg.com/kerberos/-/kerberos-0.0.23.tgz#6aa46afdb9786c6919388cc5b408f012c71f0fd1"
+  dependencies:
+    nan "~2.5.1"
+
 keypress@0.1.x:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/keypress/-/keypress-0.1.0.tgz#4a3188d4291b66b4f65edb99f806aa9ae293592a"
@@ -1430,19 +1450,19 @@ lcid@^1.0.0:
   dependencies:
     invert-kv "^1.0.0"
 
-libbase64@^0.1.0:
+libbase64@0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/libbase64/-/libbase64-0.1.0.tgz#62351a839563ac5ff5bd26f12f60e9830bb751e6"
 
-libmime@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/libmime/-/libmime-1.2.0.tgz#8d84b4f3b225b3704410236ef494906436ba742b"
+libmime@3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/libmime/-/libmime-3.0.0.tgz#51a1a9e7448ecbd32cda54421675bb21bc093da6"
   dependencies:
-    iconv-lite "^0.4.13"
-    libbase64 "^0.1.0"
-    libqp "^1.1.0"
+    iconv-lite "0.4.15"
+    libbase64 "0.1.0"
+    libqp "1.1.0"
 
-libqp@^1.1.0:
+libqp@1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/libqp/-/libqp-1.1.0.tgz#f5e6e06ad74b794fb5b5b66988bf728ef1dedbe8"
 
@@ -1450,7 +1470,7 @@ lodash-compat@^3.5.0:
   version "3.10.2"
   resolved "https://registry.yarnpkg.com/lodash-compat/-/lodash-compat-3.10.2.tgz#c6940128a9d30f8e902cd2cf99fd0cba4ecfc183"
 
-lodash@*, lodash@4.x, lodash@^4.0.0, lodash@^4.14.0, lodash@^4.14.1, lodash@^4.15.0, lodash@^4.6.1, lodash@^4.8.0:
+lodash@*, lodash@4.x, lodash@^4.14.0, lodash@^4.14.1, lodash@^4.15.0, lodash@^4.6.1, lodash@^4.8.0:
   version "4.17.4"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.4.tgz#78203a4d1c328ae1d86dca6460e369b57f4055ae"
 
@@ -1599,12 +1619,12 @@ loopback-connector-mongodb@1.13.3:
     loopback-connector "^2.2.0"
     mongodb "~2.0.35"
 
-loopback-connector-remote@^1.0.3:
-  version "1.3.3"
-  resolved "https://registry.yarnpkg.com/loopback-connector-remote/-/loopback-connector-remote-1.3.3.tgz#78fa724e4e29b4d7aa5dca55c9b34a0bcd7d63e0"
+loopback-connector-remote@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/loopback-connector-remote/-/loopback-connector-remote-3.1.1.tgz#c10336f527bf87c3d9b3f63c1960cb1c03213a13"
   dependencies:
-    loopback-datasource-juggler "^2.8.0"
-    strong-remoting "^2.3.0"
+    loopback-datasource-juggler "^3.0.0"
+    strong-remoting "^3.0.0"
 
 loopback-connector-sendgrid@1.2.3:
   version "1.2.3"
@@ -1614,9 +1634,19 @@ loopback-connector-sendgrid@1.2.3:
     ramda "^0.19.0"
     sendgrid "^2.0.0"
 
-loopback-connector@^2.1.0, loopback-connector@^2.2.0, loopback-connector@^2.3.0:
+loopback-connector@^2.2.0, loopback-connector@^2.3.0:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/loopback-connector/-/loopback-connector-2.7.1.tgz#60afc244e31919976391a997838685781fa28e52"
+  dependencies:
+    async "^1.0.0"
+    bluebird "^3.4.6"
+    debug "^2.2.0"
+    msgpack5 "^3.4.1"
+    strong-globalize "^2.5.8"
+
+loopback-connector@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/loopback-connector/-/loopback-connector-3.0.0.tgz#ea2531cf87aff4fc512271d6fdc9dc8e8affcf36"
   dependencies:
     async "^1.0.0"
     bluebird "^3.4.6"
@@ -1630,25 +1660,38 @@ loopback-context@^3.1.0:
   dependencies:
     cls-hooked "^4.0.1"
 
-loopback-datasource-juggler@2.54.0, loopback-datasource-juggler@^2.8.0:
-  version "2.54.0"
-  resolved "https://registry.yarnpkg.com/loopback-datasource-juggler/-/loopback-datasource-juggler-2.54.0.tgz#e4f144b47b4a6e603a251efcde15199e4aab3fb8"
+loopback-datasource-juggler@^3.0.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/loopback-datasource-juggler/-/loopback-datasource-juggler-3.2.0.tgz#5e39554b6b1343fcecefc93599aea9dbca615fba"
   dependencies:
-    async "~1.0.0"
+    async "~2.1.4"
+    bluebird "^3.1.1"
     debug "^2.1.1"
     depd "^1.0.0"
     inflection "^1.6.0"
-    loopback-connector "^2.1.0"
+    loopback-connector "^3.0.0"
     minimatch "^3.0.3"
-    qs "^3.1.0"
+    qs "^6.3.0"
     shortid "^2.2.6"
     strong-globalize "^2.6.2"
     traverse "^0.6.6"
     uuid "^3.0.1"
 
-loopback-phase@^1.2.0, loopback-phase@^1.3.0:
+loopback-datatype-geopoint@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/loopback-datatype-geopoint/-/loopback-datatype-geopoint-1.0.0.tgz#fdaa5c7ab8d730a9ab7e54554be165f31cdf6100"
+
+loopback-phase@^1.3.0:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/loopback-phase/-/loopback-phase-1.4.1.tgz#d76e5ab0e6ec79cc5370d3c530f634871020bcee"
+  dependencies:
+    async "^0.9.0"
+    debug "^2.1.0"
+    strong-globalize "^2.6.2"
+
+loopback-phase@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/loopback-phase/-/loopback-phase-3.0.0.tgz#75234f3bb94c069e6a0a3125ad47ff8fc536d366"
   dependencies:
     async "^0.9.0"
     debug "^2.1.0"
@@ -1665,40 +1708,39 @@ loopback-swagger@^2.1.0:
     strong-globalize "^2.6.0"
     underscore.string "~2.3.3"
 
-loopback@2.26.2:
-  version "2.26.2"
-  resolved "https://registry.yarnpkg.com/loopback/-/loopback-2.26.2.tgz#9fc08f55a0e8868050698d8891652cf38648cd66"
+loopback@3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/loopback/-/loopback-3.5.0.tgz#31e011ec9551a91288abc7df497a01826b613e47"
   dependencies:
-    async "^0.9.0"
+    async "^2.0.1"
     bcryptjs "^2.1.0"
+    bluebird "^3.1.1"
     body-parser "^1.12.0"
     canonical-json "0.0.4"
-    continuation-local-storage "^3.1.3"
-    cookie-parser "^1.3.4"
     debug "^2.1.2"
     depd "^1.0.0"
     ejs "^2.3.1"
-    errorhandler "^1.3.4"
-    express "^4.12.2"
+    express "^4.14.0"
     inflection "^1.6.0"
-    loopback-connector-remote "^1.0.3"
-    loopback-phase "^1.2.0"
-    nodemailer "^1.3.1"
-    nodemailer-stub-transport "^0.1.5"
+    isemail "^2.2.1"
+    loopback-connector-remote "^3.0.0"
+    loopback-datasource-juggler "^3.0.0"
+    loopback-phase "^3.0.0"
+    nodemailer "^2.5.0"
+    nodemailer-stub-transport "^1.0.0"
     serve-favicon "^2.2.0"
     stable "^0.1.5"
-    strong-remoting "^2.21.0"
+    strong-globalize "^2.7.0"
+    strong-remoting "^3.0.0"
     uid2 "0.0.3"
     underscore.string "^3.0.3"
-  optionalDependencies:
-    sl-blip "http://blip.strongloop.com/loopback@2.26.2"
 
-mailcomposer@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/mailcomposer/-/mailcomposer-2.1.0.tgz#a6531822899614fee899c92226d81e2b9cbb183d"
+mailcomposer@4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/mailcomposer/-/mailcomposer-4.0.1.tgz#0e1c44b2a07cf740ee17dc149ba009f19cadfeb4"
   dependencies:
-    buildmail "^2.0.0"
-    libmime "^1.2.0"
+    buildmail "4.0.1"
+    libmime "3.0.0"
 
 map-obj@^1.0.0:
   version "1.0.1"
@@ -1751,11 +1793,11 @@ mime-types@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-1.0.2.tgz#995ae1392ab8affcbfcb2641dd054e943c0d5dce"
 
-mime@1.2.x, "mime@>= 1.2.6", mime@^1.2.9, mime@~1.2.11:
+mime@1.2.x, mime@^1.2.9, mime@~1.2.11:
   version "1.2.11"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.2.11.tgz#58203eed86e3a5ef17aed2b7d9ebd47f0a60dd10"
 
-mime@1.3.4, mime@^1.3.4:
+mime@1.3.4, "mime@>= 1.2.6", mime@^1.3.4:
   version "1.3.4"
   resolved "https://registry.yarnpkg.com/mime/-/mime-1.3.4.tgz#115f9e3b6b3daf2959983cb38f149a2d40eb5d53"
 
@@ -1874,23 +1916,9 @@ mux-demux@^3.7.9:
     through "~2.3.1"
     xtend "~1.0.3"
 
-nan@2.x, nan@^2.0.5, nan@^2.3.5:
+nan@2.x, nan@^2.0.5, nan@^2.3.5, nan@~2.5.1:
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.5.1.tgz#d5b01691253326a97a2bbee9e61c55d8d60351e2"
-
-needle@^0.10.0:
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/needle/-/needle-0.10.0.tgz#16a24d63f2a61152eb74cce1d12af85c507577d4"
-  dependencies:
-    debug "^2.1.2"
-    iconv-lite "^0.4.4"
-
-needle@^0.11.0:
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/needle/-/needle-0.11.0.tgz#02a71b008eaf7d55ae89fb9fd7685b7b88d7bc29"
-  dependencies:
-    debug "^2.1.2"
-    iconv-lite "^0.4.4"
 
 negotiator@0.6.1:
   version "0.6.1"
@@ -1931,37 +1959,58 @@ node-uuid@*, node-uuid@^1.4.1, node-uuid@~1.4.0:
   version "1.4.8"
   resolved "https://registry.yarnpkg.com/node-uuid/-/node-uuid-1.4.8.tgz#b040eb0923968afabf8d32fb1f17f1167fdab907"
 
-nodemailer-direct-transport@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/nodemailer-direct-transport/-/nodemailer-direct-transport-1.1.0.tgz#a2f78708ee6f16ea0573fc82949d138ff172f624"
+nodemailer-direct-transport@3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/nodemailer-direct-transport/-/nodemailer-direct-transport-3.3.2.tgz#e96fafb90358560947e569017d97e60738a50a86"
   dependencies:
-    smtp-connection "^1.3.1"
+    nodemailer-shared "1.1.0"
+    smtp-connection "2.12.0"
 
-nodemailer-smtp-transport@^1.1.0:
+nodemailer-fetch@1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/nodemailer-fetch/-/nodemailer-fetch-1.6.0.tgz#79c4908a1c0f5f375b73fe888da9828f6dc963a4"
+
+nodemailer-shared@1.1.0:
   version "1.1.0"
-  resolved "https://registry.yarnpkg.com/nodemailer-smtp-transport/-/nodemailer-smtp-transport-1.1.0.tgz#e6c37f31885ab3080e7ded3cf528c4ad7e691398"
+  resolved "https://registry.yarnpkg.com/nodemailer-shared/-/nodemailer-shared-1.1.0.tgz#cf5994e2fd268d00f5cf0fa767a08169edb07ec0"
   dependencies:
-    clone "^1.0.2"
-    nodemailer-wellknown "^0.1.7"
-    smtp-connection "^1.3.7"
+    nodemailer-fetch "1.6.0"
 
-nodemailer-stub-transport@^0.1.5:
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/nodemailer-stub-transport/-/nodemailer-stub-transport-0.1.5.tgz#c853326f3a980b6654713ac190f9404eaa86842b"
+nodemailer-smtp-pool@2.8.2:
+  version "2.8.2"
+  resolved "https://registry.yarnpkg.com/nodemailer-smtp-pool/-/nodemailer-smtp-pool-2.8.2.tgz#2eb94d6cf85780b1b4725ce853b9cbd5e8da8c72"
+  dependencies:
+    nodemailer-shared "1.1.0"
+    nodemailer-wellknown "0.1.10"
+    smtp-connection "2.12.0"
 
-nodemailer-wellknown@^0.1.7:
+nodemailer-smtp-transport@2.7.2:
+  version "2.7.2"
+  resolved "https://registry.yarnpkg.com/nodemailer-smtp-transport/-/nodemailer-smtp-transport-2.7.2.tgz#03d71c76314f14ac7dbc7bf033a6a6d16d67fb77"
+  dependencies:
+    nodemailer-shared "1.1.0"
+    nodemailer-wellknown "0.1.10"
+    smtp-connection "2.12.0"
+
+nodemailer-stub-transport@^1.0.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/nodemailer-stub-transport/-/nodemailer-stub-transport-1.1.0.tgz#11421d2d66b4ee6f405354f914c1f4641eb24b0d"
+
+nodemailer-wellknown@0.1.10:
   version "0.1.10"
   resolved "https://registry.yarnpkg.com/nodemailer-wellknown/-/nodemailer-wellknown-0.1.10.tgz#586db8101db30cb4438eb546737a41aad0cf13d5"
 
-nodemailer@^1.3.1:
-  version "1.11.0"
-  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-1.11.0.tgz#4e69cb39b03015b1d1ef0c78a815412b9e976f79"
+nodemailer@^2.5.0:
+  version "2.7.2"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-2.7.2.tgz#f242e649aeeae39b6c7ed740ef7b061c404d30f9"
   dependencies:
-    libmime "^1.2.0"
-    mailcomposer "^2.1.0"
-    needle "^0.11.0"
-    nodemailer-direct-transport "^1.1.0"
-    nodemailer-smtp-transport "^1.1.0"
+    libmime "3.0.0"
+    mailcomposer "4.0.1"
+    nodemailer-direct-transport "3.3.2"
+    nodemailer-shared "1.1.0"
+    nodemailer-smtp-pool "2.8.2"
+    nodemailer-smtp-transport "2.7.2"
+    socks "1.1.9"
 
 normalize-package-data@^2.0.0:
   version "2.3.6"
@@ -2174,7 +2223,7 @@ punycode@1.3.2:
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.3.2.tgz#9653a036fb7c1ee42342f2325cceefea3926c48d"
 
-punycode@^1.4.1:
+punycode@1.4.1, punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
 
@@ -2190,13 +2239,9 @@ qs@6.2.1:
   version "6.2.1"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.2.1.tgz#ce03c5ff0935bc1d9d69a9f14cbd18e568d67625"
 
-qs@6.4.0, qs@^6.1.0, qs@^6.2.1, qs@~6.4.0:
+qs@6.4.0, qs@^6.1.0, qs@^6.2.1, qs@^6.3.0, qs@~6.4.0:
   version "6.4.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.4.0.tgz#13e26d28ad6b0ffaa91312cd3bf708ed351e7233"
-
-qs@^3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/qs/-/qs-3.1.0.tgz#d0e9ae745233a12dc43fb4f3055bba446261153c"
 
 qs@~1.0.0:
   version "1.0.2"
@@ -2267,7 +2312,7 @@ readable-stream@1.1, readable-stream@1.1.x, readable-stream@~1.1.9:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-readable-stream@2.1.5:
+readable-stream@2.1.5, readable-stream@^2.0.0, readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.5:
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.1.5.tgz#66fa8b720e1438b364681f2ad1a63c618448c9d0"
   dependencies:
@@ -2287,18 +2332,6 @@ readable-stream@2.1.5:
     inherits "~2.0.1"
     isarray "0.0.1"
     string_decoder "~0.10.x"
-
-readable-stream@^2.0.0, readable-stream@^2.0.1, readable-stream@^2.0.2, readable-stream@^2.0.5:
-  version "2.2.6"
-  resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.2.6.tgz#8b43aed76e71483938d12a8d46c6cf1a00b1f816"
-  dependencies:
-    buffer-shims "^1.0.0"
-    core-util-is "~1.0.0"
-    inherits "~2.0.1"
-    isarray "~1.0.0"
-    process-nextick-args "~1.0.6"
-    string_decoder "~0.10.x"
-    util-deprecate "~1.0.1"
 
 readdir-scoped-modules@^1.0.0:
   version "1.0.2"
@@ -2384,21 +2417,17 @@ safe-buffer@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.0.1.tgz#d263ca54696cd8a306b5ca6551e92de57918fbe7"
 
-sax@1.1.5:
+sax@1.1.5, sax@>=0.1.1, sax@>=0.6.0:
   version "1.1.5"
   resolved "https://registry.yarnpkg.com/sax/-/sax-1.1.5.tgz#1da50a8d00cdecd59405659f5ff85349fe773743"
 
-sax@>=0.1.1, sax@>=0.6.0:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/sax/-/sax-1.2.2.tgz#fd8631a23bc7826bef5d871bdb87378c95647828"
-
-"semver@2 || 3 || 4 || 5", semver@^5.1.0, semver@^5.3.0:
-  version "5.3.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
-
-semver@^4.1.0:
+"semver@2 || 3 || 4 || 5", semver@^4.1.0:
   version "4.3.6"
   resolved "https://registry.yarnpkg.com/semver/-/semver-4.3.6.tgz#300bc6e0e86374f7ba61068b5b1ecd57fc6532da"
+
+semver@^5.1.0:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
 
 send@0.15.1:
   version "0.15.1"
@@ -2472,25 +2501,24 @@ shimmer@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/shimmer/-/shimmer-1.0.0.tgz#49c2d71c678360b802be18b278382d1cbb805c39"
 
-shimmer@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/shimmer/-/shimmer-1.1.0.tgz#97d7377137ffbbab425522e429fe0aa89a488b35"
-
 shortid@^2.2.6:
   version "2.2.8"
   resolved "https://registry.yarnpkg.com/shortid/-/shortid-2.2.8.tgz#033b117d6a2e975804f6f0969dbe7d3d0b355131"
-
-"sl-blip@http://blip.strongloop.com/loopback@2.26.2":
-  version "1.0.0"
-  resolved "http://blip.strongloop.com/loopback@2.26.2#99c3bdcb734041b6a956c5c2ba218a5ec90dcda2"
 
 slide@~1.1.3:
   version "1.1.6"
   resolved "https://registry.yarnpkg.com/slide/-/slide-1.1.6.tgz#56eb027d65b4d2dce6cb2e2d32c4d4afc9e1d707"
 
-smtp-connection@^1.3.1, smtp-connection@^1.3.7:
-  version "1.3.8"
-  resolved "https://registry.yarnpkg.com/smtp-connection/-/smtp-connection-1.3.8.tgz#55832c2160cfb3086e1dcd87fd1c19fa61b7f536"
+smart-buffer@^1.0.4:
+  version "1.1.15"
+  resolved "https://registry.yarnpkg.com/smart-buffer/-/smart-buffer-1.1.15.tgz#7f114b5b65fab3e2a35aa775bb12f0d1c649bf16"
+
+smtp-connection@2.12.0:
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/smtp-connection/-/smtp-connection-2.12.0.tgz#d76ef9127cb23c2259edb1e8349c2e8d5e2d74c1"
+  dependencies:
+    httpntlm "1.6.1"
+    nodemailer-shared "1.1.0"
 
 smtpapi@^1.2.0:
   version "1.2.0"
@@ -2551,6 +2579,13 @@ socket.io@^1.7.2:
     socket.io-adapter "0.5.0"
     socket.io-client "1.7.3"
     socket.io-parser "2.3.1"
+
+socks@1.1.9:
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/socks/-/socks-1.1.9.tgz#628d7e4d04912435445ac0b6e459376cb3e6d691"
+  dependencies:
+    ip "^1.1.2"
+    smart-buffer "^1.0.4"
 
 spdx-correct@~1.0.0:
   version "1.0.2"
@@ -2677,7 +2712,29 @@ strong-control-channel@^2.0.0:
     newline-json "^0.1.1"
     ws "^1.1.0"
 
-strong-globalize@^2.5.8, strong-globalize@^2.6.0, strong-globalize@^2.6.2, strong-globalize@^2.6.6:
+strong-error-handler@^1.0.0:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/strong-error-handler/-/strong-error-handler-1.2.1.tgz#7edfe77a4244695154516c63d14ddb57361a03fc"
+  dependencies:
+    accepts "^1.3.3"
+    debug "^2.2.0"
+    ejs "^2.4.2"
+    http-status "^0.2.2"
+    js2xmlparser "^2.0.2"
+    strong-globalize "^2.6.7"
+
+strong-error-handler@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/strong-error-handler/-/strong-error-handler-2.0.0.tgz#6e1447aeea3d4f3b238b93a7a63e4db874928827"
+  dependencies:
+    accepts "^1.3.3"
+    debug "^2.2.0"
+    ejs "^2.4.2"
+    http-status "^1.0.0"
+    js2xmlparser "^2.0.2"
+    strong-globalize "^2.6.7"
+
+strong-globalize@^2.5.8, strong-globalize@^2.6.0, strong-globalize@^2.6.2, strong-globalize@^2.6.6, strong-globalize@^2.6.7, strong-globalize@^2.7.0:
   version "2.8.2"
   resolved "https://registry.yarnpkg.com/strong-globalize/-/strong-globalize-2.8.2.tgz#5ff3e94f60100def324d2ce2b6692efa90bd73cf"
   dependencies:
@@ -2721,25 +2778,27 @@ strong-npm-ls@^1.0.0:
     read-installed "^4.0.3"
     topiary "^1.1.1"
 
-strong-remoting@^2.21.0, strong-remoting@^2.3.0:
-  version "2.33.0"
-  resolved "https://registry.yarnpkg.com/strong-remoting/-/strong-remoting-2.33.0.tgz#7dd947c158be9fb6ecbbb2f528a26f4868c15794"
+strong-remoting@^3.0.0:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/strong-remoting/-/strong-remoting-3.1.1.tgz#11b980e26f9974369f051b7258df82e51d515da0"
   dependencies:
     async "^2.0.1"
     body-parser "^1.12.4"
-    cors "^2.6.0"
     debug "^2.2.0"
     depd "^1.1.0"
+    escape-string-regexp "^1.0.5"
     eventemitter2 "^2.1.0"
     express "4.x"
     inflection "^1.7.1"
     jayson "^1.2.0"
     js2xmlparser "^1.0.0"
+    loopback-datatype-geopoint "^1.0.0"
     loopback-phase "^1.3.0"
     mux-demux "^3.7.9"
     qs "^6.2.1"
     request "^2.55.0"
     sse "0.0.6"
+    strong-error-handler "^1.0.0"
     strong-globalize "^2.6.6"
     traverse "^0.6.6"
     xml2js "^0.4.8"
@@ -2943,6 +3002,10 @@ underscore@1.4.x:
   version "1.4.4"
   resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.4.4.tgz#61a6a32010622afa07963bf325203cf12239d604"
 
+underscore@~1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.7.0.tgz#6bbaf0877500d36be34ecaa584e0db9fef035209"
+
 unpipe@1.0.0, unpipe@~1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/unpipe/-/unpipe-1.0.0.tgz#b2bf4ee8514aae6165b4817829d21b2ef49904ec"
@@ -3037,31 +3100,22 @@ xml2js@0.1.x:
   dependencies:
     sax ">=0.1.1"
 
-xml2js@0.4.15:
+xml2js@0.4.15, xml2js@^0.4.8:
   version "0.4.15"
   resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.4.15.tgz#95cd03ff2dd144ec28bc6273bf2b2890c581ad0c"
   dependencies:
     sax ">=0.6.0"
     xmlbuilder ">=2.4.6"
 
-xml2js@^0.4.8:
-  version "0.4.17"
-  resolved "https://registry.yarnpkg.com/xml2js/-/xml2js-0.4.17.tgz#17be93eaae3f3b779359c795b419705a8817e868"
-  dependencies:
-    sax ">=0.6.0"
-    xmlbuilder "^4.1.0"
-
-xmlbuilder@2.6.2:
+xmlbuilder@2.6.2, xmlbuilder@>=2.4.6:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-2.6.2.tgz#f916f6d10d45dc171b1be2e6e673fb6e0cc35d0a"
   dependencies:
     lodash "~3.5.0"
 
-xmlbuilder@>=2.4.6, xmlbuilder@^4.1.0:
-  version "4.2.1"
-  resolved "https://registry.yarnpkg.com/xmlbuilder/-/xmlbuilder-4.2.1.tgz#aa58a3041a066f90eaa16c2f5389ff19f3f461a5"
-  dependencies:
-    lodash "^4.0.0"
+xmlcreate@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/xmlcreate/-/xmlcreate-0.1.1.tgz#a8df3b10d9d2d5704a604b92c0afc2620d708f61"
 
 xmlhttprequest-ssl@1.5.3:
   version "1.5.3"

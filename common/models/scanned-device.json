@@ -1,5 +1,6 @@
 {
   "name": "ScannedDevice",
+  "replaceOnPUT": false,
   "base": "TransientModel",
   "idInjection": false,
   "options": {

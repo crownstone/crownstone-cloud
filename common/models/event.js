@@ -38,11 +38,11 @@ module.exports = function(model) {
 
 	}
 
-	model.disableRemoteMethod('createChangeStream', true);
-	model.disableRemoteMethod('updateAll', true);
-	model.disableRemoteMethod('upsert', true);
-	model.disableRemoteMethod('findOne', true);
+	model.disableRemoteMethodByName('createChangeStream');
+	model.disableRemoteMethodByName('updateAll');
+	model.disableRemoteMethodByName('upsert');
+	model.disableRemoteMethodByName('findOne');
 
-	model.disableRemoteMethod('updateAttributes', false);
+	model.disableRemoteMethodByName('updateAttributes');
 
 };

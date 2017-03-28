@@ -1,5 +1,6 @@
 {
   "name": "UserContainer",
+  "replaceOnPUT": false,
   "base": "Model",
   "properties": {},
   "validations": [],

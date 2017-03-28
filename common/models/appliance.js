@@ -39,16 +39,16 @@ module.exports = function(model) {
 		// );
 	}
 
-	model.disableRemoteMethod('updateAll', true);
-	model.disableRemoteMethod('upsert', true);
-	model.disableRemoteMethod('createChangeStream', true);
+	model.disableRemoteMethodByName('updateAll');
+	model.disableRemoteMethodByName('upsert');
+	model.disableRemoteMethodByName('createChangeStream');
 
-	model.disableRemoteMethod('__destroyById__stones', false);
-	model.disableRemoteMethod('__updateById__stones', false);
-	model.disableRemoteMethod('__delete__stones', false);
-	model.disableRemoteMethod('__create__stones', false);
-	// model.disableRemoteMethod('__link__stones', false);
-	// model.disableRemoteMethod('__unlink__stones', false);
+	model.disableRemoteMethodByName('__destroyById__stones');
+	model.disableRemoteMethodByName('__updateById__stones');
+	model.disableRemoteMethodByName('__delete__stones');
+	model.disableRemoteMethodByName('__create__stones');
+	// model.disableRemoteMethodByName('__link__stones');
+	// model.disableRemoteMethodByName('__unlink__stones');
 
 
 };
