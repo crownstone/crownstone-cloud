@@ -1,5 +1,5 @@
-var _ = require('lodash'),
-    loopback = require('loopback');
+const _ = require('lodash');
+const loopback = require('loopback');
 
 /**
  * Mixin that does a cascade delete on related items that are identifed in the
@@ -7,58 +7,60 @@ var _ = require('lodash'),
  * @param Model
  * @param options
  */
-module.exports = function(Model, options) {
+module.exports = function (Model, options) {
 
-    Model.observe('after delete', function(ctx, next) {
+  Model.observe('after delete', function (ctx, next) {
 
-        //Get the ID of the record that's being deleted
-        var promises = [],
-            requestContext = loopback.getCurrentContext(),
-            id = ctx.where.id,
-            keys = Object.keys(options);
+    //Get the ID of the record that's being deleted
+    let promises = [];
+    let id = ctx.where.id;
+    let keys = Object.keys(options);
 
-        if (id) {
-            _.each(keys, function(model) {
+    console.log('cascade options', options)
 
-                var foreignKey = options[model],
-                    linkModel = loopback.getModelByType(model),
-                    where = {};
+    if (id) {
+      // TODO: get rid of lodash
+      _.each(keys, function (model) {
 
-                where[foreignKey] = id;
+        let foreignKey = options[model];
+        let linkModel = loopback.getModelByType(model);
+        let where = {};
 
-                console.log("CASCADE delete ", linkModel.modelName, " where ", where);
+        where[foreignKey] = id;
 
-                promises.push(linkModel.destroyAll(where));
-            });
+        console.log("CASCADE delete ", linkModel.modelName, " where ", where);
 
-        } else if (ctx.where.sphereId) {
-            // console.log("ctx.where", ctx.where);
+        promises.push(linkModel.destroyAll(where));
+      });
 
-            // this is a special case for our setup. objects that belong the a sphere
-            // can be deleted through the sphere, in which case they are deleted in a
-            // batch based on the sphereId. So if there is no id specified, we check
-            // also if there is a sphereId specified, and use that instead of the
-            // id/foreignKey
+    } else if (ctx.where.sphereId) {
+      // console.log("ctx.where", ctx.where);
 
-            _.each(keys, function(model) {
+      // this is a special case for our setup. objects that belong the a sphere
+      // can be deleted through the sphere, in which case they are deleted in a
+      // batch based on the sphereId. So if there is no id specified, we check
+      // also if there is a sphereId specified, and use that instead of the
+      // id/foreignKey
+      // TODO: get rid of lodash
+      _.each(keys, function (model) {
 
-                var linkModel = loopback.getModelByType(model),
-                    where = {};
+        let linkModel = loopback.getModelByType(model);
+        let where = {};
 
-                where["sphereId"] = ctx.where.sphereId;
+        where["sphereId"] = ctx.where.sphereId;
 
-                console.log("CASCADE delete ", linkModel.modelName, " where ", where);
+        console.log("CASCADE delete ", linkModel.modelName, " where ", where);
 
-                promises.push(linkModel.destroyAll(where));
-            });
+        promises.push(linkModel.destroyAll(where));
+      });
 
-        }
+    }
 
-        Promise.all(promises)
-            .then(function() {
-                next();
-            });
+    Promise.all(promises)
+      .then(function () {
+        next();
+      });
 
-    });
+  });
 
 };

@@ -1,4 +1,4 @@
-// "use strict";
+"use strict";
 
 const debug = require('debug')('loopback:dobots');
 const createPromiseCallback = require('loopback-datasource-juggler/lib/utils').createPromiseCallback;
@@ -7,29 +7,17 @@ const _get = require('lodash').get;
 const Promise = require("bluebird");
 let loopback = require('loopback');
 
-const DEBUG = true;
-
 module.exports = function(model) {
 
 	model.disableRemoteMethodByName('getContainers');
 
-	let getContainerName = function(id) {
-		if (typeof id === 'object') {
-			return new String(id).valueOf();
-		// } else if (typeof id === 'string') {
-		// 	return id;
-		} else {
-			return id;
-		}
-	};
+	let checkAccess = function(requestId, requestOptions, callback) {
+	  let userIdFromToken = requestOptions && requestOptions.accessToken && requestOptions.accessToken.userId || undefined;
 
-	let checkAccess = function(containerName, callback) {
-
-		let currentUser = model.app.accessUtils.getCurrentUser();
-
-		if (containerName !== getContainerName(currentUser.id)) {
+		if (String(userIdFromToken) !== String(requestId)) {
 			callback("Access denied");
-		} else {
+		}
+		else {
 			callback();
 		}
 	};
@@ -40,67 +28,44 @@ module.exports = function(model) {
 	// });
 
 	model.beforeRemote('**', function(ctx, instance, next) {
-		checkAccess(ctx.args.containerName, next);
+    console.trace("Here", ctx.options)
+		checkAccess(ctx.args.containerName, ctx.options, next);
 	});
 
-	model._deleteContainer = function (id, next) {
-
-		let containerName = getContainerName(id);
-		checkAccess(containerName, function(err) {
+	model._deleteContainer = function (id, options,  next) {
+    checkAccess(id, options, function(err) {
 			if (err) return next(err);
 
-			model.deleteContainer(containerName, next);
+			model.deleteContainer(id, next);
 		})
 	};
 
-	model._getFiles = function (id, next) {
-
-		let containerName = getContainerName(id);
-		checkAccess(containerName, function(err) {
+	model._getFiles = function (id, options, next) {
+		checkAccess(id, options, function(err) {
 			if (err) return next(err);
 
-			model.getFiles(containerName, next);
+			model.getFiles(id, next);
 		})
 	};
 
-	model._getFile = function (id, fileId, next) {
-
-		let containerName = getContainerName(id);
-		checkAccess(containerName, function(err) {
+	model._deleteFile = function (id, fileId, options, next) {
+    checkAccess(id, options, function(err) {
 			if (err) return next(err);
 
-			model.getFile(containerName, fileId, next);
+			model.deleteFile(id, fileId, next);
 		})
 	};
 
-	model._deleteFile = function (id, fileId, next) {
-
-		let containerName = getContainerName(id);
-		checkAccess(containerName, function(err) {
+	model._upload = function (id, req, options, next) {
+    checkAccess(id, options, function(err) {
 			if (err) return next(err);
 
-			model.deleteFile(containerName, fileId, next);
+			model.upload(id, req, next);
 		})
 	};
 
-	model._upload = function (id, req, next) {
-
-		let containerName = getContainerName(id);
-		checkAccess(containerName, function(err) {
-			if (err) return next(err);
-
-			model.upload(containerName, req, next);
-		})
-	};
-
-	model._download = function (id, fileId, res, next) {
-
-		let containerName = getContainerName(id);
-		// checkAccess(containerName, function(err) {
-		// 	if (err) return next(err);
-
-			model.download(containerName, fileId, res, next);
-		// })
+	model._download = function (id, fileId, res, options, next) {
+    model.download(id, fileId, res, next);
 	}
 
 };

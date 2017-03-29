@@ -17,13 +17,7 @@
     },
     "Util": true
   },
-  "hidden": [
-    "role"
-  ],
   "properties": {
-    "role": {
-      "type": "string"
-    },
     "profilePicId": {
       "type": "any"
     },

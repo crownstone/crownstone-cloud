@@ -136,7 +136,7 @@ module.exports = function(model) {
 
 	model.setCurrentLocation = function(device, locationId, next) {
 		if ((device.currentLocationId === locationId) ||
-			(new String(device.currentLocationId).valueOf() === new String(locationId).valueOf())) {
+			(String(device.currentLocationId) === String(locationId))) {
 			debug("location == current location, nothing to do!");
 			return next();
 		}

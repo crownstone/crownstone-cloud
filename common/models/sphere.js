@@ -1,14 +1,14 @@
-// "use strict";
+"use strict";
 
-let loopback = require('loopback');
-let uuid = require('node-uuid');
-let crypto = require('crypto');
+const loopback = require('loopback');
+const uuid = require('node-uuid');
+const crypto = require('crypto');
 
 const debug = require('debug')('loopback:dobots');
 
-let config = require('../../server/config.json');
-let emailUtil = require('../../server/emails/util');
-let mesh = require('../../server/middleware/mesh-access-address');
+const config = require('../../server/config.json');
+const emailUtil = require('../../server/emails/util');
+const mesh = require('../../server/middleware/mesh-access-address');
 
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
@@ -259,7 +259,7 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (!user) return next();
 
-			if (new String(user.id).valueOf() === new String(context.instance.ownerId).valueOf()) {
+			if (String(user.id) === String(context.instance.ownerId)) {
 				return next(new Error("can't remove owner from sphere"));
 			} else {
 				next();
@@ -284,8 +284,8 @@ module.exports = function(model) {
 	 ************************************/
 
 	// if the sphere is deleted, delete also all files stored for this sphere
-	model.observe('after delete', function(context, next) {
-		model.deleteAllFiles(context.where.id, function() {
+	model.observe('after delete', function(ctx, next) {
+		model.deleteAllFiles(ctx.where.id, ctx.options, function() {
 			next();
 		});
 	});
@@ -411,23 +411,34 @@ module.exports = function(model) {
 			callback(err);
 		});
   }
-  function sendInvite(user, sphere, isNew, accessTokenId) {
 
+  function sendInvite(user, options, sphere, isNew, accessTokenId) {
 		let baseUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port));
 		if (isNew) {
 			let acceptUrl = baseUrl + '/profile-setup';
 			let declineUrl = baseUrl + '/decline-invite-new';
 
 			emailUtil.sendNewUserInviteEmail(sphere, user.email, acceptUrl, declineUrl, accessTokenId);
-		} else {
+		}
+		else {
 			let acceptUrl = baseUrl + '/accept-invite';
 			let declineUrl = baseUrl + '/decline-invite';
 
-			emailUtil.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
+      let userIdFromContext = options && options.accessToken && options.accessToken.userId || undefined;
+      const User = loopback.findModel('user');
+      User.findById(userIdFromContext)
+        .then((currentUser) => {
+          if (currentUser !== null) {
+            emailUtil.sendExistingUserInviteEmail(user, currentUser, sphere, acceptUrl, declineUrl);
+          }
+        })
+        .catch((err) => {
+          console.log("ERROR DURING sendInvite", err);
+        })
 		}
 	}
 
-	function addExistingUser(email, id, access, callback) {
+	function addExistingUser(email, id, access, options, callback) {
 		const User = loopback.getModel('user');
 		model.findById(id, function(err, instance) {
 			if (err) {
@@ -455,7 +466,7 @@ module.exports = function(model) {
 									// let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
 
 									// emailUtil.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
-									sendInvite(user, sphere, false);
+									sendInvite(user, options, sphere, false);
 									callback();
 								});
 							} else {
@@ -470,8 +481,8 @@ module.exports = function(model) {
 			}
 		});
   }
-  function createAndInviteUser(sphere, email, access, next) {
 
+  function createAndInviteUser(sphere, email, access, options, next) {
 		debug("createAndInviteUser");
 
 		const User = loopback.getModel('user');
@@ -491,15 +502,14 @@ module.exports = function(model) {
 					// let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
 					// let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
 					// emailUtil.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
-					sendInvite(user, sphere, true, accessToken.id);
+					sendInvite(user, options, sphere, true, accessToken.id);
 					next();
 				});
 			});
 		});
 	}
 
-	function invite(sphereId, email, access, next) {
-
+	function invite(sphereId, email, access, options, next) {
 		model.findById(sphereId, function(err, sphere) {
 			if (err) return next(err);
 
@@ -512,7 +522,7 @@ module.exports = function(model) {
 
 					if (!user) {
 						debug("create new user");
-						createAndInviteUser(sphere, email, access, next);
+						createAndInviteUser(sphere, email, access, options, next);
 					} else {
 						// user exists, check if he is already part of the sphere
 						sphere.users.exists(user.id, function(err, exists) {
@@ -523,7 +533,7 @@ module.exports = function(model) {
 	    						next(error);
 							} else {
 								debug("add existing user");
-								addExistingUser(email, sphereId, access, next);
+								addExistingUser(email, sphereId, access, options, next);
 							}
 						})
 
@@ -572,8 +582,7 @@ module.exports = function(model) {
 		}
 	);
 
-	model.resendInvite = function(id, email, callback) {
-
+	model.resendInvite = function(id, email, options, callback) {
 		model.findById(id, function(err, sphere) {
 			if (err) return callback(err);
 
@@ -597,13 +606,13 @@ module.exports = function(model) {
 								user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
 									if (err) return callback(err);
 
-									sendInvite(user, sphere, true, accessToken.id);
+									sendInvite(user, options, sphere, true, accessToken.id);
 									callback();
 								});
 
 							})
 						} else {
-							sendInvite(user, sphere, false);
+							sendInvite(user, options, sphere, false);
 						}
 
 						callback();
@@ -619,7 +628,8 @@ module.exports = function(model) {
 			http: {path: '/:id/resendInvite', verb: 'get'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'email', type: 'string', required: true, http: { source : 'query' }}
+				{arg: 'email', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Resend invite to User of Sphere"
 		}
@@ -659,10 +669,10 @@ module.exports = function(model) {
 
 
 
-	model.addGuest = function(email, id, callback) {
+	model.addGuest = function(email, id, options, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		invite(id, email, "guest", callback);
+		invite(id, email, "guest", options, callback);
 	};
 
 	model.remoteMethod(
@@ -671,16 +681,17 @@ module.exports = function(model) {
 			http: {path: '/:id/guests', verb: 'put'},
 			accepts: [
 				{arg: 'email', type: 'string', required: true},
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Add an existing user as a member to this sphere"
 		}
 	);
 
-	model.addMember = function(email, id, callback) {
+	model.addMember = function(email, id, options, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		invite(id, email, "member", callback);
+		invite(id, email, "member", options, callback);
 	};
 
 	model.remoteMethod(
@@ -689,16 +700,17 @@ module.exports = function(model) {
 			http: {path: '/:id/members', verb: 'put'},
 			accepts: [
 				{arg: 'email', type: 'string', required: true},
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Add an existing user as a guest to this sphere"
 		}
 	);
 
-	model.addAdmin = function(email, id, callback) {
+	model.addAdmin = function(email, id, options, callback) {
 		// debug("email:", email);
 		// debug("id:", id);
-		invite(id, email, "admin", callback);
+		invite(id, email, "admin", options, callback);
 	};
 
 	model.remoteMethod(
@@ -707,7 +719,8 @@ module.exports = function(model) {
 			http: {path: '/:id/admins', verb: 'put'},
 			accepts: [
 				{arg: 'email', type: 'string', required: true},
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Add an existing user as an admin to this sphere"
 		}
@@ -782,7 +795,7 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/members', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 			],
 			returns: {arg: 'data', type: ['user'], root: true},
 			description: "Queries members of Sphere"
@@ -800,7 +813,7 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/admins', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 			],
 			returns: {arg: 'data', type: ['user'], root: true},
 			description: "Queries admins of Sphere"
@@ -1040,9 +1053,9 @@ module.exports = function(model) {
 	 **** Container Methods
 	 ************************************/
 
-	model.listFiles = function(id, callback) {
+	model.listFiles = function(id, options, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._getFiles(id, callback);
+		Container._getFiles(id, options, callback);
 	};
 
 	model.remoteMethod(
@@ -1050,16 +1063,17 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/files', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			returns: {arg: 'files', type: 'array', root: true},
 			description: "Queries files of Sphere"
 		}
 	);
 
-	model.countFiles = function(id, callback) {
+	model.countFiles = function(id, options, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._getFiles(id, function(err, res) {
+		Container._getFiles(id, options, function(err, res) {
 			if (err) return callback(err);
 
 			callback(null, res.length);
@@ -1071,7 +1085,8 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/files/count', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			returns: {arg: 'count', type: 'number'},
 			description: "Count files of Sphere"
@@ -1096,9 +1111,9 @@ module.exports = function(model) {
 	// 	}
 	// );
 
-	model.deleteFile = function(id, fk, callback) {
+	model.deleteFile = function(id, fk, options, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._deleteFile(id, fk, callback);
+		Container._deleteFile(id, fk, options, callback);
 	};
 
 	model.remoteMethod(
@@ -1107,15 +1122,17 @@ module.exports = function(model) {
 			http: {path: '/:id/files/:fk', verb: 'delete'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Delete a file by id"
 		}
 	);
 
-	model.deleteAllFiles = function(id, callback) {
+
+	model.deleteAllFiles = function(id, options, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._deleteContainer(id, callback);
+		Container._deleteContainer(id, options, callback);
 	};
 
 	model.remoteMethod(
@@ -1123,15 +1140,16 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/deleteAllFiles', verb: 'delete'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Delete all files of Sphere"
 		}
 	);
 
-	model.downloadFile = function(id, fk, res, callback) {
+	model.downloadFile = function(id, fk, res, options, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._download(id, fk, res, callback);
+		Container._download(id, fk, res, options, callback);
 	};
 
 	model.remoteMethod(
@@ -1141,15 +1159,16 @@ module.exports = function(model) {
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+				{arg: 'res', type: 'object', 'http': { source: 'res' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Download a file by id"
 		}
 	);
 
-	model.uploadFile = function(id, req, callback) {
+	model.uploadFile = function(id, req, options, callback) {
 		const Container = loopback.getModel('SphereContainer');
-		Container._upload(id, req, callback);
+		Container._upload(id, req, options, callback);
 	};
 
 	model.remoteMethod(
@@ -1158,14 +1177,15 @@ module.exports = function(model) {
 			http: {path: '/:id/files', verb: 'post'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'req', type: 'object', http: { source: 'req' }}
+				{arg: 'req', type: 'object', http: { source: 'req' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			returns: {arg: 'file', type: 'object', root: true},
 			description: "Upload a file to Sphere"
 		}
 	);
 
-	model.downloadProfilePicOfUser = function(id, email, res, callback) {
+	model.downloadProfilePicOfUser = function(id, email, res, options, callback) {
 		model.findById(id, function(err, sphere) {
 			if (err) return next(err);
 			if (model.checkForNullError(sphere, callback, "id: " + id)) return;
@@ -1177,7 +1197,7 @@ module.exports = function(model) {
 				let user = users[0];
 
 				const User = loopback.getModel('user');
-				User.downloadFile(user.id, user.profilePicId, res, callback);
+				User.downloadFile(user.id, user.profilePicId, res, options, callback);
 			});
 		})
 	};
@@ -1189,7 +1209,8 @@ module.exports = function(model) {
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 				{arg: 'email', type: 'string', required: true, http: { source : 'query' }},
-				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+				{arg: 'res', type: 'object', 'http': { source: 'res' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Download profile pic of User"
 		}
@@ -1269,17 +1290,34 @@ module.exports = function(model) {
 	 ************************************/
 
 	model.afterRemote("*.__unlink__users", function(context, instance, next) {
-		// do not need to wait for result of email
-		next();
+		let userIdFromContext = context.options && context.options.accessToken && context.options.accessToken.userId || undefined;
 
+    let currentUserFromContext = null;
 		const User = loopback.findModel('user');
-		User.findById(context.args.fk, function(err, user) {
-			if (err || !user) {
-				debug("did not find user to send notification email");
-				return next(new Error("did not find user to send notification email"));
-			}
-			emailUtil.sendRemovedFromSphereEmail(user, context.instance, next);
-		});
+		User.findById(userIdFromContext)
+      .then((currentUser) => {
+		    if (currentUser !== null) {
+          currentUserFromContext = currentUser;
+		      return User.findById(context.args.fk)
+        }
+        else {
+		      throw new Error("Access Denied.")
+        }
+      })
+      .then((userToDelete) => {
+        if (userToDelete !== null) {
+          throw new Error("Did not find user to send notification email after removing user from Sphere.")
+        }
+        else {
+          emailUtil.sendRemovedFromSphereEmail(user, currentUserFromContext, context.instance);
+          next();
+        }
+      })
+      .catch((err) => {
+		    next(err);
+      })
+
+
 	});
 
 	// model.afterRemote("*.__link__users", function(context, instance, next) {

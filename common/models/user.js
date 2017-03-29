@@ -111,7 +111,7 @@ module.exports = function(model) {
 	 ************************************/
 
 	// reserved user roles for special liberties
-	model.validatesExclusionOf('role', {in: ['superuser', 'admin', 'lib-user'], allowNull: true});
+	// model.validatesExclusionOf('role', {in: ['superuser', 'admin', 'lib-user'], allowNull: true});
 
 	// const regex = /^(?=.*\d).{8,}$/; // Password must be at least 8 characters long and include at least one numeric digit.
 	// const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,}$/; // Password must be at least 8 characters, and must include at least one upper case letter, one lower case letter, one numeric digit, and no spaces.
@@ -131,12 +131,7 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (!sphere) return next();
 
-			if ((new String(sphere.ownerId).valueOf() === new String(context.instance.id).valueOf()) !== (sphere.ownerId === context.instance.id)) {
-        debug("COMPARISON HAS FAILED WITH THESE IDs: sphere.ownerId(" + sphere.ownerId + ') + context.instance.id(' + context.instance.id + ')')
-      }
-
-
-			if (sphere.ownerId === context.instance.id) {
+			if (String(sphere.ownerId) === String(context.instance.id)) {
 				let error = new Error("can't exit from sphere where user with id is the owner");
 				return next(error);
 			} else {
@@ -219,15 +214,7 @@ module.exports = function(model) {
 			model.sendVerification(user, null, function(err, response) {
 				if (err) return callback(err);
 
-				debug('> verification email sent:', response);
-				// todo: return this only if request is coming from website?
-				context.res.render('response', {
-					title: 'Signed up successfully',
-					content: 'Please check your email and click on the verification link ' +
-							'before logging in.',
-					redirectTo: '/',
-					redirectToLinkText: 'Log in'
-				});
+				callback();
 			})
 		} else {
 			callback();
@@ -321,30 +308,6 @@ module.exports = function(model) {
 		}
 	);
 
-	// model.createNewSphere = function(data, id, options, callback) {
-	// 	// debug("createNewSphere:", data);
-   //  console.log("test", options)
-   //  if (options && options.accessToken && options.accessToken.userId) {
-   //    console.log("Planting userId", options.accessToken.userId)
-   //    data._ownerId = options.accessToken.userId
-   //  }
-	// 	const Sphere = loopback.getModel('Sphere');
-	// 	Sphere.create(data, callback);
-	// };
-  //
-	// model.remoteMethod(
-	// 	'createNewSphere',
-	// 	{
-	// 		http: {path: '/:id/spheres', verb: 'post'},
-	// 		accepts: [
-	// 			{arg: 'data', type: 'Sphere', 'http': {source: 'body'}},
-	// 			{arg: 'id', type: 'any', required: true, 'http': {source: 'path'}},
-   //      {arg: "options", type: "object", http: "optionsFromRequest"},
-	// 		],
-	// 		returns: {arg: 'data', type: 'Sphere', root: true},
-	// 		description: "Creates a new instance in spheres of this model"
-	// 	}
-	// );
 
 	model.spheres = function(id, callback) {
 
@@ -363,17 +326,15 @@ module.exports = function(model) {
 					function(err, res) {
 						if (err) return callback(err);
 
-						// debug("sphereMembers:", res);
 
 						let filteredSpheres = [];
 						for (let i = 0; i < spheres.length; ++i) {
 							let sphere = spheres[i];
-							// debug("  sphere.id " + i + ":", sphere.id.valueOf() );
 							for (let j = 0; j < res.length; ++j) {
 								let access = res[j];
-								// debug("member.id " + j + ":", member.sphereId.valueOf());\
-                // TODO: check why this check is required
-								if (new String(sphere.id).valueOf() === new String(access.sphereId).valueOf()) {
+
+                // String cast is required because loopback can use an internal ObjectID object for ids.
+								if (String(sphere.id) === String(access.sphereId)) {
 									filteredSpheres.push(sphere);
 									break;
 								}
@@ -450,9 +411,9 @@ module.exports = function(model) {
 	 **** Container Methods
 	 ************************************/
 
-	model.listFiles = function(id, callback) {
+	model.listFiles = function(id, options, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._getFiles(id, callback);
+		Container._getFiles(id, options, callback);
 	};
 
 	model.remoteMethod(
@@ -460,16 +421,17 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/files', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			returns: {arg: 'files', type: 'array', root: true},
 			description: "Queries files of User"
 		}
 	);
 
-	model.countFiles = function(id, callback) {
+	model.countFiles = function(id, options, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._getFiles(id, function(err, res) {
+		Container._getFiles(id, options, function(err, res) {
 			if (err) return callback(err);
 
 			callback(null, res.length);
@@ -481,34 +443,18 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/files/count', verb: 'get'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			returns: {arg: 'count', type: 'number'},
 			description: "Count files of User"
 		}
 	);
 
-	// model.listFile = function(id, fk, callback) {
-	// 	const Container = loopback.getModel('UserContainer');
-	// 	Container.getFile(id, fk, callback);
-	// }
 
-	// model.remoteMethod(
-	// 	'listFile',
-	// 	{
-	// 		http: {path: '/:id/files/:fk', verb: 'get'},
-	// 		accepts: [
-	// 			{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-	// 			{arg: 'fk', type: 'any', required: true, http: { source : 'path' }}
-	// 		],
-	// 		returns: {arg: 'file', type: 'object', root: true},
-	// 		description: "Queries file by id"
-	// 	}
-	// );
-
-	model.deleteFile = function(id, fk, callback) {
+	model.deleteFile = function(id, fk, options, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._deleteFile(id, fk, callback);
+		Container._deleteFile(id, fk, options, callback);
 	};
 
 	model.remoteMethod(
@@ -517,15 +463,16 @@ module.exports = function(model) {
 			http: {path: '/:id/files/:fk', verb: 'delete'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
 			],
 			description: "Delete a file by id"
 		}
 	);
 
-	model.downloadFile = function(id, fk, res, callback) {
+	model.downloadFile = function(id, fk, res, options, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._download(id, fk, res, callback);
+		Container._download(id, fk, res, options, callback);
 	};
 
 	model.remoteMethod(
@@ -535,15 +482,16 @@ module.exports = function(model) {
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 				{arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+				{arg: 'res', type: 'object', 'http': { source: 'res' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			description: "Download a file by id"
 		}
 	);
 
-	model.uploadFile = function(id, req, callback) {
+	model.uploadFile = function(id, req, options, callback) {
 		const Container = loopback.getModel('UserContainer');
-		Container._upload(id, req, callback);
+		Container._upload(id, req, options, callback);
 	};
 
 	model.remoteMethod(
@@ -552,14 +500,15 @@ module.exports = function(model) {
 			http: {path: '/:id/files', verb: 'post'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'req', type: 'object', http: { source: 'req' }}
+				{arg: 'req', type: 'object', http: { source: 'req' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			returns: {arg: 'file', type: 'object', root: true},
 			description: "Upload a file to User"
 		}
 	);
 
-	model.uploadProfilePic = function(id, req, callback) {
+	model.uploadProfilePic = function(id, req, options, callback) {
 		// debug("uploadProfilePic");
 
 		let upload = function(user, req) {
@@ -587,10 +536,10 @@ module.exports = function(model) {
 					if (err) return callback(err);
 					upload(user, req);
 				});
-			} else {
+			}
+			else {
 				upload(user, req);
 			}
-
 		});
 	};
 
@@ -600,21 +549,22 @@ module.exports = function(model) {
 			http: {path: '/:id/profilePic', verb: 'post'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'req', type: 'object', http: { source: 'req' }}
+				{arg: 'req', type: 'object', http: { source: 'req' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			returns: {arg: 'file', type: 'object', root: true},
 			description: "Upload profile pic to User"
 		}
 	);
 
-	model.downloadProfilePicById = function(id, res, callback) {
+	model.downloadProfilePicById = function(id, res, options, callback) {
 		// debug("downloadProfilePicById");
 
 		model.findById(id, function(err, user) {
 			if (err) return callback(err);
 			if (model.checkForNullError(user, callback, "id: " + id)) return;
 
-			model.downloadFile(id, user.profilePicId, res, callback);
+			model.downloadFile(id, user.profilePicId, res, options, callback);
 		});
 	};
 
@@ -624,13 +574,14 @@ module.exports = function(model) {
 			http: {path: '/:id/profilePic', verb: 'get'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+				{arg: 'res', type: 'object', 'http': { source: 'res' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			description: "Download profile pic of User"
 		}
 	);
 
-	model.deleteProfilePicById = function(id, res, callback) {
+	model.deleteProfilePicById = function(id, res, options, callback) {
 		// debug("downloadProfilePicById");
 
 		model.findById(id, function(err, user) {
@@ -646,7 +597,8 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/profilePic', verb: 'delete'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			description: "Delete profile pic of User"
 		}
@@ -659,18 +611,24 @@ module.exports = function(model) {
 	model.getEncryptionKeys = function(id, callback) {
 		const SphereAccess = loopback.getModel('SphereAccess');
 		SphereAccess.find({where: {userId: id}, include: "sphere"}, function(err, objects) {
+			console.log(objects)
+
       let keys = Array.from(objects, function(access) {
         let sphere = { sphereId: access.sphereId, keys: {}};
+        let sphereData = access.sphere();
+        console.log('sphereData',sphere, access);
         switch (access.role) {
           case "admin":
-            sphere.keys.admin  = access.sphere().adminEncryptionKey;
+            sphere.keys.admin  = sphereData.adminEncryptionKey;
           case "member":
-            sphere.keys.member = access.sphere().memberEncryptionKey;
+            sphere.keys.member = sphereData.memberEncryptionKey;
           case "guest":
-            sphere.keys.guest  = access.sphere().guestEncryptionKey;
+            sphere.keys.guest  = sphereData.guestEncryptionKey;
         }
         return sphere
       });
+
+			console.log(keys)
 			callback(null, keys);
 		});
 	};
@@ -712,10 +670,10 @@ module.exports = function(model) {
 		}
 	);
 
-	model.deleteAllFiles = function(id, callback) {
+	model.deleteAllFiles = function(id, options, callback) {
 		debug("deleteAllFiles");
 		const Container = loopback.getModel('UserContainer');
-		Container._deleteContainer(id, callback);
+		Container._deleteContainer(id, options, callback);
 	};
 
 	model.remoteMethod(
@@ -723,7 +681,8 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/deleteAllFiles', verb: 'delete'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			description: "Delete all files of User"
 		}
@@ -734,13 +693,19 @@ module.exports = function(model) {
 
 		// get a reference to the sphere model which we need to query for stones.
     const sphereModel = loopback.getModel("Sphere");
-
+		let completed = false;
     // get all spheres from the user
 		model.findById(id, {include: "spheres"})
       .then((user) => {
 		    let userSpheres = user.spheres();
-        if (model.checkForNullError(user, callback, "id: " + id)) return;
-        if (userSpheres.length == 0) return callback();
+        if (model.checkForNullError(user, callback, "id: " + id)) {
+        	return;
+        }
+
+        if (userSpheres.length === 0) {
+          completed = true;
+        	return callback();
+        }
 
         let promisesPerSphere = [];
         let spheresWithStones = 0;
@@ -765,17 +730,23 @@ module.exports = function(model) {
         })
       })
       .then((userSpheres) => {
-		    let removalPromises = [];
-		    userSpheres.forEach((sphere) => {
-          removalPromises.push(sphere.destroy());
-        });
-		    return Promise.all(removalPromises)
+        if (!completed) {
+          let removalPromises = [];
+          userSpheres.forEach((sphere) => {
+            removalPromises.push(sphere.destroy());
+          });
+          return Promise.all(removalPromises)
+        }
       })
       .then(() => {
-        return callback();
+				if (!completed) {
+					return callback();
+				}
       })
       .catch((err) => {
-        return callback(err);
+        if (!completed) {
+          return callback(err);
+        }
       });
 
 
