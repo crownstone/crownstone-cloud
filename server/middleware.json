@@ -19,10 +19,63 @@
     }
   },
   "session": {
-
+    "express-session": {
+      "params": {
+        "saveUninitialized": true,
+        "resave": true,
+        "secret": "keyboard cat"
+      }
+    }
   },
   "auth": {
-
+    "loopback-component-oauth2#authenticate": {
+      "paths": [
+        "/api"
+      ],
+      "params": [
+        {
+          "oauthACLgateway": true,
+          "scopes": {
+            "user_information": [
+              {
+                "methods": "get",
+                "path": "/api/users/me"
+              }
+            ],
+            "user_location": [
+              {
+                "methods": "get",
+                "path": "/api/users/:id/currentLocation"
+              }
+            ],
+            "stone_information": [
+              {
+                "methods": "get",
+                "path": "/api/Stones/"
+              }
+            ],
+            "switch_stone": [
+              {
+                "methods": "put",
+                "path": "/api/Stones/:id/setSwitchStateRemotely"
+              }
+            ],
+            "power_consumption": [
+              {
+                "methods": "get",
+                "path": "/api/Stones/:id/currentEnergyUsage"
+              }
+            ],
+            "all": [
+              {
+                "methods": "all",
+                "path": "/api"
+              }
+            ]
+          }
+        }
+      ]
+    }
   },
   "auth:after": {
 
