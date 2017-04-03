@@ -59,6 +59,8 @@ let util = {
 		let options = {
 			type: 'email',
 			to: user.email,
+			firstName: user.firstName,
+			lastName: user.lastName,
 			from: 'noreply@crownstone.rocks',
 			fromname: 'Crownstone',
 			subject: 'Thanks for registering.',
