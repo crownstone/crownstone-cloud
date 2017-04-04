@@ -145,11 +145,9 @@ module.exports = function (app) {
     }, function (err) {
       if (err) return res.status(401).send(err);
 
-      res.render('response', {
+      res.render('responseWithoutRedirect', {
         title: 'Password reset requested',
-        content: 'Check your email for further instructions',
-        redirectTo: '/',
-        redirectToLinkText: 'Log in',
+        content: 'Check your email for further instructions.',
       });
     });
   });
@@ -186,11 +184,9 @@ module.exports = function (app) {
       user.updateAttribute('password', hashPassword(req.body.password), function (err, user) {
         // user.updateAttribute('password', req.body.password, function(err, user) {
         if (err) return res.sendStatus(404);
-        res.render('response', {
+        res.render('responseWithoutRedirect', {
           title: 'Password reset success',
-          content: 'Your password has been reset successfully',
-          redirectTo: '/',
-          redirectToLinkText: 'Log in',
+          content: 'Your password has been reset successfully. You can now use this password to log into the app and cloud services.',
         });
       });
     });
