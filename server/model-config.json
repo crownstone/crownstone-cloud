@@ -118,19 +118,11 @@
     "dataSource": "mongoDs",
     "public": true
   },
-  "Push": {
-    "dataSource": "pushDs",
-    "public": true
-  },
-  "Notification": {
+  "AppInstallation": {
     "dataSource": "mongoDs",
     "public": true
   },
-  "Installation": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
-  "Application": {
+  "App": {
     "dataSource": "mongoDs",
     "public": true
   },

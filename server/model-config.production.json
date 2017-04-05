@@ -31,12 +31,6 @@
   "UserContainer": {
     "public": false
   },
-  "Push": {
-    "public": false
-  },
-  "Notification": {
-    "public": false
-  },
   "Installation": {
     "public": false
   },
@@ -45,5 +39,11 @@
   },
   "StoneLocation": {
     "public": false
-  }
+  },
+  "AppInstallation": {
+    "public": true
+  },
+  "App": {
+    "public": false
+  },
 }

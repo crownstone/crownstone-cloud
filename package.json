@@ -8,6 +8,7 @@
     "pretest": "jshint ."
   },
   "dependencies": {
+    "apn": "^2.1.4",
     "async": "*",
     "bluebird": "*",
     "body-parser": "1.16.0",
@@ -31,6 +32,7 @@
     "loopback-connector-sendgrid": "1.2.3",
     "loopback-context": "^3.1.0",
     "minimatch": "^3.0.2",
+    "node-gcm": "^0.14.5",
     "node-uuid": "*",
     "request": "^2.79.0",
     "serve-favicon": "^2.0.1",

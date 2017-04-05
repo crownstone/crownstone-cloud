@@ -22,3 +22,5 @@ node_modules
 npm-debug.log
 *.local.*
 client/
+
+server/inserts/keyData

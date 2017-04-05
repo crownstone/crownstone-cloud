@@ -71,8 +71,7 @@
       "type": "hasMany",
       "model": "Sphere",
       "foreignKey": "userId",
-      "through": "SphereAccess",
-      "keyThrough": ""
+      "through": "SphereAccess"
     }
   },
   "acls": [

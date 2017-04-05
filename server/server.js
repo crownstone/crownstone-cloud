@@ -124,5 +124,9 @@ oauth2.oAuth2Provider(
 // }
 
 // Uncomment these lines to add/remove/modify the OAUTH2 clients
-// let performOauthClientOperations = require("./oauthClientOperations");
+// let performOauthClientOperations = require("./inserts/oauthClientOperations");
 // performOauthClientOperations(app);
+
+// Uncomment these lines to add/remove/modify the registered Apps
+// let performAppOperations = require("./inserts/appOperations");
+// performAppOperations(app);

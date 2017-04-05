@@ -611,8 +611,6 @@ module.exports = function(model) {
   model.getEncryptionKeys = function(id, callback) {
     const SphereAccess = loopback.getModel('SphereAccess');
     SphereAccess.find({where: {userId: id}, include: "sphere"}, function(err, objects) {
-      console.log(objects)
-
       let keys = Array.from(objects, function(access) {
         let sphere = { sphereId: access.sphereId, keys: {}};
         let sphereData = access.sphere();

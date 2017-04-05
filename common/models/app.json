@@ -1,0 +1,42 @@
+{
+  "name": "App",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "mixins": {
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+
+    "pushSettings": {
+      "apns": {
+        "keyToken": {
+          "type": "string",
+          "description": "The key data loaded from the key.p8 file"
+        },
+        "keyId": {
+          "type": "string",
+          "description": "The keyId paired with the p8 file file"
+        },
+        "teamId": {
+          "type": "string",
+          "description": "The teamId belonging to the key.p8 file"
+        }
+      },
+
+      "gcm": {
+        "serverApiKey": "string"
+      }
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

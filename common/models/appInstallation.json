@@ -1,0 +1,37 @@
+{
+  "name": "AppInstallation",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "mixins": {
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "deviceType": {
+      "type": "string",
+      "required": true
+    },
+    "deviceToken": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "relations": {
+    "owner": {
+      "type": "belongsTo",
+      "model": "Device",
+      "foreignKey": "deviceId"
+    },
+    "app": {
+      "type": "hasOne",
+      "model": "App",
+      "foreignKey": "appId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

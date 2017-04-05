@@ -40,7 +40,6 @@ let util = {
   sendResetPasswordRequest : function(url, token, email) {
     let html = 'Click <a href="' + url + '?access_token=' +
       token + '">here</a> to reset your password';
-    console.log(html)
     Email.send({
       to: email,
       from: 'noreply@crownstone.rocks',
