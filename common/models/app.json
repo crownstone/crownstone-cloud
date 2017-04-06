@@ -37,6 +37,13 @@
       }
     }
   },
+  "relations": {
+    "installations": {
+      "type": "hasMany",
+      "model": "AppInstallation",
+      "foreignKey": "appId"
+    }
+  },
   "acls": [],
   "methods": {}
 }

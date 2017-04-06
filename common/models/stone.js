@@ -4,6 +4,7 @@ let stl = require('../../server/middleware/stoneScanToLocation');
 let loopback = require('loopback');
 let crypto = require('crypto');
 
+const notificationHandler = require('../../server/modules/NotificationHandler');
 const debug = require('debug')('loopback:dobots');
 
 let util = require('../../server/emails/util');
@@ -791,7 +792,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
-      description: "Delete all scans of Stone"
+      description: 'Delete all scans of Stone'
     }
   );
 
@@ -816,8 +817,18 @@ module.exports = function(model) {
           stone.updatedAt = updatedAt;
         }
 
-        // todo: insert PUSH command here
-        NotificationHandler.notify(model);
+        if (stone.sphereId) {
+          let sphereModel = loopback.getModel("Sphere");
+          sphereModel.findById(stone.sphereId)
+            .then((sphere) => {
+              if (sphere) {
+                notificationHandler.notify(sphere);
+              }
+              else {
+                throw 'No Sphere to notify';
+              }
+            });
+        }
 
         return stone.save();
       })

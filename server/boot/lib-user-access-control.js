@@ -11,7 +11,6 @@
  * @param app
  */
 
-
 module.exports = function(app) {
   let Role = app.models.Role;
   Role.registerResolver('lib-user', function(role, context, callback) {
@@ -36,9 +35,9 @@ module.exports = function(app) {
     });
   });
 
-  Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRole(app, {admin: true},  context, callback); });
-  Role.registerResolver('$group:member', function(role, context, callback) { verifyRole(app, {admin: true, member: true}, context, callback); });
-  Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRole(app, {admin: true, member: true, guest: true},  context, callback); });
+  Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRole(app, { admin: true },  context, callback); });
+  Role.registerResolver('$group:member', function(role, context, callback) { verifyRole(app, { admin: true, member: true }, context, callback); });
+  Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRole(app, { admin: true, member: true, guest: true },  context, callback); });
 };
 
 

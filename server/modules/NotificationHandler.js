@@ -1,31 +1,65 @@
 const gcm = require('node-gcm');
 const apn = require('apn');
+let loopback = require('loopback');
 
 class NotificationHandlerClass {
   constructor() {
+
     // TODO: possibly start the apn connection and the gcm sender?
   }
 
-  notify(sphereModel) {
+  notify(sphereModel, messageSettings) {
     // get users
-    // get their notifiable devices
-    // base notification purely on Crownstone.consumer for now
-    // TODO: get from application model once
-    // keys in the format of
-//     {
-//       apnsToken:`-----BEGIN PRIVATE KEY-----
-// x
-// ----END PRIVATE KEY-----`,
-//       apnsKeyId: 'x',
-//       apnsTeamId: 'x',
-//       gcmToken: 'x'
-//     };
+    let iosTokens = [];
+    let androidTokens = [];
 
-    // notify android
-    // notify ios
+    sphereModel.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
+      // collect all tokens.
+      for (let i = 0; i < users.length; i++) {
+        let devices = users[i].devices();
+        for (let j = 0; j < devices.length; j++) {
+          let installations = devices[j].installations();
+          for (let k = 0; k < installations.length; k++) {
+            switch (installations[k].deviceType) {
+              case 'ios':
+                console.log("HER")
+                iosTokens.push(installations[k].deviceToken);
+                break;
+              case 'android':
+                androidTokens.push(installations[k].deviceToken);
+                break;
+            }
+          }
+        }
+      }
+      console.log('iosTokens', iosTokens, 'androidTokens', androidTokens);
+
+      // check if we have to do something
+      if (iosTokens.length > 0 || androidTokens.length > 0) {
+        // get app, currently hardcoded.
+        loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
+          .then((appResult) => {
+            console.log(appResult);
+            if (appResult && appResult.pushSettings) {
+              this._notifyAndroid(appResult.pushSettings.gcm, androidTokens);
+              this._notifyIOS(appResult.pushSettings.apns, iosTokens);
+            }
+            else {
+              throw "No App to Push to."
+            }
+          })
+      }
+    });
   }
 
-  _notifyAndroid(keys) {
+
+  /**
+   * Notify all android devices
+   * @param keys      // { serverApiKey: 'xxxxxxx' }
+   * @param tokens    // array of tokens
+   * @private
+   */
+  _notifyAndroid(keys, tokens) {
     // Create a message
 
     // ... or some given values
@@ -60,37 +94,34 @@ class NotificationHandlerClass {
     });
 
     // Set up the sender with you API key
-    let sender = new gcm.Sender(keys.gcmToken);
+    let sender = new gcm.Sender(keys.serverApiKey);
 
     // Add the registration tokens of the devices you want to send to
-    let registrationTokens = ['regToken1'];
 
-    // Send the message
-    // ... trying only once
-    // sender.sendNoRetry(message, {registrationTokens: registrationTokens}, function (err, response) {
-    //   if (err) console.error(err);
-    //   else    console.log(response);
-    // });
-
-    // ... or retrying
-    sender.send(message, {registrationTokens: registrationTokens}, function (err, response) {
+    sender.send(message, {registrationTokens: tokens}, function (err, response) {
       if (err) console.error(err);
-      else    console.log(response);
+      else     console.log("ANDROID PUSH RESPONSE", response);
     });
 
-    // ... or retrying a specific number of times (10)
-    // sender.send(message, {registrationTokens: registrationTokens}, 10, function (err, response) {
-    //   if (err) console.error(err);
-    //   else    console.log(response);
-    // });
   }
 
-  _notifyIOS(keys) {
+
+  /**
+   * Notify all IOS devices
+   * @param keys      // {
+   *                  //   keyToken: "-----BEGIN PRIVATE KEY-----\n<token here>\n-----END PRIVATE KEY-----',
+                      //   keyId: 'xx',
+                      //   teamId: 'xx'
+                      // }
+   * @param tokens    // array of tokens
+   * @private
+   */
+  _notifyIOS(keys, tokens) {
     let options = {
       token: {
-        key: keys.apnsToken,
-        keyId: keys.apnsKeyId,
-        teamId: keys.apnsTeamId
+        key: keys.keyToken,
+        keyId: keys.keyId,
+        teamId: keys.teamId
       },
       production: false
     };
@@ -100,24 +131,25 @@ class NotificationHandlerClass {
     let notification = new apn.Notification();
 
     notification.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-    notification.badge = 3;
-    notification.sound = "ping.aiff";
-    notification.alert = "\uD83D\uDCE7 \u2709 You have a new message";
-    notification.payload = {'messageFrom': 'John Appleseed'};
-    notification.topic = "<your-app-bundle-id>";
+    notification.badge = 0;                     // 0 = remove badge
+    notification.sound = "ping.aiff";                           // do not add if no sound should play
+    notification.alert = "Crownstone has been switched!";       // alert message, do not add if no alert has to be shown.
+    notification.body =  "It was awesome!";       // alert message body, do not add if no alert has to be shown.
+    notification.payload = {'switch this thing': 'stoney the stone'};
+    // notification.contentAvailable = 1;                      // add this for silent push
 
     // Send the notification to the API with send, which returns a promise.
 
-    let deviceTokens = ["a9d0ed10e9cfd022a61cb08753f49c5a0b0dfb383697bf9f9d750a1003da19c7"];
-    apnProvider.send(notification, deviceTokens).then( (result) => {
-      // result example:
-      // {
-      //   "messageFrom": "John Appelseed",
-      //   "aps": {"badge": 3, "sound": "ping.aiff", "alert": "\uD83D\uDCE7 \u2709 You have a new message"}
-      // }
-    });
-
-    // After done: apnProvider.shutDown()
+    apnProvider.send(notification, tokens)
+      .then((result) => {
+        console.log("IOS PUSH RESULT", JSON.stringify(result, undefined,2));
+      })
+      .then(() => {
+        apnProvider.shutdown()
+      })
+      .catch((err) => {
+        console.log("ERROR DURING PUSH!", err)
+      })
   }
 
   _notifyEndpoints() {
@@ -126,4 +158,4 @@ class NotificationHandlerClass {
 
 }
 
-export const NotificationHandler = new NotificationHandlerClass();
+module.exports = new NotificationHandlerClass();

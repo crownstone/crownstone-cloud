@@ -43,7 +43,7 @@ module.exports = function(model, options) {
 
 		//////////////////////////////////
 		/// ADMIN
-		/// 	- everyting
+		/// 	- everything
 		//////////////////////////////////
 		model.settings.acls.push(
 			{

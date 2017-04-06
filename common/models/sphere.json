@@ -52,7 +52,7 @@
     },
     "exitDelay": {
       "type": "number",
-      "default": 120
+      "default": 600
     },
     "gpsLocation": {
       "type": "GeoPoint"

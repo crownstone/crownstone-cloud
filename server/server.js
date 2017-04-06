@@ -128,5 +128,5 @@ oauth2.oAuth2Provider(
 // performOauthClientOperations(app);
 
 // Uncomment these lines to add/remove/modify the registered Apps
-// let performAppOperations = require("./inserts/appOperations");
-// performAppOperations(app);
+let performAppOperations = require("./inserts/appOperations");
+performAppOperations(app);

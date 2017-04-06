@@ -24,6 +24,10 @@
     "description": {
       "type": "string"
     },
+    "hubFunction": {
+      "type": "boolean",
+      "default": false
+    },
     "tapToToggleCalibration": {
       "type": "number"
     }
@@ -60,7 +64,7 @@
       "model": "Coordinate",
       "foreignKey": "deviceId"
     },
-    "installation": {
+    "installations": {
       "type": "hasMany",
       "model": "AppInstallation",
       "foreignKey": "deviceId"
