@@ -14,18 +14,14 @@
 
 module.exports = function(app) {
   let Role = app.models.Role;
-  Role.registerResolver('lib-user', function(role, context, cb) {
-
+  Role.registerResolver('lib-user', function(role, context, callback) {
     function reject() {
       process.nextTick(function() {
-        cb(null, false);
+        callback(null, false);
       });
     }
-    // if (context.modelName !== 'Device') {
-    //   // the target model is not project
-    //   return reject();
-    // }
-    var userId = context.accessToken.userId;
+
+    let userId = context.accessToken.userId;
     if (!userId) {
       return reject(); // do not allow anonymous users
     }
@@ -33,8 +29,9 @@ module.exports = function(app) {
     app.models.user.findById(userId, function(err, user) {
       if (err) {
         reject(err);
-      } else {
-        cb(null, user.role === 'lib-user');
+      }
+      else {
+        callback(null, user.role === 'lib-user');
       }
     });
   });
