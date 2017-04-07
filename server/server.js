@@ -58,6 +58,7 @@ let options = {
   dataSource: app.dataSources.userDs, // Data source for oAuth2 metadata persistence
   resourceServer: true,
   authorizationServer: true,
+  decisionView: 'dialog',
   loginPage: '/loginOauth', // The login page URL
   loginPath: '/loginOauthStep2', // The login form processing URL
   tokenPath: '/oauth/token',

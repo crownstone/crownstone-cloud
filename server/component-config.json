@@ -6,6 +6,7 @@
     "dataSource": "userDs",
     "resourceServer": true,
     "authorizationServer": true,
+    "decisionView": "dialog",
     "loginPage": "/loginOauth",
     "loginPath": "/loginOauthStep2",
     "tokenPath": "/oauth/token"
