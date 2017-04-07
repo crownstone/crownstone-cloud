@@ -72,6 +72,12 @@
       "model": "Sphere",
       "foreignKey": "userId",
       "through": "SphereAccess"
+    },
+    "installations": {
+      "type": "hasMany",
+      "model": "AppInstallation",
+      "foreignKey": "ownerId",
+      "through": "Device"
     }
   },
   "acls": [

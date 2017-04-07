@@ -17,6 +17,6 @@
   },
   "filesDs": {
     "name": "filesDs",
-    "connector": "memory"
+    "connector": "loopback-component-storage-gridfs"
   }
 }

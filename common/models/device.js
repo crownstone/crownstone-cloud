@@ -384,11 +384,20 @@ module.exports = function(model) {
     			throw "No Application is registered by that name.";
 				}
 
+				data.appName = appName;
 				data.appId = App.id;
-        const appInstallation = loopback.getModel('AppInstallation');
-        return appInstallation.create(data);
+        return model.findById(id)
+      })
+      .then((currentDevice) => {
+        if (currentDevice) {
+          return currentDevice.installations.create(data);
+        }
+        else {
+          throw "No device selected."
+        }
       })
 			.then((result) => {
+        console.log("Created Installation", result);
         callback(null, result);
 			})
 			.catch((err) => {
@@ -400,7 +409,7 @@ module.exports = function(model) {
   model.remoteMethod(
     'createInstallation',
     {
-      http: {path: '/:id/installation', verb: 'post'},
+      http: {path: '/:id/installations', verb: 'post'},
       accepts: [
         {arg: 'data', type: 'AppInstallation', required: true, http: { source : 'body' }},
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},

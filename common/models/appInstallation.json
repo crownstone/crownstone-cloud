@@ -11,20 +11,24 @@
     }
   },
   "properties": {
+    "appName":{
+      "type":"string",
+      "required": "true"
+    },
     "deviceType": {
       "type": "string",
       "required": true
     },
     "deviceToken": {
       "type": "string",
-      "required": true
+      "required": false
     }
   },
   "relations": {
-    "owner": {
+    "device": {
       "type": "belongsTo",
       "model": "Device",
-      "foreignKey": "deviceId"
+      "foreignKey": ""
     }
   },
   "acls": [],

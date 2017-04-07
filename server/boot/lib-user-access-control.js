@@ -35,9 +35,10 @@ module.exports = function(app) {
     });
   });
 
-  Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRole(app, { admin: true },  context, callback); });
-  Role.registerResolver('$group:member', function(role, context, callback) { verifyRole(app, { admin: true, member: true }, context, callback); });
-  Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRole(app, { admin: true, member: true, guest: true },  context, callback); });
+  Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRoleInSphere(app, { admin: true },  context, callback); });
+  Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { admin: true, member: true }, context, callback); });
+  Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRoleInSphere(app, { admin: true, member: true, guest: true },  context, callback); });
+  Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner(app, context, callback); });
 };
 
 
@@ -50,7 +51,46 @@ module.exports = function(app) {
  * @param callback
  * @returns {*}
  */
-function verifyRole(app, accessMap, context, callback) {
+function verifyDeviceOwner(app, context, callback) {
+  // check if user is logged in
+  let userId = context.accessToken.userId;
+
+  // do not allow anonymous users
+  if (!userId) {
+    // reject async, see explanation on top of file.
+    return process.nextTick(function() {
+      callback(null, false);
+    });
+  }
+
+  if (context.modelName !== 'AppInstallation') { callback(null, false); }
+
+  app.models.AppInstallation.findById(context.modelId, { include: 'device' })
+    .then((installation) => {
+      if (installation && installation.device && String(installation.device().ownerId) === String(userId)) {
+        callback(null, true);
+      }
+      else {
+        callback(null, false);
+      }
+    })
+    .catch((err) => {
+      callback(err, false);
+    })
+}
+
+
+
+/**
+ * Verify if a user has access to this sphere element. If the model has a sphereId, we will look in the sphereAccess to find
+ * the user permission in that sphere and match it to the accessLevel. Since an admin also has guest privileges, we allow
+ * @param app
+ * @param accessMap
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
+function verifyRoleInSphere(app, accessMap, context, callback) {
   // check if user is logged in
   let userId = context.accessToken.userId;
 

@@ -310,7 +310,6 @@ module.exports = function(model) {
 
 
   model.spheres = function(id, callback) {
-
     model.findById(id, function(err, instance) {
       if (err) return callback(err);
       if (model.checkForNullError(instance, callback, "id: " + id)) return;
@@ -325,7 +324,6 @@ module.exports = function(model) {
           {where: {and: [{userId: id}, {invitePending: {neq: true}}]}, field: "sphereId"},
           function(err, res) {
             if (err) return callback(err);
-
 
             let filteredSpheres = [];
             for (let i = 0; i < spheres.length; ++i) {

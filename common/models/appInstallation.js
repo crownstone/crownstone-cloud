@@ -16,15 +16,27 @@ module.exports = function(model) {
   if (app.get('acl_enabled')) {
     model.disableRemoteMethodByName('find');
     //***************************
-    // GENERAL:
-    //   - nothing
+    // OWNER:
+    //   - everything
     //***************************
     model.settings.acls.push({
       "accessType": "*",
       "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "DENY"
+      "principalId": "$owner",
+      "permission": "ALLOW"
     });
+
+    //***************************
+    // DEVICE OWNER:
+    //   - everything
+    //***************************
+    model.settings.acls.push({
+      "accessType": "*",
+      "principalType": "ROLE",
+      "principalId": "$device:owner",
+      "permission": "ALLOW"
+    });
+
     //***************************
     // AUTHENTICATED:
     //   - create new device
@@ -35,15 +47,17 @@ module.exports = function(model) {
       "permission": "ALLOW",
       "property": "create"
     });
+
+
     //***************************
-    // OWNER:
-    //   - everything
+    // GENERAL:
+    //   - nothing
     //***************************
     model.settings.acls.push({
       "accessType": "*",
       "principalType": "ROLE",
-      "principalId": "$owner",
-      "permission": "ALLOW"
+      "principalId": "$everyone",
+      "permission": "DENY"
     });
   }
 };
