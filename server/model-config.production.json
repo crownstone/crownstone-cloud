@@ -31,9 +31,6 @@
   "UserContainer": {
     "public": false
   },
-  "Installation": {
-    "public": false
-  },
   "Application": {
     "public": false
   },
@@ -45,5 +42,5 @@
   },
   "App": {
     "public": false
-  },
+  }
 }
