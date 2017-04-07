@@ -63,10 +63,14 @@ module.exports = function (app) {
       });
       return;
     }
-    let baseUrl = app.get('url');
-    debug("here", baseUrl, app.get('url'));
+
+    let baseUrl = app.get('url').replace(/\/$/, '');
+    if (process.env.BASE_URL) {
+      baseUrl = 'https://' + process.env.BASE_URL;
+    }
+
     req.body = {username: req.body.email, password: hashPassword(req.body.password)};
-    req.url = baseUrl + 'loginOauthStep2';
+    req.url = baseUrl + '/loginOauthStep2';
 
     // forward the request handling to the next endPoint;
     app.handle(req, res);
