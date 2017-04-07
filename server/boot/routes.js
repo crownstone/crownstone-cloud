@@ -72,6 +72,8 @@ module.exports = function (app) {
     req.body = {username: req.body.email, password: hashPassword(req.body.password)};
     req.url = baseUrl + '/loginOauthStep2';
 
+
+    debug('"url": req.url');
     // forward the request handling to the next endPoint;
     app.handle(req, res);
   });
