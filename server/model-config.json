@@ -126,6 +126,10 @@
     "dataSource": "mongoDs",
     "public": true
   },
+  "Application": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
   "Firmware": {
     "dataSource": false,
     "public": true

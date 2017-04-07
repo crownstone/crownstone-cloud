@@ -54,7 +54,7 @@ function createClient(permissionModel, clientName, scopes) {
       if (result.length === 0) {
         return permissionModel.create({
           name: clientName,
-          scopes: [scopes],
+          scopes: scopes,
           clientSecret: createSecret(),
           issuedAt: new Date()
         })

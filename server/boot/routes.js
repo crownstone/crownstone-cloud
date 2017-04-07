@@ -1,5 +1,6 @@
 let sha1 = require('sha1');
 let request = require('request');
+const debug = require('debug')('loopback:dobots');
 
 module.exports = function (app) {
   let User = app.models.user;
@@ -62,12 +63,13 @@ module.exports = function (app) {
       });
       return;
     }
-    let baseUrl = app.get('url').replace(/\/$/, '');
+    let baseUrl = app.get('url');
+    debug("here", baseUrl, app.get('url'));
     req.body = {username: req.body.email, password: hashPassword(req.body.password)};
-    req.url = baseUrl + '/loginOauthStep2';
+    req.url = baseUrl + 'loginOauthStep2';
 
+    // forward the request handling to the next endPoint;
     app.handle(req, res);
-
   });
 
   app.post('/login', function (req, res) {

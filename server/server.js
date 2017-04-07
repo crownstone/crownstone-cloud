@@ -60,7 +60,7 @@ let options = {
   authorizationServer: true,
   loginPage: '/loginOauth', // The login page URL
   loginPath: '/loginOauthStep2', // The login form processing URL
-  tokenPath: "/oauth/token",
+  tokenPath: '/oauth/token',
 };
 
 oauth2.oAuth2Provider(
@@ -124,8 +124,8 @@ oauth2.oAuth2Provider(
 // }
 
 // Uncomment these lines to add/remove/modify the OAUTH2 clients
-// let performOauthClientOperations = require("./inserts/oauthClientOperations");
-// performOauthClientOperations(app);
+let performOauthClientOperations = require("./inserts/oauthClientOperations");
+performOauthClientOperations(app);
 
 // Uncomment these lines to add/remove/modify the registered Apps
 // let performAppOperations = require("./inserts/appOperations");
