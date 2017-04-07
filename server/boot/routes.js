@@ -53,6 +53,23 @@ module.exports = function (app) {
   });
 
   //log a user in
+  app.post('/loginOauthSub', function (req, res) {
+
+    debug('"SUBSTEP URL": req.url', req.url);
+
+    let baseUrl = app.get('url').replace(/\/$/, '');
+    if (process.env.BASE_URL) {
+      baseUrl = 'https://' + process.env.BASE_URL;
+    }
+
+    req.url = baseUrl + '/loginOauthStep2';
+
+    // forward the request handling to the next endPoint;
+    app.handle(req, res);
+  });
+
+
+  //log a user in
   app.post('/loginOauth', function (req, res) {
     if (!req.body.email || !req.body.password) {
       res.render('response', {
@@ -70,7 +87,7 @@ module.exports = function (app) {
     }
 
     req.body = {username: req.body.email, password: hashPassword(req.body.password)};
-    req.url = baseUrl + '/loginOauthStep2';
+    req.url = baseUrl + '/loginOauthSub';
 
 
     debug('"url": req.url', req.url);
