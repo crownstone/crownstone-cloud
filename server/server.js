@@ -10,13 +10,14 @@ const oauth2 = require('loopback-component-oauth2');
 const express = require('express');
 const session = require('express-session');
 
-const MongoStore = require('connect-mongodb-session')(session);
+const MongoStore = require('connect-mongo')(session);
 let datasources = require('./datasources.' + (process.env.NODE_ENV || 'local'));
 
 
 let store;
 if (datasources.userDs.url) {
-  store = new MongoStore({uri: datasources.userDs.url, collection: 'OAuthSessions'});
+  store = new MongoStore({url: datasources.userDs.url, mongoOptions: {collection: 'OAuthSessions'}});
+
 }
 
 // let updateDS = require('./updateDS.js');
@@ -27,6 +28,18 @@ const app = module.exports = loopback();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+app.middleware('session', session({
+  secret: process.env.SESSION_SECRET || datasources.sessionKey || 'keyboard kittens',
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  },
+  store: store,
+  resave: true,
+  saveUninitialized: true
+}));
+
+
+
 app.use(express.static('public'));
 
 // configure body parser
@@ -35,15 +48,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(compression());
 // console.log("enable compression");
 
-app.use(session({
-  secret: 'This is a secret',
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
-  },
-  store: store,
-  resave: true,
-  saveUninitialized: true
-}));
+
 
 loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { idInjection: false });
 
@@ -146,8 +151,8 @@ oauth2.oAuth2Provider(
 // }
 
 // Uncomment these lines to add/remove/modify the OAUTH2 clients
-let performOauthClientOperations = require("./inserts/oauthClientOperations");
-performOauthClientOperations(app);
+// let performOauthClientOperations = require("./inserts/oauthClientOperations");
+// performOauthClientOperations(app);
 
 // Uncomment these lines to add/remove/modify the registered Apps
 // let performAppOperations = require("./inserts/appOperations");
