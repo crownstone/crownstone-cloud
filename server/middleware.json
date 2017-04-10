@@ -18,15 +18,6 @@
       }
     }
   },
-  "session": {
-    "express-session": {
-      "params": {
-        "saveUninitialized": true,
-        "resave": true,
-        "secret": "keyboard cat"
-      }
-    }
-  },
   "auth": {
     "loopback-component-oauth2#authenticate": {
       "paths": [

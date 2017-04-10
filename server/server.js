@@ -8,6 +8,17 @@ const compression = require('compression');
 
 const oauth2 = require('loopback-component-oauth2');
 const express = require('express');
+const session = require('express-session');
+
+const MongoStore = require('connect-mongodb-session')(session);
+let datasources = require('./datasources.' + (process.env.NODE_ENV || 'local'));
+
+
+let store;
+if (datasources.userDs.url) {
+  store = new MongoStore({uri: datasources.userDs.url, collection: 'OAuthSessions'});
+}
+
 // let updateDS = require('./updateDS.js');
 
 const app = module.exports = loopback();
@@ -23,6 +34,16 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(compression());
 // console.log("enable compression");
+
+app.use(session({
+  secret: 'This is a secret',
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  },
+  store: store,
+  resave: true,
+  saveUninitialized: true
+}));
 
 loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { idInjection: false });
 

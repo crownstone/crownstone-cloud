@@ -74,6 +74,7 @@ module.exports = function (app) {
     req.url = baseUrl + '/loginOauthStep2';
 
     debug('"url": req.url', req.url);
+
     // forward the request handling to the next endPoint;
     app.handle(req, res);
   });
