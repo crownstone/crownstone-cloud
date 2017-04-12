@@ -18,5 +18,8 @@
   "filesDs": {
     "name": "filesDs",
     "connector": "loopback-component-storage-gridfs"
+  },
+  "sessionKey": {
+    "key": "HIDDEN"
   }
 }
