@@ -102,6 +102,16 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
     });
   }
 
+  // in case of get/X we have to get the sphere for each i suppose...
+  if (context.modelId === undefined) {
+    if (context.accessType === 'READ' && (context.modelName === 'Stone' || context.modelName === 'Location' || context.modelName === 'Appliance')) {
+      return callback(null, true);
+    }
+    else {
+      return callback(null, false);
+    }
+  }
+
   // check if the model has a sphereId
   getSphereId(app, context)
     .then((result) => {
@@ -138,6 +148,7 @@ function getSphereId(app, context) {
           }
         })
         .catch((err) => {
+          console.log("ERR", err)
           reject(err);
         })
     }

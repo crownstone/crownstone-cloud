@@ -1,3 +1,6 @@
+"use strict";
+let loopback = require('loopback');
+
 module.exports = function(model, options) {
 
 	// define property: sphereId which is used as a reference to the sphere
@@ -9,17 +12,40 @@ module.exports = function(model, options) {
 	var Sphere = require("loopback").getModel("Sphere");
 	model.belongsTo(Sphere, { foreignKey: "sphereId", as: "owner"});
 
+	model.observe('access', (context, callback) => {
+    let userId = context.options.accessToken.userId;
+		// get get all sphereIds the user has access to.
+    const sphereAccess = loopback.getModel("SphereAccess");
+    sphereAccess.find({where: {userId: userId}, fields:{sphereId: true}})
+			.then((results) => {
+    		let possibleIds = [];
+    		for (let i = 0; i < results.length; i++) {
+    			possibleIds.push(results[i].sphereId);
+				}
+				let filter = {sphereId: {inq: possibleIds}};
+        const where = context.query.where ? {
+          and: [ context.query.where, filter ]
+        } : filter;
+
+    		context.query.where = where;
+        callback();
+			})
+			.catch((err) => {
+        callback(err);
+			})
+	});
+
 	// define access rules based on the sphere roles. define here all rules
 	// which are common among ALL SphereContent models. If a model needs
 	// individual access rules, define them in the respective model.js
 
 	// model.settings.acls.push(
-	// 	{
-	// 		"accessType": "*",
-	// 		"principalType": "ROLE",
-	// 		"principalId": "lib-user",
-	// 		"permission": "DENY"
-	// 	}
+	// 	 {
+	// 	 	"accessType": "*",
+	// 	 	"principalType": "ROLE",
+	// 	 	"principalId": "lib-user",
+	// 	 	"permission": "DENY"
+	// 	 }
 	// );
 
 	// todo: does it make sense to define that here? or define it per

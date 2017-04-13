@@ -17,7 +17,6 @@ let datasources = require('./datasources.' + (process.env.NODE_ENV || 'local'));
 let store;
 if (datasources.userDs.url) {
   store = new MongoStore({url: datasources.userDs.url, mongoOptions: {collection: 'OAuthSessions'}});
-
 }
 
 // let updateDS = require('./updateDS.js');
