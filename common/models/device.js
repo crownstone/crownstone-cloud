@@ -397,11 +397,11 @@ module.exports = function(model) {
         }
       })
 			.then((result) => {
-        console.log("Created Installation", result);
+        // console.log("Created Installation", result);
         callback(null, result);
 			})
 			.catch((err) => {
-    		console.log("ERR createInstallation", err);
+    		// console.log("ERR createInstallation", err);
         callback(err);
 			});
   };

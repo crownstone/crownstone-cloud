@@ -223,7 +223,7 @@ module.exports = function(model) {
 
   //send verification email after registration
   model.afterRemote('create', function(context, user, next) {
-    console.log('> user.afterRemote triggered');
+    // console.log('> user.afterRemote triggered');
     model.onCreate(context, user, next);
     // next();
   });
@@ -612,7 +612,7 @@ module.exports = function(model) {
       let keys = Array.from(objects, function(access) {
         let sphere = { sphereId: access.sphereId, keys: {}};
         let sphereData = access.sphere();
-        console.log('sphereData',sphere, access);
+        // console.log('sphereData',sphere, access);
         switch (access.role) {
           case "admin":
             sphere.keys.admin  = sphereData.adminEncryptionKey;
@@ -624,7 +624,6 @@ module.exports = function(model) {
         return sphere
       });
 
-      console.log(keys)
       callback(null, keys);
     });
   };

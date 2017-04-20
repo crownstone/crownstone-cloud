@@ -750,7 +750,7 @@ module.exports = function(model) {
         if (sphereUsers.length === 0) { return []; }
 
         allSphereUsers = sphereUsers;
-        console.log("allSphereUsers", allSphereUsers);
+        // console.log("allSphereUsers", allSphereUsers);
         const SphereAccess = loopback.getModel('SphereAccess');
         return SphereAccess.find({where: {sphereId: id, role: access, invitePending: {neq: true}}, fields:'userId'});
       })

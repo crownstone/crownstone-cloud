@@ -131,7 +131,11 @@
     "public": true
   },
   "Firmware": {
-    "dataSource": false,
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "Bootloader": {
+    "dataSource": "mongoDs",
     "public": true
   }
 }

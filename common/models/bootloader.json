@@ -1,5 +1,5 @@
 {
-  "name": "Firmware",
+  "name": "Bootloader",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,

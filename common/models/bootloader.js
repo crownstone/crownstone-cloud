@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 
 const debug = require('debug')('loopback:dobots');
 
@@ -60,12 +60,12 @@ module.exports = function(model) {
 
   model.getByVersion = function(version, callback) {
     model.find({version: version})
-			.then((result) => {
-				callback(null, result)
-			})
-			.catch((err) => {
+      .then((result) => {
+        callback(null, result)
+      })
+      .catch((err) => {
         callback(err)
-			})
+      })
   };
 
   model.remoteMethod(
@@ -75,7 +75,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'version', type: 'string', required: true, http: { source : 'query' }},
       ],
-      description: "Get firmware details by version number."
+      description: "Get bootloader details by version number."
     }
   );
 };
