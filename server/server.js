@@ -15,7 +15,7 @@ let datasources = require('./datasources.' + (process.env.NODE_ENV || 'local'));
 
 
 let store;
-if (datasources.userDs.url) {
+if (datasources.userDs && datasources.userDs.url) {
   store = new MongoStore({url: datasources.userDs.url, mongoOptions: {collection: 'OAuthSessions'}});
 }
 
@@ -156,3 +156,7 @@ oauth2.oAuth2Provider(
 // Uncomment these lines to add/remove/modify the registered Apps
 // let performAppOperations = require("./inserts/appOperations");
 // performAppOperations(app);
+
+// Uncomment these lines to add/remove/modify released firmwares/bootloader versions
+// let performFirmwareOperations = require("./inserts/firmwareReleases");
+// performFirmwareOperations(app);

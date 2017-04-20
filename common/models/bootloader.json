@@ -15,8 +15,8 @@
       "type": "string",
       "required": true
     },
-    "fullReset": {
-      "type": "boolean",
+    "minimumCompatibleVersion": {
+      "type": "string",
       "required": true
     },
     "downloadUrl": {

@@ -2,6 +2,13 @@
 
 const debug = require('debug')('loopback:dobots');
 
+
+/**
+ * Minimum compatible version is used to determine if a fresh install is required.
+ * If the version is 2.1.3 and the minimum compatible version is 1.3.2, coming from any
+ * version lower than 1.3.2 will require a clean install
+ * @param model
+ */
 module.exports = function(model) {
 
   /************************************
