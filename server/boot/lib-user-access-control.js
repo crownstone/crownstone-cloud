@@ -36,8 +36,8 @@ module.exports = function(app) {
   });
 
   Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRoleInSphere(app, { admin: true },  context, callback); });
-  Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { admin: true, member: true }, context, callback); });
-  Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRoleInSphere(app, { admin: true, member: true, guest: true },  context, callback); });
+  Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { member: true }, context, callback); });
+  Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRoleInSphere(app, { guest: true },  context, callback); });
   Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner(app, context, callback); });
 };
 
@@ -125,7 +125,9 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
       if (access && access.role && accessMap[access.role] === true) {
         callback(null, true);
       }
-      else { throw "No Access"; }
+      else {
+        callback(null, false);
+      }
     })
     .catch((err) => {
       callback(err, false);
