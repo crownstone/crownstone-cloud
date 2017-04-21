@@ -22,6 +22,10 @@
     "downloadUrl": {
       "type": "string",
       "required": true
+    },
+    "sha1hash": {
+      "type": "string",
+      "required": true
     }
   },
   "acls": [],

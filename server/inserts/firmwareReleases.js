@@ -12,12 +12,14 @@ function performFirmwareOperations(app) {
   //   firmwareModel,
   //   '1.3.1', // release version
   //   '1.3.1', // minimum compatible version
+  //   '1.3.1', // minimum compatible version
   //   'https://github.com/crownstone/bluenet-release/raw/master/crownstone_1.3.1/bin/crownstone_1.3.1.zip'
   // );
   //
   // releaseBootloader(
   //   bootloaderModel,
   //   '1.2.2', // release version
+  //   '1.2.2', // minimum compatible version
   //   '1.2.2', // minimum compatible version
   //   'https://github.com/crownstone/bluenet-release/raw/master/bootloader_1.2.2/bin/bootloader_1.2.2.zip'
   // );
@@ -31,12 +33,12 @@ function showBootloaders(bootloaderModel) {
   show(bootloaderModel, 'Bootloader');
 }
 
-function releaseFirmware(firmwareModel, version, minimumCompatibleVersion, downloadUrl) {
-  return _release(firmwareModel, 'Firmware', version, minimumCompatibleVersion, downloadUrl);
+function releaseFirmware(firmwareModel, version, minimumCompatibleVersion, hash, downloadUrl) {
+  return _release(firmwareModel, 'Firmware', version, minimumCompatibleVersion, hash, downloadUrl);
 }
 
-function releaseBootloader(bootloaderModel, version, minimumCompatibleVersion, downloadUrl) {
-  return _release(bootloaderModel, 'Bootloader', version, minimumCompatibleVersion, downloadUrl);
+function releaseBootloader(bootloaderModel, version, minimumCompatibleVersion, hash, downloadUrl) {
+  return _release(bootloaderModel, 'Bootloader', version, minimumCompatibleVersion, hash, downloadUrl);
 }
 
 function removeFirmwareVersion(firmwareModel, version) {
@@ -56,10 +58,11 @@ function show(model, type) {
     })
 }
 
-function _release(model, type, version, minimumCompatibleVersion, downloadUrl) {
+function _release(model, type, version, minimumCompatibleVersion, hash, downloadUrl) {
   model.create({
     version: version,
     minimumCompatibleVersion: minimumCompatibleVersion,
+    sha1hash: hash,
     downloadUrl: downloadUrl,
   })
     .then((result) => {
