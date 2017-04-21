@@ -66,7 +66,7 @@ module.exports = function(model) {
 
 
   model.getByVersion = function(version, callback) {
-    model.find({version: version})
+    model.findOne({where: {version: version}})
 			.then((result) => {
 				callback(null, result)
 			})
@@ -82,7 +82,8 @@ module.exports = function(model) {
       accepts: [
         {arg: 'version', type: 'string', required: true, http: { source : 'query' }},
       ],
-      description: "Get firmware details by version number."
+      returns: {arg: 'data', type: 'Firmware', root: true},
+      description: "Get firmware details by version number, or null if the version was not found."
     }
   );
 };

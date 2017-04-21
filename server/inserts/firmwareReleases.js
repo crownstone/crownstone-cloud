@@ -5,19 +5,30 @@ function performFirmwareOperations(app) {
   let bootloaderModel = app.dataSources.mongoDs.getModel('Bootloader');
   //let userModel = app.dataSources.userDs.getModel('user');
 
-  releaseFirmware(
-    firmwareModel,
-    '1.3.1', // release version
-    '1.3.1', // minimum compatible version
-    'https://github.com/crownstone/bluenet-release/raw/master/crownstone_1.3.1/bin/crownstone_1.3.1.zip'
-  );
+  // showFirmwares(firmwareModel);
+  // showBootloaders(bootloaderModel);
 
-  releaseBootloader(
-    bootloaderModel,
-    '1.2.2', // release version
-    '1.2.2', // minimum compatible version
-    'https://github.com/crownstone/bluenet-release/raw/master/bootloader_1.2.2/bin/bootloader_1.2.2.zip'
-  );
+  // releaseFirmware(
+  //   firmwareModel,
+  //   '1.3.1', // release version
+  //   '1.3.1', // minimum compatible version
+  //   'https://github.com/crownstone/bluenet-release/raw/master/crownstone_1.3.1/bin/crownstone_1.3.1.zip'
+  // );
+  //
+  // releaseBootloader(
+  //   bootloaderModel,
+  //   '1.2.2', // release version
+  //   '1.2.2', // minimum compatible version
+  //   'https://github.com/crownstone/bluenet-release/raw/master/bootloader_1.2.2/bin/bootloader_1.2.2.zip'
+  // );
+}
+
+function showFirmwares(firmwareModel) {
+  show(firmwareModel, 'Firmware');
+}
+
+function showBootloaders(bootloaderModel) {
+  show(bootloaderModel, 'Bootloader');
 }
 
 function releaseFirmware(firmwareModel, version, minimumCompatibleVersion, downloadUrl) {
@@ -37,6 +48,13 @@ function removeBootloaderModel(bootloaderModel, version) {
 }
 
 // UTIL:
+
+function show(model, type) {
+  model.find()
+    .then((results) => {
+     console.log(type, "versions found:", results);
+    })
+}
 
 function _release(model, type, version, minimumCompatibleVersion, downloadUrl) {
   model.create({

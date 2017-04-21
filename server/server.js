@@ -94,69 +94,19 @@ oauth2.oAuth2Provider(
   options // The options
 );
 
-// from middleware.json session: {
-//   "express-session": {
-//     "params": {
-//       "saveUninitialized": true,
-//         "resave": true,
-//         "secret": "keyboard cat"
-//     }
-//   }
-// }
 
-// from middleware.json auth: {
-//   "loopback-component-oauth2#authenticate": { "paths" : ["/api"], "params": [{
-//     "oauthACLgateway" : true,
-//     "scopes": {
-//       "user_information": [
-//         {
-//           "methods": "get",
-//           "path": "/api/users/me"
-//         }
-//       ],
-//       "user_location": [
-//         {
-//           "methods": "get",
-//           "path": "/api/users/:id/currentLocation"
-//         }
-//       ],
-//       "stone_information": [
-//         {
-//           "methods": "get",
-//           "path": "/api/Stones/"
-//         }
-//       ],
-//       "switch_stone": [
-//         {
-//           "methods": "put",
-//           "path": "/api/Stones/:id/setSwitchStateRemotely"
-//         }
-//       ],
-//       "power_consumption": [
-//         {
-//           "methods": "get",
-//           "path": "/api/Stones/:id/currentEnergyUsage"
-//         }
-//       ],
-//       "all": [
-//         {
-//           "methods": "all",
-//           "path": "/api"
-//         }
-//       ]
-//     }
-//   }]
-//   }
-// }
+// this is only allowed in a local environment
+if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
+  // // Uncomment these lines to view/add/remove/modify the OAUTH2 clients
+  // let performOauthClientOperations = require("./inserts/oauthClientOperations");
+  // performOauthClientOperations(app);
+  //
+  // // Uncomment these lines to view/add/remove/modify the registered Apps
+  // let performAppOperations = require("./inserts/appOperations");
+  // performAppOperations(app);
+  //
+  // // Uncomment these lines to view/add/remove/modify released firmwares/bootloader versions
+  // let performFirmwareOperations = require("./inserts/firmwareReleases");
+  // performFirmwareOperations(app);
+}
 
-// Uncomment these lines to add/remove/modify the OAUTH2 clients
-// let performOauthClientOperations = require("./inserts/oauthClientOperations");
-// performOauthClientOperations(app);
-
-// Uncomment these lines to add/remove/modify the registered Apps
-// let performAppOperations = require("./inserts/appOperations");
-// performAppOperations(app);
-
-// Uncomment these lines to add/remove/modify released firmwares/bootloader versions
-// let performFirmwareOperations = require("./inserts/firmwareReleases");
-// performFirmwareOperations(app);
