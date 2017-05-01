@@ -470,7 +470,10 @@ module.exports = function(model) {
 
   model.downloadFile = function(id, fk, res, options, callback) {
     const Container = loopback.getModel('UserContainer');
-    Container._download(id, fk, res, options, callback);
+    Container._download(id, fk, res, options, function(err, file) {
+      if (err) return callback(err);
+      callback(null, file);
+    });
   };
 
   model.remoteMethod(
@@ -510,13 +513,12 @@ module.exports = function(model) {
     // debug("uploadProfilePic");
 
     let upload = function(user, req) {
-
       // upload the file
-      model.uploadFile(user.id, req, function(err, file) {
+      model.uploadFile(user.id, req, options, function(err, file) {
         if (err) return callback(err);
-
+        
         // and set the id as profilePicId
-        user.profilePicId = file._id;
+        user.profilePicId = String(file._id);
         user.save();
 
         callback(null, file);
@@ -530,7 +532,7 @@ module.exports = function(model) {
 
       // if there is already a profile picture uploaded, delete the old one first
       if (user.profilePicId) {
-        model.deleteFile(user.id, user.profilePicId, function(err, file) {
+        model.deleteFile(user.id, user.profilePicId, options, function(err, file) {
           if (err) return callback(err);
           upload(user, req);
         });
@@ -561,7 +563,6 @@ module.exports = function(model) {
     model.findById(id, function(err, user) {
       if (err) return callback(err);
       if (model.checkForNullError(user, callback, "id: " + id)) return;
-
       model.downloadFile(id, user.profilePicId, res, options, callback);
     });
   };
@@ -579,14 +580,21 @@ module.exports = function(model) {
     }
   );
 
-  model.deleteProfilePicById = function(id, res, options, callback) {
+  model.deleteProfilePicById = function(id, options, callback) {
     // debug("downloadProfilePicById");
 
     model.findById(id, function(err, user) {
       if (err) return callback(err);
       if (model.checkForNullError(user, callback, "id: " + id)) return;
 
-      model.deleteFile(id, user.profilePicId, res, callback);
+      model.deleteFile(id, user.profilePicId, options, function(err, file) {
+        if (err) return callback(err);
+        // remove the profile pic
+        user.profilePicId = undefined;
+        user.save();
+
+        callback();
+      });
     });
   };
 

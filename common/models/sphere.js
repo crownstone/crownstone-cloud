@@ -1313,7 +1313,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'email', type: 'string', required: true, http: { source : 'query' }},
         {arg: 'res', type: 'object', 'http': { source: 'res' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
       ],
       description: "Download profile pic of User"
     }
