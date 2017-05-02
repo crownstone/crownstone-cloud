@@ -43,10 +43,10 @@ module.exports = function(model) {
 	model.disableRemoteMethodByName('upsert');
 	model.disableRemoteMethodByName('createChangeStream');
 
-	model.disableRemoteMethodByName('__destroyById__stones');
-	model.disableRemoteMethodByName('__updateById__stones');
-	model.disableRemoteMethodByName('__delete__stones');
-	model.disableRemoteMethodByName('__create__stones');
+	model.disableRemoteMethodByName('prototype.__destroyById__stones');
+	model.disableRemoteMethodByName('prototype.__updateById__stones');
+	model.disableRemoteMethodByName('prototype.__delete__stones');
+	model.disableRemoteMethodByName('prototype.__create__stones');
 	// model.disableRemoteMethodByName('__link__stones');
 	// model.disableRemoteMethodByName('__unlink__stones');
 

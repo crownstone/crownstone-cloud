@@ -229,17 +229,17 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('upsert');
   model.disableRemoteMethodByName('createChangeStream');
 
-  model.disableRemoteMethodByName('__create__users');
-  model.disableRemoteMethodByName('__delete__users');
-  model.disableRemoteMethodByName('__destroyById__users');
-  model.disableRemoteMethodByName('__updateById__users');
-  model.disableRemoteMethodByName('__link__users');
-  model.disableRemoteMethodByName('__count__users');
-  model.disableRemoteMethodByName('__get__users');
+  model.disableRemoteMethodByName('prototype.__create__users');
+  model.disableRemoteMethodByName('prototype.__delete__users');
+  model.disableRemoteMethodByName('prototype.__destroyById__users');
+  model.disableRemoteMethodByName('prototype.__updateById__users');
+  model.disableRemoteMethodByName('prototype.__link__users');
+  model.disableRemoteMethodByName('prototype.__count__users');
+  model.disableRemoteMethodByName('prototype.__get__users');
 
-  model.disableRemoteMethodByName('__delete__ownedLocations');
-  model.disableRemoteMethodByName('__delete__ownedStones');
-  model.disableRemoteMethodByName('__delete__ownedAppliances');
+  model.disableRemoteMethodByName('prototype.__delete__ownedLocations');
+  model.disableRemoteMethodByName('prototype.__delete__ownedStones');
+  model.disableRemoteMethodByName('prototype.__delete__ownedAppliances');
 
   /************************************
    **** Model Validation

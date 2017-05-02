@@ -20,7 +20,7 @@ module.exports = {
                         + process.env.MONGODB_PORT + "/"
                         + process.env.USER_TABLE + "?authSource=admin&ssl=true",
     "server": {
-      "sslValidate": false
+      "sslValidate": false,
     }
   },
   filesDs: {
@@ -40,4 +40,4 @@ module.exports = {
     "api_user": process.env.SENDGRID_USERNAME,
     "api_key": process.env.SENDGRID_PASSWORD
   }
-}
+};

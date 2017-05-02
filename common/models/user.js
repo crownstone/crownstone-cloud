@@ -78,33 +78,33 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('exists');
   model.disableRemoteMethodByName('createChangeStream');
 
-  model.disableRemoteMethodByName('__get__accessTokens');
-  model.disableRemoteMethodByName('__create__accessTokens');
-  model.disableRemoteMethodByName('__delete__accessTokens');
-  model.disableRemoteMethodByName('__count__accessTokens');
-  model.disableRemoteMethodByName('__findById__accessTokens');
-  model.disableRemoteMethodByName('__destroyById__accessTokens');
-  model.disableRemoteMethodByName('__updateById__accessTokens');
+  model.disableRemoteMethodByName('prototype.__get__accessTokens');
+  model.disableRemoteMethodByName('prototype.__create__accessTokens');
+  model.disableRemoteMethodByName('prototype.__delete__accessTokens');
+  model.disableRemoteMethodByName('prototype.__count__accessTokens');
+  model.disableRemoteMethodByName('prototype.__findById__accessTokens');
+  model.disableRemoteMethodByName('prototype.__destroyById__accessTokens');
+  model.disableRemoteMethodByName('prototype.__updateById__accessTokens');
 
-  model.disableRemoteMethodByName('__create__currentLocation');
-  model.disableRemoteMethodByName('__delete__currentLocation');
-  model.disableRemoteMethodByName('__updateById__currentLocation');
-  model.disableRemoteMethodByName('__deleteById__currentLocation');
-  model.disableRemoteMethodByName('__destroyById__currentLocation');
-  model.disableRemoteMethodByName('__count__currentLocation');
-  model.disableRemoteMethodByName('__link__currentLocation');
-  model.disableRemoteMethodByName('__unlink__currentLocation');
-  model.disableRemoteMethodByName('__findById__currentLocation');
+  model.disableRemoteMethodByName('prototype.__create__currentLocation');
+  model.disableRemoteMethodByName('prototype.__delete__currentLocation');
+  model.disableRemoteMethodByName('prototype.__updateById__currentLocation');
+  model.disableRemoteMethodByName('prototype.__deleteById__currentLocation');
+  model.disableRemoteMethodByName('prototype.__destroyById__currentLocation');
+  model.disableRemoteMethodByName('prototype.__count__currentLocation');
+  model.disableRemoteMethodByName('prototype.__link__currentLocation');
+  model.disableRemoteMethodByName('prototype.__unlink__currentLocation');
+  model.disableRemoteMethodByName('prototype.__findById__currentLocation');
 
-  model.disableRemoteMethodByName('__delete__spheres');
-  model.disableRemoteMethodByName('__create__spheres');
-  model.disableRemoteMethodByName('__updateById__spheres');
-  model.disableRemoteMethodByName('__destroyById__spheres');
-  model.disableRemoteMethodByName('__link__spheres');
-  model.disableRemoteMethodByName('__count__spheres');
-  model.disableRemoteMethodByName('__get__spheres');
+  model.disableRemoteMethodByName('prototype.__delete__spheres');
+  model.disableRemoteMethodByName('prototype.__create__spheres');
+  model.disableRemoteMethodByName('prototype.__updateById__spheres');
+  model.disableRemoteMethodByName('prototype.__destroyById__spheres');
+  model.disableRemoteMethodByName('prototype.__link__spheres');
+  model.disableRemoteMethodByName('prototype.__count__spheres');
+  model.disableRemoteMethodByName('prototype.__get__spheres');
 
-  model.disableRemoteMethodByName('__delete__devices');
+  model.disableRemoteMethodByName('prototype.__delete__devices');
 
   /************************************
    **** Model Validation
@@ -377,33 +377,23 @@ module.exports = function(model) {
     }
   );
 
-  model.notifyDevices = function(message, id, callback) {
-    // debug("notifyDevices:", message);
-
-    const Notification = loopback.getModel('Notification');
-    let notification = new Notification({
-      expirationInterval: 3600, // Expires 1 hour from now.
-      alert: message,
-      message: message,
-      messageFrom: 'loopback'
-    });
-
-    const Push = loopback.getModel('Push');
-    Push.notifyByQuery({userId: id}, notification, callback);
-
-  };
-
-  model.remoteMethod(
-    'notifyDevices',
-    {
-      http: {path: '/:id/notifyDevices', verb: 'post'},
-      accepts: [
-        {arg: 'message', type: 'string', 'http': {source: 'query'}},
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      description: "Push notification to all Devices of user"
-    }
-  );
+  // model.notifyDevices = function(message, id, callback) {
+  //   // debug("notifyDevices:", message);
+  //
+  //
+  // };
+  //
+  // model.remoteMethod(
+  //   'notifyDevices',
+  //   {
+  //     http: {path: '/:id/notifyDevices', verb: 'post'},
+  //     accepts: [
+  //       {arg: 'message', type: 'string', 'http': {source: 'query'}},
+  //       {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
+  //     ],
+  //     description: "Push notification to all Devices of user"
+  //   }
+  // );
 
   /************************************
    **** Container Methods

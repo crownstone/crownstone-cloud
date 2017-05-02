@@ -187,30 +187,30 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('upsert');
   model.disableRemoteMethodByName('createChangeStream');
 
-  model.disableRemoteMethodByName('__updateById__coordinatesHistory');
-  model.disableRemoteMethodByName('__link__coordinatesHistory');
-  model.disableRemoteMethodByName('__unlink__coordinatesHistory');
-  model.disableRemoteMethodByName('__exists__coordinatesHistory');
-  model.disableRemoteMethodByName('__findById__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__link__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__unlink__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__exists__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__findById__coordinatesHistory');
 
-  model.disableRemoteMethodByName('__create__locations');
-  model.disableRemoteMethodByName('__delete__locations');
-  model.disableRemoteMethodByName('__updateById__locations');
-  model.disableRemoteMethodByName('__deleteById__locations');
-  model.disableRemoteMethodByName('__destroyById__locations');
+  model.disableRemoteMethodByName('prototype.__create__locations');
+  model.disableRemoteMethodByName('prototype.__delete__locations');
+  model.disableRemoteMethodByName('prototype.__updateById__locations');
+  model.disableRemoteMethodByName('prototype.__deleteById__locations');
+  model.disableRemoteMethodByName('prototype.__destroyById__locations');
 
   // do we need these? since it is historical data, it should not be updateable once it is uploaded?
-  model.disableRemoteMethodByName('__updateById__scans');
-  model.disableRemoteMethodByName('__updateById__coordinatesHistory');
-  model.disableRemoteMethodByName('__updateById__energyUsageHistory');
-  model.disableRemoteMethodByName('__updateById__powerCurveHistory');
-  model.disableRemoteMethodByName('__updateById__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__scans');
+  model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__energyUsageHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__powerCurveHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__powerUsageHistory');
 
-  model.disableRemoteMethodByName('__delete__scans');
-  model.disableRemoteMethodByName('__delete__coordinatesHistory');
-  model.disableRemoteMethodByName('__delete__energyUsageHistory');
-  model.disableRemoteMethodByName('__delete__powerCurveHistory');
-  model.disableRemoteMethodByName('__delete__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__delete__scans');
+  model.disableRemoteMethodByName('prototype.__delete__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__delete__energyUsageHistory');
+  model.disableRemoteMethodByName('prototype.__delete__powerCurveHistory');
+  model.disableRemoteMethodByName('prototype.__delete__powerUsageHistory');
 
   function initStone(ctx, next) {
     debug("initStone");

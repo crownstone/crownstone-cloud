@@ -65,24 +65,24 @@ module.exports = function(model) {
   // address has to be unique to a stone
   // model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
 
-  model.disableRemoteMethodByName('__updateById__coordinatesHistory');
-  model.disableRemoteMethodByName('__link__coordinatesHistory');
-  model.disableRemoteMethodByName('__unlink__coordinatesHistory');
-  model.disableRemoteMethodByName('__exists__coordinatesHistory');
-  model.disableRemoteMethodByName('__findById__coordinatesHistory');
-  model.disableRemoteMethodByName('__delete__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__link__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__unlink__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__exists__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__findById__coordinatesHistory');
+  model.disableRemoteMethodByName('prototype.__delete__coordinatesHistory');
 
-  model.disableRemoteMethodByName('__updateById__locationsHistory');
-  // model.disableRemoteMethodByName('__create__locationsHistory');
-  model.disableRemoteMethodByName('__delete__locationsHistory');
-  model.disableRemoteMethodByName('__link__locationsHistory');
-  model.disableRemoteMethodByName('__unlink__locationsHistory');
-  model.disableRemoteMethodByName('__exists__locationsHistory');
-  model.disableRemoteMethodByName('__findById__locationsHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__locationsHistory');
+  // model.disableRemoteMethodByName('prototype.__create__locationsHistory');
+  model.disableRemoteMethodByName('prototype.__delete__locationsHistory');
+  model.disableRemoteMethodByName('prototype.__link__locationsHistory');
+  model.disableRemoteMethodByName('prototype.__unlink__locationsHistory');
+  model.disableRemoteMethodByName('prototype.__exists__locationsHistory');
+  model.disableRemoteMethodByName('prototype.__findById__locationsHistory');
 
-  model.disableRemoteMethodByName('__updateById__scans');
-  model.disableRemoteMethodByName('__findById__scans');
-  model.disableRemoteMethodByName('__delete__scans');
+  model.disableRemoteMethodByName('prototype.__updateById__scans');
+  model.disableRemoteMethodByName('prototype.__findById__scans');
+  model.disableRemoteMethodByName('prototype.__delete__scans');
 
   model.disableRemoteMethodByName('createChangeStream');
   model.disableRemoteMethodByName('upsert');
@@ -113,7 +113,6 @@ module.exports = function(model) {
       if (!userId) {
         return next(new Error("Not logged in!"));
       }
-
       item.ownerId = userId;
       next();
     }
@@ -132,8 +131,6 @@ module.exports = function(model) {
    **** Location
    ************************************/
 
-  let badge = 1;
-
   model.setCurrentLocation = function(device, locationId, next) {
     if ((device.currentLocationId === locationId) ||
       (String(device.currentLocationId) === String(locationId))) {
@@ -145,45 +142,6 @@ module.exports = function(model) {
     Location.findById(locationId, function(err, location) {
       if (err) return next(err);
       if (Location.checkForNullError(location, next, "id: " + locationId)) return;
-
-      debug("setCurrentLocation");
-
-      // debug("device:", device);
-      // debug("new location:", locationId);
-
-      debug("notify location change");
-
-      let PushModel = loopback.getModel('Push');
-      Notification = loopback.getModel('Notification');
-
-      // debug("location: ", location);
-
-      let note = new Notification({
-        expirationInterval: 3600, // Expires 1 hour from now.
-        badge: badge++,
-        sound: 'ping.aiff',
-        alert: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
-        message: '\uD83D\uDCE7 \u2709 ' + 'Location changed to ' + location.name + ' (' + locationId + ')',
-        messageFrom: 'Me'
-      });
-
-      // debug("installation: ", device.installation());
-
-      let Installation = loopback.getModel('Installation');
-      Installation.findOne({where: {deviceId: device.id}}, function(err, installation) {
-        if (err || !installation) {
-          debug("no installation found for device");
-          return;
-        }
-
-        PushModel.notifyById(installation.id, note, function (err) {
-          if (err) {
-            debug('Cannot notify %j: %s', installation.id, err.stack);
-            return;
-          }
-          debug('pushing notification to %j', installation.id);
-        });
-      });
 
       device.currentLocationId = locationId;
 

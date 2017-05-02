@@ -90,17 +90,17 @@ module.exports = function(model) {
 	model.disableRemoteMethodByName('upsert');
 	model.disableRemoteMethodByName('createChangeStream');
 
-	model.disableRemoteMethodByName('__link__presentPeople');
-	model.disableRemoteMethodByName('__unlink__presentPeople');
-	model.disableRemoteMethodByName('__findById__presentPeople');
-	model.disableRemoteMethodByName('__updateById__presentPeople');
-	model.disableRemoteMethodByName('__destroyById__presentPeople');
-	model.disableRemoteMethodByName('__create__presentPeople');
-	model.disableRemoteMethodByName('__delete__presentPeople');
+	model.disableRemoteMethodByName('prototype.__link__presentPeople');
+	model.disableRemoteMethodByName('prototype.__unlink__presentPeople');
+	model.disableRemoteMethodByName('prototype.__findById__presentPeople');
+	model.disableRemoteMethodByName('prototype.__updateById__presentPeople');
+	model.disableRemoteMethodByName('prototype.__destroyById__presentPeople');
+	model.disableRemoteMethodByName('prototype.__create__presentPeople');
+	model.disableRemoteMethodByName('prototype.__delete__presentPeople');
 
-	model.disableRemoteMethodByName('__delete__stones');
-	model.disableRemoteMethodByName('__deleteById__stones');
-	model.disableRemoteMethodByName('__destroyById__stones');
+	model.disableRemoteMethodByName('prototype.__delete__stones');
+	model.disableRemoteMethodByName('prototype.__deleteById__stones');
+	model.disableRemoteMethodByName('prototype.__destroyById__stones');
 
 	/************************************
 	 **** Model Validation
