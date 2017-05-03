@@ -97,7 +97,6 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__findById__currentLocation');
 
   model.disableRemoteMethodByName('prototype.__delete__spheres');
-  model.disableRemoteMethodByName('prototype.__create__spheres');
   model.disableRemoteMethodByName('prototype.__updateById__spheres');
   model.disableRemoteMethodByName('prototype.__destroyById__spheres');
   model.disableRemoteMethodByName('prototype.__link__spheres');
