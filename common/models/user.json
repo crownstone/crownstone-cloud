@@ -19,7 +19,7 @@
   },
   "properties": {
     "profilePicId": {
-      "type": "any"
+      "type": "string"
     },
     "firstName": {
       "type": "string"
