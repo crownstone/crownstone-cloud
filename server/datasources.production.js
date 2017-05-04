@@ -7,9 +7,6 @@ module.exports = {
                         + process.env.MONGODB_HOST + ":"
                         + process.env.MONGODB_PORT + "/"
                         + process.env.DATA_TABLE + "?authSource=admin&ssl=true",
-    "server": {
-      "sslValidate": false
-    }
   },
   userDs: {
     "connector": "loopback-connector-mongodb",
@@ -19,9 +16,6 @@ module.exports = {
                         + process.env.MONGODB_HOST + ":"
                         + process.env.MONGODB_PORT + "/"
                         + process.env.USER_TABLE + "?authSource=admin&ssl=true",
-    "server": {
-      "sslValidate": false,
-    }
   },
   filesDs: {
     "connector": "loopback-component-storage-gridfs",
@@ -31,9 +25,6 @@ module.exports = {
                         + process.env.MONGODB_HOST + ":"
                         + process.env.MONGODB_PORT + "/"
                         + process.env.FILES_TABLE + "?authSource=admin&ssl=true",
-    "server": {
-      "sslValidate": false
-    }
   },
   "sendgridDs": {
     "connector": "loopback-connector-sendgrid",

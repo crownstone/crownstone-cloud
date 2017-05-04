@@ -3,7 +3,7 @@
 function performOauthClientOperations(app) {
   let AppModel = app.dataSources.mongoDs.getModel('App');
 
-  clearAppDatabase(AppModel);
+  // clearAppDatabase(AppModel);
 
   // create the CrownstoneApp
   // let appName = 'Crownstone.consumer';

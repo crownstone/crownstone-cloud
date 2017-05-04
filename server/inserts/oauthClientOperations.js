@@ -22,7 +22,7 @@ function performOauthClientOperations(app) {
   let permissionModel = app.dataSources.userDs.getModel('OAuthClientApplication');
 
   // uncomment this line to delete ALL CLIENTS FROM THE OAUTH DATABASE
-  clearClientDatabase(permissionModel).catch((err) => { console.log("Error while deleting clients:", err); })
+  // clearClientDatabase(permissionModel).catch((err) => { console.log("Error while deleting clients:", err); })
 
   // empty promise so all clients that are added are in matching then statements
   // new Promise((resolve, reject) => { resolve() })
