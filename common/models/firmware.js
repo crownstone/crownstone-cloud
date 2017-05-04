@@ -69,7 +69,7 @@ module.exports = function(model) {
     model.findOne({where: {version: version}})
 			.then((result) => {
         // check if the hardware version is supported by this firmware
-        if (result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
+        if (result && result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
           for (let i = 0; i < result.supportedHardwareVersions.length; i++) {
             if (result.supportedHardwareVersions[i] === hardwareVersion) {
               return callback(null, result);
