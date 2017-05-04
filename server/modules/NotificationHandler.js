@@ -22,7 +22,6 @@ class NotificationHandlerClass {
           for (let k = 0; k < installations.length; k++) {
             switch (installations[k].deviceType) {
               case 'ios':
-                console.log("HER")
                 iosTokens.push(installations[k].deviceToken);
                 break;
               case 'android':
@@ -39,7 +38,6 @@ class NotificationHandlerClass {
         // get app, currently hardcoded.
         loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
           .then((appResult) => {
-            console.log(appResult);
             if (appResult && appResult.pushSettings) {
               this._notifyAndroid(appResult.pushSettings.gcm, androidTokens);
               this._notifyIOS(appResult.pushSettings.apns, iosTokens);

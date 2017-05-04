@@ -1,11 +1,15 @@
+
+
 function performOauthClientOperations(app) {
   let AppModel = app.dataSources.mongoDs.getModel('App');
 
+  clearAppDatabase(AppModel);
+
   // create the CrownstoneApp
-  let appName = 'Crownstone.consumer';
-  // hide keys in the keyData which is in .gitignore
-  let keys = require('./keyData/' + appName);
-  createApp(AppModel, appName, keys);
+  // let appName = 'Crownstone.consumer';
+  // // hide keys in the keyData which is in .gitignore
+  // let keys = require('./keyData/' + appName);
+  // createApp(AppModel, appName, keys);
 }
 
 function clearAppDatabase(AppModel) {

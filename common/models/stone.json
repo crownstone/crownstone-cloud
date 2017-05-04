@@ -72,6 +72,9 @@
     "bootloaderVersion": {
       "type": "string"
     },
+    "hardwareVersion": {
+      "type": "string"
+    },
     "onlyOnWhenDark": {
       "type": "boolean"
     },

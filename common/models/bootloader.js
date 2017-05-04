@@ -65,10 +65,22 @@ module.exports = function(model) {
 
 
 
-  model.getByVersion = function(version, callback) {
+  model.getBootloader = function(version, hardwareVersion, callback) {
     model.findOne({where: {version: version}})
       .then((result) => {
-        callback(null, result)
+        // check if the hardware version is supported by this firmware
+        if (result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
+          for (let i = 0; i < result.supportedHardwareVersions.length; i++) {
+            if (result.supportedHardwareVersions[i] === hardwareVersion) {
+              return callback(null, result);
+            }
+          }
+          // nothing found.
+          callback(null, null);
+        }
+        else {
+          callback(null, null);
+        }
       })
       .catch((err) => {
         callback(err)
@@ -76,14 +88,15 @@ module.exports = function(model) {
   };
 
   model.remoteMethod(
-    'getByVersion',
+    'getBootloader',
     {
-      http: {path: '/getByVersion', verb: 'get'},
+      http: {path: '/getBootloader', verb: 'get'},
       accepts: [
         {arg: 'version', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'hardwareVersion', type: 'string', required: true, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: 'Bootloader', root: true},
-      description: "Get bootloader details by version number, or null if the version was not found."
+      description: "Get bootloader details by version number and hardware version, or null if the version was not found."
     }
   );
 };
