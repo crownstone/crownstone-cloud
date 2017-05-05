@@ -13,7 +13,7 @@
   "properties": {
     "appName":{
       "type":"string",
-      "required": "true"
+      "required": true
     },
     "deviceType": {
       "type": "string",

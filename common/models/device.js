@@ -80,6 +80,8 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__exists__locationsHistory');
   model.disableRemoteMethodByName('prototype.__findById__locationsHistory');
 
+  model.disableRemoteMethodByName('prototype.__create__installations');
+
   model.disableRemoteMethodByName('prototype.__updateById__scans');
   model.disableRemoteMethodByName('prototype.__findById__scans');
   model.disableRemoteMethodByName('prototype.__delete__scans');
@@ -375,7 +377,7 @@ module.exports = function(model) {
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: 'AppInstallation', root:true},
-      description: "Creates a new instance in installation of this model."
+      description: "Creates a snew instance in installation of this model."
     }
   );
 
