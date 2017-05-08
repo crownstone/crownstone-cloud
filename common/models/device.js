@@ -202,7 +202,7 @@ module.exports = function(model) {
     {
       http: {path: '/:id/currentLocation/:fk', verb: 'PUT'},
       accepts: [
-        {arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}},
+        {arg: 'fk', type: 'any', 'http': {source: 'path'}},
         {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
       ],
       description: "Set the current location of the device"
