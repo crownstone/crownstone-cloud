@@ -194,7 +194,6 @@ module.exports = function(model) {
         model.clearCurrentLocation(device, next);
       }
     })
-
   };
 
   model.remoteMethod(

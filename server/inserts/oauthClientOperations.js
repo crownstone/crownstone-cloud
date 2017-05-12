@@ -21,6 +21,7 @@ function createSecret() {
 function performOauthClientOperations(app) {
   let permissionModel = app.dataSources.userDs.getModel('OAuthClientApplication');
 
+  showClientDetails(permissionModel, 'Alexa')
   // uncomment this line to delete ALL CLIENTS FROM THE OAUTH DATABASE
   // clearClientDatabase(permissionModel).catch((err) => { console.log("Error while deleting clients:", err); })
 

@@ -90,7 +90,7 @@ module.exports = function(model) {
   model.remoteMethod(
     'getFirmware',
     {
-      http: {path: '/getFirmware', verb: 'get'},
+      http: {path: '/', verb: 'get'},
       accepts: [
         {arg: 'version', type: 'string', required: true, http: { source : 'query' }},
         {arg: 'hardwareVersion', type: 'string', required: true, http: { source : 'query' }},
