@@ -208,11 +208,9 @@ module.exports = function(model) {
   };
 
   model.onCreate = function(context, user, callback) {
-
     if (model.settings.emailVerificationRequired) {
       model.sendVerification(user, null, function(err, response) {
         if (err) return callback(err);
-
         callback();
       })
     } else {
@@ -222,9 +220,28 @@ module.exports = function(model) {
 
   //send verification email after registration
   model.afterRemote('create', function(context, user, next) {
+    // provide the user with firmwares and bootloader.
+    const Firmwares = loopback.getModel('Firmware');
+    const Bootloaders = loopback.getModel('Bootloader');
+
+    Firmwares.getLatestVersions()
+      .then((data) => {
+        user.firmwareVersionsAvailable = data;
+        return Bootloaders.getLatestVersions();
+      })
+      .then((data) => {
+        user.bootloaderVersionsAvailable = data;
+        user.save();
+        model.onCreate(context, user, next);
+      })
+      .catch((err) => {
+        next(err)
+      });
+
+
+
     // console.log('> user.afterRemote triggered');
-    model.onCreate(context, user, next);
-    // next();
+
   });
 
   //send password reset link when requested

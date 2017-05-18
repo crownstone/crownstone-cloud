@@ -1,7 +1,7 @@
 "use strict";
 
 const debug = require('debug')('loopback:dobots');
-
+const versionUtil = require('../../server/util/versionUtil');
 
 /**
  * Minimum compatible version is used to determine if a fresh install is required.
@@ -15,7 +15,6 @@ module.exports = function(model) {
    **** Model Validation
    ************************************/
 
-  model.validatesUniquenessOf('version', {message: 'This firmware version already exists.'});
   model.validatesUniquenessOf('downloadUrl', {message: 'This firmware download url already exists.'});
 
   let app = require('../../server/server');
@@ -64,7 +63,6 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('upsertWithWhere');
 
 
-
   model.getFirmware = function(version, hardwareVersion, callback) {
     model.findOne({where: {version: version}})
 			.then((result) => {
@@ -86,6 +84,18 @@ module.exports = function(model) {
         callback(err)
       })
   };
+
+
+  model.getLatestVersions = function() {
+    return new Promise((resolve, reject) => {
+      model.find()
+        .then((results) => {
+          resolve(versionUtil.getHighestForAllHardwareVersionsForAllUsers(results));
+        })
+        .catch((err) => { reject(err); })
+    })
+  };
+
 
   model.remoteMethod(
     'getFirmware',

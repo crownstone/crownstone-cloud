@@ -30,6 +30,10 @@
     "sha1hash": {
       "type": "string",
       "required": true
+    },
+    "releaseLevel": {
+      "type": "number",
+      "required": true
     }
   },
   "acls": [],

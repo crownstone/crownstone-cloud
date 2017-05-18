@@ -1,31 +1,8 @@
 "use strict";
 
-let nordicChipVersion = "QFAAB0";
-let productionRun = "0000";
-let housingId = "0000";
-let reserved = "00000000";
-let plugVersions = [
-  "10102000100", // ACR01B2A == CROWNSTONE PLUG
-  "10102000200", // ACR01B2B == CROWNSTONE PLUG
-  "10102010000", // ACR01B2C == CROWNSTONE PLUG
-];
+let hardwareVersions = require("../constants/hardwareVersions");
 
-let builtinVersions = [
-  "10103000100", // ACR01B1A == CROWNSTONE BUILTIN
-  "10103000200", // ACR01B1B == CROWNSTONE BUILTIN
-  "10103000300", // ACR01B1C == CROWNSTONE BUILTIN
-  "10103000400", // ACR01B1D == CROWNSTONE BUILTIN
-  "10103010000", // ACR01B1E == CROWNSTONE BUILTIN
-];
-
-let guidestoneVersions = [
-  "10104010000", // GUIDESTONE
-];
-
-let plugAndBuiltinVariations = [];
-plugVersions.forEach(   (version) => { plugAndBuiltinVariations.push(version + productionRun + housingId + reserved + nordicChipVersion); });
-builtinVersions.forEach((version) => { plugAndBuiltinVariations.push(version + productionRun + housingId + reserved + nordicChipVersion); });
-
+let plugAndBuiltinVariations = hardwareVersions.util.getAllPlugs().concat(hardwareVersions.util.getAllBuiltIns());
 
 function performFirmwareOperations(app) {
   let firmwareModel = app.dataSources.mongoDs.getModel('Firmware');
@@ -73,12 +50,12 @@ function showBootloaders(bootloaderModel) {
   return show(bootloaderModel, 'Bootloader');
 }
 
-function releaseFirmware(firmwareModel, firmwareVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl) {
-  return _release(firmwareModel, 'Firmware', firmwareVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl);
+function releaseFirmware(firmwareModel, firmwareVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel) {
+  return _release(firmwareModel, 'Firmware', firmwareVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel);
 }
 
-function releaseBootloader(bootloaderModel, bootloaderVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl) {
-  return _release(bootloaderModel, 'Bootloader', bootloaderVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl);
+function releaseBootloader(bootloaderModel, bootloaderVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel) {
+  return _release(bootloaderModel, 'Bootloader', bootloaderVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel);
 }
 
 function removeFirmwareVersion(firmwareModel, version) {
@@ -98,13 +75,14 @@ function show(model, type) {
     })
 }
 
-function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl) {
+function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel) {
   return model.create({
     version: releaseVersion,
     supportedHardwareVersions: hardwareVersions,
     minimumCompatibleVersion: minimumCompatibleVersion,
     sha1hash: hash.replace(/( )/g,""),
     downloadUrl: downloadUrl,
+    releaseLevel: releaseLevel,
   })
     .then((result) => {
       console.log(type, "version ", releaseVersion, " added successfully!");
