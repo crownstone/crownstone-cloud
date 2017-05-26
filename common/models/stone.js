@@ -215,13 +215,13 @@ module.exports = function(model) {
   function initStone(ctx, next) {
     debug("initStone");
     // debug("ctx", ctx);
+    let item = ctx.instance;
 
-    if (ctx.instance) {
-      injectMajorMinor(ctx.instance);
-      injectUID(ctx.instance, next);
-    } else {
-      // injectMajorMinor(ctx.data);
-      // injectUID(ctx.data, next);
+    if (item) {
+      injectMajorMinor(item);
+      injectUID(item, next);
+    }
+    else {
       next();
     }
   }
@@ -258,8 +258,40 @@ module.exports = function(model) {
     }
   }
 
+  function enforceUniqueness(ctx, next) {
+    // debug("ctx", ctx);
+    let item = ctx.instance;
+    if (item) {
+      // double check if the address is indeed unique in this sphere.
+      model.find({where: {and: [{sphereId: item.sphereId}, {address: item.address}]}, order: "createdAt ASC"})
+        .then((results) => {
+          if (results.length > 1) {
+            // delete all but the first one
+            for (let i = 1; i < results.length; i++) {
+              model.destroyById(result[i].id).catch((err) => {});
+            }
+            let err = {
+              "statusCode": 422,
+              "name": "ValidationError",
+              "message": "The `Stone` instance is not valid. Details: `address` a stone with this address was already added! (value: \"string\")."
+            };
+            return next(err);
+          }
+          else {
+            next();
+          }
+        })
+        .catch((err) => {
+          next(err);
+        })
+    } else {
+      next();
+    }
+  }
+
   // populate some of the elements like uid, major, minor, if not already provided
   model.observe('before save', initStone);
+  model.observe('after save', enforceUniqueness);
 
   model.findLocation = function(stoneAddress, callback) {
     model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
