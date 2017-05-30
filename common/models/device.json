@@ -33,6 +33,12 @@
     "locale": {
       "type": "string"
     },
+    "deviceType": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
     "hubFunction": {
       "type": "boolean",
       "default": false

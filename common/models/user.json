@@ -51,6 +51,10 @@
     "uploadPowerUsage": {
       "type": "boolean",
       "default": false
+    },
+    "uploadDeviceDetails": {
+      "type": "boolean",
+      "default": true
     }
   },
   "validations": [],
