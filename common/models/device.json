@@ -24,6 +24,15 @@
     "description": {
       "type": "string"
     },
+    "OS": {
+      "type": "string"
+    },
+    "userAgent": {
+      "type": "string"
+    },
+    "locale": {
+      "type": "string"
+    },
     "hubFunction": {
       "type": "boolean",
       "default": false
