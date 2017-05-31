@@ -36,9 +36,6 @@
     "switchState": {
       "type": "number"
     },
-    "switchStateUpdatedAt": {
-      "type": "date"
-    },
     "deviceType": {
       "type": "string"
     },

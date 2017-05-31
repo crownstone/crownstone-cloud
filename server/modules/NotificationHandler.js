@@ -8,7 +8,7 @@ class NotificationHandlerClass {
     // TODO: possibly start the apn connection and the gcm sender?
   }
 
-  notify(sphereModel, messageSettings) {
+  notify(sphereModel, messageData) {
     // get users
     let iosTokens = [];
     let androidTokens = [];
@@ -18,15 +18,19 @@ class NotificationHandlerClass {
       for (let i = 0; i < users.length; i++) {
         let devices = users[i].devices();
         for (let j = 0; j < devices.length; j++) {
-          let installations = devices[j].installations();
-          for (let k = 0; k < installations.length; k++) {
-            switch (installations[k].deviceType) {
-              case 'ios':
-                iosTokens.push(installations[k].deviceToken);
-                break;
-              case 'android':
-                androidTokens.push(installations[k].deviceToken);
-                break;
+          if (devices[j].hubFunction === true) {
+            let installations = devices[j].installations();
+            for (let k = 0; k < installations.length; k++) {
+              if (installations[k].deviceToken) {
+                switch (installations[k].deviceType) {
+                  case 'ios':
+                    iosTokens.push(installations[k].deviceToken);
+                    break;
+                  case 'android':
+                    androidTokens.push(installations[k].deviceToken);
+                    break;
+                }
+              }
             }
           }
         }
@@ -39,8 +43,8 @@ class NotificationHandlerClass {
         loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
           .then((appResult) => {
             if (appResult && appResult.pushSettings) {
-              this._notifyAndroid(appResult.pushSettings.gcm, androidTokens);
-              this._notifyIOS(appResult.pushSettings.apns, iosTokens);
+              this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
+              this._notifyIOS(appResult.pushSettings.apns, iosTokens, messageData);
             }
             else {
               throw "No App to Push to."
@@ -55,9 +59,14 @@ class NotificationHandlerClass {
    * Notify all android devices
    * @param keys      // { serverApiKey: 'xxxxxxx' }
    * @param tokens    // array of tokens
+   * @param messageData    // JSON
    * @private
    */
-  _notifyAndroid(keys, tokens) {
+  _notifyAndroid(keys, tokens, messageData = {}) {
+    if (tokens.length === 0) {
+      return;
+    }
+
     // Create a message
 
     // ... or some given values
@@ -69,10 +78,7 @@ class NotificationHandlerClass {
       timeToLive: 3,
       restrictedPackageName: "somePackageName",
       dryRun: true,
-      data: {
-        key1: 'message1',
-        key2: 'message2'
-      },
+      data: messageData.data,
       notification: {
         title: "Hello, World",
         icon: "ic_launcher",
@@ -95,9 +101,8 @@ class NotificationHandlerClass {
     let sender = new gcm.Sender(keys.serverApiKey);
 
     // Add the registration tokens of the devices you want to send to
-
     sender.send(message, {registrationTokens: tokens}, function (err, response) {
-      if (err) console.error(err);
+      if (err) console.error('ANDROID ERROR PUSH',err);
       else     console.log("ANDROID PUSH RESPONSE", response);
     });
 
@@ -112,9 +117,14 @@ class NotificationHandlerClass {
                       //   teamId: 'xx'
                       // }
    * @param tokens    // array of tokens
+   * @param messageData  JSON
    * @private
    */
-  _notifyIOS(keys, tokens) {
+  _notifyIOS(keys, tokens, messageData = {}) {
+    if (tokens.length === 0) {
+      return;
+    }
+
     let options = {
       token: {
         key: keys.keyToken,
@@ -129,24 +139,30 @@ class NotificationHandlerClass {
     let notification = new apn.Notification();
 
     notification.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-    notification.badge = 0;                     // 0 = remove badge
-    notification.sound = "ping.aiff";                           // do not add if no sound should play
-    notification.alert = "Crownstone has been switched!";       // alert message, do not add if no alert has to be shown.
-    notification.body =  "It was awesome!";       // alert message body, do not add if no alert has to be shown.
-    notification.payload = {'switch this thing': 'stoney the stone'};
-    // notification.contentAvailable = 1;                      // add this for silent push
+    // notification.badge = 0;                     // 0 = remove badge
+    notification.payload = messageData.data;
+    notification.topic = 'com.crownstone.Crownstone';
+
+    if (messageData.silent) {
+      // add this for silent push
+      notification.contentAvailable = 1;
+    }
+    else {
+      notification.sound = "ping.aiff";             // do not add if no sound should play
+      notification.body =  messageData.type;        // alert message body, do not add if no alert has to be shown.
+      notification.alert = messageData.title || 'Notification Received'; // alert message, do not add if no alert has to be shown.
+    }
 
     // Send the notification to the API with send, which returns a promise.
-
     apnProvider.send(notification, tokens)
       .then((result) => {
-        console.log("IOS PUSH RESULT", JSON.stringify(result, undefined,2));
+        // console.log("IOS PUSH RESULT", JSON.stringify(result, undefined,2));
       })
       .then(() => {
         apnProvider.shutdown()
       })
       .catch((err) => {
-        console.log("ERROR DURING PUSH!", err)
+        // console.log("ERROR DURING PUSH!", err)
       })
   }
 

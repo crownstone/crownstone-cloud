@@ -91,10 +91,11 @@
     "loopback#urlNotFound": {}
   },
   "final:after": {
+    "./middleware/error-logger": {},
     "strong-error-handler": {
       "params": {
         "debug": false,
-        "log": true,
+        "log": false,
         "safeFields": ["errorCode","message"]
       }
     }

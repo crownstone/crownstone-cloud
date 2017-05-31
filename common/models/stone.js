@@ -829,7 +829,7 @@ module.exports = function(model) {
   );
 
 
-  model.setSwitchStateRemotely = function(id, switchState, switchStateUpdatedAt, updatedAt, callback) {
+  model.setSwitchStateRemotely = function(id, switchState, callback) {
     "use strict";
     debug("setSwitchStateRemotely");
     model.findById(id)
@@ -838,23 +838,17 @@ module.exports = function(model) {
           callback("Could not find this stone.");
           return;
         }
-        if (!switchStateUpdatedAt) {
-          switchStateUpdatedAt = new Date();
-        }
-
-        stone.switchStateUpdatedAt = switchStateUpdatedAt;
-        stone.switchState = Math.max(0,Math.min(1, switchState));
-
-        if (updatedAt) {
-          stone.updatedAt = updatedAt;
-        }
 
         if (stone.sphereId) {
           let sphereModel = loopback.getModel("Sphere");
           sphereModel.findById(stone.sphereId)
             .then((sphere) => {
               if (sphere) {
-                notificationHandler.notify(sphere);
+                notificationHandler.notify(sphere, {
+                  type: 'setSwitchStateRemotely',
+                  data:{stoneId: id, sphereId: stone.sphereId, switchState: switchState, command:'setSwitchStateRemotely'},
+                  silent: true
+                });
               }
               else {
                 throw 'No Sphere to notify';
@@ -862,9 +856,6 @@ module.exports = function(model) {
             });
         }
 
-        return stone.save();
-      })
-      .then((stoneInstance) => {
         callback();
       })
       .catch((err) => {
@@ -879,8 +870,6 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
-        {arg: 'switchStateUpdatedAt', type: 'date', required: false, http: { source : 'query' }},
-        {arg: 'updatedAt', type: 'date', required: false, http: { source : 'query' }},
       ],
       description: "Set the switchState of a stone. Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming. If the stone does not support dimming (or is configured that way), anything over 0 is full on."
     }
