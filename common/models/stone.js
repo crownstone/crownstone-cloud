@@ -186,6 +186,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('updateAll');
   model.disableRemoteMethodByName('upsert');
   model.disableRemoteMethodByName('createChangeStream');
+  model.disableRemoteMethodByName('findOne');
 
   model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
   model.disableRemoteMethodByName('prototype.__link__coordinatesHistory');
@@ -294,12 +295,28 @@ module.exports = function(model) {
   model.observe('after save', enforceUniqueness);
 
   model.findLocation = function(stoneAddress, callback) {
-    model.find({where: {address: stoneAddress}, include: {locations: 'name'}}, function(err, stones) {
-      if (stones.length > 0 && stones[0].locations.length > 0) {
-        // debug('found location: ' + JSON.stringify(stones[0].locations));
-        callback(null, stones[0].locations);
-      } else {
-        return callback(new Error("no stone found with address: " + stoneAddress));
+    if (!stoneAddress) {
+      let error = new Error("No stone address provided.");
+      error.statusCode = 400;
+      return callback(error);
+    }
+
+
+    model.findOne({where: {address: stoneAddress}, include: 'locations'}, function(err, stone) {
+      if (err) { return callback(err); }
+      if (stone) {
+        if (stone.locations) {
+          let locations = stone.locations();
+          return callback(null, locations);
+        }
+        else {
+          return callback(null,[]);
+        }
+      }
+      else {
+        let error = new Error("No stone found with address: " + stoneAddress);
+        error.statusCode = 404;
+        return callback(error);
       }
     });
   };
