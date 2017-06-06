@@ -863,7 +863,7 @@ module.exports = function(model) {
               if (sphere) {
                 notificationHandler.notify(sphere, {
                   type: 'setSwitchStateRemotely',
-                  data:{stoneId: id, sphereId: stone.sphereId, switchState: switchState, command:'setSwitchStateRemotely'},
+                  data:{stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchState)), command:'setSwitchStateRemotely'},
                   silent: true
                 });
               }
