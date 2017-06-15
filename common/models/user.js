@@ -55,6 +55,12 @@ module.exports = function(model) {
     "permission": "ALLOW",
     "property": "me"
   });
+  model.settings.acls.push({
+    "principalType": "ROLE",
+    "principalId": "$authenticated",
+    "permission": "ALLOW",
+    "property": "getUserId"
+  });
   //***************************
   // OWNER:
   //   - anything on the the users own item
@@ -102,6 +108,15 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__link__spheres');
   model.disableRemoteMethodByName('prototype.__count__spheres');
   model.disableRemoteMethodByName('prototype.__get__spheres');
+
+  model.disableRemoteMethodByName('prototype.__delete__hooks');
+  model.disableRemoteMethodByName('prototype.__updateById__hooks');
+  model.disableRemoteMethodByName('prototype.__destroyById__hooks');
+  model.disableRemoteMethodByName('prototype.__link__hooks');
+  model.disableRemoteMethodByName('prototype.__count__hooks');
+  model.disableRemoteMethodByName('prototype.__get__hooks');
+  model.disableRemoteMethodByName('prototype.__create__hooks');
+  model.disableRemoteMethodByName('prototype.__get__hooks');
 
   model.disableRemoteMethodByName('prototype.__delete__devices');
 
@@ -321,6 +336,29 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: 'user', root: true},
       description: "Return instance of authenticated User"
+    }
+  );
+
+  model.getUserId = function(options, callback) {
+    // debug("me");
+    let errorMessage = "Could not find user.";
+    if (options && options.accessToken && options.accessToken.userId) {
+      callback(null, options.accessToken.userId)
+    }
+    else {
+      callback(errorMessage);
+    }
+  };
+
+  model.remoteMethod(
+    'getUserId',
+    {
+      http: {path: '/userId', verb: 'get'},
+      accepts: [
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: 'string', root: true},
+      description: "Return userId of authenticated User"
     }
   );
 

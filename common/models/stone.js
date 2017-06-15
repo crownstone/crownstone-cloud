@@ -185,8 +185,13 @@ module.exports = function(model) {
 
   model.disableRemoteMethodByName('updateAll');
   model.disableRemoteMethodByName('upsert');
+  model.disableRemoteMethodByName('upsertWithWhere');
+  model.disableRemoteMethodByName('replaceOrCreate');
+  model.disableRemoteMethodByName('patchOrCreate');
+  model.disableRemoteMethodByName('create');
   model.disableRemoteMethodByName('createChangeStream');
   model.disableRemoteMethodByName('findOne');
+  model.disableRemoteMethodByName('replaceById');
 
   model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
   model.disableRemoteMethodByName('prototype.__link__coordinatesHistory');
@@ -269,7 +274,7 @@ module.exports = function(model) {
           if (results.length > 1) {
             // delete all but the first one
             for (let i = 1; i < results.length; i++) {
-              model.destroyById(result[i].id).catch((err) => {});
+              model.destroyById(results[i].id).catch((err) => {});
             }
             let err = {
               "statusCode": 422,
@@ -294,106 +299,17 @@ module.exports = function(model) {
   model.observe('before save', initStone);
   model.observe('after save', enforceUniqueness);
 
-  model.findLocation = function(stoneAddress, callback) {
-    if (!stoneAddress) {
-      let error = new Error("No stone address provided.");
-      error.statusCode = 400;
-      return callback(error);
-    }
-
-
-    model.findOne({where: {address: stoneAddress}, include: 'locations'}, function(err, stone) {
-      if (err) { return callback(err); }
-      if (stone) {
-        if (stone.locations) {
-          let locations = stone.locations();
-          return callback(null, locations);
-        }
-        else {
-          return callback(null,[]);
-        }
-      }
-      else {
-        let error = new Error("No stone found with address: " + stoneAddress);
-        error.statusCode = 404;
-        return callback(error);
-      }
-    });
-  };
-
-  model.remoteMethod(
-    'findLocation',
-    {
-      http: {path: '/findLocation', verb: 'get'},
-      accepts: {arg: 'address', type: 'string'},
-      returns: {arg: 'location', type: 'object'},
-      description: "Find the location of the stone by address"
-    }
-  );
-
   model.afterRemote('*.__create__scans', function(ctx, instance, next) {
     next();
   });
 
   /************************************
-   **** Coordinate
-   ************************************/
-
-  model.setCurrentCoordinate = function(stone, coordinate, next) {
-
-    debug("setCurrentCoordinate");
-
-    stone.coordinatesHistory.create(coordinate, function(err, coordinateInstance) {
-      if (err) return next(err);
-
-      if (coordinateInstance) {
-        stone.currentCoordinateId = coordinateInstance.id;
-
-        stone.save(function(err, stoneInstance) {
-          if (next) {
-            if (err) return next(err);
-            next(null, coordinateInstance);
-          }
-        })
-      } else {
-        return next(new Error("failed to create coordinate"));
-      }
-    });
-
-  };
-
-  model.remoteSetCurrentCoordinate = function(coordinate, stoneId, next) {
-    debug("remoteSetCurrentCoordinate");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      model.setCurrentCoordinate(stone, coordinate, next);
-    })
-
-  };
-
-  model.remoteMethod(
-    'remoteSetCurrentCoordinate',
-    {
-      http: {path: '/:id/currentCoordinate/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: 'Coordinate', required: true, 'http': {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: 'Coordinate', root: true},
-      description: "Add current coordinate of the stone"
-    }
-  );
-
-  /************************************
    **** Energy Usage
    ************************************/
 
-  model.setCurrentEnergyUsage = function(stone, energyUsage, next) {
+  model._setCurrentEnergyUsage = function(stone, energyUsage, next) {
 
-    debug("setCurrentEnergyUsage");
+    debug("_setCurrentEnergyUsage");
 
     // debug("stone:", stone);
     // debug("energyUsage:", energyUsage);
@@ -419,20 +335,20 @@ module.exports = function(model) {
 
   };
 
-  model.remoteSetCurrentEnergyUsage = function(energyUsage, stoneId, next) {
-    debug("remoteSetCurrentEnergyUsage");
+  model.setCurrentEnergyUsage = function(energyUsage, stoneId, next) {
+    debug("setCurrentEnergyUsage");
 
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      model.setCurrentEnergyUsage(stone, energyUsage, next);
+      model._setCurrentEnergyUsage(stone, energyUsage, next);
     })
 
   };
 
   model.remoteMethod(
-    'remoteSetCurrentEnergyUsage',
+    'setCurrentEnergyUsage',
     {
       http: {path: '/:id/currentEnergyUsage/', verb: 'POST'},
       accepts: [
@@ -448,9 +364,9 @@ module.exports = function(model) {
    **** Power Usage
    ************************************/
 
-  model.setCurrentPowerUsage = function(stone, powerUsage, next) {
+  model._setCurrentPowerUsage = function(stone, powerUsage, next) {
 
-    debug("setCurrentPowerUsage");
+    debug("_setCurrentPowerUsage");
 
     // debug("stone:", stone);
     // debug("powerUsage:", powerUsage);
@@ -476,164 +392,53 @@ module.exports = function(model) {
 
   };
 
-  model.remoteSetCurrentPowerUsage = function(powerUsage, stoneId, next) {
-    debug("remoteSetCurrentPowerUsage");
+  model.setCurrentPowerUsage = function(powerUsage, stoneId, next) {
+    debug("setCurrentPowerUsage");
 
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      model.setCurrentPowerUsage(stone, powerUsage, next);
+      model._setCurrentPowerUsage(stone, powerUsage, next);
     })
 
   };
 
   model.remoteMethod(
-    'remoteSetCurrentPowerUsage',
+    'setCurrentPowerUsage',
     {
       http: {path: '/:id/currentPowerUsage/', verb: 'POST'},
       accepts: [
-        {arg: 'data', type: 'PowerUsage', required: true, 'http': {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
+        {arg: 'data', type: 'PowerUsage', required: true, http: {source: 'body'}},
+        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
       ],
       returns: {arg: 'data', type: 'PowerUsage', root: true},
       description: "Add current power usage of the stone"
     }
   );
 
-  /************************************
-   **** Power Curve
-   ************************************/
-
-  model.setCurrentPowerCurve = function(stone, powerCurve, next) {
-
-    debug("setCurrentPowerCurve");
-
-    // debug("stone:", stone);
-    // debug("powerCurve:", powerCurve);
-
-    powerCurve.sphereId = stone.sphereId;
-
-    stone.powerCurveHistory.create(powerCurve, function(err, powerCurveInstance) {
-      if (err) return next(err);
-
-      if (powerCurveInstance) {
-        stone.currentPowerCurveId = powerCurveInstance.id;
-
-        stone.save(function(err, stoneInstance) {
-          if (next) {
-            if (err) return next(err);
-            next(null, powerCurveInstance);
-          }
-        })
-      } else {
-        return next(new Error("failed to create powerCurve"));
-      }
-    });
-
-  };
-
-  model.remoteSetCurrentPowerCurve = function(powerCurve, stoneId, next) {
-    debug("remoteSetCurrentPowerCurve");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      model.setCurrentPowerCurve(stone, powerCurve, next);
-    })
-
-  };
-
-  model.remoteMethod(
-    'remoteSetCurrentPowerCurve',
-    {
-      http: {path: '/:id/currentPowerCurve/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: 'PowerCurve', required: true, 'http': {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: 'PowerCurve', root: true},
-      description: "Add current power curve of the stone"
-    }
-  );
 
   /************************************
    **** Appliance
    ************************************/
 
-  // function removeApplianceFromStone(stone, applianceId, next) {
-
-  // 	const Appliance = loopback.getModel('Appliance');
-  // 	Appliance.findById(applianceId, function(err, appliance) {
-  // 		if (err) return next(err);
-  // 		if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
-
-  // 		stone.applianceId = undefined;
-  // 		stone.save();
-
-  // 		if (!appliance) {
-  // 			// this is not necessarily a fatal error, could happen
-  // 			// if the appliance was deleted but stone still has the link
-  // 			// if a new appliance should be added we don't care if the
-  // 			// stone can't be removed from the old one because it was not
-  // 			// found
-  // 			debug("no appliance found with id");
-  // 			return next();
-  // 		} else {
-  // 			appliance.stones.remove(stone, function(err) {
-  // 				if (err) return next(err);
-  // 				next();
-  // 			});
-  // 		}
-  // 	});
-  // }
-
-  // function addApplianceToStone(stone, applianceId, next) {
-
-  // 	const Appliance = loopback.getModel('Appliance');
-  // 	Appliance.findById(applianceId, function(err, appliance) {
-  // 		if (err) return next(err);
-  // 		if (Appliance.checkForNullError(appliance, next, "id: " + applianceId)) return;
-
-  // 		stone.applianceId = applianceId;
-  // 		stone.save(function(err) {
-  // 			if (err) return next(err);
-  // 			next();
-  // 		});
-  // 		// appliance.stones.add(stone, function(err) {
-  // 		// 	if (err) return next(err);
-  // 		// 	next();
-  // 		// });
-  // 	});
-  // }
-
-  model.remoteSetAppliance = function(stoneId, applianceId, next) {
-    debug("remoteSetAppliance");
+  model.setAppliance = function(stoneId, applianceId, next) {
+    debug("setAppliance");
 
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
       stone.applianceId = applianceId;
-      stone.save(function(err) {
+      stone.save(function (err) {
         if (err) return next(err);
         next();
       });
-      // if (stone.applianceId) {
-      // 	removeApplianceFromStone(stone, stone.applianceId, function(err) {
-      // 		if (err) return next(err);
-      // 		addApplianceToStone(stone, applianceId, next);
-      // 	})
-      // } else {
-      // 	addApplianceToStone(stone, applianceId, next);
-      // }
     });
-
   };
 
   model.remoteMethod(
-    'remoteSetAppliance',
+    'setAppliance',
     {
       http: {path: '/:id/appliance/:fk', verb: 'PUT'},
       accepts: [
@@ -644,8 +449,8 @@ module.exports = function(model) {
     }
   );
 
-  model.remoteRemoveAppliance = function(stoneId, applianceId, next) {
-    debug("remoteRemoveAppliance");
+  model.removeAppliance = function(stoneId, applianceId, next) {
+    debug("removeAppliance");
 
     const Appliance = loopback.getModel('Appliance');
     model.findById(stoneId, function(err, stone) {
@@ -657,17 +462,12 @@ module.exports = function(model) {
         if (err) return next(err);
         next();
       });
-
-      // removeApplianceFromStone(stone, applianceId, function(err) {
-      // 	if (err) return next(err);
-      // 	next();
-      // });
     });
 
   };
 
   model.remoteMethod(
-    'remoteRemoveAppliance',
+    'removeAppliance',
     {
       http: {path: '/:id/appliance/:fk', verb: 'delete'},
       accepts: [
@@ -682,76 +482,53 @@ module.exports = function(model) {
    **** Other
    ************************************/
 
-  model.notifyOnRecovery = function(stoneId, next) {
-    debug("notifyOnRecovery");
-
-    model.findById(stoneId, {include: "owner"}, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      let sphere = stone.owner();
-
-      const SphereAccess = loopback.getModel('SphereAccess');
-      SphereAccess.find({where: {and: [{sphereId: sphere.id}, {role: "admin"}]}, include: "user"}, function(err, access) {
-        if (err) return next(err);
-
-        // debug("access", access);
-        for (let acc of access) {
-          // debug("acc", acc);
-          // debug("user", acc.user());
-          util.sendStoneRecoveredEmail(acc.user(), stone);
-        }
-        next();
-      });
-
-      // if (stone) {
-      // 	util.sendStoneRecoveredEmail(stone, next);
-      // } else {
-      // 	error = new Error("no stone found with this id");
-      // 	return next(error);
-      // }
-      // next();
-    });
-
-  };
+  // model.notifyOnRecovery = function(stoneId, next) {
+  //   debug("notifyOnRecovery");
+  //
+  //   model.findById(stoneId, {include: "owner"}, function(err, stone) {
+  //     if (err) return next(err);
+  //     if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+  //
+  //     let sphere = stone.owner();
+  //
+  //     const SphereAccess = loopback.getModel('SphereAccess');
+  //     SphereAccess.find({where: {and: [{sphereId: sphere.id}, {role: "admin"}]}, include: "user"}, function(err, access) {
+  //       if (err) return next(err);
+  //
+  //       // debug("access", access);
+  //       for (let acc of access) {
+  //         // debug("acc", acc);
+  //         // debug("user", acc.user());
+  //         util.sendStoneRecoveredEmail(acc.user(), stone);
+  //       }
+  //       next();
+  //     });
+  //
+  //     // if (stone) {
+  //     // 	util.sendStoneRecoveredEmail(stone, next);
+  //     // } else {
+  //     // 	error = new Error("no stone found with this id");
+  //     // 	return next(error);
+  //     // }
+  //     // next();
+  //   });
+  //
+  // };
 
   /************************************
    **** Delete ALL functions
    ************************************/
 
-  model.remoteMethod(
-    'notifyOnRecovery',
-    {
-      http: {path: '/:id/notifyOnRecovery', verb: 'head'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      description: "Notify admin about stone recovery"
-    }
-  );
-
-  model.deleteCoordinatesHistory = function(id, callback) {
-    debug("deleteCoordinatesHistory");
-    model.findById(id, {include: "coordinatesHistory"}, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.coordinatesHistory.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
-
-  model.remoteMethod(
-    'deleteCoordinatesHistory',
-    {
-      http: {path: '/:id/deleteCoordinatesHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete coordinates history of Stone"
-    }
-  );
+  // model.remoteMethod(
+  //   'notifyOnRecovery',
+  //   {
+  //     http: {path: '/:id/notifyOnRecovery', verb: 'head'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
+  //     ],
+  //     description: "Notify admin about stone recovery"
+  //   }
+  // );
 
   model.deleteEnergyUsageHistory = function(id, callback) {
     debug("deleteEnergyUsageHistory");
@@ -799,28 +576,7 @@ module.exports = function(model) {
     }
   );
 
-  model.deletePowerCurveHistory = function(id, callback) {
-    debug("deletePowerCurveHistory");
-    model.findById(id, {include: "powerCurveHistory"}, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
-      stone.powerCurveHistory.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
-
-  model.remoteMethod(
-    'deletePowerCurveHistory',
-    {
-      http: {path: '/:id/deletePowerCurveHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete power curve history of Stone"
-    }
-  );
 
   model.deleteAllScans = function(id, callback) {
     debug("deleteAllScans");

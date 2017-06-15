@@ -39,6 +39,14 @@
     "dataSource": "sendgridDs",
     "public": false
   },
+  "Hook": {
+    "dataSource": "db",
+    "public": false
+  },
+  "HooksWhitelist": {
+    "dataSource": "db",
+    "public": false
+  },
   "user": {
     "dataSource": "userDs",
     "public": true,

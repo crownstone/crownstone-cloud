@@ -9,6 +9,7 @@
   },
   "mixins": {
     "SphereContent": true,
+    "EnableHooks": true,
     "Cascade": {
       "StoneLocation": "stoneId",
       "StoneLocation": "sphereId"
@@ -110,26 +111,6 @@
     "energyUsageHistory": {
       "type": "hasMany",
       "model": "EnergyUsage",
-      "foreignKey": "stoneId"
-    },
-    "currentCoordinate": {
-      "type": "belongsTo",
-      "model": "Coordinate",
-      "foreignKey": "currentCoordinateId"
-    },
-    "coordinatesHistory": {
-      "type": "hasMany",
-      "model": "Coordinate",
-      "foreignKey": "stoneId"
-    },
-    "currentPowerCurve": {
-      "type": "belongsTo",
-      "model": "PowerCurve",
-      "foreignKey": "currentPowerCurveId"
-    },
-    "powerCurveHistory": {
-      "type": "hasMany",
-      "model": "PowerCurve",
       "foreignKey": "stoneId"
     },
     "appliance": {

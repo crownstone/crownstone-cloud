@@ -1,0 +1,31 @@
+{
+  "name": "HooksWhitelist",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "mixins": {
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "domain": {
+      "type": "string",
+      "required": false
+    },
+    "tld": {
+      "type": "string",
+      "required": true
+    },
+    "enabled": {
+      "type": "boolean",
+      "required": true,
+      "default":true
+    }
+  },
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

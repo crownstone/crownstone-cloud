@@ -64,6 +64,11 @@
       "model": "Device",
       "foreignKey": "ownerId"
     },
+    "hooks": {
+      "type": "hasMany",
+      "model": "Hook",
+      "foreignKey": "ownerId"
+    },
     "currentLocation": {
       "type": "hasMany",
       "model": "Location",

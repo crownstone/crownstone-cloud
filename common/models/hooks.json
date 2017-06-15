@@ -1,0 +1,41 @@
+{
+  "name": "Hook",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "mixins": {
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "uri": {
+      "type": "string",
+      "required": true
+    },
+    "secret": {
+      "type": "string",
+      "required": true
+    },
+    "events": {
+      "type": "array",
+      "required": true
+    },
+    "enabled": {
+      "type": "boolean",
+      "required": true,
+      "default":true
+    }
+  },
+  "relations": {
+    "owner": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "ownerId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

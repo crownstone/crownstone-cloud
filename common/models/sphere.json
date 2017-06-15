@@ -8,6 +8,7 @@
     "validateUpsert": true
   },
   "mixins": {
+    "EnableHooks": true,
     "Cascade": {
       "SphereAccess": "sphereId",
       "Location": "sphereId"
