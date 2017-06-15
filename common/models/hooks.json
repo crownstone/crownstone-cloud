@@ -10,6 +10,14 @@
       "validateUpsert": true
     }
   },
+  "hidden": [
+    "ownerId",
+    "sphereId",
+    "locationId",
+    "stoneId",
+    "deviceId",
+    "applianceId"
+  ],
   "properties": {
     "uri": {
       "type": "string",

@@ -128,7 +128,7 @@ module.exports = function (model, options) {
       return model.findById(modelInstance.stoneId);
     }
     else {
-      return modelInstance;
+      return new Promise((resolve, reject) => { resolve(modelInstance); });
     }
   };
 

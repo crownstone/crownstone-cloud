@@ -33,6 +33,12 @@
                 "path": "/api/users/me"
               }
             ],
+            "user_id": [
+              {
+                "methods": "get",
+                "path": "/api/users/userId"
+              }
+            ],
             "user_location": [
               {
                 "methods": "get",
@@ -42,7 +48,7 @@
             "stone_information": [
               {
                 "methods": "get",
-                "path": "/api/Stones/"
+                "path": "/api/Stones/all"
               }
             ],
             "switch_stone": [
