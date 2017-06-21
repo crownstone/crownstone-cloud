@@ -5,6 +5,7 @@
   "strictDelete": true,
   "idInjection": true,
   "mixins": {
+    "DisableCommon": true,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true

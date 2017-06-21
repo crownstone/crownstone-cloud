@@ -24,7 +24,7 @@ module.exports = function (model, options) {
 
   model.settings.acls.push({
     "principalType": "ROLE",
-    "principalId": "$authenticated",
+    "principalId": "$everyone",
     "permission": "ALLOW",
     "property": "getEvents"
   });
@@ -105,10 +105,13 @@ module.exports = function (model, options) {
     let config = { method: 'POST', headers, body: body};
     fetch(hook.uri, config)
       .then((result) => {
-        // console.log("Notified Endpoint.", result);
+        console.log("Notified Endpoint.");
+        result.text().then((data) => {
+          console.log("response:", data);
+        })
       })
       .catch((err) => {
-        // console.log("Error while notifying endpoint.", err);
+        console.log("Error while notifying endpoint.", err);
       })
   };
 
@@ -153,6 +156,13 @@ module.exports = function (model, options) {
 
   // set hooks to respond to all calls and determine if this is an hookable event.
   model.afterRemote('**', _parseEvent);
+  model.observe('after save', function(ctx, next) {
+    console.log('ctx.instance);',ctx.instance);
+    console.log('ctx.isNewInstance);',ctx.isNewInstance);
+    console.log('ctx.hookState);',ctx.hookState);
+    console.log('ctx.options);',ctx.options);
+    next();
+  });
 
   // endpoint to read out the events
   model.getEvents = function(next) { next(null, events); };

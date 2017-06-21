@@ -111,7 +111,7 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
   // performFirmwareOperations(app);
   //
   // // Uncomment these lines to view/add/remove/modify the whitelist of the webhook URIs
-  // let performWhitelistOperations = require("./inserts/whitelistOperations");
-  // performWhitelistOperations(app);
+  let performWhitelistOperations = require("./inserts/whitelistOperations");
+  performWhitelistOperations(app);
 }
 

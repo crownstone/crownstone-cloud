@@ -183,13 +183,8 @@ module.exports = function(model) {
   model.validatesUniquenessOf('uid', {scopedTo: ['sphereId'], message: 'a stone with this uid was already added'});
   model.validatesUniquenessOf('major', {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
-  model.disableRemoteMethodByName('updateAll');
-  model.disableRemoteMethodByName('upsert');
-  model.disableRemoteMethodByName('upsertWithWhere');
-  model.disableRemoteMethodByName('replaceOrCreate');
-  model.disableRemoteMethodByName('patchOrCreate');
   model.disableRemoteMethodByName('create');
-  model.disableRemoteMethodByName('createChangeStream');
+  model.disableRemoteMethodByName('find');
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('replaceById');
 

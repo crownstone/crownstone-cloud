@@ -5,6 +5,7 @@ function performWhitelistOperations(app) {
 
   clearWhitelistDatabase(whitelistModel);
   addToWhitelist(whitelistModel, '', 'localhost');
+  addToWhitelist(whitelistModel, 'triggi', 'com');
 }
 
 function clearWhitelistDatabase(whitelistModel) {

@@ -1,5 +1,6 @@
 let sha1 = require('sha1');
 let request = require('request');
+let bodyParser = require('body-parser');
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function (app) {
@@ -20,6 +21,13 @@ module.exports = function (app) {
       password: "",
     });
   });
+
+  //callback page
+  app.use( bodyParser.json() );
+  app.post('/test', function (req, res) {
+    res.send(req.body);
+  });
+
 
   //callback page
   app.get('/callback', function (req, res) {

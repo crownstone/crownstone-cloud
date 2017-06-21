@@ -116,7 +116,7 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
   getSphereId(app, context)
     .then((result) => {
       if (result !== undefined) {
-        return app.models.SphereAccess.findOne({where:{userId: userId, sphereId: result.sphereId}});
+        return app.models.SphereAccess.findOne({where:{and: [{userId: userId}, {sphereId: result}]}});
       }
       else { throw "No Sphere Id"; }
     })
@@ -150,7 +150,6 @@ function getSphereId(app, context) {
           }
         })
         .catch((err) => {
-          console.log("ERR", err)
           reject(err);
         })
     }

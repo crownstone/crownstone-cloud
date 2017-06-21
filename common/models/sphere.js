@@ -1419,8 +1419,6 @@ module.exports = function(model) {
       .catch((err) => {
         next(err);
       })
-
-
   });
 
   // model.afterRemote("*.__link__users", function(context, instance, next) {
