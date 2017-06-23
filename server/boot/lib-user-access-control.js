@@ -30,7 +30,12 @@ module.exports = function(app) {
         reject(err);
       }
       else {
-        callback(null, user.role === 'lib-user');
+        if (user && user.role) {
+          callback(null, user.role === 'lib-user');
+        }
+        else {
+          callback(null, false);
+        }
       }
     });
   });
@@ -115,7 +120,7 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
   // check if the model has a sphereId
   getSphereId(app, context)
     .then((result) => {
-      if (result !== undefined) {
+      if (result) {
         return app.models.SphereAccess.findOne({where:{and: [{userId: userId}, {sphereId: result}]}});
       }
       else { throw "No Sphere Id"; }

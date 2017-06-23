@@ -5,12 +5,17 @@ const fetch = require('node-fetch');
 
 /**
  * Mixin that hooks the Webhook system into existing models. It generates a list of available events based on the REST endpoints.
+ *
+ * We assume all extended models have a reference of
+ * let idField = model.name.toLowerCase() + 'Id';
+ * like stoneId or sphereId to link their data to the parent type.
  * @param model
  * @param options
  */
 module.exports = function (model, options) {
   let events = [];
   let eventReference = {};
+  let eventPathReference = {};
 
   // TODO: permissions
   // model.settings.acls.push(
@@ -22,6 +27,8 @@ module.exports = function (model, options) {
   //   }
   // );
 
+  // console.log(model.sharedClass._disabledMethods)
+
   model.settings.acls.push({
     "principalType": "ROLE",
     "principalId": "$everyone",
@@ -29,24 +36,54 @@ module.exports = function (model, options) {
     "property": "getEvents"
   });
 
-  let _extractEvent = function (method, http) {
+
+  /**
+   * Update the existing description with the addition of the name of the event
+   * @param name
+   * @param description
+   * @returns {string}
+   * @private
+   */
+  let _injectEventDescription = function(name, description) {
+    return '<div style="text-align:left;">' + description + '</div><div style="text-align:right; padding:5px;"> Event: ' + name + '</div>';
+  };
+
+
+  /**
+   * We check the methods on the model to see if we have to inject an event into it
+   * @param method
+   * @param http
+   * @returns {{name, verb: string, path}}
+   * @private
+   */
+  let _extractEventNameFromMethod = function (method, http) {
     if (http.verb) {
       let verb = http.verb.toLowerCase();
-      if (verb === 'post' || verb === 'put') {
+      if (verb === 'post' || verb === 'put' || verb === 'delete') {
 
         // do not show disabled endpoints
         if (model.sharedClass._disabledMethods[method.name]) {
           return;
         }
 
-        method.description = '<div style="text-align:left;">' + method.description + '</div><div style="text-align:right; padding:5px;"> Event: ' + method.name + '</div>';
+        method.description = _injectEventDescription(method.name, method.description);
         eventReference[method.name] = true;
+        eventPathReference[http.path + "__" + verb.toUpperCase()] = true;
         return {name: method.name, verb:verb, path:http.path};
       }
     }
   };
 
-  let _parseEvent = function (ctx, changedData, next) {
+
+  /**
+   * On a request, we check if this method has an event option. If it does, we check if there are listeners.
+   * @param ctx
+   * @param changedData
+   * @param next
+   * @returns {*}
+   * @private
+   */
+  let _checkForEventListeners = function (ctx, changedData, next) {
     let eventName = ctx.method.name;
     if (eventReference[eventName] === undefined) {
       return next();
@@ -57,16 +94,23 @@ module.exports = function (model, options) {
       http = http[0];
     }
     let verb = http.verb;
-
     if (verb === 'post' || verb === 'put' || verb === 'patch') {
-      _checkHooks(ctx, changedData, eventName);
+      _checkForHooksOnEndpoint(ctx, changedData, eventName);
     }
 
     next();
   };
 
-  let _checkHooks = function(ctx, changedData, eventName) {
-    _getInstance(ctx, changedData)
+
+  /**
+   * Check if there are listeners on this endpoint.
+   * @param ctx
+   * @param changedData
+   * @param eventName
+   * @private
+   */
+  let _checkForHooksOnEndpoint = function(ctx, changedData, eventName) {
+    _getModelInstanceForRequest(ctx, changedData)
       .then((parentInstance) => {
         if (parentInstance && parentInstance.hooks && parentInstance.hooks.length > 0) {
           let hooks = parentInstance.hooks();
@@ -76,9 +120,9 @@ module.exports = function (model, options) {
             if (!hook.uri || hook.enabled === false) { return; }
             for (let j = 0; j < hook.events.length; j++) {
               if (hook.events[j] === eventName) {
-                _getInstanceWithoutHooks(ctx, changedData)
+                _getModelInstanceWithoutHooks(ctx, changedData)
                   .then((result) => {
-                    _processEvent(changedData, result, eventName, hook);
+                    _notifySubscribers(changedData, result, eventName, hook);
                   })
               }
             }
@@ -88,8 +132,15 @@ module.exports = function (model, options) {
   };
 
 
-  // send out event to webhook.
-  let _processEvent = function(changedData, parentInstance, eventName, hook) {
+  /**
+   * Notify all webhooks on this event
+   * @param changedData         // this is the changed data
+   * @param parentInstance      // this is the parent model, like a stone or a sphere. If a ownedStone from a sphere changes, the parent is the sphere.
+   * @param eventName           // name of the event
+   * @param hook                // the webhook object.
+   * @private
+   */
+  let _notifySubscribers = function(changedData, parentInstance, eventName, hook) {
     let headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -103,21 +154,20 @@ module.exports = function (model, options) {
     });
 
     let config = { method: 'POST', headers, body: body};
-    fetch(hook.uri, config)
-      .then((result) => {
-        console.log("Notified Endpoint.");
-        result.text().then((data) => {
-          console.log("response:", data);
-        })
-      })
-      .catch((err) => {
-        console.log("Error while notifying endpoint.", err);
-      })
+    fetch(hook.uri, config).catch((err) => { console.log("Error while notifying endpoint.", err); });
   };
 
-  let _getInstance = function(ctx, modelInstance) {
-    if (modelInstance.stoneId) {
-      return model.findById(modelInstance.stoneId, {include: 'hooks'});
+
+  /**
+   * Get model instance from context including the webhooks.
+   * @param ctx
+   * @param modelInstance
+   * @private
+   */
+  let _getModelInstanceForRequest = function(ctx, modelInstance) {
+    let idField = model.name.toLowerCase() + 'Id';
+    if (modelInstance[idField]) {
+      return model.findById(modelInstance[idField], {include: 'hooks'});
     }
     else {
       return model.findById(modelInstance.id, {include: 'hooks'})
@@ -125,10 +175,17 @@ module.exports = function (model, options) {
   };
 
 
-  // used to get the base model without hook references.
-  let _getInstanceWithoutHooks = function(ctx, modelInstance) {
-    if (modelInstance.stoneId) {
-      return model.findById(modelInstance.stoneId);
+  /**
+   * Get model instance from context without the added webhooks.
+   * @param ctx
+   * @param modelInstance
+   * @returns {Promise}
+   * @private
+   */
+  let _getModelInstanceWithoutHooks = function(ctx, modelInstance) {
+    let idField = model.name.toLowerCase() + 'Id';
+    if (modelInstance[idField]) {
+      return model.findById(modelInstance[idField]);
     }
     else {
       return new Promise((resolve, reject) => { resolve(modelInstance); });
@@ -144,25 +201,18 @@ module.exports = function (model, options) {
   model.sharedClass._methods.forEach((method) => {
     if (Array.isArray(method.http)) {
       method.http.forEach((subMethod) => {
-        let event = _extractEvent(method, subMethod);
+        let event = _extractEventNameFromMethod(method, subMethod);
         if (event) { events.push(event); }
       });
     }
     else {
-      let event = _extractEvent(method, method.http);
+      let event = _extractEventNameFromMethod(method, method.http);
       if (event) { events.push(event); }
     }
   });
 
   // set hooks to respond to all calls and determine if this is an hookable event.
-  model.afterRemote('**', _parseEvent);
-  model.observe('after save', function(ctx, next) {
-    console.log('ctx.instance);',ctx.instance);
-    console.log('ctx.isNewInstance);',ctx.isNewInstance);
-    console.log('ctx.hookState);',ctx.hookState);
-    console.log('ctx.options);',ctx.options);
-    next();
-  });
+  model.afterRemote('**', _checkForEventListeners);
 
   // endpoint to read out the events
   model.getEvents = function(next) { next(null, events); };
@@ -175,5 +225,168 @@ module.exports = function (model, options) {
     }
   );
 
+
+  let relations = model.settings.relations;
+  let relationKeys = Object.keys(relations);
+
+  relationKeys.forEach((relationKey) => {
+    let relation = relations[relationKey];
+    if (relation.type === 'hasMany') {
+      // each relation of type hasMany will create the following fields:
+      // create
+      // destroyAll
+      // findById
+      // destroy
+      // count
+
+      let setupRelay = (overloadName, verb, path, relayCommand, requiresData, requiresForeignKey, returnsData, baseDescription, aclKey) => {
+        if (model[overloadName] !== undefined) {
+          overloadName = overloadName + 'Event';
+          console.log("WARNING:' overloadName already exists on model!", overloadName, model.name);
+        }
+
+        // add these fields to the event listener
+        events.push({name: overloadName, verb: verb, path: path});
+        eventReference[overloadName] = true;
+
+        // create the overload function that will just forward the functionality
+        model[overloadName] = function(arg1, arg2, arg3, arg4) {
+          // map the arguments to the variables.
+          let data = null;
+          let id = null;
+          let fk = null;
+          let next = null;
+
+          // if we require data, it is the first argument, id is the second, foreign key the third and next callback the last.
+          if (requiresData === true) {
+            data = arg1;
+            id = arg2;
+            if (requiresForeignKey) {
+              fk = arg3;
+              next = arg4;
+            }
+            else {
+              next = arg4;
+            }
+          }
+          else {
+            id = arg1;
+            if (requiresForeignKey) {
+              fk = arg2;
+              next = arg3;
+            }
+            else {
+              next = arg2;
+            }
+          }
+
+          model.findById(id)
+            .then((result) => {
+              if (result) {
+                return relayCommand(result, relationKey, data, id, fk);
+              }
+              throw 'Unauthorized'
+            })
+            .then((newData) => {
+              if (returnsData) {
+                next(null, newData);
+              }
+              else {
+                next();
+              }
+            })
+            .catch((err) => {
+              next(err);
+            })
+        };
+
+        let config = {http: {path: path, verb: verb.toUpperCase()}};
+
+        let accepts = [];
+        if (requiresData) {
+          accepts.push({arg: 'data', type: relation.model, required: true, http: {source: 'body'}});
+        }
+        accepts.push({arg: 'id', type: 'any', required: true, http: {source: 'path'}});
+
+        if (requiresForeignKey) {
+          accepts.push({arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}});
+        }
+
+        config.accepts = accepts;
+        if (returnsData) {
+          config.returns = {arg: 'data', type: relation.model, root: true};
+        }
+        config.description = _injectEventDescription(overloadName, baseDescription);
+
+        model.remoteMethod(
+          overloadName,
+          config
+        );
+
+        // check and reset the ACL if required.
+        model.settings.acls.forEach((acl) => {
+          if (acl.property === [aclKey]) {
+            let newAcl = {};
+            // copy the acl entry
+            let aclKeys = Object.keys(acl);
+            aclKeys.forEach((key) => {
+              newAcl[key] = acl[key];
+            });
+            newAcl.property = overloadName;
+            model.settings.acls.push(newAcl)
+          }
+        });
+      };
+
+
+      // check if we have overloaded this path already and if it is disabled.
+      if (eventPathReference['/:id/' + relationKey + '/__POST'] !== true && model.sharedClass._disabledMethods['prototype.__create__' + relationKey] !== true) {
+        let overloadName = 'set' + capitalizeFirstLetter(relationKey);
+        setupRelay(
+          overloadName,                 // overloadName
+          'post',                       // verb
+          '/:id/' + relationKey + '/',  // path
+          (result, relationKey, data, id, fk) => { return result[relationKey].create(data); }, // relayCommand
+          true,                         // requiresData
+          false,                        // requiresForeignKeyData
+          true,                         // returnsData
+          'Creates a new instance in ' + relationKey + ' of this model.',               // baseDescription
+          '__create__'+relationKey      // aclKey
+        );
+      }
+      if (eventPathReference['/:id/' + relationKey + '/:fk__DELETE'] !== true && model.sharedClass._disabledMethods['prototype.__delete__' + relationKey] !== true) {
+        let overloadName = 'delete' + capitalizeFirstLetter(relationKey);
+        setupRelay(
+          overloadName,                   // overloadName
+          'delete',                       // verb
+          '/:id/' + relationKey + '/:fk', // path
+          (result, relationKey, data, id, fk) => { return result[relationKey].destroy(fk); }, // relayCommand
+          false,                          // requiresData
+          true,                           // requiresForeignKeyData
+          false,                          // returnsData
+          'Delete a related item by id for ' + relationKey + '.', // baseDescription
+          '__delete__'+relationKey        // aclKey
+        );
+      }
+      if (eventPathReference['/:id/' + relationKey + '/:fk__PUT'] !== true && model.sharedClass._disabledMethods['prototype.__updateById__' + relationKey] !== true) {
+        let overloadName = 'patch' + capitalizeFirstLetter(relationKey);
+        setupRelay(
+          overloadName,                   // overloadName
+          'put',                          // verb
+          '/:id/' + relationKey + '/:fk', // path
+          (result, relationKey, data, id, fk) => { data.id = fk; return result[relationKey].upsert(data); }, // relayCommand
+          true,                           // requiresData
+          true,                           // requiresForeignKeyData
+          true,                           // returnsData
+          'Add/update a related item by id for ' + relationKey + '.', // baseDescription
+          '__updateById__'+relationKey    // aclKey
+        );
+      }
+    }
+  });
+
 };
 
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
