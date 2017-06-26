@@ -7,7 +7,7 @@ const fetch = require('node-fetch');
  * Mixin that hooks the Webhook system into existing models. It generates a list of available events based on the REST endpoints.
  *
  * We assume all extended models have a reference of
- * let idField = model.name.toLowerCase() + 'Id';
+ * let idField = model.modelName.toLowerCase() + 'Id';
  * like stoneId or sphereId to link their data to the parent type.
  * @param model
  * @param options
@@ -60,11 +60,14 @@ module.exports = function (model, options) {
     if (http.verb) {
       let verb = http.verb.toLowerCase();
       if (verb === 'post' || verb === 'put' || verb === 'delete') {
+        // console.log(model.modelName, http, verb, method.name, model.sharedClass._disabledMethods[method.name])
 
         // do not show disabled endpoints
         if (model.sharedClass._disabledMethods[method.name]) {
           return;
         }
+
+        // console.log("Injecting event in:",method.name)
 
         method.description = _injectEventDescription(method.name, method.description);
         eventReference[method.name] = true;
@@ -165,7 +168,7 @@ module.exports = function (model, options) {
    * @private
    */
   let _getModelInstanceForRequest = function(ctx, modelInstance) {
-    let idField = model.name.toLowerCase() + 'Id';
+    let idField = model.modelName.toLowerCase() + 'Id';
     if (modelInstance[idField]) {
       return model.findById(modelInstance[idField], {include: 'hooks'});
     }
@@ -183,7 +186,7 @@ module.exports = function (model, options) {
    * @private
    */
   let _getModelInstanceWithoutHooks = function(ctx, modelInstance) {
-    let idField = model.name.toLowerCase() + 'Id';
+    let idField = model.modelName.toLowerCase() + 'Id';
     if (modelInstance[idField]) {
       return model.findById(modelInstance[idField]);
     }
@@ -241,8 +244,8 @@ module.exports = function (model, options) {
 
       let setupRelay = (overloadName, verb, path, relayCommand, requiresData, requiresForeignKey, returnsData, baseDescription, aclKey) => {
         if (model[overloadName] !== undefined) {
-          overloadName = overloadName + 'Event';
-          console.log("WARNING:' overloadName already exists on model!", overloadName, model.name);
+          console.log('Warning: on model: (', model.modelName, ') the method: ',overloadName,' is already overloaded. Skipping overloading.');
+          return;
         }
 
         // add these fields to the event listener
@@ -338,7 +341,6 @@ module.exports = function (model, options) {
         });
       };
 
-
       // check if we have overloaded this path already and if it is disabled.
       if (eventPathReference['/:id/' + relationKey + '/__POST'] !== true && model.sharedClass._disabledMethods['prototype.__create__' + relationKey] !== true) {
         let overloadName = 'set' + capitalizeFirstLetter(relationKey);
@@ -354,8 +356,13 @@ module.exports = function (model, options) {
           '__create__'+relationKey      // aclKey
         );
       }
-      if (eventPathReference['/:id/' + relationKey + '/:fk__DELETE'] !== true && model.sharedClass._disabledMethods['prototype.__delete__' + relationKey] !== true) {
-        let overloadName = 'delete' + capitalizeFirstLetter(relationKey);
+
+      if (
+        eventPathReference['/:id/' + relationKey + '/:fk__DELETE'] !== true &&
+        (model.sharedClass._disabledMethods['prototype.__destroyById__' + relationKey] !== true ||
+         model.sharedClass._disabledMethods['prototype.__deleteById__' + relationKey]  !== true)
+      ) {
+        let overloadName = 'deleteById' + capitalizeFirstLetter(relationKey);
         setupRelay(
           overloadName,                   // overloadName
           'delete',                       // verb
@@ -368,6 +375,7 @@ module.exports = function (model, options) {
           '__delete__'+relationKey        // aclKey
         );
       }
+
       if (eventPathReference['/:id/' + relationKey + '/:fk__PUT'] !== true && model.sharedClass._disabledMethods['prototype.__updateById__' + relationKey] !== true) {
         let overloadName = 'patch' + capitalizeFirstLetter(relationKey);
         setupRelay(
@@ -382,6 +390,9 @@ module.exports = function (model, options) {
           '__updateById__'+relationKey    // aclKey
         );
       }
+    }
+    else {
+      // console.log(model.modelName, "relation not overloaded", relation);
     }
   });
 

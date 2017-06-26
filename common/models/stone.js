@@ -207,11 +207,11 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__updateById__powerCurveHistory');
   model.disableRemoteMethodByName('prototype.__updateById__powerUsageHistory');
 
-  model.disableRemoteMethodByName('prototype.__delete__scans');
-  model.disableRemoteMethodByName('prototype.__delete__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__delete__energyUsageHistory');
-  model.disableRemoteMethodByName('prototype.__delete__powerCurveHistory');
-  model.disableRemoteMethodByName('prototype.__delete__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__delete__scans');              // this is the delete ALL
+  model.disableRemoteMethodByName('prototype.__delete__coordinatesHistory'); // this is the delete ALL
+  model.disableRemoteMethodByName('prototype.__delete__energyUsageHistory'); // this is the delete ALL
+  model.disableRemoteMethodByName('prototype.__delete__powerCurveHistory');  // this is the delete ALL
+  model.disableRemoteMethodByName('prototype.__delete__powerUsageHistory');  // this is the delete ALL
 
   function initStone(ctx, next) {
     debug("initStone");
