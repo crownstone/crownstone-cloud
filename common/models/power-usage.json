@@ -20,11 +20,12 @@
     "power": {
       "type": "number",
       "required": true
-    },
-    "phase": {
-      "type": "number"
     }
   },
+  "hidden": [
+    "stoneId",
+    "sphereId"
+  ],
   "validations": [],
   "relations": {},
   "acls": [],

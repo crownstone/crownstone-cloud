@@ -32,6 +32,9 @@
       "type": "string",
       "required": true
     },
+    "releaseNotes": {
+      "type": "string"
+    },
     "releaseLevel": {
       "type": "number",
       "required": true

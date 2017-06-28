@@ -26,6 +26,10 @@
       "required": true
     }
   },
+  "hidden": [
+    "stoneId",
+    "sphereId"
+  ],
   "validations": [],
   "relations": {},
   "acls": [],
