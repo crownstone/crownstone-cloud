@@ -29,6 +29,12 @@
     },
     "onlyOnWhenDark": {
       "type": "boolean"
+    },
+    "hidden": {
+      "type": "boolean"
+    },
+    "locked": {
+      "type": "boolean"
     }
   },
   "validations": [],

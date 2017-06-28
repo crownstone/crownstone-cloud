@@ -27,7 +27,13 @@
     "sphereId"
   ],
   "validations": [],
-  "relations": {},
+  "relations": {
+    "appliance": {
+      "type": "belongsTo",
+      "model": "Appliance",
+      "foreignKey": "applianceId"
+    }
+  },
   "acls": [],
   "methods": {}
 }

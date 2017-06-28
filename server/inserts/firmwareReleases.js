@@ -9,18 +9,21 @@ function performFirmwareOperations(app) {
   let bootloaderModel = app.dataSources.mongoDs.getModel('Bootloader');
 
   // start with empty promise so we can put all commands in a chain (easier for commenting/uncommenting lines)
-  // new Promise((resolve, reject) => resolve())
-  //   .then(() => {
-  //     return releaseFirmware(
-  //       firmwareModel,
-  //       '1.3.3', // release version
-  //       '1.3.3', // minimum compatible version,
-  //       plugAndBuiltinVariations, // hardware versions
-  //       '46c0c972bba1a6e0215ed0ba4e24b4f1252c6dfd', // sha1 hash to validate download
-  //       'https://github.com/crownstone/bluenet-release/raw/master/crownstone_1.3.3/bin/crownstone_1.3.3.zip',
-  //       1 // release level: 0 for release to all new users
-  //     );
-  //   })
+  new Promise((resolve, reject) => resolve())
+    // .then(() => {
+    //   removeFirmwareVersion(firmwareModel, '1.4.0')
+    // })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     firmwareModel,
+    //     '1.4.0', // release version
+    //     '1.3.1', // minimum compatible version,
+    //     plugAndBuiltinVariations, // hardware versions
+    //     'e66ccea1cac79905eee81197339ef3ff41ef7fc9', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/crownstone_1.4.0/bin/crownstone_1.4.0.zip',
+    //     2 // release level: 0 for release to all new users
+    //   );
+    // })
     // .then(() => {clearFirmwares(firmwareModel) })
     // .then(() => {clearBootloaders(bootloaderModel) })
   //   .then(() => {
@@ -101,6 +104,10 @@ function _remove(model, version) {
       });
       return Promise.all(deletionPromises);
     })
+    .then(() => {
+      console.log("Successfully deleted firmware: ",version, ' :');
+    })
+    .catch((err) => { console.log("Error DELETING FIRMWARE version: ",version, ' :', err); })
 }
 
 function _removeAll(model, type) {

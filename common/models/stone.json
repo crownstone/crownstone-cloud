@@ -79,6 +79,12 @@
     },
     "meshNetworkId" : {
       "type": "number"
+    },
+    "hidden": {
+      "type": "boolean"
+    },
+    "locked": {
+      "type": "boolean"
     }
   },
   "validations": [],
