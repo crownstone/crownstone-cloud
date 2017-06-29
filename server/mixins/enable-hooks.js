@@ -13,8 +13,6 @@ const fetch = require('node-fetch');
  * @param options
  */
 module.exports = function (model, options) {
-  return;
-
   let events = [];
   let eventReference = {};
   let eventPathReference = {};
@@ -278,7 +276,7 @@ module.exports = function (model, options) {
               next = arg4;
             }
             else {
-              next = arg4;
+              next = arg3;
             }
           }
           else {
@@ -391,7 +389,7 @@ module.exports = function (model, options) {
           overloadName,                   // overloadName
           'put',                          // verb
           '/:id/' + relationKey + '/:fk', // path
-          (result, relationKey, data, id, fk) => { data.id = fk; return result[relationKey].upsert(data); }, // relayCommand
+          (result, relationKey, data, id, fk) => { return result[relationKey].updateById(fk, data); }, // relayCommand
           true,                           // requiresData
           true,                           // requiresForeignKeyData
           true,                           // returnsData
