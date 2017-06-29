@@ -1,4 +1,4 @@
-// "use strict";
+"use strict";
 
 let stl = require('../../server/middleware/stoneScanToLocation');
 let loopback = require('loopback');
@@ -183,7 +183,7 @@ module.exports = function(model) {
   model.validatesUniquenessOf('uid', {scopedTo: ['sphereId'], message: 'a stone with this uid was already added'});
   model.validatesUniquenessOf('major', {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
-  model.disableRemoteMethodByName('create');
+  // model.disableRemoteMethodByName('create');
   model.disableRemoteMethodByName('find');
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('replaceById');
@@ -413,6 +413,97 @@ module.exports = function(model) {
   );
 
 
+  let batch = (arr, index, method) => {
+    return new Promise((resolve, reject) => {
+      if (index < arr.length) {
+        method(arr[index])
+          .then(() => {
+            return batch(arr, index+1, method);
+          })
+          .then(() => {
+            resolve()
+          })
+          .catch((err) => reject(err))
+      }
+      else {
+        resolve();
+      }
+    })
+  }
+
+  model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      let successBatch = [];
+
+      batch(powerUsageArray, 0, (powerUsage) => {
+        return new Promise((resolve, reject) => {
+          model._setCurrentPowerUsage(stone, powerUsage, (err, result) => {
+            if (err) {
+              reject(err);
+            }
+            successBatch.push(result);
+            resolve();
+          });
+        })
+      })
+        .then(() => { next(null, successBatch); })
+        .catch((err) => { next(err); })
+    })
+  }
+
+  model.remoteMethod(
+    'setBatchPowerUsage',
+    {
+      http: {path: '/:id/batchPowerUsage/', verb: 'POST'},
+      accepts: [
+        {arg: 'data', type: ['PowerUsage'], required: true, http: {source: 'body'}},
+        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+      ],
+      returns: {arg: 'data', type: ['PowerUsage'], root: true},
+      description: "Add an array of power usage measurements to the stone."
+    }
+  );
+
+  model.setBatchEnergyUsage = function(energyUsageArray, stoneId, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      let successBatch = [];
+
+      batch(energyUsageArray, 0, (energyUsage) => {
+        return new Promise((resolve, reject) => {
+          model._setCurrentEnergyUsage(stone, energyUsage, (err, result) => {
+            if (err) {
+              reject(err);
+            }
+            successBatch.push(result);
+            resolve();
+          });
+        })
+      })
+        .then(() => { next(null, successBatch); })
+        .catch((err) => { next(err); })
+    })
+  }
+
+  model.remoteMethod(
+    'setBatchEnergyUsage',
+    {
+      http: {path: '/:id/batchEnergyUsage/', verb: 'POST'},
+      accepts: [
+        {arg: 'data', type: ['EnergyUsage'], required: true, http: {source: 'body'}},
+        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+      ],
+      returns: {arg: 'data', type: ['EnergyUsage'], root: true},
+      description: "Add array of energy usage measurements to the stone."
+    }
+  );
+
+
   /************************************
    **** Appliance
    ************************************/
@@ -440,7 +531,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}},
         {arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}}
       ],
-      description: "Link appliance to stone"
+      description: "Link appliance to stone."
     }
   );
 

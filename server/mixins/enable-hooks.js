@@ -59,7 +59,7 @@ module.exports = function (model, options) {
   let _extractEventNameFromMethod = function (method, http) {
     if (http.verb) {
       let verb = http.verb.toLowerCase();
-      if (verb === 'post' || verb === 'put' || verb === 'delete') {
+      if (verb === 'post' || verb === 'put' || verb === 'patch' || verb === 'delete') {
         // console.log(model.modelName, http, verb, method.name, model.sharedClass._disabledMethods[method.name])
 
         // do not show disabled endpoints
@@ -97,7 +97,7 @@ module.exports = function (model, options) {
       http = http[0];
     }
     let verb = http.verb;
-    if (verb === 'post' || verb === 'put' || verb === 'patch') {
+    if (verb === 'post' || verb === 'put' || verb === 'patch' || verb === 'delete') {
       _checkForHooksOnEndpoint(ctx, changedData, eventName);
     }
 
@@ -169,6 +169,13 @@ module.exports = function (model, options) {
    */
   let _getModelInstanceForRequest = function(ctx, modelInstance) {
     let idField = model.modelName.toLowerCase() + 'Id';
+
+    if (!modelInstance) {
+      if (ctx && ctx.args && ctx.args.id) {
+        return model.findById(ctx.args.id, {include: 'hooks'});
+      }
+    }
+
     if (modelInstance[idField]) {
       return model.findById(modelInstance[idField], {include: 'hooks'});
     }
