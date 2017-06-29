@@ -184,7 +184,7 @@ module.exports = function(model) {
   model.validatesUniquenessOf('major', {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
   // model.disableRemoteMethodByName('create');
-  model.disableRemoteMethodByName('find');
+  // model.disableRemoteMethodByName('find');
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('replaceById');
 

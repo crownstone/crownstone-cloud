@@ -57,7 +57,7 @@ module.exports = function (model, options) {
    * @private
    */
   let _extractEventNameFromMethod = function (method, http) {
-    if (http.verb) {
+    if (http.verb && eventReference[method.name] !== true) {
       let verb = http.verb.toLowerCase();
       if (verb === 'post' || verb === 'put' || verb === 'patch' || verb === 'delete') {
         // console.log(model.modelName, http, verb, method.name, model.sharedClass._disabledMethods[method.name])
