@@ -13,6 +13,8 @@ const fetch = require('node-fetch');
  * @param options
  */
 module.exports = function (model, options) {
+  return;
+
   let events = [];
   let eventReference = {};
   let eventPathReference = {};
