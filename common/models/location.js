@@ -226,7 +226,7 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (model.checkForNullError(location, next, "id: " + id)) return;
 
-			Sphere.deleteFile(location.sphereId, location.imageId, next);
+			Sphere.deleteFile(location.sphereId, location.imageId, {}, next);
 		});
 	};
 
@@ -235,7 +235,7 @@ module.exports = function(model) {
 		{
 			http: {path: '/:id/image/:fk', verb: 'delete'},
 			accepts: [
-				{arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
 			],
 			description: "Delete image of the location"
 		}

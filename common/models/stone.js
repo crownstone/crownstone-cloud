@@ -180,8 +180,8 @@ module.exports = function(model) {
 
   // address has to be unique to a stone
   model.validatesUniquenessOf('address', {scopedTo: ['sphereId'], message: 'a stone with this address was already added!'});
-  model.validatesUniquenessOf('uid', {scopedTo: ['sphereId'], message: 'a stone with this uid was already added'});
-  model.validatesUniquenessOf('major', {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
+  model.validatesUniquenessOf('uid',     {scopedTo: ['sphereId'], message: 'a stone with this uid was already added'});
+  model.validatesUniquenessOf('major',   {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
   // model.disableRemoteMethodByName('create');
   // model.disableRemoteMethodByName('find');

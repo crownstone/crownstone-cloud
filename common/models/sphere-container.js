@@ -88,7 +88,6 @@ module.exports = function(model) {
   };
 
   model._deleteFile = function (id, fileId, options, next) {
-
     checkAccess(id, options, function(err) {
       if (err) return next(err);
       // we cast the IDs to string to avoid having mongo ObjectId objects as input
