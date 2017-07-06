@@ -152,6 +152,12 @@ async@^1.0.0, async@^1.4.2, async@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
+async@^2.3.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/async/-/async-2.5.0.tgz#843190fd6b7357a0b9e1c956edddd5ec8462b54d"
+  dependencies:
+    lodash "^4.14.0"
+
 asynckit@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/asynckit/-/asynckit-0.4.0.tgz#c79ed97f7f34cb8f2ba1bc9790bcc366474b4b79"
@@ -355,6 +361,12 @@ caseless@~0.11.0:
 caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
+
+cassandra-driver@^3.2.0:
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/cassandra-driver/-/cassandra-driver-3.2.2.tgz#bcbae15169141df08b4e32d477fa58b99eac5040"
+  dependencies:
+    long "^2.2.0"
 
 chalk@^1.1.1:
   version "1.1.3"
@@ -1461,6 +1473,10 @@ lodash@~3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.5.0.tgz#19bb3f4d51278f0b8c818ed145c74ecf9fe40e6d"
 
+long@^2.2.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/long/-/long-2.4.0.tgz#9fa180bb1d9500cdc29c4156766a1995e1f4524f"
+
 loopback-boot@2.24.0:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/loopback-boot/-/loopback-boot-2.24.0.tgz#802c2b152f5452b8ceac1acaa5924d05119918ce"
@@ -1515,6 +1531,16 @@ loopback-component-storage-gridfs@1.1.1:
     lodash "^4.6.1"
     mongodb "^2.1.7"
     zip-stream "^1.0.0"
+
+loopback-connector-cassandra@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/loopback-connector-cassandra/-/loopback-connector-cassandra-1.2.0.tgz#4385f234984285b026630202dd06e15ff3569840"
+  dependencies:
+    async "^2.3.0"
+    cassandra-driver "^3.2.0"
+    debug "^2.2.0"
+    loopback-connector "^4.0.0"
+    strong-globalize "^2.8.2"
 
 loopback-connector-mongodb@3.1.0:
   version "3.1.0"
@@ -2603,7 +2629,7 @@ strong-error-handler@^1.0.0:
     js2xmlparser "^2.0.2"
     strong-globalize "^2.6.7"
 
-strong-globalize@^2.5.8, strong-globalize@^2.6.0, strong-globalize@^2.6.2, strong-globalize@^2.6.6, strong-globalize@^2.6.7, strong-globalize@^2.7.0:
+strong-globalize@^2.5.8, strong-globalize@^2.6.0, strong-globalize@^2.6.2, strong-globalize@^2.6.6, strong-globalize@^2.6.7, strong-globalize@^2.7.0, strong-globalize@^2.8.2:
   version "2.8.2"
   resolved "https://registry.yarnpkg.com/strong-globalize/-/strong-globalize-2.8.2.tgz#5ff3e94f60100def324d2ce2b6692efa90bd73cf"
   dependencies:

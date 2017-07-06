@@ -188,11 +188,6 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('replaceById');
 
-  model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__link__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__unlink__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__exists__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__findById__coordinatesHistory');
 
   model.disableRemoteMethodByName('prototype.__create__locations');
   model.disableRemoteMethodByName('prototype.__delete__locations');
@@ -212,6 +207,16 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__energyUsageHistory'); // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__powerCurveHistory');  // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__powerUsageHistory');  // this is the delete ALL
+
+  model.disableRemoteMethodByName('prototype.__count__scans');
+  model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__findById__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__get__powerUsageHistory');
+
+  model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
+  model.disableRemoteMethodByName('prototype.__findById__energyUsageHistory');
+  model.disableRemoteMethodByName('prototype.__get__energyUsageHistory');
+
 
   function initStone(ctx, next) {
     debug("initStone");
@@ -429,7 +434,7 @@ module.exports = function(model) {
         resolve();
       }
     })
-  }
+  };
 
   model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
     model.findById(stoneId, function(err, stone) {
@@ -768,6 +773,74 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: '[Stone]', root: true},
       description: "Get a list of all Crownstones your account has access to."
+    }
+  );
+
+  model.getPowerUsageHistory = function(stoneId, from, to, limit, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      limit = Math.min(limit || 1000, 1000);
+      from = from || new Date(0);
+      to = to || new Date();
+
+      stone.powerUsageHistory({where: {timestamp: {between: [from, to]}}, limit: limit, order: 'timestamp ASC' })
+        .then((result) => {
+          next(null, result);
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  };
+
+  model.remoteMethod(
+    'getPowerUsageHistory',
+    {
+      http: {path: '/:id/powerUsageHistory/', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'path' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'path' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'path' }},
+      ],
+      returns: {arg: 'data', type: '[PowerUsage]', root: true},
+      description: "Get an array of collected power measurement samples from the specified Crownstone. Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default)."
+    }
+  );
+
+  model.getEnergyUsageHistory = function(stoneId, from, to, limit, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      limit = Math.min(limit || 1000, 1000);
+      from = from || new Date(0);
+      to = to || new Date();
+
+      stone.energyUsageHistory({where: {timestamp: {between: [from, to]}}, limit: limit, order: 'timestamp ASC' })
+        .then((result) => {
+          next(null, result);
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  };
+
+  model.remoteMethod(
+    'getEnergyUsageHistory',
+    {
+      http: {path: '/:id/energyUsageHistory/', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'path' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'path' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'path' }},
+      ],
+      returns: {arg: 'data', type: '[EnergyUsage]', root: true},
+      description: "Get an array of collected energy usage samples from the specified Crownstone. Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default)."
     }
   );
 };

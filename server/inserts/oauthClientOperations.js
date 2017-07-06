@@ -21,13 +21,14 @@ function createSecret() {
 function performOauthClientOperations(app) {
   let permissionModel = app.dataSources.userDs.getModel('OAuthClientApplication');
 
-  showClientDetails(permissionModel, 'Alexa')
+  // showClientDetails(permissionModel, 'Alexa')
   // uncomment this line to delete ALL CLIENTS FROM THE OAUTH DATABASE
   // clearClientDatabase(permissionModel).catch((err) => { console.log("Error while deleting clients:", err); })
 
   // empty promise so all clients that are added are in matching then statements
-  // new Promise((resolve, reject) => { resolve() })
-  //   .then(() => { createClient(permissionModel, "Crownstone", allScopes); })
+  new Promise((resolve, reject) => { resolve() })
+    // .then(() => { return deleteClientsWithName(permissionModel, "Triggi"); })
+    // .then(() => { return createClient(permissionModel, "Triggi", allScopes); })
   //   .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information', 'user_location', 'stone_information', 'switch_stone']); })
   //   .catch((err) => { console.log("Error during performOauthClientOperations",err); })
 }

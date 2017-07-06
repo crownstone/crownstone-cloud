@@ -32,6 +32,11 @@
       "type": "belongsTo",
       "model": "Appliance",
       "foreignKey": "applianceId"
+    },
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
     }
   },
   "acls": [],
