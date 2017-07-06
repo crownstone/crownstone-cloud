@@ -408,12 +408,12 @@ module.exports = function(model) {
   );
 
 
-  let batch = (arr, index, method) => {
+  let promiseBatchPerformer = (arr, index, method) => {
     return new Promise((resolve, reject) => {
       if (index < arr.length) {
         method(arr[index])
           .then(() => {
-            return batch(arr, index+1, method);
+            return promiseBatchPerformer(arr, index+1, method);
           })
           .then(() => {
             resolve()
@@ -426,64 +426,52 @@ module.exports = function(model) {
     })
   };
 
-  model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
+  const batchSetHistory = function (historyField, dataArray, stoneId, next) {
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      let successBatch = [];
+      let batchResult = {
+        success: {amount:0},
+        skipped: {amount:0, elements: []},
+        error:   {amount:0, elements: [], errors: []},
+      };
 
-      batch(powerUsageArray, 0, (powerUsage) => {
+      promiseBatchPerformer(dataArray, 0, (dataPoint) => {
         return new Promise((resolve, reject) => {
-          model._setCurrentPowerUsage(stone, powerUsage, (err, result) => {
+          dataPoint.sphereId = stone.sphereId;
+          stone[historyField].create(dataPoint, (err, result) => {
             if (err) {
-              reject(err);
+              if (typeof err === 'object' && err.statusCode === 422 && err.details && err.details.codes && err.details.codes.timestamp[0] === 'uniqueness') {
+                // skip because of duplicate
+                batchResult.skipped.amount++;
+                batchResult.skipped.elements.push(dataPoint);
+              }
+              else {
+                batchResult.error.amount++;
+                batchResult.error.elements.push(dataPoint);
+                batchResult.error.errors.push(err);
+              }
             }
-            successBatch.push(result);
+            else {
+              batchResult.success.amount++;
+            }
             resolve();
           });
         })
       })
-        .then(() => { next(null, successBatch); })
-        .catch((err) => { next(err); })
+      .then(() => { next(null, batchResult); })
+      .catch((err) => { next(err); })
     })
-  }
+  };
 
-  model.remoteMethod(
-    'setBatchPowerUsage',
-    {
-      http: {path: '/:id/batchPowerUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: ['PowerUsage'], required: true, http: {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: ['PowerUsage'], root: true},
-      description: "Add an array of power usage measurements to the stone."
-    }
-  );
+  model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
+    batchSetHistory('powerUsageHistory', powerUsageArray, stoneId, next);
+  };
 
   model.setBatchEnergyUsage = function(energyUsageArray, stoneId, next) {
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      let successBatch = [];
-
-      batch(energyUsageArray, 0, (energyUsage) => {
-        return new Promise((resolve, reject) => {
-          model._setCurrentEnergyUsage(stone, energyUsage, (err, result) => {
-            if (err) {
-              reject(err);
-            }
-            successBatch.push(result);
-            resolve();
-          });
-        })
-      })
-        .then(() => { next(null, successBatch); })
-        .catch((err) => { next(err); })
-    })
-  }
+    batchSetHistory('energyUsageHistory', energyUsageArray, stoneId, next);
+  };
 
   model.remoteMethod(
     'setBatchEnergyUsage',
@@ -495,6 +483,19 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: ['EnergyUsage'], root: true},
       description: "Add array of energy usage measurements to the stone."
+    }
+  );
+
+  model.remoteMethod(
+    'setBatchPowerUsage',
+    {
+      http: {path: '/:id/batchPowerUsage/', verb: 'POST'},
+      accepts: [
+        {arg: 'data', type: ['PowerUsage'], required: true, http: {source: 'body'}},
+        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+      ],
+      returns: {arg: 'data', type: ['PowerUsage'], root: true},
+      description: "Add an array of power usage measurements to the stone."
     }
   );
 
@@ -769,6 +770,26 @@ module.exports = function(model) {
     }
   );
 
+  const getHistory = function (historyField, stoneId, from, to, limit, skip, ascending, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      from = from || new Date(0);
+      to = to || new Date();
+      limit = Math.min(limit || 1000, 1000);
+      skip = skip || 0;
+
+      stone[historyField]({where: {timestamp: {between: [from, to]}}, limit: limit, skip: skip, order: ascending ? 'timestamp ASC' : 'timestamp DESC' })
+        .then((result) => {
+          next(null, result);
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  };
+
   model.getPowerUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
     getHistory('powerUsageHistory', stoneId, from, to, limit, skip, ascending, next);
   };
@@ -817,6 +838,23 @@ module.exports = function(model) {
     }
   );
 
+  const countHistory = function(historyField, stoneId, from, to, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      from = from || new Date(0);
+      to = to || new Date();
+      stone[historyField].count({timestamp: {between: [from, to]}})
+        .then((result) => {
+          next(null, {count:result});
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  };
+
   model.countPowerUsageHistory = function(stoneId, from, to, next) {
     countHistory('powerUsageHistory', stoneId, from, to, next);
   };
@@ -852,43 +890,6 @@ module.exports = function(model) {
       description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
     }
   );
-
-  const getHistory = function (historyField, stoneId, from, to, limit, skip, ascending, next) {
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      from = from || new Date(0);
-      to = to || new Date();
-      limit = Math.min(limit || 1000, 1000);
-      skip = skip || 0;
-
-      stone[historyField]({where: {timestamp: {between: [from, to]}}, limit: limit, skip: skip, order: ascending ? 'timestamp ASC' : 'timestamp DESC' })
-        .then((result) => {
-          next(null, result);
-        })
-        .catch((err) => {
-          next(err);
-        })
-    })
-  };
-
-  const countHistory = function(historyField, stoneId, from, to, next) {
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      from = from || new Date(0);
-      to = to || new Date();
-      stone[historyField].count({timestamp: {between: [from, to]}})
-        .then((result) => {
-          next(null, {count:result});
-        })
-        .catch((err) => {
-          next(err);
-        })
-    })
-  };
 
   const deleteHistory = function (historyField, stoneId, from, to, next) {
     model.findById(stoneId, function(err, stone) {

@@ -182,8 +182,13 @@ module.exports = function (model, options) {
     if (modelInstance[idField]) {
       return model.findById(modelInstance[idField], {include: 'hooks'});
     }
-    else {
+    else if (modelInstance.id) {
       return model.findById(modelInstance.id, {include: 'hooks'})
+    }
+    else {
+      if (ctx && ctx.args && ctx.args.id) {
+        return model.findById(ctx.args.id, {include: 'hooks'});
+      }
     }
   };
 
