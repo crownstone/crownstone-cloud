@@ -27,6 +27,7 @@
     }
   },
   "hidden": [
+    "id",
     "stoneId",
     "sphereId"
   ],

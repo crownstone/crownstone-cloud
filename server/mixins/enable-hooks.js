@@ -45,7 +45,10 @@ module.exports = function (model, options) {
    * @private
    */
   let _injectEventDescription = function(name, description) {
-    return '<div style="text-align:left;">' + description + '</div><div style="text-align:right; padding:5px;"> Event: ' + name + '</div>';
+    if (description.indexOf("<div") !== -1) {
+      return description + '</div><div style="text-align:right; padding:5px;"> Event: ' + name + '</div>';
+    }
+    return '<div style="text-align:right;">' + description + '</div><div style="text-align:right; padding:5px;"> Event: ' + name + '</div>';
   };
 
 

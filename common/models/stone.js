@@ -77,7 +77,7 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:member",
         "permission": "DENY",
-        "property": "__destroyById__powerUsageHistory"
+        "property": "deleteAllEnergyUsageHistory"
       }
     );
     model.settings.acls.push(
@@ -85,7 +85,7 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:member",
         "permission": "DENY",
-        "property": "__delete__powerUsageHistory"
+        "property": "deleteAllPowerUsageHistory"
       }
     );
     model.settings.acls.push(
@@ -93,7 +93,7 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:member",
         "permission": "DENY",
-        "property": "__destroyById__energyUsageHistory"
+        "property": "deleteEnergyUsageHistory"
       }
     );
     model.settings.acls.push(
@@ -101,23 +101,7 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:member",
         "permission": "DENY",
-        "property": "__delete__energyUsageHistory"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:member",
-        "permission": "DENY",
-        "property": "__destroyById__powerCurveHistory"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:member",
-        "permission": "DENY",
-        "property": "__delete__powerCurveHistory"
+        "property": "deletePowerUsageHistory"
       }
     );
     model.settings.acls.push(
@@ -209,12 +193,18 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__powerUsageHistory');  // this is the delete ALL
 
   model.disableRemoteMethodByName('prototype.__count__scans');
+  model.disableRemoteMethodByName('prototype.__count__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__destroyById__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__deleteById__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__powerUsageHistory');
 
+  model.disableRemoteMethodByName('prototype.__count__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__energyUsageHistory');
+  model.disableRemoteMethodByName('prototype.__destroyById__energyUsageHistory');
+  model.disableRemoteMethodByName('prototype.__deleteById__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__energyUsageHistory');
 
 
@@ -621,9 +611,9 @@ module.exports = function(model) {
   //   }
   // );
 
-  model.deleteEnergyUsageHistory = function(id, callback) {
-    debug("deleteEnergyUsageHistory");
-    model.findById(id, {include: "energyUsageHistory"}, function(err, stone) {
+  model.deleteAllEnergyUsageHistory = function(id, callback) {
+    debug("deleteAllEnergyUsageHistory");
+    model.findById(id, function(err, stone) {
       if (err) return callback(err);
       if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
@@ -634,19 +624,19 @@ module.exports = function(model) {
   };
 
   model.remoteMethod(
-    'deleteEnergyUsageHistory',
+    'deleteAllEnergyUsageHistory',
     {
-      http: {path: '/:id/deleteEnergyUsageHistory', verb: 'delete'},
+      http: {path: '/:id/deleteAllEnergyUsageHistory', verb: 'delete'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
-      description: "Delete energy usage history of Stone"
+      description: "Delete all energy usage history of Stone"
     }
   );
 
-  model.deletePowerUsageHistory = function(id, callback) {
-    debug("deletePowerUsageHistory");
-    model.findById(id, {include: "powerUsageHistory"}, function(err, stone) {
+  model.deleteAllPowerUsageHistory = function(id, callback) {
+    debug("deleteAllPowerUsageHistory");
+    model.findById(id, function(err, stone) {
       if (err) return callback(err);
       if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
@@ -657,13 +647,13 @@ module.exports = function(model) {
   };
 
   model.remoteMethod(
-    'deletePowerUsageHistory',
+    'deleteAllPowerUsageHistory',
     {
-      http: {path: '/:id/deletePowerUsageHistory', verb: 'delete'},
+      http: {path: '/:id/deleteAllPowerUsageHistory', verb: 'delete'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
-      description: "Delete power usage history of Stone"
+      description: "Delete all power usage history of Stone"
     }
   );
 
@@ -735,7 +725,10 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
       ],
-      description: "Set the switchState of a stone. Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming. If the stone does not support dimming (or is configured that way), anything over 0 is full on."
+      description: '<div style="text-align:right;">' +
+      'Set the switchState of a stone. Requires a hub device to work.' +
+      '<br />Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming.' +
+      '<br />If the stone does not support dimming (or is configured that way), anything over 0 is full on.</div>'
     }
   );
 
@@ -776,57 +769,12 @@ module.exports = function(model) {
     }
   );
 
-  model.getPowerUsageHistory = function(stoneId, from, to, limit, next) {
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      limit = Math.min(limit || 1000, 1000);
-      from = from || new Date(0);
-      to = to || new Date();
-
-      stone.powerUsageHistory({where: {timestamp: {between: [from, to]}}, limit: limit, order: 'timestamp ASC' })
-        .then((result) => {
-          next(null, result);
-        })
-        .catch((err) => {
-          next(err);
-        })
-    })
+  model.getPowerUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('powerUsageHistory', stoneId, from, to, limit, skip, ascending, next);
   };
 
-  model.remoteMethod(
-    'getPowerUsageHistory',
-    {
-      http: {path: '/:id/powerUsageHistory/', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'path' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'path' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'path' }},
-      ],
-      returns: {arg: 'data', type: '[PowerUsage]', root: true},
-      description: "Get an array of collected power measurement samples from the specified Crownstone. Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default)."
-    }
-  );
-
-  model.getEnergyUsageHistory = function(stoneId, from, to, limit, next) {
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      limit = Math.min(limit || 1000, 1000);
-      from = from || new Date(0);
-      to = to || new Date();
-
-      stone.energyUsageHistory({where: {timestamp: {between: [from, to]}}, limit: limit, order: 'timestamp ASC' })
-        .then((result) => {
-          next(null, result);
-        })
-        .catch((err) => {
-          next(err);
-        })
-    })
+  model.getEnergyUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('energyUsageHistory', stoneId, from, to, limit, skip, ascending, next);
   };
 
   model.remoteMethod(
@@ -835,12 +783,166 @@ module.exports = function(model) {
       http: {path: '/:id/energyUsageHistory/', verb: 'GET'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'path' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'path' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: '[EnergyUsage]', root: true},
-      description: "Get an array of collected energy usage samples from the specified Crownstone. Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default)."
+      description: '<div style="text-align:right;">' +
+      'Get an array of collected energy usage samples from the specified Crownstone.' +
+      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
     }
   );
+
+  model.remoteMethod(
+    'getPowerUsageHistory',
+    {
+      http: {path: '/:id/powerUsageHistory/', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+      ],
+      returns: {arg: 'data', type: '[PowerUsage]', root: true},
+      description: '<div style="text-align:right;">' +
+      'Get an array of collected power measurement samples from the specified Crownstone.' +
+      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+    }
+  );
+
+  model.countPowerUsageHistory = function(stoneId, from, to, next) {
+    countHistory('powerUsageHistory', stoneId, from, to, next);
+  };
+
+  model.countEnergyUsageHistory = function(stoneId, from, to, next) {
+    countHistory('energyUsageHistory', stoneId, from, to, next);
+  };
+
+  model.remoteMethod(
+    'countEnergyUsageHistory',
+    {
+      http: {path: '/:id/energyUsageHistory/count', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'count', type: 'number', root: true},
+      description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+    }
+  );
+
+  model.remoteMethod(
+    'countPowerUsageHistory',
+    {
+      http: {path: '/:id/powerUsageHistory/count', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'count', type: 'number', root: true},
+      description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+    }
+  );
+
+  const getHistory = function (historyField, stoneId, from, to, limit, skip, ascending, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      from = from || new Date(0);
+      to = to || new Date();
+      limit = Math.min(limit || 1000, 1000);
+      skip = skip || 0;
+
+      stone[historyField]({where: {timestamp: {between: [from, to]}}, limit: limit, skip: skip, order: ascending ? 'timestamp ASC' : 'timestamp DESC' })
+        .then((result) => {
+          next(null, result);
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  };
+
+  const countHistory = function(historyField, stoneId, from, to, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      from = from || new Date(0);
+      to = to || new Date();
+      stone[historyField].count({timestamp: {between: [from, to]}})
+        .then((result) => {
+          next(null, {count:result});
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  };
+
+  const deleteHistory = function (historyField, stoneId, from, to, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      from = from || new Date(0);
+      to = to || new Date();
+
+      stone[historyField].destroyAll({timestamp: {between: [from, to]}})
+        .then((result) => {
+          next(null, {deleted: result});
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  };
+
+  model.deletePowerUsageHistory = function(stoneId, from, to, next) {
+    deleteHistory('powerUsageHistory', stoneId, from, to, next);
+  };
+
+  model.deleteEnergyUsageHistory = function(stoneId, from, to, next) {
+    deleteHistory('energyUsageHistory', stoneId, from, to, next);
+  };
+
+  model.remoteMethod(
+    'deleteEnergyUsageHistory',
+    {
+      http: {path: '/:id/energyUsageHistory', verb: 'DELETE'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'count', type: 'number', root: true},
+      description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
+    }
+  );
+
+  model.remoteMethod(
+    'deletePowerUsageHistory',
+    {
+      http: {path: '/:id/powerUsageHistory', verb: 'DELETE'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'count', type: 'number', root: true},
+      description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
+    }
+  );
+
+
 };
