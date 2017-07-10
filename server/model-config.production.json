@@ -11,13 +11,13 @@
     "public": false
   },
   "PowerUsage": {
-    "public": false
+    "public": true
   },
   "Coordinate": {
     "public": false
   },
   "EnergyUsage": {
-    "public": false
+    "public": true
   },
   "PowerCurve": {
     "public": false
