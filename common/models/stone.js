@@ -303,15 +303,12 @@ module.exports = function(model) {
 
     // debug("stone:", stone);
     // debug("energyUsage:", energyUsage);
-
     energyUsage.sphereId = stone.sphereId;
-
     stone.energyUsageHistory.create(energyUsage, function(err, energyUsageInstance) {
       if (err) return next(err);
 
       if (energyUsageInstance) {
         stone.currentEnergyUsageId = energyUsageInstance.id;
-
         stone.save(function(err, stoneInstance) {
           if (next) {
             if (err) return next(err);
