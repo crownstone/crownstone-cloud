@@ -71,7 +71,7 @@ class NotificationHandlerClass {
 
     // ... or some given values
     let message = new gcm.Message({
-      collapseKey: 'demo',
+      collapseKey: messageData.title,
       priority: 'high',
       contentAvailable: true,
       delayWhileIdle: true,
@@ -173,3 +173,7 @@ class NotificationHandlerClass {
 }
 
 module.exports = new NotificationHandlerClass();
+
+
+
+
