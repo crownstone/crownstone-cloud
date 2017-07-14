@@ -168,9 +168,9 @@ function _clearReleaseFromUsers(releaseField, filter) {
   };
 
   if (CHANGE_DATA === true) {
-    return ask('CLEAR USER RELEASE: Are you absolutely sure you want to clear releases in ' + releaseField + filter ? ' from users with filter ' + JSON.stringify(filter) : '. (Y/N)')
+    return ask('CLEAR USER RELEASE: Are you absolutely sure you want to clear releases in ' + releaseField + filter ? ' from users with filter ' + JSON.stringify(filter) : '. ( YES / NO )')
       .then((answer) => {
-        if (answer === "Y") {
+        if (answer === "YES") {
           return action();
         }
         else {
@@ -230,9 +230,9 @@ function _releaseToUsers(releaseField, version, hwTypes, filter) {
   };
 
   if (CHANGE_DATA === true) {
-    return ask('USER RELEASE Are you absolutely sure you want to release ' + version + ' in ' + releaseField + filter ? ' to users with filter ' + JSON.stringify(filter) : '. (Y/N)')
+    return ask('USER RELEASE Are you absolutely sure you want to release ' + version + ' in ' + releaseField + filter ? ' to users with filter ' + JSON.stringify(filter) : '. ( YES / NO )')
       .then((answer) => {
-        if (answer === "Y") {
+        if (answer === "YES") {
           return action();
         }
         else {
@@ -272,9 +272,9 @@ function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwar
       });
   };
   if (CHANGE_DATA === true) {
-    return ask('Are you absolutely sure you want to release ' + type + ' v: ' + releaseVersion + ' (Y/N)')
+    return ask('Are you absolutely sure you want to release ' + type + ' v: ' + releaseVersion + ' ( YES / NO )')
       .then((answer) => {
-        if (answer === "Y") {
+        if (answer === "YES") {
           return action();
         }
         else {
@@ -305,9 +305,9 @@ function _remove(model, version, type) {
       .catch((err) => { console.log("Error DELETING "+type+" version: ",version, ' :', err); })
   };
   if (CHANGE_DATA === true) {
-    return ask('DELETE SINGLE: Are you absolutely sure you want to REMOVE ' + type + ' v: ' + version + ' (Y/N)')
+    return ask('DELETE SINGLE: Are you absolutely sure you want to REMOVE ' + type + ' v: ' + version + ' ( YES / NO )')
       .then((answer) => {
-        if (answer === "Y") {
+        if (answer === "YES") {
           return action();
         }
         else {
@@ -330,9 +330,9 @@ function _removeAll(model, type) {
       })
   };
   if (CHANGE_DATA === true) {
-    return ask('DELETE ALL '+ type + ': Are you absolutely sure you want to REMOVE EVERYTHING of type ' + type + '?? (Y/N)')
+    return ask('DELETE ALL '+ type + ': Are you absolutely sure you want to REMOVE EVERYTHING of type ' + type + '?? ( YES / NO )')
       .then((answer) => {
-        if (answer === "Y") {
+        if (answer === "YES") {
           return action();
         }
         else {
