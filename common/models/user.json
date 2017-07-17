@@ -18,6 +18,9 @@
     },
     "Util": true
   },
+  "hidden": [
+    "earlyAccessLevel"
+  ],
   "properties": {
     "profilePicId": {
       "type": "string"
@@ -56,6 +59,10 @@
     "uploadDeviceDetails": {
       "type": "boolean",
       "default": true
+    },
+    "earlyAccessLevel": {
+      "type": "number",
+      "default": 0
     }
   },
   "validations": [],
