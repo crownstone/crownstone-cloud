@@ -33,7 +33,12 @@
       "required": true
     },
     "releaseNotes": {
-      "type": "string"
+      "en" : "string",
+      "nl" : "string",
+      "de" : "string",
+      "es" : "string",
+      "it" : "string",
+      "fr" : "string"
     },
     "releaseLevel": {
       "type": "number",

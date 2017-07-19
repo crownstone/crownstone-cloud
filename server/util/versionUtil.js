@@ -63,6 +63,43 @@ const versionUtil = {
     return highest;
   },
 
+  isHigher: function(version, compareWithVersion) {
+    if (!compareWithVersion) {
+      return true;
+    }
+
+    if (!version) {
+      return false;
+    }
+
+    // a git commit hash is never higher, we pick 12 so 123.122.1234 is the max semver length.
+    if (version.length > 12) {
+      return false;
+    }
+
+    let A = version.split('.');
+
+    // further ensure only semver is compared
+    if (A.length !== 3) {
+      return false;
+    }
+
+    let B = compareWithVersion.split('.');
+
+    if (B.length !== 3) {
+      return false;
+    }
+
+    if (A[0] < B[0]) return false;
+    else if (A[0] > B[0]) return true;
+    else { // A[0] == B[0]
+      if (A[1] < B[1]) return false;
+      else if (A[1] > B[1]) return true;
+      else { // A[1] == B[1]
+        return (A[2] > B[2]);
+      }
+    }
+  }
 };
 
 function isHigher(version, compareWithVersion) {

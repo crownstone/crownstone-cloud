@@ -62,7 +62,8 @@
     },
     "earlyAccessLevel": {
       "type": "number",
-      "default": 0
+      "default": 0,
+      "required": true
     }
   },
   "validations": [],
