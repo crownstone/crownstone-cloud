@@ -2,7 +2,7 @@
 
 function performOauthClientOperations(app) {
   let AppModel = app.dataSources.mongoDs.getModel('App');
-
+  showAppDetails(AppModel, 'Crownstone.consumer')
   // clearAppDatabase(AppModel);
 
   // create the CrownstoneApp
@@ -54,7 +54,7 @@ function showAppDetails(AppModel, appName) {
     .then((result) => {
       if (result.length === 1) {
         console.log("App ", appName, " found in database!");
-        console.log("result:", result);
+        console.log("result:", JSON.stringify(result));
       }
       else if (result.length === 0) {
         console.log("App ", appName, " not found!");

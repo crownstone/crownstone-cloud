@@ -5,6 +5,7 @@
   "license": "(LGPL-3.0 OR Apache-2.0 OR MIT)",
   "scripts": {
     "start": "node ./server/server.js",
+    "big": "node --max_old_space_size=4096 ./server/server.js",
     "pretest": "jshint ."
   },
   "dependencies": {

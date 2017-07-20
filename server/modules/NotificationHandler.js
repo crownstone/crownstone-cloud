@@ -125,13 +125,18 @@ class NotificationHandlerClass {
       return;
     }
 
+    let production = true;
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
+      production = false;
+    }
+
     let options = {
       token: {
         key: keys.keyToken,
         keyId: keys.keyId,
         teamId: keys.teamId
       },
-      production: false
+      production: production
     };
 
     let apnProvider = new apn.Provider(options);

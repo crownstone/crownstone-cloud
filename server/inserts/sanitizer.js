@@ -1,5 +1,5 @@
 "use strict";
-
+const fs = require("fs");
 let hardwareVersions = require("../constants/hardwareVersions");
 
 let plugAndBuiltinVariations = hardwareVersions.util.getAllPlugs().concat(hardwareVersions.util.getAllBuiltIns());
@@ -172,14 +172,21 @@ function performSanitation(app) {
             }
           });
           let unownedAmount = Object.keys(unownedPowerUsageIds).length;
-          console.log("Unowned power usage ids: ", unownedAmount, 'out of', allPowerUsages.length, ' (',  Math.round((unownedAmount / allPowerUsages.length)*100), '% ) -- ', toBeDeletedStoneCount, " of which are in unowned stones.")
+          console.log("Unowned power usage ids: ", unownedAmount, 'out of', allPowerUsages.length, ' (',  Math.round((unownedAmount / allPowerUsages.length)*100), '% ) -- ', toBeDeletedStoneCount, " of which are in unowned Stones.");
+
+          // if (allPowerUsages.length > 0 && JSON.parse(JSON.stringify(allPowerUsages[0])).stoneId) {
+          //   console.warn("Power usage does not show stoneId");
+          // }
+          // else if (allPowerUsages.length > 0) {
+          //   fs.writeFileSync('energyUsage' + new Date().getFullYear() + '-' + (new Date().getMonth()+1) + '-' +  new Date().getDate() + '.json', JSON.stringify(allPowerUsages, undefined, 2))
+          // }
         })
     })
     .then(() => {
       return energyUsageModel.find()
         .then((results) => {
           console.log("Got data from energyUsageModel: ", results.length, "hits");
-          let totalResults = results.length;
+          let allEnergyUsages = results;
           let toBeDeletedStoneCount = 0;
           for (let i = 0; i < results.length; i++) {
             let point = results[i];
@@ -191,7 +198,14 @@ function performSanitation(app) {
             }
           }
           let unownedAmount = Object.keys(unownedEnergyUsageIds).length;
-          console.log("Unowned energy usage ids: ", unownedAmount, 'out of', totalResults, ' (',  Math.round((unownedAmount / totalResults)*100), '% ) -- ', toBeDeletedStoneCount, " of which are in unowned stones.")
+          console.log("Unowned energy usage ids: ", unownedAmount, 'out of', allEnergyUsages.length, ' (',  Math.round((unownedAmount / allEnergyUsages.length)*100), '% ) -- ', toBeDeletedStoneCount, " of which are in unowned Stones.");
+
+          // if (allEnergyUsages.length > 0 && JSON.parse(JSON.stringify(allEnergyUsages[0])).stoneId) {
+          //   console.warn("Energy usage does not show stoneId");
+          // }
+          // else if (allEnergyUsages.length > 0) {
+          //   fs.writeFileSync('energyUsage' + new Date().getFullYear() + '-' + (new Date().getMonth()+1) + '-' +  new Date().getDate() + '.json', JSON.stringify(allEnergyUsages, undefined, 2))
+          // }
         })
     })
     .then(() => {
