@@ -84,12 +84,28 @@ function performFirmwareOperations(app) {
     })
     // .then(() => { return changeFirmwareReleaseLevel('1.5.1',3); })
     // .then(() => { return getFirmwareVersion('1.5.1') })
-    // .then(() => { return updateReleaseRollout(); })
-    // .then(() => { return releaseFirmwareToUsers(userModel, "1.5.0", plugAndBuiltinVariations); })
     // .then(() => { return clearFirmwares(); })
     // .then(() => { return clearBootloaders(); })
     // .then(() => { return clearFirmwareAtUsers() })
     // .then(() => { return clearBootloaderAtUsers() })
+    // .then(() => {
+    //   return releaseBootloader(
+    //     '1.2.2', // release version
+    //     '1.2.2', // minimum compatible version
+    //     plugAndBuiltinVariations, // hardware versions
+    //     '45306bf3ed920dc9768a57c3df3fd16954ea5b97', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.2.2/bin/bootloader_1.2.2.zip',
+    //     0, // release level: 0 for release to all new users
+    //     {  // release notes
+    //       'en' : 'stability',
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
     // .then(() => {
     //   return releaseFirmware(
     //     '1.5.1', // release version
@@ -112,24 +128,7 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '1.2.2', // release version
-    //     '1.2.2', // minimum compatible version
-    //     plugAndBuiltinVariations, // hardware versions
-    //     '45306bf3ed920dc9768a57c3df3fd16954ea5b97', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.2.2/bin/bootloader_1.2.2.zip',
-    //     0, // release level: 0 for release to all new users
-    //     {  // release notes
-    //       'en' : 'stability',
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
+    // .then(() => { return updateReleaseRollout(); })
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
     // .then(() => {return clearFirmwares(firmwareModel) })
@@ -144,6 +143,7 @@ function performFirmwareOperations(app) {
     //     'https://github.com/crownstone/bluenet-release/raw/master/bootloader_1.2.2/bin/bootloader_1.2.2.zip'
     //   );
     // })
+    .then(() => { console.log("performFirmwareOperations: DONE") })
     .catch((err) => {
       console.log("performFirmwareOperations: Error", err);
     })
@@ -153,7 +153,7 @@ function changeFirmwareReleaseLevel(version, level) {
   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
   return new Promise((resolve, reject) => {
     if (CHANGE_DATA) {
-      return ask("Change Release Level: Change Data is enabled. Continue? (YES/NO)")
+      return ask("Change Firmware Release Level: Change Data is enabled. Continue? (YES/NO)")
         .then((answer) => {
           if (answer === 'YES') {
             resolve();
@@ -176,6 +176,37 @@ function changeFirmwareReleaseLevel(version, level) {
       }
       else {
         throw "Can not find this version."
+      }
+    })
+}
+
+function changeBootloaderReleaseLevel(version, level) {
+  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
+  return new Promise((resolve, reject) => {
+    if (CHANGE_DATA) {
+      return ask("Change Bootloader Release Level: Change Data is enabled. Continue? (YES/NO)")
+        .then((answer) => {
+          if (answer === 'YES') {
+            resolve();
+          }
+          else {
+            reject("User permission denied for changing data during Update Release Level. Rerun script and type YES.");
+          }
+        })
+    }
+    else {
+      resolve()
+    }})
+    .then(() => {
+      return _getVersion(bootloaderModel, version);
+    })
+    .then((bootloader) => {
+      if (bootloader.length > 0) {
+        bootloader[0].releaseLevel = level;
+        return bootloader[0].save();
+      }
+      else {
+        throw "Can not find this version bootloader."
       }
     })
 }
@@ -270,12 +301,36 @@ function updateReleaseRollout() {
             console.log("Updating release rollout: ", counter, "/", users.length, " users.");
           }
           if (CHANGE_DATA === true) {
-            user[TYPES.firmwareField] = firmwareData;
-            user[TYPES.bootloaderField] = bootloaderData;
-            return user.save()
+            let changed = false;
+            if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData)) {
+              user[TYPES.firmwareField] = firmwareData;
+              changed = true;
+            }
+            if (JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
+              user[TYPES.bootloaderField] = bootloaderData;
+              changed = true;
+            }
+
+            if (changed) {
+              return user.save()
+            }
+            else {
+              return new Promise((resolve, reject) => { resolve(); })
+            }
           }
           else {
-            console.log("Would have released firmware: ", firmwareData, " and bootloader:", bootloaderData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
+            if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData) && JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
+              console.log("Would have released firmware: ", firmwareData, " and bootloader:", bootloaderData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
+            }
+            else if (JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
+              console.log("Would have released bootloader:", bootloaderData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
+            }
+            else if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData)) {
+              console.log("Would have released firmware: ", firmwareData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
+            }
+            else {
+              console.log("Skipping ", user.firstName, user.lastName, " (", user.email, ")");
+            }
             return new Promise((resolve, reject) => { resolve(); })
           }
         })
@@ -419,7 +474,7 @@ function _releaseToUsers(type, version, hwTypes, accessLevel) {
     releaseField = TYPES.firmwareField;
   }
   else if (type === TYPES.bootloader) {
-    releaseField = TYPES.bootloader;
+    releaseField = TYPES.bootloaderField;
   }
   else {
     throw new Error("Not a valid type!");

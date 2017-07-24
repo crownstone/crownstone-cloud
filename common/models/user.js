@@ -198,7 +198,6 @@ module.exports = function(model) {
    ************************************/
 
   model.sendVerification = function(user, tokenGenerator, callback) {
-
     let options = util.getVerificationEmailOptions(user);
     options.generateVerificationToken = tokenGenerator;
     // let options = {
@@ -253,7 +252,7 @@ module.exports = function(model) {
   };
 
   //send verification email after registration
-  model.afterRemote('**', function(ctx, user, next) {
+  model.afterRemote('create', function(ctx, user, next) {
     model.onCreate(ctx, user, next);
   });
 
