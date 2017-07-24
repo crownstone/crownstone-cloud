@@ -189,10 +189,8 @@ module.exports = function(model) {
    ************************************/
 
   // if the sphere is deleted, delete also all files stored for this sphere
-  model.observe('after delete', function(context, next) {
-    model.deleteAllFiles(context.where.id, function() {
-      next();
-    });
+  model.observe('after delete', function(ctx, next) {
+    model.deleteAllFiles(ctx.where.id, ctx.options, next);
   });
 
   /************************************
@@ -223,40 +221,40 @@ module.exports = function(model) {
   };
 
   model.onCreate = function(context, user, callback) {
-    if (model.settings.emailVerificationRequired) {
-      model.sendVerification(user, null, function(err, response) {
-        if (err) return callback(err);
-        callback();
+    _insertLatestFirmwareAndBootloader(context, user)
+      .then(() => {
+        if (model.settings.emailVerificationRequired) {
+          model.sendVerification(user, null, function(err, response) {
+            if (err) return callback(err);
+            callback();
+          })
+        } else {
+          callback();
+        }
       })
-    } else {
-      callback();
-    }
+      .catch((err) => {
+        callback(err);
+      })
   };
 
-  //send verification email after registration
-  model.afterRemote('create', function(context, user, next) {
-    // provide the user with firmwares and bootloader.
+  let _insertLatestFirmwareAndBootloader = function (ctx, user) {
     const Firmwares = loopback.getModel('Firmware');
     const Bootloaders = loopback.getModel('Bootloader');
 
-    Firmwares.getLatestVersions()
+    return Firmwares.getLatestVersions()
       .then((data) => {
         user.firmwareVersionsAvailable = data;
         return Bootloaders.getLatestVersions();
       })
       .then((data) => {
         user.bootloaderVersionsAvailable = data;
-        user.save();
-        model.onCreate(context, user, next);
+        return user.save();
       })
-      .catch((err) => {
-        next(err)
-      });
+  };
 
-
-
-    // console.log('> user.afterRemote triggered');
-
+  //send verification email after registration
+  model.afterRemote('**', function(ctx, user, next) {
+    model.onCreate(ctx, user, next);
   });
 
   //send password reset link when requested

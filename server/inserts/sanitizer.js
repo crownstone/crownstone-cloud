@@ -43,6 +43,24 @@ function performSanitation(app) {
   let unownedApplianceIds = {};
   let unownedInstallationIds = {};
 
+
+  /**
+   .then((fw) => {
+      let x = APP.dataSources.mongoDs.getModel('Stone')
+      return x.find({hardwareVersion:{$exist: true}})
+    })
+   .then((res) => {
+      let versions = {};
+      res.forEach((st) => {
+        if (!versions[st.hardwareVersion]) {
+          versions[st.hardwareVersion] = {count: 0, users: []}
+        }
+        versions[st.hardwareVersion].count++;
+
+      })
+      console.log(versions)
+    })
+   */
   // get all users;
   userModel.find()
     .then((results) => {

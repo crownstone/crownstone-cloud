@@ -114,8 +114,12 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
   // let performWhitelistOperations = require("./inserts/whitelistOperations");
   // performWhitelistOperations(app);
 
-  // // Uncomment these lines to view/add/remove/modify released firmwares/bootloader versions
+  // // Uncomment these lines to perform database cleanup operations
   // let performSanitation = require("./inserts/sanitizer");
   // performSanitation(app);
+
+  // // Uncomment these lines to run test scripts on the database
+  // let performReference = require("./inserts/reference");
+  // performReference(app);
 }
 

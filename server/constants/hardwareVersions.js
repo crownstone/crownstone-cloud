@@ -26,6 +26,7 @@ const hardwareVersionExportData = {
         "10103000300", // ACR01B1C :: CROWNSTONE BUILTIN
         "10103000400", // ACR01B1D :: CROWNSTONE BUILTIN
         "10103010000", // ACR01B1E :: CROWNSTONE BUILTIN
+        "10103000500", // ACR01B1E :: CROWNSTONE BUILTIN // renamed by marc
       ],
 
       guidestoneVersions: [

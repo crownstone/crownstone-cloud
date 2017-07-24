@@ -82,10 +82,12 @@ function performFirmwareOperations(app) {
           })
       }
     })
-    .then(() => { return updateReleaseRollout(); })
+    // .then(() => { return changeFirmwareReleaseLevel('1.5.1',3); })
+    // .then(() => { return getFirmwareVersion('1.5.1') })
+    // .then(() => { return updateReleaseRollout(); })
     // .then(() => { return releaseFirmwareToUsers(userModel, "1.5.0", plugAndBuiltinVariations); })
     // .then(() => { return clearFirmwares(); })
-    // .then(() => { return clearBootloaders() })
+    // .then(() => { return clearBootloaders(); })
     // .then(() => { return clearFirmwareAtUsers() })
     // .then(() => { return clearBootloaderAtUsers() })
     // .then(() => {
@@ -95,7 +97,7 @@ function performFirmwareOperations(app) {
     //     plugAndBuiltinVariations, // hardware versions
     //     '9b3ad906e65553ef7c77d96f0c0105d0e4c7b9d6', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.5.1/bin/crownstone_1.5.1.zip',
-    //     2, // release level: 0 for release to all new users
+    //     0, // release level: 0 for release to all new users
     //     {  // release notes
     //       'en' :
     //       '- Added Scheduler functionality.\n' +
@@ -117,7 +119,7 @@ function performFirmwareOperations(app) {
     //     plugAndBuiltinVariations, // hardware versions
     //     '45306bf3ed920dc9768a57c3df3fd16954ea5b97', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.2.2/bin/bootloader_1.2.2.zip',
-    //     2, // release level: 0 for release to all new users
+    //     0, // release level: 0 for release to all new users
     //     {  // release notes
     //       'en' : 'stability',
     //       'nl' : '',
@@ -145,6 +147,47 @@ function performFirmwareOperations(app) {
     .catch((err) => {
       console.log("performFirmwareOperations: Error", err);
     })
+}
+
+function changeFirmwareReleaseLevel(version, level) {
+  let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
+  return new Promise((resolve, reject) => {
+    if (CHANGE_DATA) {
+      return ask("Change Release Level: Change Data is enabled. Continue? (YES/NO)")
+        .then((answer) => {
+          if (answer === 'YES') {
+            resolve();
+          }
+          else {
+            reject("User permission denied for changing data during Update Release Level. Rerun script and type YES.");
+          }
+        })
+    }
+    else {
+      resolve()
+    }})
+    .then(() => {
+      return _getVersion(firmwareModel, version);
+    })
+    .then((firmware) => {
+      if (firmware.length > 0) {
+        firmware[0].releaseLevel = level;
+        return firmware[0].save();
+      }
+      else {
+        throw "Can not find this version."
+      }
+    })
+}
+
+function getFirmwareVersion(version) {
+  let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
+  return _getVersion(firmwareModel, version);
+}
+
+function getBootloaderVersion(version) {
+  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
+  return _getVersion(bootloaderModel, version);
 }
 
 function updateReleaseRollout() {
@@ -454,6 +497,13 @@ function _getAll(model) {
     })
 }
 
+function _getVersion(model, version) {
+  return model.find({where: {version: version}})
+    .then((results) => {
+      return results;
+    })
+}
+
 function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes) {
   console.log("\n-- Releasing ", type, releaseVersion, "to level", releaseLevel);
   let action = () => {
@@ -487,7 +537,7 @@ function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwar
       })
   }
   else {
-    console.log("Not releasing", type, releaseVersion, "because CHANGE_DATA = false.");
+    console.log("Not releasing", type, releaseVersion, "to", hardwareVersions, "because CHANGE_DATA = false.");
     return _releaseToUsers(type, releaseVersion, hardwareVersions, releaseLevel);
   }
 }
