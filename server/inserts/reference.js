@@ -49,16 +49,16 @@ function performReference(app) {
       allUsers = results;
       allUsers.forEach((user) => {
         userIds[user.id] = true;
+        // console.log(user.firstName, user.lastName, user.email);
       })
     })
     .then(() => {
-      console.log("DONE")
+      console.log("Reference, DONE")
     })
     .catch((err) => {
       console.log("Error during reference:", err);
 
     })
-
 
 }
 

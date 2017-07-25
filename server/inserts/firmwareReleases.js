@@ -3,13 +3,12 @@
 let hardwareVersions = require("../constants/hardwareVersions");
 const versionUtil = require('../../server/util/versionUtil');
 
+const { ask, promiseBatchPerformer } = require("./insertUtil");
 
 let plugAndBuiltinVariations = hardwareVersions.util.getAllPlugs().concat(hardwareVersions.util.getAllBuiltIns());
 
 let APP;
 let CHANGE_DATA = false;
-
-const rl = require('readline');
 
 let TYPES = {
   firmware: "Firmware",
@@ -18,19 +17,6 @@ let TYPES = {
   bootloaderField: "bootloaderVersionsAvailable",
   user: 'user'
 };
-
-function ask(question) {
-  return new Promise((resolve, reject) => {
-    let r = rl.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-    r.question(question + '\n', function(answer) {
-      r.close();
-      resolve(answer);
-    });
-  })
-}
 
 /**
  *
@@ -652,24 +638,6 @@ function _removeAll(model, type) {
     return new Promise((resolve, reject) => { resolve(); });
   }
 }
-
-let promiseBatchPerformer = (arr, index, method) => {
-  return new Promise((resolve, reject) => {
-    if (index < arr.length) {
-      method(arr[index])
-        .then(() => {
-          return promiseBatchPerformer(arr, index+1, method);
-        })
-        .then(() => {
-          resolve()
-        })
-        .catch((err) => reject(err))
-    }
-    else {
-      resolve();
-    }
-  })
-};
 
 
 module.exports = performFirmwareOperations;

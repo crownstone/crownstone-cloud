@@ -67,43 +67,25 @@ class NotificationHandlerClass {
       return;
     }
 
-    // Create a message
-
-    // ... or some given values
     let message = new gcm.Message({
       collapseKey: messageData.title,
       priority: 'high',
-      contentAvailable: true,
-      delayWhileIdle: true,
-      timeToLive: 3,
-      restrictedPackageName: "somePackageName",
-      dryRun: true,
       data: messageData.data,
-      notification: {
-        title: "Hello, World",
-        icon: "ic_launcher",
-        body: "This is a notification that will be displayed if your app is in the background."
-      }
     });
 
-    // Change the message data
-    // ... as key-value
-    message.addData('key1', 'message1');
-    message.addData('key2', 'message2');
-
-    // ... or as a data object (overwrites previous data object)
-    message.addData({
-      key1: 'message1',
-      key2: 'message2'
-    });
 
     // Set up the sender with you API key
     let sender = new gcm.Sender(keys.serverApiKey);
 
+
     // Add the registration tokens of the devices you want to send to
     sender.send(message, {registrationTokens: tokens}, function (err, response) {
-      if (err) console.error('ANDROID ERROR PUSH',err);
-      else     console.log("ANDROID PUSH RESPONSE", response);
+      if (err) {
+        // console.log('ANDROID ERROR PUSH', err);
+      }
+      else {
+        // console.log("ANDROID PUSH RESPONSE", response);
+      }
     });
 
   }

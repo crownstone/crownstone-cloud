@@ -1,8 +1,24 @@
+"use strict";
 
+let APP = null;
+let CHANGE_DATA = false;
 
-function performOauthClientOperations(app) {
-  let AppModel = app.dataSources.mongoDs.getModel('App');
-  showAppDetails(AppModel, 'Crownstone.consumer')
+const { ask, promiseBatchPerformer } = require("./insertUtil");
+
+function performAppOperations(app) {
+  APP = app;
+
+  new Promise((resolve, reject) => { resolve() })
+    .then(() => { return getApp('Crownstone.consumer') })
+    .then((data) => { console.log("data",JSON.stringify(data)) })
+    .then(() => {
+      console.log("performAppOperations: Done")
+    })
+    .catch((err) => {
+      console.log("ERROR: performAppOperations", err);
+    })
+
+  // showAppDetails()
   // clearAppDatabase(AppModel);
 
   // create the CrownstoneApp
@@ -12,12 +28,14 @@ function performOauthClientOperations(app) {
   // createApp(AppModel, appName, keys);
 }
 
-function clearAppDatabase(AppModel) {
+function clearAppDatabase() {
+  let AppModel = APP.dataSources.mongoDs.getModel('App');
   return AppModel.destroyAll()
     .then(() => { console.log("ALL APPS REMOVED"); })
 }
 
-function deleteApp(AppModel, appName) {
+function deleteApp(appName) {
+  let AppModel = APP.dataSources.mongoDs.getModel('App');
   return AppModel.find({"name":appName})
     .then((results) => {
       let deletionPromises = [];
@@ -28,7 +46,8 @@ function deleteApp(AppModel, appName) {
     })
 }
 
-function createApp(AppModel, appName, keys) {
+function createApp(appName, keys) {
+  let AppModel = APP.dataSources.mongoDs.getModel('App');
   return AppModel.create({
     name: appName,
     pushSettings: {
@@ -49,7 +68,8 @@ function createApp(AppModel, appName, keys) {
     .catch((err) => { console.log("Error adding client:", err); })
 }
 
-function showAppDetails(AppModel, appName) {
+function showAppDetails(appName) {
+  let AppModel = APP.dataSources.mongoDs.getModel('App');
   AppModel.find({"name": appName})
     .then((result) => {
       if (result.length === 1) {
@@ -66,8 +86,22 @@ function showAppDetails(AppModel, appName) {
     .catch((err) => { console.log("Error during app lookup", err); })
 }
 
+function getApp(appName) {
+  let AppModel = APP.dataSources.mongoDs.getModel('App');
+  return AppModel.find({"name": appName})
+    .then((result) => {
+      if (result.length === 1) {
+        return result[0];
+      }
+      else {
+        throw "cant find app"
+      }
+    })
+    .catch((err) => { console.log("Error during app lookup", err); })
+}
 
 
 
 
-module.exports = performOauthClientOperations;
+
+module.exports = performAppOperations;
