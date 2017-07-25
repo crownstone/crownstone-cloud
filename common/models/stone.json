@@ -38,6 +38,10 @@
     "switchState": {
       "type": "number"
     },
+    "dimmingEnabled": {
+      "type": "boolean",
+      "default": false
+    },
     "deviceType": {
       "type": "string"
     },
