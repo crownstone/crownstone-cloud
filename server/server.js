@@ -121,5 +121,9 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
   // // Uncomment these lines to run test scripts on the database
   // let performReference = require("./inserts/reference");
   // performReference(app);
+
+  // // Uncomment these lines to run operations scripts on the database
+  // let performDatabaseOperations = require("./inserts/databaseOps");
+  // performDatabaseOperations(app);
 }
 

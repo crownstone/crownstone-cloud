@@ -24,3 +24,4 @@ npm-debug.log
 client/
 
 server/inserts/keyData
+backup
