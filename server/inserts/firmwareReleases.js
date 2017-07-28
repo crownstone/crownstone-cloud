@@ -114,7 +114,7 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-    // .then(() => { return updateReleaseRollout(); })
+    .then(() => { return updateReleaseRollout(); })
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
     // .then(() => {return clearFirmwares(firmwareModel) })
@@ -267,6 +267,7 @@ function updateReleaseRollout() {
         fillList(firmwares, firmwareAccessLevels);
         fillList(bootloaders, bootloaderAccessLevels);
 
+
         return promiseBatchPerformer(users, 0, (user) => {
           let userLevel = user.earlyAccessLevel || 0;
           let firmwareData = {};
@@ -275,6 +276,18 @@ function updateReleaseRollout() {
             allHardware.forEach((hardwareVersion) => {
               if (source[hardwareVersion] && source[hardwareVersion][userLevel]) {
                 list[hardwareVersion] = source[hardwareVersion][userLevel]
+              }
+              else if (source[hardwareVersion]) {
+                let allAccessLevels = Object.keys(source[hardwareVersion]);
+                let allAccessLevelsNumeric = [];
+                allAccessLevels.forEach((level) => { allAccessLevelsNumeric.push(Number(level) )});
+                allAccessLevelsNumeric.sort();
+
+                for (let i = 0; i < allAccessLevelsNumeric.length; i++) {
+                  if (allAccessLevelsNumeric[i] <= userLevel) {
+                    list[hardwareVersion] = source[hardwareVersion][allAccessLevelsNumeric[i]]
+                  }
+                }
               }
             });
           };
@@ -315,7 +328,10 @@ function updateReleaseRollout() {
               console.log("Would have released firmware: ", firmwareData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
             }
             else {
-              console.log("Skipping ", user.firstName, user.lastName, " (", user.email, ")");
+              if (user.email === 'bart@dobots.nl') {
+                console.log(JSON.stringify(user[TYPES.firmwareField]) , JSON.stringify(firmwareData))
+              }
+              console.log("Skipping ", user.firstName, user.lastName, " (", user.email, ")", userLevel);
             }
             return new Promise((resolve, reject) => { resolve(); })
           }
