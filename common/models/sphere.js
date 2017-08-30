@@ -255,18 +255,60 @@ module.exports = function(model) {
   // check that the owner of a sphere can't unlink himself from the sphere, otherwise there will
   // be access problems to the sphere. And a sphere should never be without an owner.
   model.beforeRemote('*.__unlink__users', function(context, user, next) {
-
+    let foreignKey = context.args.fk;
+    let sphere = context.instance;
     const User = loopback.findModel('user');
-    User.findById(context.args.fk, function(err, user) {
+    User.findById(foreignKey, function(err, user) {
       if (err) return next(err);
       if (!user) return next();
 
-      if (String(user.id) === String(context.instance.ownerId)) {
+      if (String(user.id) === String(sphere.ownerId)) {
         return next(new Error("can't remove owner from sphere"));
       } else {
         next();
       }
     })
+  });
+
+  model.afterRemote("*.__unlink__users", function(ctx, instance, next) {
+    let unlinkedUserKey = ctx.args.fk;
+    let sphere = ctx.instance;
+
+    // get the user id of the user that performed the request
+    let executingUserId = ctx.ctorArgs && ctx.ctorArgs.options && ctx.ctorArgs.options.accessToken && ctx.ctorArgs.options.accessToken.userId || null;
+    let executingUser = null;
+
+    // if the user does not exist any more, ignore notifying him
+    if (!unlinkedUserKey) {
+      next(new Error("Did not find user to send notification email after removing user from Sphere."));
+      return;
+    }
+
+
+    let findAndEmailUnlinkedUser = () => {
+      return User.findById(unlinkedUserKey)
+        .then((unlinkedUser) => {
+          if (unlinkedUser) {
+            emailUtil.sendRemovedFromSphereEmail(unlinkedUser, executingUser, sphere);
+          }
+          next();
+        })
+    };
+
+    const User = loopback.findModel('user');
+    if (executingUserId) {
+      User.findById(executingUserId)
+        .then((result) => {
+          executingUser = result;
+          return findAndEmailUnlinkedUser();
+        })
+        .catch((err) => { next(err); })
+    }
+    else {
+      new Promise((resolve, reject) => { resolve(); })
+        .then(() => { return findAndEmailUnlinkedUser(); })
+        .catch((err) => { next(err); })
+    }
   });
 
   // check that a sphere is not deleted as long as there are crownstones assigned
@@ -383,6 +425,7 @@ module.exports = function(model) {
       next();
     }
   }
+
   function updateOwnerAccess(ctx, next) {
     if (ctx.isNewInstance) {
       const User = loopback.getModel('user');
@@ -547,6 +590,9 @@ module.exports = function(model) {
       }
     });
   }
+
+
+
   model.pendingInvites = function(id, callback) {
 
     const SphereAccess = loopback.getModel('SphereAccess');
@@ -638,7 +684,6 @@ module.exports = function(model) {
   );
 
   model.removeInvite = function(id, email, callback) {
-
     const User = loopback.findModel('user');
     User.findOne({where: {email: email}}, function(err, user) {
       if (err) return callback(err);
@@ -1296,35 +1341,6 @@ module.exports = function(model) {
   /************************************
    **** Sending Emails
    ************************************/
-
-  model.afterRemote("*.__unlink__users", function(context, instance, next) {
-    let userIdFromContext = context.options && context.options.accessToken && context.options.accessToken.userId || undefined;
-
-    let currentUserFromContext = null;
-    const User = loopback.findModel('user');
-    User.findById(userIdFromContext)
-      .then((currentUser) => {
-        if (currentUser !== null) {
-          currentUserFromContext = currentUser;
-          return User.findById(context.args.fk)
-        }
-        else {
-          throw new Error("Access Denied.")
-        }
-      })
-      .then((userToDelete) => {
-        if (userToDelete !== null) {
-          throw new Error("Did not find user to send notification email after removing user from Sphere.")
-        }
-        else {
-          emailUtil.sendRemovedFromSphereEmail(user, currentUserFromContext, context.instance);
-          next();
-        }
-      })
-      .catch((err) => {
-        next(err);
-      })
-  });
 
   // model.afterRemote("*.__link__users", function(context, instance, next) {
   // 	debug("link users");

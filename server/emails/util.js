@@ -22,10 +22,13 @@ let util = {
     });
   },
 
-  sendRemovedFromSphereEmail : function(user, currentUser, sphere) {
-    let html = 'You were removed from the sphere <b>' + sphere.name + '</b> by ' + currentUser.firstName + ' ' + currentUser.lastName;
+  sendRemovedFromSphereEmail : function(unlinkedUser, executingUser, sphere) {
+    let html = 'You were removed from the Sphere <b>' + sphere.name + '</b>.';
+    if (executingUser !== null) {
+      html = 'You were removed from the Sphere <b>' + sphere.name + '</b> by ' + executingUser.firstName + ' ' + executingUser.lastName + '.';
+    }
     Email.send({
-      to: user.email,
+      to: unlinkedUser.email,
       from: 'noreply@crownstone.rocks',
       fromname: 'Crownstone',
       from_name: 'Crownstone',
@@ -33,7 +36,7 @@ let util = {
       html: html
     }, function(err) {
       if (err) return debug('failed to send notification email');
-      debug('sending remove notification email to:', user.email);
+      debug('sending remove notification email to:', unlinkedUser.email);
     });
   },
 
