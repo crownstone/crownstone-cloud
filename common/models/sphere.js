@@ -10,6 +10,8 @@ const config = require('../../server/config.json');
 const emailUtil = require('../../server/emails/util');
 const mesh = require('../../server/middleware/mesh-access-address');
 
+const messageUtils = require('./sharedUtil/messageUtil')
+
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
 
@@ -227,6 +229,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('updateAll');
   model.disableRemoteMethodByName('count');
   model.disableRemoteMethodByName('upsert');
+  model.disableRemoteMethodByName('replaceById');
   model.disableRemoteMethodByName('createChangeStream');
 
   model.disableRemoteMethodByName('prototype.__create__users');
@@ -237,9 +240,24 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__users');
   model.disableRemoteMethodByName('prototype.__get__users');
 
+  model.disableRemoteMethodByName('prototype.__link__presentPeople');
+  model.disableRemoteMethodByName('prototype.__unlink__presentPeople');
+  model.disableRemoteMethodByName('prototype.__findById__presentPeople');
+  model.disableRemoteMethodByName('prototype.__updateById__presentPeople');
+  model.disableRemoteMethodByName('prototype.__destroyById__presentPeople');
+  model.disableRemoteMethodByName('prototype.__deleteById__presentPeople');
+  model.disableRemoteMethodByName('prototype.__create__presentPeople');
+  model.disableRemoteMethodByName('prototype.__delete__presentPeople');
+  model.disableRemoteMethodByName('prototype.__exists__presentPeople');
+
   model.disableRemoteMethodByName('prototype.__delete__ownedLocations');
   model.disableRemoteMethodByName('prototype.__delete__ownedStones');
   model.disableRemoteMethodByName('prototype.__delete__ownedAppliances');
+
+  model.disableRemoteMethodByName('prototype.__deleteById__messages');
+  model.disableRemoteMethodByName('prototype.__get__messages');
+  model.disableRemoteMethodByName('prototype.__updateById__messages');
+  model.disableRemoteMethodByName('prototype.__findById__messages');
 
   /************************************
    **** Model Validation
@@ -308,6 +326,39 @@ module.exports = function(model) {
       new Promise((resolve, reject) => { resolve(); })
         .then(() => { return findAndEmailUnlinkedUser(); })
         .catch((err) => { next(err); })
+    }
+  });
+
+  model.afterRemote('setMessages', function(ctx, instance, next) {
+    if (instance && instance.everyoneInSphere) {
+      // notify!
+      // get users in the sphere.
+      let sphereObject;
+      model.findById(instance.sphereId)
+        .then((sphere) => {
+          if (sphere === null) {
+            throw 'Sphere not found';
+          }
+          sphereObject = sphere;
+          return new Promise((resolve, reject) => {
+            sphereObject.users(function (err, users) {
+              if (err) { return reject(err); }
+              resolve(users);
+            });
+          });
+        })
+        .then((users) => {
+          messageUtils.notifyWithUserObjects(instance, users);
+        })
+        .then(() => {
+          next();
+        })
+        .catch((err) => {
+          next(err);
+        })
+    }
+    else {
+      next();
     }
   });
 
@@ -783,7 +834,7 @@ module.exports = function(model) {
         if (sphere === null) { throw 'Sphere not found'; }
         sphereObject = sphere;
 
-        // get the sphere users TODO: figure out why this isn't a promise by default.
+        // get the sphere users
         return new Promise((resolve, reject) => {
           sphereObject.users(function (err, users) {
             if (err) { return reject(err); }
@@ -1337,6 +1388,127 @@ module.exports = function(model) {
       description: "Delete all appliances of Sphere"
     }
   );
+
+
+  /***************************************
+   **** Messages
+   ***************************************/
+
+  model.remoteMethod(
+    'getAllMyMessages',
+    {
+      http: {path: '/:id/myMessages', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Delete all appliances of Sphere",
+      returns: {arg: 'data', type: ['Message'], root: true},
+    }
+  );
+
+  model.remoteMethod(
+    'getMyNewMessages',
+    {
+      http: {path: '/:id/myNewMessages', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Delete all appliances of Sphere",
+      returns: {arg: 'data', type: ['Message'], root: true},
+    }
+  );
+
+  model.remoteMethod(
+    'getMyNewMessagesInLocation',
+    {
+      http: {path: '/:id/myNewMessagesInLocation/:fk', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Delete all appliances of Sphere",
+      returns: {arg: 'data', type: ['Message'], root: true},
+
+    }
+  );
+
+  model.getAllMyMessages = function(id, options, next) {
+    let filter = {
+      include: {
+        relation: 'messages',
+        scope: {
+          where: { everyoneInSphere:false },
+          include: ['recipients','received','read'],
+        }
+      }};
+    let userId = options.accessToken.userId;
+    _getMessagesWithFilter(filter, userId, next);
+  };
+
+  model.getMyNewMessages = function(id, options, next) {
+    let filter = {
+      include: {
+        relation: 'messages',
+        scope: {
+          where: {and: [{everyoneInSphere:false},{deliveredAll: false}]},
+          include: ['recipients','received','read'],
+        }
+    }};
+    let userId = options.accessToken.userId;
+    _getMessagesWithFilter(filter, userId, next);
+  };
+
+  model.getMyNewMessagesInLocation = function(id, fk, options, next) {
+    // TODO: use the received and read methods
+    let filter = {
+      include: {
+      relation: 'messages',
+      scope: {
+        where: {and: [{triggerLocationId: fk},{everyoneInSphere:false},{deliveredAll: false}]},
+        include: ['recipients','received','read'],
+      }
+    }};
+    let userId = options.accessToken.userId;
+    _getMessagesWithFilter(filter, userId, next);
+  };
+
+  const _getMessagesWithFilter = function(filter, userId, next) {
+    model.findById(id, filter)
+      .then((sphere) => {
+        if (sphere) {
+          let messages = sphere.messages();
+          let myMessages = [];
+          for (let i = 0; i < messages.length; i++) {
+            let recipients = messages[i].recipients();
+            if (recipients.length > 0) {
+              for (let j = 0; j < recipients.length; j++) {
+                if (String(recipients[j].id) === String(userId)) {
+                  myMessages.push({
+                    triggerLocationId: messages[i].triggerLocationId,
+                    triggerEvent: messages[i].triggerEvent,
+                    content: messages[i].content,
+                    everyoneInSphere: messages[i].everyoneInSphere,
+                    sphereId: messages[i].sphereId,
+                  });
+                  break;
+                }
+              }
+            }
+          }
+          next(null, myMessages);
+        }
+        else {
+          throw "Sphere not Found";
+        }
+      })
+      .catch((err) => { next(err); })
+  };
+
+
+
 
   /************************************
    **** Sending Emails

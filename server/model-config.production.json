@@ -4,17 +4,8 @@
       "emailVerificationRequired": true
     }
   },
-  "Scan": {
-    "public": false
-  },
-  "TimedLocation": {
-    "public": false
-  },
   "PowerUsage": {
     "public": true
-  },
-  "Coordinate": {
-    "public": false
   },
   "EnergyUsage": {
     "public": true
@@ -41,6 +32,15 @@
     "public": true
   },
   "App": {
+    "public": false
+  },
+  "Message": {
+    "public": true
+  },
+  "MessageUser": {
+    "public": false
+  },
+  "MessageState": {
     "public": false
   }
 }

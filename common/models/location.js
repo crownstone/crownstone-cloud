@@ -20,6 +20,7 @@ module.exports = function(model) {
 		//   	- delete stone(s)
 		//   	- remove stone(s)
 		//   	- delete location
+    //    - delete messages
 		//***************************
 		model.settings.acls.push(
 			{
@@ -62,19 +63,44 @@ module.exports = function(model) {
 				"property": "deleteById"
 			}
 		);
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "DENY",
+        "property": "__destroyById__messages"
+      }
+    );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "DENY",
+        "property": "__delete__messages"
+      }
+    );
+
 		//***************************
 		// GUEST:
 		//   - read
-		//   - update stone(s)
+    //   - send message
 		//***************************
 		model.settings.acls.push(
-			{
-				"accessType": "READ",
-				"principalType": "ROLE",
-				"principalId": "$group:guest",
-				"permission": "ALLOW"
-			}
-		);
+      {
+        "accessType": "READ",
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "ALLOW"
+      }
+    );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "ALLOW",
+        "property": "__create__messages"
+      }
+    );
 		// model.settings.acls.push(
 		// 	{
 		// 		"principalType": "ROLE",
@@ -86,19 +112,35 @@ module.exports = function(model) {
 	}
 
 
+	model.disableRemoteMethodByName('replaceById');
 	model.disableRemoteMethodByName('updateAll');
 	model.disableRemoteMethodByName('upsert');
 	model.disableRemoteMethodByName('createChangeStream');
 
+	model.disableRemoteMethodByName('prototype.__create__messages');
+	model.disableRemoteMethodByName('prototype.__delete__messages');
+	model.disableRemoteMethodByName('prototype.__deleteById__messages');
+	model.disableRemoteMethodByName('prototype.__destroyById__messages');
+	model.disableRemoteMethodByName('prototype.__updateById__messages');
+	model.disableRemoteMethodByName('prototype.__count__messages');
+
+  model.disableRemoteMethodByName('prototype.__get__owner');
+
+	model.disableRemoteMethodByName('prototype.__exists__presentPeople');
 	model.disableRemoteMethodByName('prototype.__link__presentPeople');
 	model.disableRemoteMethodByName('prototype.__unlink__presentPeople');
 	model.disableRemoteMethodByName('prototype.__findById__presentPeople');
 	model.disableRemoteMethodByName('prototype.__updateById__presentPeople');
+	model.disableRemoteMethodByName('prototype.__unlink__presentPeople');
+	model.disableRemoteMethodByName('prototype.__deleteById__presentPeople');
 	model.disableRemoteMethodByName('prototype.__destroyById__presentPeople');
 	model.disableRemoteMethodByName('prototype.__create__presentPeople');
 	model.disableRemoteMethodByName('prototype.__delete__presentPeople');
 
+	model.disableRemoteMethodByName('prototype.__create__stones');
+	model.disableRemoteMethodByName('prototype.__exists__stones');
 	model.disableRemoteMethodByName('prototype.__delete__stones');
+	model.disableRemoteMethodByName('prototype.__updateById__stones');
 	model.disableRemoteMethodByName('prototype.__deleteById__stones');
 	model.disableRemoteMethodByName('prototype.__destroyById__stones');
 

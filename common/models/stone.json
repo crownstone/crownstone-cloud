@@ -99,11 +99,6 @@
       "foreignKey": "stoneId",
       "through": "StoneLocation"
     },
-    "scans": {
-      "type": "hasMany",
-      "model": "Scan",
-      "foreignKey": ""
-    },
     "currentPowerUsage": {
       "type": "belongsTo",
       "model": "PowerUsage",

@@ -1,0 +1,77 @@
+{
+  "name": "Schedule",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "Util": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "label": {
+      "type": "string"
+    },
+    "triggerTimeOnCrownstone": {
+      "type": "string",
+      "required": true
+    },
+    "scheduleEntryIndex": {
+      "type": "number",
+      "required": true
+    },
+    "linkedSchedule": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "intervalInMinutes": {
+      "type": "number",
+      "default": 0
+    },
+    "fadeDuration": {
+      "type": "number",
+      "default": 0
+    },
+    "switchState": {
+      "type": "number",
+      "required": true
+    },
+    "ignoreLocationTriggers": {
+      "type": "boolean",
+      "default": false
+    },
+    "repeatMode": {
+      "type": "string",
+      "default": "24h"
+    },
+    "activeDays": {
+      "Mon": { "type":"boolean", "required":true},
+      "Tue": { "type":"boolean", "required":true},
+      "Wed": { "type":"boolean", "required":true},
+      "Thu": { "type":"boolean", "required":true},
+      "Fri": { "type":"boolean", "required":true},
+      "Sat": { "type":"boolean", "required":true},
+      "Sun": { "type":"boolean", "required":true}
+    }
+  },
+  "validations": [],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

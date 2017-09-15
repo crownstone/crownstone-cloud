@@ -1,6 +1,5 @@
 "use strict";
 
-let stl = require('../../server/middleware/stoneScanToLocation');
 let loopback = require('loopback');
 let crypto = require('crypto');
 
@@ -24,7 +23,6 @@ module.exports = function(model) {
     //   - everything except:
     //   	- delete/remove location(s)
     //   	- delete:
-    //   		- scans
     //   		- powerUsage
     //   		- energyUsage
     //   		- powerCurve
@@ -54,22 +52,6 @@ module.exports = function(model) {
         "principalId": "$group:member",
         "permission": "DENY",
         "property": "__unlink__locations"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:member",
-        "permission": "DENY",
-        "property": "__destroyById__scans"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:member",
-        "permission": "DENY",
-        "property": "__delete__scans"
       }
     );
     model.settings.acls.push(
@@ -180,19 +162,16 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__locations');
 
   // do we need these? since it is historical data, it should not be updateable once it is uploaded?
-  model.disableRemoteMethodByName('prototype.__updateById__scans');
   model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
   model.disableRemoteMethodByName('prototype.__updateById__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__updateById__powerCurveHistory');
   model.disableRemoteMethodByName('prototype.__updateById__powerUsageHistory');
 
-  model.disableRemoteMethodByName('prototype.__delete__scans');              // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__coordinatesHistory'); // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__energyUsageHistory'); // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__powerCurveHistory');  // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__powerUsageHistory');  // this is the delete ALL
 
-  model.disableRemoteMethodByName('prototype.__count__scans');
   model.disableRemoteMethodByName('prototype.__count__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__powerUsageHistory');
@@ -288,10 +267,6 @@ module.exports = function(model) {
   // populate some of the elements like uid, major, minor, if not already provided
   model.observe('before save', initStone);
   model.observe('after save', enforceUniqueness);
-
-  model.afterRemote('*.__create__scans', function(ctx, instance, next) {
-    next();
-  });
 
   /************************************
    **** Energy Usage
@@ -405,61 +380,21 @@ module.exports = function(model) {
   );
 
 
-  let promiseBatchPerformer = (arr, index, method) => {
-    return new Promise((resolve, reject) => {
-      if (index < arr.length) {
-        method(arr[index])
-          .then(() => {
-            return promiseBatchPerformer(arr, index+1, method);
-          })
-          .then(() => {
-            resolve()
-          })
-          .catch((err) => reject(err))
-      }
-      else {
-        resolve();
-      }
-    })
-  };
-
   const batchSetHistory = function (historyField, dataArray, stoneId, next) {
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      let batchResult = {
-        success: {amount:0},
-        skipped: {amount:0, elements: []},
-        error:   {amount:0, elements: [], errors: []},
-      };
+      // prep array by adding sphereId to all fields.
+      for (let i = 0; i < dataArray.length; i++) {
+        dataArray[i].sphereId = stone.sphereId;
+      }
 
-      promiseBatchPerformer(dataArray, 0, (dataPoint) => {
-        return new Promise((resolve, reject) => {
-          dataPoint.sphereId = stone.sphereId;
-          stone[historyField].create(dataPoint, (err, result) => {
-            if (err) {
-              if (typeof err === 'object' && err.statusCode === 422 && err.details && err.details.codes && err.details.codes.timestamp[0] === 'uniqueness') {
-                // skip because of duplicate
-                batchResult.skipped.amount++;
-                batchResult.skipped.elements.push(dataPoint);
-              }
-              else {
-                batchResult.error.amount++;
-                batchResult.error.elements.push(dataPoint);
-                batchResult.error.errors.push(err);
-              }
-            }
-            else {
-              batchResult.success.amount++;
-            }
-            resolve();
-          });
-        })
-      })
-      .then(() => { next(null, batchResult); })
-      .catch((err) => { next(err); })
-    })
+      stone[historyField].create(dataArray, (err, result) => {
+        if (err) { return next(err); }
+        next(null, result);
+      });
+    });
   };
 
   model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
@@ -495,7 +430,6 @@ module.exports = function(model) {
       description: "Add an array of power usage measurements to the stone."
     }
   );
-
 
   /************************************
    **** Appliance
@@ -591,7 +525,6 @@ module.exports = function(model) {
   //     // }
   //     // next();
   //   });
-  //
   // };
 
   /************************************
@@ -657,30 +590,6 @@ module.exports = function(model) {
 
 
 
-  model.deleteAllScans = function(id, callback) {
-    debug("deleteAllScans");
-    model.findById(id, {include: "scans"}, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.scans.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
-
-  model.remoteMethod(
-    'deleteAllScans',
-    {
-      http: {path: '/:id/deleteAllScans', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: 'Delete all scans of Stone'
-    }
-  );
-
-
   model.setSwitchStateRemotely = function(id, switchState, callback) {
     "use strict";
     debug("setSwitchStateRemotely");
@@ -696,7 +605,7 @@ module.exports = function(model) {
           sphereModel.findById(stone.sphereId)
             .then((sphere) => {
               if (sphere) {
-                notificationHandler.notify(sphere, {
+                notificationHandler.notifyHubs(sphere, {
                   type: 'setSwitchStateRemotely',
                   data:{stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchState)), command:'setSwitchStateRemotely'},
                   silent: true
@@ -801,7 +710,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
         {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
         {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
         {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
@@ -821,7 +730,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
         {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
         {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
         {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
@@ -866,7 +775,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
       description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
@@ -880,7 +789,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
       description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
@@ -920,7 +829,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
       description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
@@ -934,7 +843,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
       description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."

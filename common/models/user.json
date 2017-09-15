@@ -96,6 +96,12 @@
       "model": "AppInstallation",
       "foreignKey": "ownerId",
       "through": "Device"
+    },
+    "messages": {
+      "type": "hasAndBelongsToMany",
+      "model": "Message",
+      "foreignKey": "userId",
+      "through": "MessageUser"
     }
   },
   "acls": [

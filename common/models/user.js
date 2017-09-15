@@ -80,6 +80,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('find');
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('updateAll');
+  model.disableRemoteMethodByName('replaceById');
   model.disableRemoteMethodByName('upsert');
   model.disableRemoteMethodByName('exists');
   model.disableRemoteMethodByName('createChangeStream');
@@ -114,11 +115,37 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__hooks');
   model.disableRemoteMethodByName('prototype.__link__hooks');
   model.disableRemoteMethodByName('prototype.__count__hooks');
+  model.disableRemoteMethodByName('prototype.__findById__hooks');
   model.disableRemoteMethodByName('prototype.__get__hooks');
   model.disableRemoteMethodByName('prototype.__create__hooks');
   model.disableRemoteMethodByName('prototype.__get__hooks');
 
   model.disableRemoteMethodByName('prototype.__delete__devices');
+
+  model.disableRemoteMethodByName('prototype.__get__installations');
+  model.disableRemoteMethodByName('prototype.__findById__installations');
+  model.disableRemoteMethodByName('prototype.__exists__installations');
+  model.disableRemoteMethodByName('prototype.__create__installations');
+  model.disableRemoteMethodByName('prototype.__delete__installations');
+  model.disableRemoteMethodByName('prototype.__deleteById__installations');
+  model.disableRemoteMethodByName('prototype.__destroyById__installations');
+  model.disableRemoteMethodByName('prototype.__updateById__installations');
+  model.disableRemoteMethodByName('prototype.__link__installations');
+  model.disableRemoteMethodByName('prototype.__unlink__installations');
+  model.disableRemoteMethodByName('prototype.__count__installations');
+  
+  model.disableRemoteMethodByName('prototype.__get__messages');
+  model.disableRemoteMethodByName('prototype.__findById__messages');
+  model.disableRemoteMethodByName('prototype.__exists__messages');
+  model.disableRemoteMethodByName('prototype.__create__messages');
+  model.disableRemoteMethodByName('prototype.__delete__messages');
+  model.disableRemoteMethodByName('prototype.__deleteById__messages');
+  model.disableRemoteMethodByName('prototype.__destroyById__messages');
+  model.disableRemoteMethodByName('prototype.__updateById__messages');
+  model.disableRemoteMethodByName('prototype.__link__messages');
+  model.disableRemoteMethodByName('prototype.__unlink__messages');
+  model.disableRemoteMethodByName('prototype.__count__messages');
+
 
   /************************************
    **** Model Validation

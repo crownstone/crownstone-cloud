@@ -61,25 +61,10 @@
       "model": "Location",
       "foreignKey": "currentLocationId"
     },
-    "scans": {
-      "type": "hasMany",
-      "model": "Scan",
-      "foreignKey": ""
-    },
-    "locationsHistory": {
-      "type": "hasMany",
-      "model": "TimedLocation",
-      "foreignKey": "deviceId"
-    },
-    "currentCoordinate": {
+    "currentSphere": {
       "type": "belongsTo",
-      "model": "Coordinate",
-      "foreignKey": "currentCoordinateId"
-    },
-    "coordinatesHistory": {
-      "type": "hasMany",
-      "model": "Coordinate",
-      "foreignKey": "deviceId"
+      "model": "Sphere",
+      "foreignKey": "currentSphereId"
     },
     "installations": {
       "type": "hasMany",

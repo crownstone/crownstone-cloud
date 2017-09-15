@@ -1,6 +1,5 @@
 // "use strict";
 
-let stl = require('../../server/middleware/deviceScanToLocation');
 let loopback = require('loopback');
 
 const debug = require('debug')('loopback:dobots');
@@ -45,7 +44,6 @@ module.exports = function(model) {
     // LIB-USER:
     //   - nothing except:
     //   	- findOne
-    //   	- create scans
     //***************************
     model.settings.acls.push({
       "accessType": "*",
@@ -53,38 +51,12 @@ module.exports = function(model) {
       "principalId": "lib-user",
       "permission": "DENY"
     });
-    model.settings.acls.push({
-      "accessType": "EXECUTE",
-      "principalType": "ROLE",
-      "principalId": "lib-user",
-      "permission": "ALLOW",
-      "property": "__create__scans"
-    });
   }
 
   // address has to be unique to a stone
   // model.validatesUniquenessOf('address', {message: 'a device with this address was already added!'});
 
-  model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__link__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__unlink__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__exists__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__findById__coordinatesHistory');
-  model.disableRemoteMethodByName('prototype.__delete__coordinatesHistory');
-
-  model.disableRemoteMethodByName('prototype.__updateById__locationsHistory');
-  // model.disableRemoteMethodByName('prototype.__create__locationsHistory');
-  model.disableRemoteMethodByName('prototype.__delete__locationsHistory');
-  model.disableRemoteMethodByName('prototype.__link__locationsHistory');
-  model.disableRemoteMethodByName('prototype.__unlink__locationsHistory');
-  model.disableRemoteMethodByName('prototype.__exists__locationsHistory');
-  model.disableRemoteMethodByName('prototype.__findById__locationsHistory');
-
   model.disableRemoteMethodByName('prototype.__create__installations');
-
-  model.disableRemoteMethodByName('prototype.__updateById__scans');
-  model.disableRemoteMethodByName('prototype.__findById__scans');
-  model.disableRemoteMethodByName('prototype.__delete__scans');
 
   model.disableRemoteMethodByName('createChangeStream');
   model.disableRemoteMethodByName('upsert');
@@ -125,10 +97,6 @@ module.exports = function(model) {
 
   model.observe('before save', injectOwner);
 
-  model.afterRemote('prototype.__create__scans', function(ctx, instance, next) {
-    next();
-  });
-
   /************************************
    **** Location
    ************************************/
@@ -146,29 +114,14 @@ module.exports = function(model) {
       if (Location.checkForNullError(location, next, "id: " + locationId)) return;
 
       device.currentLocationId = locationId;
-
-      device.locationsHistory.create({
-        locationId: locationId
-      }, function(err, instance) {
-        // if (next) {
-        // 	if (err) return next(err);
-        // 	next();
-        // }
-      });
-
       device.save(function(err, deviceInstance) {
         next(err);
-        // if (next) {
-        // 	if (err) return next(err);
-        // 	next();
-        // }
       })
 
     });
   };
 
   model.clearCurrentLocation = function(device, next) {
-
     debug("clearing current location");
     device.currentLocationId = null;
 
@@ -182,8 +135,6 @@ module.exports = function(model) {
   };
 
   model.remoteSetCurrentLocation = function(locationId, deviceId, next) {
-    debug("remoteSetCurrentLocation");
-
     model.findById(deviceId, function(err, device) {
       if (err) return next(err);
       if (model.checkForNullError(device, next, "id: " + deviceId)) return;
@@ -205,131 +156,6 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
       ],
       description: "Set the current location of the device"
-    }
-  );
-
-  /************************************
-   **** Coordinate
-   ************************************/
-
-  model.setCurrentCoordinate = function(device, coordinate, next) {
-
-    debug("setCurrentCoordinate");
-
-    // debug("device:", device);
-    // debug("coordinate:", coordinate);
-
-    device.coordinatesHistory.create(coordinate, function(err, coordinateInstance) {
-      if (err) return next(err);
-
-      if (coordinateInstance) {
-        device.currentCoordinateId = coordinateInstance.id;
-
-        device.save(function(err, deviceInstance) {
-          if (next) {
-            if (err) return next(err);
-            next(null, coordinateInstance);
-          }
-        })
-      } else {
-        next({"message": "failed to create coordinate"});
-      }
-    });
-
-  };
-
-  model.remoteSetCurrentCoordinate = function(coordinate, deviceId, next) {
-    debug("remoteSetCurrentCoordinate");
-
-    model.findById(deviceId, function(err, device) {
-      if (err) return next(err);
-      if (model.checkForNullError(device, next, "id: " + deviceId)) return;
-
-      model.setCurrentCoordinate(device, coordinate, next);
-    })
-
-  };
-
-  model.remoteMethod(
-    'remoteSetCurrentCoordinate',
-    {
-      http: {path: '/:id/currentCoordinate/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: 'Coordinate', required: true, 'http': {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: 'Coordinate', root: true},
-      description: "Add current coordinate of the device"
-    }
-  );
-
-  model.deleteCoordinatesHistory = function(id, callback) {
-    debug("deleteCoordinatesHistory");
-    model.findById(id, {include: "coordinatesHistory"}, function(err, device) {
-      if (err) return callback(err);
-      if (model.checkForNullError(device, callback, "id: " + id)) return;
-
-      device.coordinatesHistory.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
-
-  model.remoteMethod(
-    'deleteCoordinatesHistory',
-    {
-      http: {path: '/:id/deleteCoordinatesHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete coordinates history of Device"
-    }
-  );
-
-  model.deleteLocationsHistory = function(id, callback) {
-    debug("deleteLocationsHistory");
-    model.findById(id, {include: "locationsHistory"}, function(err, device) {
-      if (err) return callback(err);
-      if (model.checkForNullError(device, callback, "id: " + id)) return;
-
-      device.locationsHistory.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
-
-  model.remoteMethod(
-    'deleteLocationsHistory',
-    {
-      http: {path: '/:id/deleteLocationsHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete locations history of Device"
-    }
-  );
-
-  model.deleteAllScans = function(id, callback) {
-    debug("deleteAllScans");
-    model.findById(id, {include: "scans"}, function(err, device) {
-      if (err) return callback(err);
-      if (model.checkForNullError(device, callback, "id: " + id)) return;
-
-      device.scans.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
-
-
-  model.remoteMethod(
-    'deleteAllScans',
-    {
-      http: {path: '/:id/deleteAllScans', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all scans of Device"
     }
   );
 

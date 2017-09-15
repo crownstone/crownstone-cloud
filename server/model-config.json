@@ -70,27 +70,11 @@
     "dataSource": "mongoDs",
     "public": true
   },
-  "ScannedDevice": {
-    "dataSource": null,
-    "public": false
-  },
-  "Scan": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
   "Device": {
     "dataSource": "mongoDs",
     "public": true
   },
-  "TimedLocation": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
   "PowerUsage": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
-  "Coordinate": {
     "dataSource": "mongoDs",
     "public": true
   },
@@ -99,10 +83,6 @@
     "public": true
   },
   "PowerCurve": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
-  "Event": {
     "dataSource": "mongoDs",
     "public": true
   },
@@ -117,10 +97,6 @@
   "UserContainer": {
     "dataSource": "filesDs",
     "public": true
-  },
-  "ClosestStone": {
-    "dataSource": "mongoDs",
-    "public": false
   },
   "Appliance": {
     "dataSource": "mongoDs",
@@ -145,5 +121,21 @@
   "Bootloader": {
     "dataSource": "mongoDs",
     "public": true
+  },
+  "Schedule": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "Message": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "MessageUser": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "MessageState": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

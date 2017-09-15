@@ -2,18 +2,29 @@ const gcm = require('node-gcm');
 const apn = require('apn');
 let loopback = require('loopback');
 
+/**
+ *  This class will handle the sending of notifications. API:
+ *
+ *  messageData: {
+ *    data: { any },  // there has to be a command in here and all data required to do something with the notification.
+ *    silent: boolean,
+ *    type:  string   // type of notification ['setSwitchStateRemotely','message', ...]
+ *    title: string   // title of the notification.
+ *  }
+ *
+ *  Provide a sphere object to notify the hubs, a list of user objects or a list of user ids
+ */
 class NotificationHandlerClass {
   constructor() {
-
     // TODO: possibly start the apn connection and the gcm sender?
   }
 
-  notify(sphereModel, messageData) {
+  notifyHubs(sphere, messageData) {
     // get users
     let iosTokens = [];
     let androidTokens = [];
 
-    sphereModel.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
+    sphere.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
       // collect all tokens.
       for (let i = 0; i < users.length; i++) {
         let devices = users[i].devices();
@@ -35,7 +46,73 @@ class NotificationHandlerClass {
           }
         }
       }
-      console.log('iosTokens', iosTokens, 'androidTokens', androidTokens);
+
+      // check if we have to do something
+      if (iosTokens.length > 0 || androidTokens.length > 0) {
+        // get app, currently hardcoded.
+        loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
+          .then((appResult) => {
+            if (appResult && appResult.pushSettings) {
+              this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
+              this._notifyIOS(appResult.pushSettings.apns, iosTokens, messageData);
+            }
+            else {
+              throw "No App to Push to."
+            }
+          })
+      }
+    });
+  }
+
+  notifyUserIds(userIds, messageData) {
+    let userIdArray = [];
+    for (let i = 0; i < userIds.length; i++) {
+      userIdArray.push({id:userIds[i]});
+    }
+
+    this._notifyUsers(userIdArray, messageData);
+  }
+
+  notifyUsers(arrayOfUserObjects, messageData) {
+    let userIdArray = [];
+    for (let i = 0; i < arrayOfUserObjects.length; i++) {
+      userIdArray.push({id:arrayOfUserObjects[i].id});
+    }
+
+    this._notifyUsers(userIdArray, messageData);
+  }
+
+  _notifyUsers(userIdArray, messageData) {
+    if (userIdArray.length === 0) {
+      return;
+    }
+    // get users
+    let iosTokens = [];
+    let androidTokens = [];
+
+    let userModel = loopback.getModel('user');
+    let filter = {where: {or:userIdArray}, include: {relation: 'devices', scope: {include: 'installations'}}};
+    userModel.find(filter, (err, users) => {
+      // collect all tokens.
+      for (let i = 0; i < users.length; i++) {
+        let devices = users[i].devices();
+        for (let j = 0; j < devices.length; j++) {
+          let installations = devices[j].installations();
+          for (let k = 0; k < installations.length; k++) {
+            if (installations[k].deviceToken) {
+              switch (installations[k].deviceType) {
+                case 'ios':
+                  iosTokens.push(installations[k].deviceToken);
+                  break;
+                case 'android':
+                  androidTokens.push(installations[k].deviceToken);
+                  break;
+              }
+            }
+          }
+        }
+      }
+      // console.log('iosTokens', iosTokens, 'androidTokens', androidTokens);
 
       // check if we have to do something
       if (iosTokens.length > 0 || androidTokens.length > 0) {

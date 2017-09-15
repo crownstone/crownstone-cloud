@@ -1,0 +1,69 @@
+{
+  "name": "Message",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "EnableHooks": false,
+    "SphereContent": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    },
+    "Util": true
+  },
+  "properties": {
+    "triggerEvent": {
+      "type": "string",
+      "required": true
+    },
+    "content": {
+      "type": "string",
+      "required": true
+    },
+    "everyoneInSphere": {
+      "type": "boolean",
+      "default": false
+    },
+    "deliveredAll": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "validations": [],
+  "relations": {
+    "triggerLocation": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "triggerLocationId"
+    },
+    "owner": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "ownerId"
+    },
+    "recipients": {
+      "type": "hasAndBelongsToMany",
+      "model": "user",
+      "foreignKey": "messageId",
+      "through": "MessageUser"
+    },
+    "delivered":{
+      "type":"hasMany",
+      "model":"MessageState",
+      "foreignKey": "messageId"
+    },
+    "read":{
+      "type":"hasMany",
+      "model":"MessageState",
+      "foreignKey": "messageId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -47,6 +47,11 @@
   },
   "validations": [],
   "relations": {
+    "messages":{
+      "type": "hasMany",
+      "model": "Message",
+      "foreignKey": "triggerLocationId"
+    },
     "stones": {
       "type": "hasAndBelongsToMany",
       "model": "Stone",

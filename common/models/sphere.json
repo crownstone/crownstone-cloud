@@ -87,6 +87,18 @@
       "model": "user",
       "foreignKey": "sphereId",
       "through": "SphereAccess"
+    },
+    "messages": {
+      "type": "hasMany",
+      "model": "Message",
+      "foreignKey": "sphereId"
+    },
+    "presentPeople": {
+      "type": "hasMany",
+      "model": "user",
+      "foreignKey": "currentSphereId",
+      "through": "Device",
+      "keyThrough": "ownerId"
     }
   },
   "acls": [],
