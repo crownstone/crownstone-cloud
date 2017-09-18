@@ -268,40 +268,45 @@ module.exports = function (model, options) {
         eventReference[overloadName] = true;
 
         // create the overload function that will just forward the functionality
-        model[overloadName] = function(arg1, arg2, arg3, arg4) {
+        model[overloadName] = function(arg1, arg2, arg3, arg4, arg5) {
           // map the arguments to the variables.
           let data = null;
           let id = null;
           let fk = null;
+          let options = null;
           let next = null;
 
-          // if we require data, it is the first argument, id is the second, foreign key the third and next callback the last.
+          // if we require data, it is the first argument, id is the second, foreign key the third, options the forth and next callback is always the last.
           if (requiresData === true) {
             data = arg1;
             id = arg2;
             if (requiresForeignKey) {
               fk = arg3;
-              next = arg4;
+              options = arg4;
+              next = arg5;
             }
             else {
-              next = arg3;
+              options = arg3;
+              next = arg4;
             }
           }
           else {
             id = arg1;
             if (requiresForeignKey) {
               fk = arg2;
-              next = arg3;
+              options = arg3;
+              next = arg4;
             }
             else {
-              next = arg2;
+              options = arg2;
+              next = arg3;
             }
           }
 
-          model.findById(id)
+          model.findById(id, null, options)
             .then((result) => {
               if (result) {
-                return relayCommand(result, relationKey, data, id, fk);
+                return relayCommand(result, relationKey, data, id, fk, options);
               }
               throw 'Unauthorized'
             })
@@ -329,6 +334,9 @@ module.exports = function (model, options) {
         if (requiresForeignKey) {
           accepts.push({arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}});
         }
+
+        // always inject the context options
+        accepts.push({arg: 'options', type: 'object', http: 'optionsFromRequest'});
 
         config.accepts = accepts;
         if (returnsData) {
@@ -363,7 +371,7 @@ module.exports = function (model, options) {
           overloadName,                 // overloadName
           'post',                       // verb
           '/:id/' + relationKey + '/',  // path
-          (result, relationKey, data, id, fk) => { return result[relationKey].create(data); }, // relayCommand
+          (result, relationKey, data, id, fk, options) => { return result[relationKey].create(data, options); }, // relayCommand
           true,                         // requiresData
           false,                        // requiresForeignKeyData
           true,                         // returnsData
@@ -382,7 +390,7 @@ module.exports = function (model, options) {
           overloadName,                   // overloadName
           'delete',                       // verb
           '/:id/' + relationKey + '/:fk', // path
-          (result, relationKey, data, id, fk) => { return result[relationKey].destroy(fk); }, // relayCommand
+          (result, relationKey, data, id, fk, options) => { return result[relationKey].destroy(fk, options); }, // relayCommand
           false,                          // requiresData
           true,                           // requiresForeignKeyData
           false,                          // returnsData
@@ -397,7 +405,7 @@ module.exports = function (model, options) {
           overloadName,                   // overloadName
           'put',                          // verb
           '/:id/' + relationKey + '/:fk', // path
-          (result, relationKey, data, id, fk) => { return result[relationKey].updateById(fk, data); }, // relayCommand
+          (result, relationKey, data, id, fk, options) => { return result[relationKey].updateById(fk, data, options); }, // relayCommand
           true,                           // requiresData
           true,                           // requiresForeignKeyData
           true,                           // returnsData

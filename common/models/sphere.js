@@ -201,6 +201,14 @@ module.exports = function(model) {
         "property": "changeOwnership"
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "DENY",
+        "property": "__deleteById__messages"
+      }
+    );
     //***************************
     // GUEST:
     //   - read
@@ -221,8 +229,6 @@ module.exports = function(model) {
         "property": "downloadProfilePicOfUser"
       }
     );
-
-
   }
 
   model.disableRemoteMethodByName('findOne');
@@ -253,8 +259,8 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__ownedLocations');
   model.disableRemoteMethodByName('prototype.__delete__ownedStones');
   model.disableRemoteMethodByName('prototype.__delete__ownedAppliances');
+  model.disableRemoteMethodByName('prototype.__delete__messages');
 
-  model.disableRemoteMethodByName('prototype.__deleteById__messages');
   model.disableRemoteMethodByName('prototype.__get__messages');
   model.disableRemoteMethodByName('prototype.__updateById__messages');
   model.disableRemoteMethodByName('prototype.__findById__messages');
@@ -326,39 +332,6 @@ module.exports = function(model) {
       new Promise((resolve, reject) => { resolve(); })
         .then(() => { return findAndEmailUnlinkedUser(); })
         .catch((err) => { next(err); })
-    }
-  });
-
-  model.afterRemote('setMessages', function(ctx, instance, next) {
-    if (instance && instance.everyoneInSphere) {
-      // notify!
-      // get users in the sphere.
-      let sphereObject;
-      model.findById(instance.sphereId)
-        .then((sphere) => {
-          if (sphere === null) {
-            throw 'Sphere not found';
-          }
-          sphereObject = sphere;
-          return new Promise((resolve, reject) => {
-            sphereObject.users(function (err, users) {
-              if (err) { return reject(err); }
-              resolve(users);
-            });
-          });
-        })
-        .then((users) => {
-          messageUtils.notifyWithUserObjects(instance, users);
-        })
-        .then(() => {
-          next();
-        })
-        .catch((err) => {
-          next(err);
-        })
-    }
-    else {
-      next();
     }
   });
 
@@ -1389,15 +1362,85 @@ module.exports = function(model) {
     }
   );
 
+  model.deleteAllMessages = function(id, callback) {
+    debug("deleteAllMessages");
+    model.findById(id, {include: "messages"}, function(err, sphere) {
+      if (err) return callback(err);
+      if (model.checkForNullError(sphere, callback, "id: " + id)) return;
+
+      sphere.messages.destroyAll(function(err) {
+        callback(err);
+      });
+    })
+  };
+
+  model.remoteMethod(
+    'deleteAllMessages',
+    {
+      http: {path: '/:id/deleteAllMessages', verb: 'delete'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      description: "Delete all messages of Sphere"
+    }
+  );
+
 
   /***************************************
    **** Messages
    ***************************************/
 
+
+  model.afterRemote('setMessages', function(ctx, instance, next) {
+    if (instance && instance.everyoneInSphere) {
+      // notify!
+      // get users in the sphere.
+      let sphereObject;
+      model.findById(instance.sphereId)
+        .then((sphere) => {
+          if (sphere === null) {
+            throw 'Sphere not found';
+          }
+          sphereObject = sphere;
+          return new Promise((resolve, reject) => {
+            sphereObject.users(function (err, users) {
+              if (err) { return reject(err); }
+              resolve(users);
+            });
+          });
+        })
+        .then((users) => {
+          messageUtils.notifyWithUserObjects(instance, users);
+        })
+        .then(() => {
+          next();
+        })
+        .catch((err) => {
+          next(err);
+        })
+    }
+    else {
+      next();
+    }
+  });
+
   model.remoteMethod(
     'getAllMyMessages',
     {
       http: {path: '/:id/myMessages', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Delete all appliances of Sphere",
+      returns: {arg: 'data', type: ['Message'], root: true},
+    }
+  );
+
+  model.remoteMethod(
+    'getMyActiveMessages',
+    {
+      http: {path: '/:id/myActiveMessages', verb: 'get'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
@@ -1435,74 +1478,143 @@ module.exports = function(model) {
     }
   );
 
+  // messages that User has sent: ownerId === userId
+  // messages that User is one of the recipients of
+  // messages that are for everyoneInSphere
   model.getAllMyMessages = function(id, options, next) {
+    let userId = options.accessToken.userId;
+    _getNewMessagesWithFilter(id, {}, options, userId, false, next);
+  };
+
+  // messages that User has sent: ownerId === userId
+  // messages that User is one of the recipients of
+  // messages that are for everyoneInSphere
+  // AND where something still has to be delivered.
+  model.getMyActiveMessages = function(id, options, next) {
+    let userId = options.accessToken.userId;
+    _getNewMessagesWithFilter(id, {deliveredAll: false}, options, userId, false, next);
+  };
+
+  // messages that User is one of the recipients of
+  // messages that are for everyoneInSphere
+  // AND they are not delivered yet
+  model.getMyNewMessages = function(id, options, next) {
+    let userId = options.accessToken.userId;
+    _getNewMessagesWithFilter(id, {and:[{deliveredAll: false}]}, userId, true, next);
+  };
+
+
+  // messages that User is one of the recipients of
+  // messages that are for everyoneInSphere
+  // AND they are not delivered yet
+  // AND THEIR FK is this room
+  model.getMyNewMessagesInLocation = function(id, fk, options, next) {
+    let userId = options.accessToken.userId;
+    _getNewMessagesWithFilter(id, {and:[{triggerLocationId: fk}, {deliveredAll: false}]}, userId, true, next);
+  };
+
+
+  /**
+   * This searches for all messages in the sphere that are not delivered yet and belong to the user.
+   * @param sphereId
+   * @param whereFilter
+   * @param userId
+   * @param onlyNewMessages
+   * @param next
+   * @private
+   */
+  const _getNewMessagesWithFilter = function(sphereId, whereFilter, userId, onlyNewMessages, next) {
+    // cast to string in case this is an IdObject
+    let userIdString = String(userId);
+
+    // filter for messages where user is the recipient off.
     let filter = {
       include: {
         relation: 'messages',
         scope: {
-          where: { everyoneInSphere:false },
-          include: ['recipients','received','read'],
+          where: whereFilter,
+          include: [
+            {relation: 'recipients', scope: {fields: {id: true}}},
+            {relation: 'delivered',  scope: {fields: {userId: true, timestamp: true}}},
+            {relation: 'read',       scope: {fields: {userId: true, timestamp: true}}},
+          ],
         }
       }};
-    let userId = options.accessToken.userId;
-    _getMessagesWithFilter(filter, userId, next);
-  };
 
-  model.getMyNewMessages = function(id, options, next) {
-    let filter = {
-      include: {
-        relation: 'messages',
-        scope: {
-          where: {and: [{everyoneInSphere:false},{deliveredAll: false}]},
-          include: ['recipients','received','read'],
-        }
-    }};
-    let userId = options.accessToken.userId;
-    _getMessagesWithFilter(filter, userId, next);
-  };
+    let myMessages = [];
+    let myMessageIdList = {};
+    let insertMessage = (message, delivered, recipients) => {
+      // no duplicates
+      if (myMessageIdList[message.id] !== undefined) { return; }
 
-  model.getMyNewMessagesInLocation = function(id, fk, options, next) {
-    // TODO: use the received and read methods
-    let filter = {
-      include: {
-      relation: 'messages',
-      scope: {
-        where: {and: [{triggerLocationId: fk},{everyoneInSphere:false},{deliveredAll: false}]},
-        include: ['recipients','received','read'],
+      myMessageIdList[message.id] = true;
+      myMessages.push({
+        triggerLocationId: message.triggerLocationId,
+        triggerEvent: message.triggerEvent,
+        content: message.content,
+        everyoneInSphere: message.everyoneInSphere,
+        id: message.id,
+        ownerId: message.ownerId,
+        sphereId: message.sphereId,
+        recipients: recipients,
+        delivered: delivered,
+        read: message.read(),
+      });
+    };
+
+    let isDeliveredToUser = (deliveredList) => {
+      // check if this message has already been delivered to us.
+      for (let i = 0; i < deliveredList.length; i++) {
+        if (String(deliveredList[i].userId) === userIdString) { return true; }
       }
-    }};
-    let userId = options.accessToken.userId;
-    _getMessagesWithFilter(filter, userId, next);
-  };
+      return false;
+    };
 
-  const _getMessagesWithFilter = function(filter, userId, next) {
-    model.findById(id, filter)
+    let isMessageIsForUser = (message, recipients) => {
+      if (message.everyoneInSphere) { return true; }
+
+      for (let i = 0; i < recipients.length; i++) {
+        if (String(recipients[i].id) === userIdString) { return true; }
+      }
+
+      return false;
+    };
+
+    model.findById(sphereId, filter)
       .then((sphere) => {
-        if (sphere) {
-          let messages = sphere.messages();
-          let myMessages = [];
-          for (let i = 0; i < messages.length; i++) {
-            let recipients = messages[i].recipients();
-            if (recipients.length > 0) {
-              for (let j = 0; j < recipients.length; j++) {
-                if (String(recipients[j].id) === String(userId)) {
-                  myMessages.push({
-                    triggerLocationId: messages[i].triggerLocationId,
-                    triggerEvent: messages[i].triggerEvent,
-                    content: messages[i].content,
-                    everyoneInSphere: messages[i].everyoneInSphere,
-                    sphereId: messages[i].sphereId,
-                  });
-                  break;
-                }
-              }
+        let messages = sphere.messages();
+        for (let i = 0; i < messages.length; i++) {
+          let message = messages[i];
+
+          // if we are only interested in new messages, ignore the ones the user has sent himself.
+          if (!onlyNewMessages) {
+            // if this user sent the message
+            if (String(message.ownerId) === userIdString) {
+              insertMessage(message, message.delivered(), message.recipients());
+              continue;
             }
           }
-          next(null, myMessages);
+
+          let deliveredList = message.delivered();
+          let recipients = message.recipients();
+          // check if the messages that are for everyone in this sphere have already been delivered to user.
+          if (isMessageIsForUser(message, recipients)) {
+            // this message is for everyone, including the current user. If we only require new messages, check if it has been delivered to this user.
+            if (onlyNewMessages) {
+              let alreadyDelivered = isDeliveredToUser(deliveredList);
+              // if not already delivered, add to the list
+              if (!alreadyDelivered) {
+                insertMessage(message, deliveredList, recipients);
+              }
+              // if not, this message does not have to be sent in this request
+            }
+            else {
+              insertMessage(message, deliveredList, recipients);
+            }
+          }
         }
-        else {
-          throw "Sphere not Found";
-        }
+
+        next(null, myMessages)
       })
       .catch((err) => { next(err); })
   };

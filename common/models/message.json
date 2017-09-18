@@ -9,8 +9,6 @@
   },
   "mixins": {
     "DisableCommon": true,
-    "EnableHooks": false,
-    "SphereContent": true,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true
@@ -41,6 +39,11 @@
       "type": "belongsTo",
       "model": "Location",
       "foreignKey": "triggerLocationId"
+    },
+    "sphere": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "sphereId"
     },
     "owner": {
       "type": "belongsTo",

@@ -18,6 +18,9 @@
       "required": true
     }
   },
+  "hidden":{
+    "messageId":true
+  },
   "validations": [],
   "relations": {
     "message": {

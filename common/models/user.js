@@ -146,6 +146,19 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__unlink__messages');
   model.disableRemoteMethodByName('prototype.__count__messages');
 
+  model.disableRemoteMethodByName('prototype.__get__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__findById__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__exists__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__create__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__delete__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__deleteById__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__destroyById__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__updateById__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__link__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__unlink__ownedMessages');
+  model.disableRemoteMethodByName('prototype.__count__ownedMessages');
+
+
 
   /************************************
    **** Model Validation

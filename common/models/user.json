@@ -102,6 +102,11 @@
       "model": "Message",
       "foreignKey": "userId",
       "through": "MessageUser"
+    },
+    "ownedMessages": {
+      "type": "hasMany",
+      "model": "Message",
+      "foreignKey": "ownerId"
     }
   },
   "acls": [
