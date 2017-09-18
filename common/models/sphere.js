@@ -1432,7 +1432,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Delete all appliances of Sphere",
+      description: "Get all the messages you have access to.",
       returns: {arg: 'data', type: ['Message'], root: true},
     }
   );
@@ -1445,7 +1445,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Delete all appliances of Sphere",
+      description: "Get all messages you have access to that are still waiting to be delivered to someone.",
       returns: {arg: 'data', type: ['Message'], root: true},
     }
   );
@@ -1458,7 +1458,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Delete all appliances of Sphere",
+      description: "Get all messages in this sphere that have not been delivered to you yet.",
       returns: {arg: 'data', type: ['Message'], root: true},
     }
   );
@@ -1472,7 +1472,7 @@ module.exports = function(model) {
         {arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Delete all appliances of Sphere",
+      description: "Get all messages that are hidden in this location (or in no location at all) that have not been delivered to you yet.",
       returns: {arg: 'data', type: ['Message'], root: true},
 
     }

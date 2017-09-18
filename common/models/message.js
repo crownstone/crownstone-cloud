@@ -118,6 +118,8 @@ module.exports = function(model) {
 
 
   model.disableRemoteMethodByName('replaceById');
+  model.disableRemoteMethodByName('destroyById');
+  model.disableRemoteMethodByName('deleteById');
   model.disableRemoteMethodByName('upsert');
   model.disableRemoteMethodByName('create');
   model.disableRemoteMethodByName('patchOrCreate');
