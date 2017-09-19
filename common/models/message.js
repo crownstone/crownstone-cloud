@@ -171,6 +171,11 @@ module.exports = function(model) {
       }
     }
 
+    if (item.triggerEvent !== 'enter' && item.triggerEvent !== 'exit') {
+      return next(new Error("Trigger event must be either enter or exit."))
+    }
+
+
     if (!item.ownerId) {
       const token = ctx.options && ctx.options.accessToken;
       const userId = token && token.userId;

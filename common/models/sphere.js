@@ -1510,7 +1510,7 @@ module.exports = function(model) {
   // AND THEIR FK is this room
   model.getMyNewMessagesInLocation = function(id, fk, options, next) {
     let userId = options.accessToken.userId;
-    _getNewMessagesWithFilter(id, {and:[{triggerLocationId: fk}, {deliveredAll: false}]}, userId, true, next);
+    _getNewMessagesWithFilter(id, {and:[{or: [{triggerLocationId: fk},{triggerLocationId: undefined}]}, {deliveredAll: false}]}, userId, true, next);
   };
 
 
@@ -1571,8 +1571,12 @@ module.exports = function(model) {
     };
 
     let isMessageIsForUser = (message, recipients) => {
-      if (message.everyoneInSphere) { return true; }
+      let userIsSender = String(message.ownerId) ===  userIdString;
 
+      // everyone usually means everyone except the sender
+      if (message.everyoneInSphere && !userIsSender) { return true; }
+
+      // in case the user has sent this to himself as well, he will be in this list.
       for (let i = 0; i < recipients.length; i++) {
         if (String(recipients[i].id) === userIdString) { return true; }
       }
@@ -1586,7 +1590,7 @@ module.exports = function(model) {
         for (let i = 0; i < messages.length; i++) {
           let message = messages[i];
 
-          // if we are only interested in new messages, ignore the ones the user has sent himself.
+          // if we are interested in all messages, we can immediately accept a message if the user has sent it himself.
           if (!onlyNewMessages) {
             // if this user sent the message
             if (String(message.ownerId) === userIdString) {

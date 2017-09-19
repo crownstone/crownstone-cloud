@@ -18,6 +18,7 @@
   "properties": {
     "triggerEvent": {
       "type": "string",
+      "default": "enter",
       "required": true
     },
     "content": {
