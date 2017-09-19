@@ -194,6 +194,21 @@ module.exports = function(model) {
   model.observe('before save', injectOwner);
 
 
+  model.beforeRemote('*.__link__recipients', function(ctx, instance, next) {
+    let MessageUser = loopback.getModel("MessageUser");
+
+    MessageUser.find({where: { and: [{messageId: ctx.instance.id},{ userId: ctx.args.fk }]}})
+      .then((result) => {
+        if (result.length === 0) {
+          next();
+        }
+        else {
+          throw "User is already a recipient."
+        }
+      })
+      .catch((err) => { next(err); })
+  });
+
   model.afterRemote('*.__link__recipients', function(ctx, instance, next) {
     model.findById(instance.messageId)
       .then((result) => {
