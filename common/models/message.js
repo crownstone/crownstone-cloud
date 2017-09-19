@@ -225,9 +225,17 @@ module.exports = function(model) {
 
     if (!userId) { next("Not logged in!"); }
 
-    model.findById(id)
+    model.findById(id, {include: { relation: activeField, scope: {where: {userId: userId}}}})
       .then((result) => {
-        if (!result) { throw "Message not found!"}
+        if (!result) {
+          throw "Message not found!";
+        }
+
+        let activeFieldList = result[activeField]();
+
+        if (activeFieldList.length > 0) {
+          throw "Already marked this message as " + activeField;
+        }
 
         return result[activeField].create({
           timestamp: new Date().valueOf(),

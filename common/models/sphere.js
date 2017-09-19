@@ -1483,7 +1483,7 @@ module.exports = function(model) {
   // messages that are for everyoneInSphere
   model.getAllMyMessages = function(id, options, next) {
     let userId = options.accessToken.userId;
-    _getNewMessagesWithFilter(id, {}, options, userId, false, next);
+    _getMessagesWithFilter(id, {}, userId, false, next);
   };
 
   // messages that User has sent: ownerId === userId
@@ -1492,7 +1492,7 @@ module.exports = function(model) {
   // AND where something still has to be delivered.
   model.getMyActiveMessages = function(id, options, next) {
     let userId = options.accessToken.userId;
-    _getNewMessagesWithFilter(id, {deliveredAll: false}, options, userId, false, next);
+    _getMessagesWithFilter(id, {deliveredAll: false}, userId, false, next);
   };
 
   // messages that User is one of the recipients of
@@ -1500,7 +1500,7 @@ module.exports = function(model) {
   // AND they are not delivered yet
   model.getMyNewMessages = function(id, options, next) {
     let userId = options.accessToken.userId;
-    _getNewMessagesWithFilter(id, {and:[{deliveredAll: false}]}, userId, true, next);
+    _getMessagesWithFilter(id, {and:[{deliveredAll: false}]}, userId, true, next);
   };
 
 
@@ -1510,12 +1510,12 @@ module.exports = function(model) {
   // AND THEIR FK is this room
   model.getMyNewMessagesInLocation = function(id, fk, options, next) {
     let userId = options.accessToken.userId;
-    _getNewMessagesWithFilter(id, {and:[{or: [{triggerLocationId: fk},{triggerLocationId: undefined}]}, {deliveredAll: false}]}, userId, true, next);
+    _getMessagesWithFilter(id, {and:[{or: [{triggerLocationId: fk},{triggerLocationId: undefined}]}, {deliveredAll: false}]}, userId, true, next);
   };
 
 
   /**
-   * This searches for all messages in the sphere that are not delivered yet and belong to the user.
+   * This searches for all messages in the sphere that belong to the user.
    * @param sphereId
    * @param whereFilter
    * @param userId
@@ -1523,7 +1523,7 @@ module.exports = function(model) {
    * @param next
    * @private
    */
-  const _getNewMessagesWithFilter = function(sphereId, whereFilter, userId, onlyNewMessages, next) {
+  const _getMessagesWithFilter = function(sphereId, whereFilter, userId, onlyNewMessages, next) {
     // cast to string in case this is an IdObject
     let userIdString = String(userId);
 
