@@ -1392,7 +1392,7 @@ module.exports = function(model) {
 
 
   model.afterRemote('setMessages', function(ctx, instance, next) {
-    if (instance && instance.everyoneInSphere) {
+    if (instance && (instance.everyoneInSphere || instance.everyoneInSphereIncludingOwner)) {
       // notify!
       // get users in the sphere.
       let sphereObject;
@@ -1410,7 +1410,19 @@ module.exports = function(model) {
           });
         })
         .then((users) => {
-          messageUtils.notifyWithUserObjects(instance, users);
+          let notifyUsers = [];
+          // filter out the owner if he is not one of the recipients.
+          if (instance.everyoneInSphere && instance.everyoneInSphereIncludingOwner === false) {
+            for (let i = 0; i < users.length; i++) {
+              if (String(users[i].id) !== String(instance.ownerId)) {
+                notifyUsers.push(users[i].id);
+              }
+            }
+          }
+          else {
+            notifyUsers = users;
+          }
+          messageUtils.notifyWithUserObjects(instance, notifyUsers);
         })
         .then(() => {
           next();
