@@ -1573,6 +1573,8 @@ module.exports = function(model) {
     let isMessageIsForUser = (message, recipients) => {
       let userIsSender = String(message.ownerId) ===  userIdString;
 
+      if (message.everyoneInSphereIncludingOwner) { return true; }
+
       // everyone usually means everyone except the sender
       if (message.everyoneInSphere && !userIsSender) { return true; }
 

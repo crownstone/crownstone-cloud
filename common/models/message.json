@@ -29,6 +29,10 @@
       "type": "boolean",
       "default": false
     },
+    "everyoneInSphereIncludingOwner": {
+      "type": "boolean",
+      "default": false
+    },
     "deliveredAll": {
       "type": "boolean",
       "default": false
