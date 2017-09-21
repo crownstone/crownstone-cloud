@@ -285,14 +285,4 @@ module.exports = function(model) {
       description: "Mark this message as read by you.",
     }
   );
-
-
-
-
-
-
-
-
-
-
 };

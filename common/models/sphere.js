@@ -1565,6 +1565,7 @@ module.exports = function(model) {
         triggerEvent: message.triggerEvent,
         content: message.content,
         everyoneInSphere: message.everyoneInSphere,
+        everyoneInSphereIncludingOwner: message.everyoneInSphereIncludingOwner,
         id: message.id,
         ownerId: message.ownerId,
         sphereId: message.sphereId,
