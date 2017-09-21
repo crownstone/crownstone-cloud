@@ -151,7 +151,7 @@ function getSphereId(app, context) {
             return resolve(result.sphereId);
           }
           else {
-            return resolve(null);
+            return reject("Could not find element with id: " + context.modelId);
           }
         })
         .catch((err) => {

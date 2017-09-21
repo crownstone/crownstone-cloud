@@ -18,6 +18,7 @@ const messageUtils = {
       silent: true,
       data: {
         sphereId: message.sphereId,
+        id: message.id,
         triggerLocationId: message.triggerLocationId,
         triggerEvent: message.triggerEvent,
         senderId: message.ownerId,
