@@ -229,7 +229,16 @@ module.exports = function(model) {
         "property": "downloadProfilePicOfUser"
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "ALLOW",
+        "property": "setMessages"
+      }
+    );
   }
+
 
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('updateAll');
@@ -1415,7 +1424,7 @@ module.exports = function(model) {
           if (instance.everyoneInSphere && instance.everyoneInSphereIncludingOwner === false) {
             for (let i = 0; i < users.length; i++) {
               if (String(users[i].id) !== String(instance.ownerId)) {
-                notifyUsers.push(users[i].id);
+                notifyUsers.push({id:users[i].id});
               }
             }
           }

@@ -42,18 +42,20 @@ module.exports = function(model) {
       "principalId": "$group:admin",
       "permission": "ALLOW"
     });
+
     model.settings.acls.push({
       "principalType": "ROLE",
       "principalId": "$group:admin",
       "permission": "ALLOW",
-      "property": "__create__read"
+      "property": "markRead"
     });
     model.settings.acls.push({
       "principalType": "ROLE",
       "principalId": "$group:admin",
       "permission": "ALLOW",
-      "property": "__create__delivered"
+      "property": "markDelivered"
     });
+
 
     //***************************
     // MEMBER:
