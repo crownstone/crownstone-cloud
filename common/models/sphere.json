@@ -10,6 +10,7 @@
   "mixins": {
     "DisableCommon": true,
     "EnableHooks": true,
+    "ChangeTracker": true,
     "Cascade": {
       "SphereAccess": "sphereId",
       "Location": "sphereId"
@@ -80,6 +81,11 @@
     "ownedAppliances": {
       "type": "hasMany",
       "model": "Appliance",
+      "foreignKey": "sphereId"
+    },
+    "events": {
+      "type": "hasMany",
+      "model": "Change",
       "foreignKey": "sphereId"
     },
     "users": {

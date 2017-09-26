@@ -1,38 +1,35 @@
 {
-  "name": "AppInstallation",
+  "name": "Change",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,
   "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
   "mixins": {
-    "DisableCommon": true,
-    "ChangeTracker": true,
+    "SphereContent": true,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
   },
   "properties": {
-    "appName":{
-      "type":"string",
-      "required": true
-    },
-    "deviceType": {
+    "model": {
       "type": "string",
       "required": true
     },
-    "deviceToken": {
+    "type": {
       "type": "string",
-      "required": false
+      "required": true
+    },
+    "itemId": {
+      "type": "string",
+      "required": true
     }
   },
-  "relations": {
-    "device": {
-      "type": "belongsTo",
-      "model": "Device",
-      "foreignKey": ""
-    }
-  },
+  "validations": [],
+  "relations": {},
   "acls": [],
   "methods": {}
 }

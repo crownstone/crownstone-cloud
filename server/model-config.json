@@ -137,5 +137,9 @@
   "MessageState": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "Change": {
+    "dataSource": "mongoDs",
+    "public": true
   }
 }

@@ -11,6 +11,7 @@
     "DisableCommon": true,
     "SphereContent": true,
     "EnableHooks": true,
+    "ChangeTracker": true,
     "Cascade": {
       "StoneLocation": "stoneId",
       "StoneLocation": "sphereId"
@@ -123,6 +124,11 @@
       "type": "belongsTo",
       "model": "Appliance",
       "foreignKey": "applianceId"
+    },
+    "schedules": {
+      "type": "hasMany",
+      "model": "Schedule",
+      "foreignKey": "stoneId"
     }
   },
   "acls": [],

@@ -10,6 +10,7 @@
   "mixins": {
     "DisableCommon": true,
     "EnableHooks": true,
+    "ChangeTracker": true,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true

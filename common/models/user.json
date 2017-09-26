@@ -9,6 +9,7 @@
   },
   "mixins": {
     "DisableCommon": true,
+    "ChangeTracker": true,
     "Cascade": {
       "SphereAccess": "userId"
     },
