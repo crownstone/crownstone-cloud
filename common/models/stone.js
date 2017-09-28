@@ -185,6 +185,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__deleteById__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__energyUsageHistory');
+  model.disableRemoteMethodByName('prototype.__get__location');
 
 
   function initStone(ctx, next) {

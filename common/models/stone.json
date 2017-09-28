@@ -94,6 +94,11 @@
   },
   "validations": [],
   "relations": {
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
+    },
     "locations": {
       "type": "hasAndBelongsToMany",
       "model": "Location",
