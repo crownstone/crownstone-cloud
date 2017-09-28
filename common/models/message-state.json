@@ -19,6 +19,8 @@
     }
   },
   "hidden":{
+    "messageDeliveredId":true,
+    "messageReadId":true,
     "messageId":true
   },
   "validations": [],
