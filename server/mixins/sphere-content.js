@@ -31,8 +31,8 @@ module.exports = function(model, options) {
           }
           let filter = {sphereId: {inq: possibleIds}};
           const where = context.query.where ? { and: [ context.query.where, filter ] } : filter;
-
           context.query.where = where;
+
           callback();
         })
         .catch((err) => {
