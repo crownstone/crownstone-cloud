@@ -1408,7 +1408,7 @@ module.exports = function(model) {
       model.findById(instance.sphereId)
         .then((sphere) => {
           if (sphere === null) {
-            throw 'Sphere not found';
+            throw {statusCode: 404, message: 'Sphere not found'};
           }
           sphereObject = sphere;
           return new Promise((resolve, reject) => {
@@ -1499,12 +1499,14 @@ module.exports = function(model) {
     }
   );
 
+  const FILTER_TYPES = { NEW:'new', NEW_IN_LOCATION: 'newInLocation', ACTIVE:'active', ALL:'all'};
+
   // messages that User has sent: ownerId === userId
   // messages that User is one of the recipients of
   // messages that are for everyoneInSphere
   model.getAllMyMessages = function(id, options, next) {
     let userId = options.accessToken.userId;
-    _getMessagesWithFilter(id, {}, userId, false, next);
+    _getMessagesWithFilter(id, userId, FILTER_TYPES.ALL, next);
   };
 
   // messages that User has sent: ownerId === userId
@@ -1513,7 +1515,7 @@ module.exports = function(model) {
   // AND where something still has to be delivered.
   model.getMyActiveMessages = function(id, options, next) {
     let userId = options.accessToken.userId;
-    _getMessagesWithFilter(id, {deliveredAll: false}, userId, false, next);
+    _getMessagesWithFilter(id, userId, FILTER_TYPES.ACTIVE, next);
   };
 
   // messages that User is one of the recipients of
@@ -1521,7 +1523,7 @@ module.exports = function(model) {
   // AND they are not delivered yet
   model.getMyNewMessages = function(id, options, next) {
     let userId = options.accessToken.userId;
-    _getMessagesWithFilter(id, {and:[{deliveredAll: false}]}, userId, true, next);
+    _getMessagesWithFilter(id, userId, FILTER_TYPES.NEW, next);
   };
 
 
@@ -1531,22 +1533,37 @@ module.exports = function(model) {
   // AND THEIR FK is this room
   model.getMyNewMessagesInLocation = function(id, fk, options, next) {
     let userId = options.accessToken.userId;
-    _getMessagesWithFilter(id, {and:[{or: [{triggerLocationId: fk},{triggerLocationId: undefined}]}, {deliveredAll: false}]}, userId, true, next);
+    _getMessagesWithFilter(id, userId, FILTER_TYPES.NEW_IN_LOCATION, next, fk);
   };
 
 
   /**
    * This searches for all messages in the sphere that belong to the user.
    * @param sphereId
-   * @param whereFilter
    * @param userId
-   * @param onlyNewMessages
+   * @param filterType
    * @param next
+   * @param locationId
    * @private
    */
-  const _getMessagesWithFilter = function(sphereId, whereFilter, userId, onlyNewMessages, next) {
+  const _getMessagesWithFilter = function(sphereId, userId, filterType, next, locationId) {
     // cast to string in case this is an IdObject
     let userIdString = String(userId);
+
+    let whereFilter = {};
+    switch (filterType) {
+      case FILTER_TYPES.ALL:
+        whereFilter = {};
+        break;
+      case FILTER_TYPES.ACTIVE:
+      case FILTER_TYPES.NEW:
+        whereFilter = {deliveredAll: false};
+        break;
+      case FILTER_TYPES.NEW_IN_LOCATION:
+        whereFilter = {and:[{or: [{triggerLocationId: locationId},{triggerLocationId: undefined}]}, {deliveredAll: false}]};
+        break;
+    }
+
 
     // filter for messages where user is the recipient off.
     let filter = {
@@ -1592,15 +1609,14 @@ module.exports = function(model) {
       return false;
     };
 
-    let isMessageIsForUser = (message, recipients) => {
-      let userIsSender = String(message.ownerId) ===  userIdString;
+    let doesUserHaveAccessToMessage = (message, recipients) => {
+      let userIsSender = String(message.ownerId) === userIdString;
 
-      if (message.everyoneInSphereIncludingOwner) { return true; }
+      if (userIsSender || message.everyoneInSphereIncludingOwner || message.everyoneInSphere) {
+        return true;
+      }
 
-      // everyone usually means everyone except the sender
-      if (message.everyoneInSphere && !userIsSender) { return true; }
-
-      // in case the user has sent this to himself as well, he will be in this list.
+      // is user in the list of recipients?
       for (let i = 0; i < recipients.length; i++) {
         if (String(recipients[i].id) === userIdString) { return true; }
       }
@@ -1610,35 +1626,60 @@ module.exports = function(model) {
 
     model.findById(sphereId, filter)
       .then((sphere) => {
+        if (!sphere) {
+          throw "Sphere with id" + sphereId + " does not exist."
+        }
+
         let messages = sphere.messages();
         for (let i = 0; i < messages.length; i++) {
           let message = messages[i];
 
-          // if we are interested in all messages, we can immediately accept a message if the user has sent it himself.
-          if (!onlyNewMessages) {
-            // if this user sent the message
-            if (String(message.ownerId) === userIdString) {
-              insertMessage(message, message.delivered(), message.recipients());
-              continue;
-            }
+          let userIsSender = String(message.ownerId) === userIdString;
+
+          // if we are looking for all my messages, the ones i sent are part of this.
+          if (filterType === FILTER_TYPES.ALL) {
+            insertMessage(message, message.delivered(), message.recipients());
+            continue;
+          }
+
+
+          let recipients = message.recipients();
+          let userHasAccess = doesUserHaveAccessToMessage(message, recipients);
+          if (!userHasAccess) {
+            // next!
+            continue;
           }
 
           let deliveredList = message.delivered();
-          let recipients = message.recipients();
-          // check if the messages that are for everyone in this sphere have already been delivered to user.
-          if (isMessageIsForUser(message, recipients)) {
-            // this message is for everyone, including the current user. If we only require new messages, check if it has been delivered to this user.
-            if (onlyNewMessages) {
+
+          switch (filterType) {
+            case FILTER_TYPES.ACTIVE:
+              // if the user is the owner, any outstanding messages also count. This means the everyoneInSphere ones.
+              if (userIsSender) {
+                insertMessage(message, deliveredList, recipients);
+                continue;
+              }
+              else {
+                // if the user is not the sender, it is only active for him if it has not been delivered yet.
+                let alreadyDelivered = isDeliveredToUser(deliveredList);
+                // if not already delivered, add to the list
+                if (!alreadyDelivered) {
+                  insertMessage(message, deliveredList, recipients);
+                  continue;
+                }
+              }
+              break;
+            case FILTER_TYPES.NEW:
+              // same as new in location since the difference is in the where filter up top.
+            case FILTER_TYPES.NEW_IN_LOCATION:
+              // if the user is not the sender, it is only active for him if it has not been delivered yet.
               let alreadyDelivered = isDeliveredToUser(deliveredList);
               // if not already delivered, add to the list
               if (!alreadyDelivered) {
                 insertMessage(message, deliveredList, recipients);
+                continue;
               }
-              // if not, this message does not have to be sent in this request
-            }
-            else {
-              insertMessage(message, deliveredList, recipients);
-            }
+              break;
           }
         }
 

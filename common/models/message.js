@@ -242,16 +242,22 @@ module.exports = function(model) {
 
     if (!userId) { next("Not logged in!"); }
 
-    model.findById(id, {include: { relation: activeField, scope: {where: {userId: userId}}}})
+    model.findById(id, {
+      include: { relation: activeField },
+      scope: {
+        where: {
+          and: [ {userId: userId} ]
+        }
+      }
+    })
       .then((result) => {
         if (!result) {
-          throw "Message not found!";
+          throw {statusCode: 404, message: "Message not found!"};
         }
 
         let activeFieldList = result[activeField]();
-
         if (activeFieldList.length > 0) {
-          throw "Already marked this message as " + activeField;
+          throw {statusCode: 400, message: "Already marked this message as " + activeField};
         }
 
         return result[activeField].create({

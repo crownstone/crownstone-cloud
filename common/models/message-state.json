@@ -23,10 +23,15 @@
   },
   "validations": [],
   "relations": {
-    "message": {
+    "messageDelivered": {
       "type": "belongsTo",
       "model": "Message",
-      "foreignKey": "messageId"
+      "foreignKey": "messageDeliveredId"
+    },
+    "messageRead": {
+      "type": "belongsTo",
+      "model": "Message",
+      "foreignKey": "messageReadId"
     },
     "user": {
       "type": "belongsTo",

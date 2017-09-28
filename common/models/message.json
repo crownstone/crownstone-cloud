@@ -65,12 +65,12 @@
     "delivered":{
       "type":"hasMany",
       "model":"MessageState",
-      "foreignKey": "messageId"
+      "foreignKey": "messageDeliveredId"
     },
     "read":{
       "type":"hasMany",
       "model":"MessageState",
-      "foreignKey": "messageId"
+      "foreignKey": "messageReadId"
     }
   },
   "acls": [],

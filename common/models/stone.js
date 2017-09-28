@@ -608,7 +608,8 @@ module.exports = function(model) {
                 notificationHandler.notifyHubs(sphere, {
                   type: 'setSwitchStateRemotely',
                   data:{stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchState)), command:'setSwitchStateRemotely'},
-                  silent: true
+                  silentAndroid: true,
+                  silentIOS: false
                 });
               }
               else {

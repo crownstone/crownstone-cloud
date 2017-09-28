@@ -23,6 +23,9 @@ class NotificationHandlerClass {
     // get users
     let iosTokens = [];
     let androidTokens = [];
+    
+    let iosUniqueTokens = {};
+    let androidUniqueTokens = {};
 
     sphere.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
       // collect all tokens.
@@ -32,13 +35,20 @@ class NotificationHandlerClass {
           if (devices[j].hubFunction === true) {
             let installations = devices[j].installations();
             for (let k = 0; k < installations.length; k++) {
-              if (installations[k].deviceToken) {
+              let token = installations[k].deviceToken;
+              if (token) {
                 switch (installations[k].deviceType) {
                   case 'ios':
-                    iosTokens.push(installations[k].deviceToken);
+                    if (iosUniqueTokens[token] === undefined) {
+                      iosUniqueTokens[token] = true;
+                      iosTokens.push(token);
+                    }
                     break;
                   case 'android':
-                    androidTokens.push(installations[k].deviceToken);
+                    if (androidUniqueTokens[token] === undefined) {
+                      androidUniqueTokens[token] = true;
+                      androidTokens.push(token);
+                    }
                     break;
                 }
               }
@@ -90,6 +100,9 @@ class NotificationHandlerClass {
     let iosTokens = [];
     let androidTokens = [];
 
+    let iosUniqueTokens = {};
+    let androidUniqueTokens = {};
+
     let userModel = loopback.getModel('user');
     let filter = {where: {or:userIdArray}, include: {relation: 'devices', scope: {include: 'installations'}}};
     userModel.find(filter, (err, users) => {
@@ -99,13 +112,20 @@ class NotificationHandlerClass {
         for (let j = 0; j < devices.length; j++) {
           let installations = devices[j].installations();
           for (let k = 0; k < installations.length; k++) {
-            if (installations[k].deviceToken) {
+            let token = installations[k].deviceToken;
+            if (token) {
               switch (installations[k].deviceType) {
                 case 'ios':
-                  iosTokens.push(installations[k].deviceToken);
+                  if (iosUniqueTokens[token] === undefined) {
+                    iosUniqueTokens[token] = true;
+                    iosTokens.push(token);
+                  }
                   break;
                 case 'android':
-                  androidTokens.push(installations[k].deviceToken);
+                  if (androidUniqueTokens[token] === undefined) {
+                    androidUniqueTokens[token] = true;
+                    androidTokens.push(token);
+                  }
                   break;
               }
             }
@@ -203,13 +223,18 @@ class NotificationHandlerClass {
     let notification = new apn.Notification();
 
     notification.expiry = Math.floor(Date.now() / 1000) + 3600; // Expires 1 hour from now.
-    // notification.badge = 0;                     // 0 = remove badge
+    notification.badge = messageData.badge || 0;    // 0 = remove badge
     notification.payload = messageData.data;
     notification.topic = 'com.crownstone.Crownstone';
 
-    if (messageData.silent) {
+    let silent = messageData.silent;
+    if (messageData.silentIOS !== undefined) {
+      silent = messageData.silent;
+    }
+
+    if (silent) {
       // add this for silent push
-      notification.contentAvailable = 1;
+      notification.contentAvailable = true;
     }
     else {
       notification.sound = "ping.aiff";             // do not add if no sound should play
