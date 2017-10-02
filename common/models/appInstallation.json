@@ -6,7 +6,7 @@
   "idInjection": true,
   "mixins": {
     "DisableCommon": true,
-    "ChangeTracker": true,
+    "ChangeTracker": false,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true

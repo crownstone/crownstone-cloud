@@ -9,7 +9,7 @@
   },
   "mixins": {
     "DisableCommon": true,
-    "ChangeTracker": true,
+    "ChangeTracker": false,
     "EnableHooks": true,
     "SphereContent": true,
     "Cascade": {

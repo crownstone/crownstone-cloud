@@ -11,7 +11,7 @@
     "DisableCommon": true,
     "SphereContent": true,
     "EnableHooks": true,
-    "ChangeTracker": true,
+    "ChangeTracker": false,
     "Cascade": {
       "StoneLocation": "stoneId",
       "StoneLocation": "sphereId"

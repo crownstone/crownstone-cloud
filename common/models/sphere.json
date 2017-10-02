@@ -10,7 +10,7 @@
   "mixins": {
     "DisableCommon": true,
     "EnableHooks": true,
-    "ChangeTracker": true,
+    "ChangeTracker": false,
     "Cascade": {
       "SphereAccess": "sphereId",
       "Location": "sphereId"
