@@ -8,6 +8,11 @@ const ObjectID = require('mongodb').ObjectID;
  */
 module.exports = function (model, options) {
 
+
+  /**
+   * TODO: for deleting single point that is under a stone (like a schedule) the evaluation of the sphereID does not work.
+   * TODO: this has to be fixed.
+   */
   model.observe('before delete', function(ctx, next) {
     let modelName = ctx.Model.modelName;
     let type = "DELETE";
