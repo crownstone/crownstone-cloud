@@ -140,6 +140,6 @@
   },
   "Change": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   }
 }

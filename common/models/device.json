@@ -42,6 +42,14 @@
     "model": {
       "type": "string"
     },
+    "uploadPowerUsage": {
+      "type": "boolean",
+      "default": false
+    },
+    "uploadHighFrequencyPowerUsage": {
+      "type": "boolean",
+      "default": false
+    },
     "hubFunction": {
       "type": "boolean",
       "default": false
