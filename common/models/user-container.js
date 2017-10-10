@@ -6,7 +6,8 @@ const _defaults = require('lodash').defaults;
 const _get = require('lodash').get;
 const Promise = require("bluebird");
 let loopback = require('loopback');
-var mongodb = require('mongodb');
+const mongodb = require('mongodb');
+const idUtil = require('./sharedUtil/idUtil');
 
 module.exports = function(model) {
 
@@ -33,6 +34,8 @@ module.exports = function(model) {
   });
 
   model._deleteContainer = function (id, options,  next) {
+    if (!idUtil.verifyMongoId(id))     { return next({statusCode:400, message:"Invalid id provided."}); }
+
     checkAccess(id, options, function(err) {
       if (err) return next(err);
       // we cast the IDs to string to avoid having mongo ObjectId objects as input
@@ -41,6 +44,8 @@ module.exports = function(model) {
   };
 
   model._getFiles = function (id, options, next) {
+    if (!idUtil.verifyMongoId(id))     { return next({statusCode:400, message:"Invalid id provided."}); }
+
     checkAccess(id, options, function(err) {
       if (err) return next(err);
       // we cast the IDs to string to avoid having mongo ObjectId objects as input
@@ -49,6 +54,9 @@ module.exports = function(model) {
   };
 
   model._deleteFile = function (id, fileId, options, next) {
+    if (!idUtil.verifyMongoId(id))     { return next({statusCode:400, message:"Invalid id provided."}); }
+    if (!idUtil.verifyMongoId(fileId)) { return next({statusCode:400, message:"Invalid file ID."});     }
+
     checkAccess(id, options, function(err) {
       if (err) return next(err);
       // we cast the IDs to string to avoid having mongo ObjectId objects as input
@@ -57,6 +65,8 @@ module.exports = function(model) {
   };
 
   model._upload = function (id, req, options, next) {
+    if (!idUtil.verifyMongoId(id))     { return next({statusCode:400, message:"Invalid id provided."}); }
+
     checkAccess(id, options, function(err) {
       if (err) return next(err);
       // we cast the IDs to string to avoid having mongo ObjectId objects as input
@@ -65,8 +75,17 @@ module.exports = function(model) {
   };
 
   model._download = function (id, fileId, res, options, next) {
+    if (!fileId) {
+      return next({statusCode:404, message:"No profile picture."});
+    }
+
+    if (!idUtil.verifyMongoId(id))     { return next({statusCode:400, message:"Invalid id provided."}); }
+    if (!idUtil.verifyMongoId(fileId)) { return next({statusCode:400, message:"Invalid file ID."});     }
+
     // we cast the IDs to string to avoid having mongo ObjectId objects as input
     model.download(String(id), fileId, res, next);
   }
 
 };
+
+

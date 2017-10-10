@@ -7,6 +7,7 @@ const loopback = require('loopback');
 const debug = require('debug')('loopback:dobots');
 
 const util = require('../../server/emails/util');
+const idUtil = require('./sharedUtil/idUtil');
 
 module.exports = function(model) {
 
@@ -668,14 +669,28 @@ module.exports = function(model) {
       if (err) return callback(err);
       if (model.checkForNullError(user, callback, "id: " + id)) return;
 
-      model.deleteFile(id, user.profilePicId, options, function(err, file) {
-        if (err) return callback(err);
+      if (idUtil.verifyMongoId(user.profilePicId) === false) {
         // remove the profile pic
         user.profilePicId = undefined;
-        user.save();
-
-        callback();
-      });
+        user.save()
+          .then(() => {
+            callback();
+          })
+      }
+      else {
+        model.deleteFile(id, user.profilePicId, options)
+          .then(() => {
+            // remove the profile pic
+            user.profilePicId = undefined;
+            return user.save();
+          })
+          .then(() => {
+            callback();
+          })
+          .catch((err) => {
+            callback(err);
+          })
+      }
     });
   };
 
