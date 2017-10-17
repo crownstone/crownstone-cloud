@@ -664,11 +664,9 @@ module.exports = function(model) {
 
   model.deleteProfilePicById = function(id, options, callback) {
     // debug("downloadProfilePicById");
-
     model.findById(id, function(err, user) {
       if (err) return callback(err);
       if (model.checkForNullError(user, callback, "id: " + id)) return;
-
       if (idUtil.verifyMongoId(user.profilePicId) === false) {
         // remove the profile pic
         user.profilePicId = undefined;
@@ -678,18 +676,19 @@ module.exports = function(model) {
           })
       }
       else {
-        model.deleteFile(id, user.profilePicId, options)
-          .then(() => {
-            // remove the profile pic
-            user.profilePicId = undefined;
-            return user.save();
-          })
-          .then(() => {
-            callback();
-          })
-          .catch((err) => {
-            callback(err);
-          })
+        model.deleteFile(id, user.profilePicId, options, (err, result) => {
+          if (err) { return callback(err); }
+
+          // remove the profile pic
+          user.profilePicId = undefined;
+          user.save()
+            .then(() => {
+              callback();
+            })
+            .catch((err) => {
+              callback(err);
+            })
+        })
       }
     });
   };
