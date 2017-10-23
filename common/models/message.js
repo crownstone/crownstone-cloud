@@ -229,12 +229,18 @@ module.exports = function(model) {
       })
   });
 
+
+  const MESSAGE_TYPES = {
+    delivered: 'delivered',
+    read: 'read',
+  };
+
   model.markDelivered = function(id, options, next) {
-    markState(id, options, 'delivered', next);
+    markState(id, options, MESSAGE_TYPES.delivered, next);
   };
 
   model.markRead = function(id, options, next) {
-    markState(id, options, 'read', next);
+    markState(id, options, MESSAGE_TYPES.read, next);
   };
 
   const markState = function(id, options, activeField, next) {
@@ -260,11 +266,22 @@ module.exports = function(model) {
           throw {statusCode: 400, message: "Already marked this message as " + activeField};
         }
 
-        return result[activeField].create({
+        let data = {
           timestamp: new Date().valueOf(),
-          messageId: id,
           userId: userId
-        }, options);
+        };
+
+        if (activeField === MESSAGE_TYPES.delivered) {
+          data['messageDeliveredId'] = id;
+        }
+        else if (activeField === MESSAGE_TYPES.read) {
+          data['messageReadId'] = id;
+        }
+        else {
+          throw "Invalid Type";
+        }
+
+        return result[activeField].create(data, options);
       })
       .then(() => { next(); })
       .catch((err) => { next(err); })
