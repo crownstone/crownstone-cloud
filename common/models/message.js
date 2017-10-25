@@ -248,40 +248,37 @@ module.exports = function(model) {
 
     if (!userId) { next("Not logged in!"); }
 
-    model.findById(id, {
-      include: { relation: activeField },
-      scope: {
-        where: {
-          and: [ {userId: userId} ]
-        }
-      }
-    })
-      .then((result) => {
-        if (!result) {
-          throw {statusCode: 404, message: "Message not found!"};
-        }
+    let messageState = loopback.getModel("MessageState");
 
-        let activeFieldList = result[activeField]();
-        if (activeFieldList.length > 0) {
+    // get the appropriate message key.
+    let idKey = null;
+    if (activeField === MESSAGE_TYPES.delivered) { idKey = 'messageDeliveredId'; }
+    else if (activeField === MESSAGE_TYPES.read) { idKey = 'messageReadId';      }
+    else {
+      return next("Invalid Type");
+    }
+
+    messageState.find({where: {and: [{[idKey]: id}, {userId: userId}]}})
+      .then((result) => {
+        if (result.length > 0) {
           throw {statusCode: 400, message: "Already marked this message as " + activeField};
         }
-
-        let data = {
-          timestamp: new Date().valueOf(),
-          userId: userId
-        };
-
-        if (activeField === MESSAGE_TYPES.delivered) {
-          data['messageDeliveredId'] = id;
+        else {
+          return model.findById(id);
         }
-        else if (activeField === MESSAGE_TYPES.read) {
-          data['messageReadId'] = id;
+      })
+      .then((message) => {
+        if (!message) {
+          throw {statusCode: 404, message: "Message not found!"};
         }
         else {
-          throw "Invalid Type";
+          return message[activeField].create({
+            [idKey]: id,
+            timestamp: new Date().valueOf(),
+            userId: userId
+          }, options);
         }
 
-        return result[activeField].create(data, options);
       })
       .then(() => { next(); })
       .catch((err) => { next(err); })
