@@ -10,10 +10,12 @@ const config = require('../../server/config.json');
 const emailUtil = require('../../server/emails/util');
 const mesh = require('../../server/middleware/mesh-access-address');
 
-const messageUtils = require('./sharedUtil/messageUtil')
+const messageUtils = require('./sharedUtil/messageUtil');
+const firmwareUtils = require('./sharedUtil/firmwareUtil');
 
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
+
 
 module.exports = function(model) {
 
@@ -562,28 +564,30 @@ module.exports = function(model) {
 
   function createAndInviteUser(sphere, email, access, options, next) {
     debug("createAndInviteUser");
-
     const User = loopback.getModel('user');
     let tempPassword = crypto.randomBytes(8).toString('base64');
     // debug("tempPassword", tempPassword);
     let userData = {email: email, password: tempPassword};
     User.create(userData, function(err, user) {
       if (err) return next(err);
-
-      let ttl = DEFAULT_TTL;
-      user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
-        if (err) return next(err);
-
-        addSphereAccess(user, sphere, access, true, function(err) {
-          if (err) return next(err);
-
-          // let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
-          // let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
-          // emailUtil.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
-          sendInvite(user, options, sphere, true, accessToken.id);
-          next();
-        });
-      });
+      firmwareUtils.insertLatestFirmwareAndBootloader(user)
+        .then(() => {
+          let ttl = DEFAULT_TTL;
+          user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
+            if (err) return next(err);
+            addSphereAccess(user, sphere, access, true, function(err) {
+              if (err) return next(err);
+              // let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
+              // let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
+              // emailUtil.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
+              sendInvite(user, options, sphere, true, accessToken.id);
+              next();
+            });
+          })
+        })
+        .catch((err) => {
+          next(err);
+        })
     });
   }
 

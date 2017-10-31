@@ -8,6 +8,7 @@ const debug = require('debug')('loopback:dobots');
 
 const util = require('../../server/emails/util');
 const idUtil = require('./sharedUtil/idUtil');
+const firmwareUtils = require('./sharedUtil/firmwareUtil');
 
 module.exports = function(model) {
 
@@ -261,7 +262,7 @@ module.exports = function(model) {
   };
 
   model.onCreate = function(context, user, callback) {
-    _insertLatestFirmwareAndBootloader(context, user)
+    firmwareUtils.insertLatestFirmwareAndBootloader(user)
       .then(() => {
         if (model.settings.emailVerificationRequired) {
           model.sendVerification(user, null, function(err, response) {
@@ -277,20 +278,6 @@ module.exports = function(model) {
       })
   };
 
-  let _insertLatestFirmwareAndBootloader = function (ctx, user) {
-    const Firmwares = loopback.getModel('Firmware');
-    const Bootloaders = loopback.getModel('Bootloader');
-
-    return Firmwares.getLatestVersions()
-      .then((data) => {
-        user.firmwareVersionsAvailable = data;
-        return Bootloaders.getLatestVersions();
-      })
-      .then((data) => {
-        user.bootloaderVersionsAvailable = data;
-        return user.save();
-      })
-  };
 
   //send verification email after registration
   model.afterRemote('create', function(ctx, user, next) {
@@ -863,5 +850,6 @@ module.exports = function(model) {
       description: "Delete all spheres of User"
     }
   );
-
 };
+
+
