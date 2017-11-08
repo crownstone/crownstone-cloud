@@ -105,6 +105,11 @@
       "foreignKey": "currentSphereId",
       "through": "Device",
       "keyThrough": "ownerId"
+    },
+    "geoLocation": {
+      "type":"hasOne",
+      "model": "geoLocation",
+      "foreignKey": "sphereId"
     }
   },
   "acls": [],

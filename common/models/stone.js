@@ -161,16 +161,16 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__deleteById__locations');
   model.disableRemoteMethodByName('prototype.__destroyById__locations');
 
-  // do we need these? since it is historical data, it should not be updateable once it is uploaded?
-  model.disableRemoteMethodByName('prototype.__updateById__coordinatesHistory');
   model.disableRemoteMethodByName('prototype.__updateById__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__updateById__powerCurveHistory');
   model.disableRemoteMethodByName('prototype.__updateById__powerUsageHistory');
+  model.disableRemoteMethodByName('prototype.__updateById__switchStateHistory');
 
-  model.disableRemoteMethodByName('prototype.__delete__coordinatesHistory'); // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__energyUsageHistory'); // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__powerCurveHistory');  // this is the delete ALL
   model.disableRemoteMethodByName('prototype.__delete__powerUsageHistory');  // this is the delete ALL
+  model.disableRemoteMethodByName('prototype.__deleteById__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__delete__switchStateHistory');
 
   model.disableRemoteMethodByName('prototype.__count__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
@@ -186,6 +186,13 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__deleteById__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__location');
+
+  model.disableRemoteMethodByName('prototype.__count__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__create__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__findById__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__destroyById__switchStateHistory');
+
+  model.disableRemoteMethodByName('prototype.__get__switchStateHistory');
 
 
   function initStone(ctx, next) {
@@ -381,7 +388,10 @@ module.exports = function(model) {
   );
 
 
-  const batchSetHistory = function (historyField, dataArray, stoneId, next) {
+  const batchSetHistory = function (fieldName, dataArray, stoneId, next) {
+    let historyFieldName = fieldName + "History";
+    let currentIdFieldName = "current" + capitalizeFirstLetter(fieldName) + "Id";
+
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
@@ -391,19 +401,68 @@ module.exports = function(model) {
         dataArray[i].sphereId = stone.sphereId;
       }
 
-      stone[historyField].create(dataArray, (err, result) => {
-        if (err) { return next(err); }
-        next(null, result);
-      });
+      // create the new data in the database
+      stone[historyFieldName].create(dataArray)
+        .then((insertResult) => {
+          if (!insertResult) { return insertResult; }
+
+          // get the most recent timestamp in the batch that we have uploaded
+          let mostRecentId = null;
+          let mostRecentTimestamp = 0;
+          if (Array.isArray(insertResult)) {
+            for (let i = 0; i < insertResult.length; i++) {
+              let checkTimestamp = new Date(insertResult[i].timestamp).valueOf();
+              if (mostRecentTimestamp < checkTimestamp) {
+                mostRecentTimestamp = checkTimestamp;
+                mostRecentId = insertResult[i].id;
+              }
+            }
+          }
+          else {
+            mostRecentId = insertResult.id;
+            mostRecentTimestamp = new Date(insertResult.timestamp).valueOf();
+          }
+
+          const insertMostRecent = (currentId) => {
+            stone[currentIdFieldName] = currentId;
+            return stone.save()
+              .then(() => {
+                return insertResult
+              })
+          };
+
+          // if there is a most current entry, match the timestamp with the new one.
+          if (stone[currentIdFieldName]) {
+            return stone[historyFieldName].findById(stone[currentIdFieldName])
+              .then((mostRecentEntry) => {
+                if (!mostRecentEntry) {
+                  return insertMostRecent(mostRecentId);
+                }
+
+                if (mostRecentTimestamp > new Date(mostRecentEntry.timestamp).valueOf()) {
+                  return insertMostRecent(mostRecentId);
+                }
+              })
+          }
+          else {
+            return insertMostRecent(mostRecentId);
+          }
+        })
+        .then((insertResult) => {
+          next(null, insertResult)
+        })
+        .catch((err) => {
+          next(err);
+        })
     });
   };
 
   model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
-    batchSetHistory('powerUsageHistory', powerUsageArray, stoneId, next);
+    batchSetHistory('powerUsage', powerUsageArray, stoneId, next);
   };
 
   model.setBatchEnergyUsage = function(energyUsageArray, stoneId, next) {
-    batchSetHistory('energyUsageHistory', energyUsageArray, stoneId, next);
+    batchSetHistory('energyUsage', energyUsageArray, stoneId, next);
   };
 
   model.remoteMethod(
@@ -853,4 +912,28 @@ module.exports = function(model) {
   );
 
 
+  // model.deleteSwitchStateHistory = function(stoneId, from, to, next) {
+  //   next()
+  // };
+  //
+  // model.remoteMethod(
+  //   'deleteSwitchStateHistory',
+  //   {
+  //     http: {path: '/:id/switchStateHistory', verb: 'DELETE'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
+  //   }
+  // );
+
+
 };
+
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}

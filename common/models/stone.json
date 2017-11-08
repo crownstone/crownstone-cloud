@@ -64,8 +64,8 @@
     "touchToToggle": {
       "type": "boolean"
     },
-    "nearRange": {
-      "type": "number"
+    "tapToToggle": {
+      "type": "boolean"
     },
     "lastSeenAt": {
       "type": "date"
@@ -133,6 +133,11 @@
     "schedules": {
       "type": "hasMany",
       "model": "Schedule",
+      "foreignKey": "stoneId"
+    },
+    "switchStateHistory": {
+      "type": "hasMany",
+      "model": "SwitchState",
       "foreignKey": "stoneId"
     }
   },

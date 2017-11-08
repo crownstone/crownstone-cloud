@@ -141,5 +141,13 @@
   "Change": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "SwitchState": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "GeoLocation": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

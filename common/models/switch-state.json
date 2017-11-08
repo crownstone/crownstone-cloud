@@ -1,0 +1,36 @@
+{
+  "name": "SwitchState",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "ChangeTracker": false
+  },
+  "properties": {
+    "properties": {
+      "timestamp": {
+        "type": "date",
+        "default": "$now"
+      },
+      "switchState": {
+        "type": "number",
+        "required": true
+      }
+    }
+  },
+  "validations": [],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -1,0 +1,29 @@
+{
+  "name": "GeoLocation",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "ChangeTracker": false
+  },
+  "properties": {
+    "location": {
+      "type": "GeoPoint"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "sphereId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
