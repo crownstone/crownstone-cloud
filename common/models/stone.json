@@ -120,6 +120,11 @@
       "model": "EnergyUsage",
       "foreignKey": "currentEnergyUsageId"
     },
+    "currentSwitchState": {
+      "type": "belongsTo",
+      "model": "SwitchState",
+      "foreignKey": "currentSwitchStateId"
+    },
     "energyUsageHistory": {
       "type": "hasMany",
       "model": "EnergyUsage",

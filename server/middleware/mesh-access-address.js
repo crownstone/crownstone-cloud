@@ -2,7 +2,7 @@ var crypto = require('crypto');
 
 const debug = require('debug')('loopback:dobots:mesh-access-address');
 
-var ADVERTISING_ACCESS_ADDRESS = 0x8E89BED6
+var ADVERTISING_ACCESS_ADDRESS = 0x8E89BED6;
 var retries = 0;
 
 var runner = {
@@ -16,6 +16,7 @@ var runner = {
 		• It shall not have all four octets equal.
 		• It shall have no more than 24 transitions.
 		• It shall have a minimum of two transitions in the most significant six bits.
+
 	*/
 
 	generateAccessAddress : function() {

@@ -12,15 +12,13 @@
     "ChangeTracker": false
   },
   "properties": {
-    "properties": {
-      "timestamp": {
-        "type": "date",
-        "default": "$now"
-      },
-      "switchState": {
-        "type": "number",
-        "required": true
-      }
+    "timestamp": {
+      "type": "date",
+      "default": "$now"
+    },
+    "switchState": {
+      "type": "number",
+      "required": true
     }
   },
   "validations": [],

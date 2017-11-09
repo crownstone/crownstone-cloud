@@ -609,6 +609,37 @@ module.exports = function(model) {
       if (model.checkForNullError(stone, callback, "id: " + id)) return;
 
       stone.energyUsageHistory.destroyAll(function(err) {
+        stone.currentEnergyUsageId = undefined;
+        stone.save();
+        callback(err);
+      });
+    })
+  };
+
+
+  model.deleteAllPowerUsageHistory = function(id, callback) {
+    debug("deleteAllPowerUsageHistory");
+    model.findById(id, function(err, stone) {
+      if (err) return callback(err);
+      if (model.checkForNullError(stone, callback, "id: " + id)) return;
+
+      stone.powerUsageHistory.destroyAll(function(err) {
+        stone.currentPowerUsageId = undefined;
+        stone.save();
+        callback(err);
+      });
+    })
+  };
+
+  model.deleteAllSwitchStateHistory = function(id, callback) {
+    debug("deleteAllPowerUsageHistory");
+    model.findById(id, function(err, stone) {
+      if (err) return callback(err);
+      if (model.checkForNullError(stone, callback, "id: " + id)) return;
+
+      stone.switchStateHistory.destroyAll(function(err) {
+        stone.currentSwitchStateId = undefined;
+        stone.save();
         callback(err);
       });
     })
@@ -621,21 +652,9 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
-      description: "Delete all energy usage history of Stone"
+      description: "Delete all energy usage history of this Stone"
     }
   );
-
-  model.deleteAllPowerUsageHistory = function(id, callback) {
-    debug("deleteAllPowerUsageHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.powerUsageHistory.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
 
   model.remoteMethod(
     'deleteAllPowerUsageHistory',
@@ -644,7 +663,18 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
-      description: "Delete all power usage history of Stone"
+      description: "Delete all power usage history of this Stone"
+    }
+  );
+
+  model.remoteMethod(
+    'deleteAllSwitchStateHistory',
+    {
+      http: {path: '/:id/deleteAllSwitchStateHistory', verb: 'delete'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      description: "Delete all switch state history of this Stone"
     }
   );
 
@@ -764,6 +794,30 @@ module.exports = function(model) {
     getHistory('energyUsageHistory', stoneId, from, to, limit, skip, ascending, next);
   };
 
+  model.getSwitchStateHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next);
+  };
+
+  model.remoteMethod(
+    'getSwitchStateHistory',
+    {
+      http: {path: '/:id/switchStateHistory/', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+      ],
+      returns: {arg: 'data', type: '[EnergyUsage]', root: true},
+      description: '<div style="text-align:right;">' +
+      'Get an array of the known switch states of the specified Crownstone.' +
+      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+    }
+  );
+
   model.remoteMethod(
     'getEnergyUsageHistory',
     {
@@ -829,6 +883,10 @@ module.exports = function(model) {
     countHistory('energyUsageHistory', stoneId, from, to, next);
   };
 
+  model.countSwitchStateHistory = function(stoneId, from, to, next) {
+    countHistory('switchStateHistory', stoneId, from, to, next);
+  };
+
   model.remoteMethod(
     'countEnergyUsageHistory',
     {
@@ -847,6 +905,20 @@ module.exports = function(model) {
     'countPowerUsageHistory',
     {
       http: {path: '/:id/powerUsageHistory/count', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'count', type: 'number', root: true},
+      description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+    }
+  );
+
+  model.remoteMethod(
+    'countSwitchStateHistory',
+    {
+      http: {path: '/:id/switchStateHistory/count', verb: 'GET'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
@@ -883,6 +955,11 @@ module.exports = function(model) {
     deleteHistory('energyUsageHistory', stoneId, from, to, next);
   };
 
+  model.deleteSwitchStateHistory = function(stoneId, from, to, next) {
+    deleteHistory('switchStateHistory', stoneId, from, to, next);
+  };
+
+
   model.remoteMethod(
     'deleteEnergyUsageHistory',
     {
@@ -912,23 +989,64 @@ module.exports = function(model) {
   );
 
 
-  // model.deleteSwitchStateHistory = function(stoneId, from, to, next) {
-  //   next()
-  // };
-  //
-  // model.remoteMethod(
-  //   'deleteSwitchStateHistory',
-  //   {
-  //     http: {path: '/:id/switchStateHistory', verb: 'DELETE'},
-  //     accepts: [
-  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-  //     ],
-  //     returns: {arg: 'count', type: 'number', root: true},
-  //     description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
-  //   }
-  // );
+  model.remoteMethod(
+    'deleteSwitchStateHistory',
+    {
+      http: {path: '/:id/switchStateHistory', verb: 'DELETE'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'count', type: 'number', root: true},
+      description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
+    }
+  );
+
+
+  model.setCurrentSwitchState = function(stoneId, switchState, next) {
+    debug("setCurrentPowerUsage");
+
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      model._setCurrentSwitchState(stone, {switchState: switchState}, next);
+    })
+
+  };
+
+  model._setCurrentSwitchState = function(stone, switchState, next) {
+    debug("_setCurrentSwitchState");
+    stone.switchStateHistory.create(switchState, function(err, switchStateInstance) {
+      if (err) return next(err);
+
+      if (switchStateInstance) {
+        stone.currentSwitchStateId = switchStateInstance.id;
+        stone.save(function(err, stoneInstance) {
+          if (next) {
+            if (err) return next(err);
+            next(null, switchStateInstance);
+          }
+        })
+      } else {
+        return next(new Error("failed to create switch state data point."));
+      }
+    });
+  };
+
+  model.remoteMethod(
+    'setCurrentSwitchState',
+    {
+      http: {path: '/:id/currentSwitchState', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
+      ],
+      description: 'Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
+      '<br />Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming.'
+    }
+  );
 
 
 };
