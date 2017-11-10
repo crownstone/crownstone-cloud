@@ -36,9 +36,6 @@
     "type": {
       "type": "string"
     },
-    "switchState": {
-      "type": "number"
-    },
     "dimmingEnabled": {
       "type": "boolean",
       "default": false

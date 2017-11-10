@@ -20,6 +20,14 @@
       "type": "array",
       "required": true
     },
+    "factoryResetIfBeforeBootloaderVersion": {
+      "type": "string",
+      "required": true
+    },
+    "minimumAppVersion": {
+      "type": "string",
+      "required": true
+    },
     "minimumCompatibleVersion": {
       "type": "string",
       "required": true

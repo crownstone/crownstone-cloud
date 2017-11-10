@@ -1,7 +1,10 @@
 "use strict";
 
+const loopback = require('loopback');
 const debug = require('debug')('loopback:dobots');
 const versionUtil = require('../../server/util/versionUtil');
+
+let hardwareVersions = require("../../server/constants/hardwareVersions");
 
 /**
  * Minimum compatible version is used to determine if a fresh install is required.
@@ -15,7 +18,7 @@ module.exports = function(model) {
    **** Model Validation
    ************************************/
 
-  model.validatesUniquenessOf('downloadUrl', {message: 'This firmware download url already exists.'});
+  model.validatesUniquenessOf('downloadUrl', {message: 'This bootloader download url already exists.'});
 
   let app = require('../../server/server');
   if (app.get('acl_enabled')) {
@@ -66,7 +69,7 @@ module.exports = function(model) {
   model.getBootloader = function(version, hardwareVersion, callback) {
     model.findOne({where: {version: version}})
       .then((result) => {
-        // check if the hardware version is supported by this firmware
+        // check if the hardware version is supported by this bootloader
         if (result && result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
           for (let i = 0; i < result.supportedHardwareVersions.length; i++) {
             if (result.supportedHardwareVersions[i] === hardwareVersion) {
@@ -107,6 +110,114 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: 'Bootloader', root: true},
       description: "Get bootloader details by version number and hardware version, or null if the version was not found."
+    }
+  );
+
+  const getBootloader = (appVersion, options, callback, filterOptions = {}) => {
+    let hwVersions = hardwareVersions.util.getAllVersions();
+
+    let accessLevel = 0;
+    new Promise((resolve, reject) => {
+      if (options && options.accessToken && options.accessToken.userId) {
+        let userId = options.accessToken.userId;
+        const User = loopback.findModel('user');
+        User.findById(userId)
+          .then((user) => {
+            if (user) {
+              accessLevel = user.earlyAccessLevel;
+              resolve();
+            }
+          })
+          .catch((err) => { reject(err); })
+      }
+    })
+      .then(() => {
+        return model.find({where: {releaseLevel: {lte: accessLevel }}})
+      })
+      .then((results) => {
+        let filteredByAppVersion = [];
+        if (appVersion) {
+          results.forEach((result) => {
+            if (!versionUtil.isHigher(result.minimumAppVersion, appVersion)) {
+              filteredByAppVersion.push(result);
+            }
+          });
+          return filteredByAppVersion;
+        }
+        else {
+          return results;
+        }
+      })
+      .then((filteredVersions) => {
+        let bootloaderForHardwareVersions = {};
+        hwVersions.forEach((hwVersion) => {
+          bootloaderForHardwareVersions[hwVersion] = [];
+          filteredVersions.forEach((bootloaderVersion) => {
+            if (bootloaderVersion.supportedHardwareVersions.indexOf(hwVersion) !== -1) {
+              bootloaderForHardwareVersions[hwVersion].push(bootloaderVersion);
+            }
+          })
+        });
+
+        if (filterOptions.latest === true) {
+          hwVersions.forEach((hwVersion) => {
+            let latestVersion = '0.0.0';
+            bootloaderForHardwareVersions[hwVersion].forEach((entry) => {
+              if (versionUtil.isHigher(entry.version, '0.0.0')) {
+                latestVersion = entry.version;
+              }
+            });
+            if (latestVersion !== '0.0.0') {
+              bootloaderForHardwareVersions[hwVersion] = latestVersion;
+            }
+            else {
+              bootloaderForHardwareVersions[hwVersion] = null;
+            }
+          });
+          return bootloaderForHardwareVersions;
+        }
+        return filteredVersions;
+      })
+      .then((finalFilter) => {
+        callback(null, finalFilter);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+  model.getMyLatestBootloader = function(appVersion, options, callback) {
+    getBootloader(appVersion, options, callback, {latest:true});
+  };
+
+  model.getMyBootloader = function(appVersion, options, callback) {
+    getBootloader(appVersion, options, callback, {latest:false});
+  };
+
+
+  model.remoteMethod(
+    'getMyBootloader',
+    {
+      http: {path: '/available', verb: 'get'},
+      accepts: [
+        {arg: "appVersion", type: 'string', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: '[Bootloader]', root: true},
+      description: "Get bootloader details by version number and hardware version, or null if the version was not found."
+    }
+  );
+
+  model.remoteMethod(
+    'getMyLatestBootloader',
+    {
+      http: {path: '/latest', verb: 'get'},
+      accepts: [
+        {arg: "appVersion", type: 'string', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', root: true},
+      description: "Get bootloader versions per hardware version, or null if no version is available."
     }
   );
 

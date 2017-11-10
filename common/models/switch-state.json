@@ -11,6 +11,10 @@
     "DisableCommon": true,
     "ChangeTracker": false
   },
+  "hidden":[
+    "id",
+    "stoneId"
+  ],
   "properties": {
     "timestamp": {
       "type": "date",

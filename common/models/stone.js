@@ -172,6 +172,8 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__deleteById__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__delete__switchStateHistory');
 
+  model.disableRemoteMethodByName('prototype.__count__schedules');
+
   model.disableRemoteMethodByName('prototype.__count__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__powerUsageHistory');
@@ -810,7 +812,7 @@ module.exports = function(model) {
         {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
         {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
       ],
-      returns: {arg: 'data', type: '[EnergyUsage]', root: true},
+      returns: {arg: 'data', type: '[SwitchState]', root: true},
       description: '<div style="text-align:right;">' +
       'Get an array of the known switch states of the specified Crownstone.' +
       '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +

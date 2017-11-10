@@ -1,7 +1,11 @@
 "use strict";
 
+const loopback = require('loopback');
 const debug = require('debug')('loopback:dobots');
 const versionUtil = require('../../server/util/versionUtil');
+
+
+let hardwareVersions = require("../../server/constants/hardwareVersions");
 
 /**
  * Minimum compatible version is used to determine if a fresh install is required.
@@ -107,6 +111,115 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: 'Firmware', root: true},
       description: "Get firmware details by version number and hardware version, or null if the version was not found."
+    }
+  );
+
+  const getFirmware = (appVersion, options, callback, filterOptions = {}) => {
+    let hwVersions = hardwareVersions.util.getAllVersions();
+
+    let accessLevel = 0;
+    new Promise((resolve, reject) => {
+      if (options && options.accessToken && options.accessToken.userId) {
+        let userId = options.accessToken.userId;
+        const User = loopback.findModel('user');
+        User.findById(userId)
+          .then((user) => {
+            if (user) {
+              accessLevel = user.earlyAccessLevel;
+              resolve();
+            }
+          })
+          .catch((err) => { reject(err); })
+      }
+    })
+      .then(() => {
+        return model.find({where: {releaseLevel: {lte: accessLevel }}})
+      })
+      .then((results) => {
+        let filteredByAppVersion = [];
+        if (appVersion) {
+          results.forEach((result) => {
+            if (!versionUtil.isHigher(result.minimumAppVersion, appVersion)) {
+              filteredByAppVersion.push(result);
+            }
+          });
+          return filteredByAppVersion;
+        }
+        else {
+          return results;
+        }
+      })
+      .then((filteredVersions) => {
+        let firmwareForHardwareVersions = {};
+        hwVersions.forEach((hwVersion) => {
+          firmwareForHardwareVersions[hwVersion] = [];
+          filteredVersions.forEach((firmwareVersion) => {
+            if (firmwareVersion.supportedHardwareVersions.indexOf(hwVersion) !== -1) {
+              firmwareForHardwareVersions[hwVersion].push(firmwareVersion);
+            }
+          })
+        });
+
+        if (filterOptions.latest === true) {
+          hwVersions.forEach((hwVersion) => {
+            let latestVersion = '0.0.0';
+            firmwareForHardwareVersions[hwVersion].forEach((entry) => {
+              if (versionUtil.isHigher(entry.version, '0.0.0')) {
+                latestVersion = entry.version;
+              }
+            });
+            if (latestVersion !== '0.0.0') {
+              firmwareForHardwareVersions[hwVersion] = latestVersion;
+            }
+            else {
+              firmwareForHardwareVersions[hwVersion] = null;
+            }
+          });
+          return firmwareForHardwareVersions;
+        }
+        return filteredVersions;
+      })
+      .then((finalFilter) => {
+        callback(null, finalFilter);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+  model.getMyLatestFirmware = function(appVersion, options, callback) {
+    getFirmware(appVersion, options, callback, {latest:true});
+  };
+
+  model.getMyFirmwares = function(appVersion, options, callback) {
+    getFirmware(appVersion, options, callback, {latest:false});
+  };
+
+
+
+  model.remoteMethod(
+    'getMyFirmwares',
+    {
+      http: {path: '/available', verb: 'get'},
+      accepts: [
+        {arg: "appVersion", type: 'string', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: '[Firmware]', root: true},
+      description: "Get firmware details by version number and hardware version, or null if the version was not found."
+    }
+  );
+
+  model.remoteMethod(
+    'getMyLatestFirmware',
+    {
+      http: {path: '/latest', verb: 'get'},
+      accepts: [
+        {arg: "appVersion", type: 'string', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', root: true},
+      description: "Get firmware versions per hardware version, or null if no version is available."
     }
   );
 };

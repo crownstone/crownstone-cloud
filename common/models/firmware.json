@@ -11,6 +11,9 @@
       "validateUpsert": true
     }
   },
+  "hidden": [
+    "releaseLevel"
+  ],
   "properties": {
     "version": {
       "type": "string",
@@ -18,6 +21,14 @@
     },
     "supportedHardwareVersions": {
       "type": "array",
+      "required": true
+    },
+    "factoryResetIfBeforeFirmwareVersion": {
+      "type": "string",
+      "required": true
+    },
+    "minimumAppVersion": {
+      "type": "string",
       "required": true
     },
     "minimumCompatibleVersion": {
