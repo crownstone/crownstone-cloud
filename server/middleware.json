@@ -60,7 +60,7 @@
             "power_consumption": [
               {
                 "methods": "get",
-                "path": "/api/Stones/:id/currentEnergyUsage"
+                "path": "/api/Stones/:id/currentPowerUsage"
               }
             ],
             "all": [

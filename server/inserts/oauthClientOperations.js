@@ -4,9 +4,10 @@ let crypto = require('crypto');
 let allScopes = [
   'user_information',     // get /api/users/me
   'user_location',        // get /api/users/:id/currentLocation
-  'stone_information',    // get /api/Stones
+  'user_id',              // get /api/users/userId
+  'stone_information',    // get /api/Stones/all
   'switch_stone',         // put /api/Stones/:id/setSwitchStateRemotely
-  'power_consumption',    // get /api/Stones/:id/currentEnergyUsage
+  'power_consumption',    // get /api/Stones/:id/currentPowerUsage
   'all'                   // access to everything
 ];
 
@@ -29,7 +30,7 @@ function performOauthClientOperations(app) {
   new Promise((resolve, reject) => { resolve() })
     // .then(() => { return deleteClientsWithName(permissionModel, "Triggi"); })
     // .then(() => { return createClient(permissionModel, "Triggi", allScopes); })
-  //   .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information', 'user_location', 'stone_information', 'switch_stone']); })
+    // .then(() => { createClient(permissionModel, "Alexa_Amazon_test", ['all']); })
   //   .catch((err) => { console.log("Error during performOauthClientOperations",err); })
 }
 
@@ -39,7 +40,7 @@ function clearClientDatabase(permissionModel) {
 }
 
 function deleteClientsWithName(permissionModel, clientName) {
-  return permissionModel.find({"name":clientName})
+  return permissionModel.find({where:{name: clientName}})
     .then((results) => {
       let deletionPromises = [];
       results.forEach((result) => {
@@ -50,7 +51,7 @@ function deleteClientsWithName(permissionModel, clientName) {
 }
 
 function createClient(permissionModel, clientName, scopes) {
-  return permissionModel.find({"name":clientName})
+  return permissionModel.find({where:{name: clientName}})
     .then((result) => {
       if (result.length === 0) {
         return permissionModel.create({
@@ -74,7 +75,7 @@ function createClient(permissionModel, clientName, scopes) {
 }
 
 function showClientDetails(permissionModel, clientName) {
-  permissionModel.find({"name":clientName})
+  permissionModel.find({where:{name: clientName}})
     .then((result) => {
       if (result.length === 1) {
         console.log("Client ", clientName, " found in database!");
