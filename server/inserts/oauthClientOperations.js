@@ -28,10 +28,11 @@ function performOauthClientOperations(app) {
 
   // empty promise so all clients that are added are in matching then statements
   new Promise((resolve, reject) => { resolve() })
-    // .then(() => { return deleteClientsWithName(permissionModel, "Triggi"); })
+    // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return createClient(permissionModel, "Triggi", allScopes); })
-    // .then(() => { createClient(permissionModel, "Alexa_Amazon_test", ['all']); })
-  //   .catch((err) => { console.log("Error during performOauthClientOperations",err); })
+    // .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information','user_location','stone_information','switch_stone']); })
+    .then(() => { console.log("OATH DONE")})
+    .catch((err) => { console.log("Error during performOauthClientOperations",err); })
 }
 
 function clearClientDatabase(permissionModel) {
@@ -51,6 +52,14 @@ function deleteClientsWithName(permissionModel, clientName) {
 }
 
 function createClient(permissionModel, clientName, scopes) {
+  // validate scopes
+  for (let i = 0; i < scopes.length; i++) {
+    if (allScopes.indexOf(scopes[i]) === -1) {
+      return new Promise((resolve, reject) => { reject("Unknown Scope:" + scopes[i])})
+    }
+  }
+
+
   return permissionModel.find({where:{name: clientName}})
     .then((result) => {
       if (result.length === 0) {

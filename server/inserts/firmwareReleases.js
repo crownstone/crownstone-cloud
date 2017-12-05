@@ -10,6 +10,9 @@ let plugAndBuiltinVariations = hardwareVersions.util.getAllPlugs().concat(hardwa
 let APP;
 let CHANGE_DATA = false;
 
+let BETA_RELEASE_LEVEL = 100;
+let PUBLIC_RELEASE_LEVEL = 0;
+
 let TYPES = {
   firmware: "Firmware",
   bootloader: "Bootloader",
@@ -71,6 +74,7 @@ function performFirmwareOperations(app) {
     // .then(() => { return changeFirmwareReleaseLevel('1.5.1',3); })
     // .then(() => { return getFirmwareVersion('1.5.1') })
     // .then(() => { return clearFirmwares(); })
+    // .then(() => { return removeFirmwareVersion('1.7.0'); })
     // .then(() => { return clearBootloaders(); })
     // .then(() => { return clearFirmwareAtUsers() })
     // .then(() => { return clearBootloaderAtUsers() })
@@ -78,10 +82,11 @@ function performFirmwareOperations(app) {
     //   return releaseBootloader(
     //     '1.2.2', // release version
     //     '1.2.2', // minimum compatible version
+    //     '1.12.0', // minimum App version,
     //     plugAndBuiltinVariations, // hardware versions
     //     '45306bf3ed920dc9768a57c3df3fd16954ea5b97', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.2.2/bin/bootloader_1.2.2.zip',
-    //     0, // release level: 0 for release to all new users
+    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
     //     {  // release notes
     //       'en' : 'stability',
     //       'nl' : '',
@@ -96,10 +101,11 @@ function performFirmwareOperations(app) {
     //   return releaseFirmware(
     //     '1.5.1', // release version
     //     '1.3.1', // minimum compatible version,
+    //     '1.0.0',
     //     plugAndBuiltinVariations, // hardware versions
     //     '9b3ad906e65553ef7c77d96f0c0105d0e4c7b9d6', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.5.1/bin/crownstone_1.5.1.zip',
-    //     0, // release level: 0 for release to all new users
+    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
     //     {  // release notes
     //       'en' :
     //       '- Added Scheduler functionality.\n' +
@@ -114,7 +120,29 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-    .then(() => { return updateReleaseRollout(); })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     '1.7.0', // release version
+    //     '1.3.1', // minimum compatible version,
+    //     '1.12.0', // minimum App version,
+    //     plugAndBuiltinVariations, // hardware versions
+    //     '6942f0c646696fa884f6aa39e8d982282759ad80', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.7.0/bin/crownstone_1.7.0.zip',
+    //     BETA_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- Dimming done by trailing edge dimming (currently compatible with EU Standard 50Hz grid).\n\n' +
+    //       '- Dimmer state is stored in persistent storage, and restored on power on (currently with a delay of about 2s).\n\n' +
+    //       '- Overcurrent detection is improved to avoid getting triggered by interference.'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
     // .then(() => {return clearFirmwares(firmwareModel) })
@@ -207,144 +235,6 @@ function getBootloaderVersion(version) {
   return _getVersion(bootloaderModel, version);
 }
 
-function updateReleaseRollout() {
-  console.log("\n-- Updating release rollout.");
-  let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
-  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
-  let userModel = APP.dataSources.mongoDs.getModel(TYPES.user);
-  
-  // get firmware versions
-  let firmwares = [];
-  let bootloaders = [];
-  let users = [];
-
-  let allHardware = hardwareVersions.util.getAllVersions();
-  let counter = 0;
-
-  return new Promise((resolve, reject) => {
-    if (CHANGE_DATA) {
-      return ask("Update Release Rollout: Change Data is enabled. Continue? (YES/NO)")
-        .then((answer) => {
-          if (answer === 'YES') {
-            resolve();
-          }
-          else {
-            reject("User permission denied for changing data during Update Release Rollout. Rerun script and type YES.");
-          }
-        })
-    }
-    else {
-      resolve();
-    }
-  })
-      .then(() => { return _getAll(firmwareModel) })
-      .then((result) => { firmwares = result; return _getAll(bootloaderModel)})
-      .then((result) => { bootloaders = result; return _getAll(userModel)})
-      .then((result) => { users = result; })
-      .then(() => {
-        let firmwareAccessLevels = {};
-        let bootloaderAccessLevels = {};
-
-        let fillList = (source, list) => {
-          source.forEach((item) => {
-            allHardware.forEach((hardwareVersion) => {
-              if (item.supportedHardwareVersions.indexOf(hardwareVersion) !== -1) {
-                if (list[hardwareVersion] === undefined) {
-                  list[hardwareVersion] = {};
-                }
-                if (list[hardwareVersion][item.releaseLevel] === undefined) {
-                  list[hardwareVersion][item.releaseLevel] = item.version;
-                }
-
-                if (versionUtil.isHigher(item.version, list[hardwareVersion][item.releaseLevel])) {
-                  list[hardwareVersion][item.releaseLevel] = item.version;
-                }
-              }
-            })
-          })
-        };
-
-        fillList(firmwares, firmwareAccessLevels);
-        fillList(bootloaders, bootloaderAccessLevels);
-
-
-        return promiseBatchPerformer(users, 0, (user) => {
-          let userLevel = user.earlyAccessLevel || 0;
-          let firmwareData = {};
-          let bootloaderData = {};
-          let fillUserList = (source, list) => {
-            allHardware.forEach((hardwareVersion) => {
-              if (source[hardwareVersion] && source[hardwareVersion][userLevel]) {
-                list[hardwareVersion] = source[hardwareVersion][userLevel]
-              }
-              else if (source[hardwareVersion]) {
-                let allAccessLevels = Object.keys(source[hardwareVersion]);
-                let allAccessLevelsNumeric = [];
-                allAccessLevels.forEach((level) => { allAccessLevelsNumeric.push(Number(level) )});
-                allAccessLevelsNumeric.sort();
-
-                for (let i = 0; i < allAccessLevelsNumeric.length; i++) {
-                  if (allAccessLevelsNumeric[i] <= userLevel) {
-                    list[hardwareVersion] = source[hardwareVersion][allAccessLevelsNumeric[i]]
-                  }
-                }
-              }
-            });
-          };
-
-          fillUserList(firmwareAccessLevels, firmwareData);
-          fillUserList(bootloaderAccessLevels, bootloaderData);
-
-          counter++;
-          if (counter % 5 === 0) {
-            console.log("Updating release rollout: ", counter, "/", users.length, " users.");
-          }
-          if (CHANGE_DATA === true) {
-            let changed = false;
-            if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData)) {
-              user[TYPES.firmwareField] = firmwareData;
-              changed = true;
-            }
-            if (JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
-              user[TYPES.bootloaderField] = bootloaderData;
-              changed = true;
-            }
-
-            if (changed) {
-              return user.save()
-            }
-            else {
-              return new Promise((resolve, reject) => { resolve(); })
-            }
-          }
-          else {
-            if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData) && JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
-              console.log("Would have released firmware: ", firmwareData, " and bootloader:", bootloaderData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
-            }
-            else if (JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
-              console.log("Would have released bootloader:", bootloaderData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
-            }
-            else if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData)) {
-              console.log("Would have released firmware: ", firmwareData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
-            }
-            else {
-              if (user.email === 'bart@dobots.nl') {
-                console.log(JSON.stringify(user[TYPES.firmwareField]) , JSON.stringify(firmwareData))
-              }
-              console.log("Skipping ", user.firstName, user.lastName, " (", user.email, ")", userLevel);
-            }
-            return new Promise((resolve, reject) => { resolve(); })
-          }
-        })
-
-      })
-  // get bootloader versions
-
-  // get users
-  // match users with access level and release level
-  // save
-}
-
 function releaseFirmwareToUsers(version, hwTypes, filter) {
   console.log("\n-- Releasing firmware to users.");
   return _releaseToUsers(TYPES.firmware, version, hwTypes, filter);
@@ -389,12 +279,23 @@ function showBootloaders() {
   return _getAll(bootloaderModel).then((results) => { console.log(TYPES.firmware, "versions found:", results);});
 }
 
-function releaseFirmware(firmwareVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
+function releaseFirmware(firmwareVersion, minimumCompatibleVersion, minimumAppVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
   if (downloadUrl.indexOf("firmware") === -1) {
     throw new Error("Release firmware releaseURL does not contain the word firmware: this likely is a bug!");
   }
   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
-  return _release(firmwareModel, TYPES.firmware, firmwareVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes);
+  return _release(
+    firmwareModel,
+    TYPES.firmware,
+    firmwareVersion,
+    minimumCompatibleVersion,
+    minimumAppVersion,
+    hardwareVersions,
+    hash,
+    downloadUrl,
+    releaseLevel,
+    releaseNotes
+  );
 }
 
 function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
@@ -402,7 +303,18 @@ function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, hardware
     throw new Error("Release bootloader releaseURL does not contain the word bootloader: this likely is a bug!");
   }
   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
-  return _release(bootloaderModel, TYPES.bootloader, bootloaderVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes);
+  return _release(
+    bootloaderModel,
+    TYPES.bootloader,
+    bootloaderVersion,
+    minimumCompatibleVersion,
+    minimumAppVersion,
+    hardwareVersions,
+    hash,
+    downloadUrl,
+    releaseLevel,
+    releaseNotes
+  );
 }
 
 function removeFirmwareVersion(version) {
@@ -417,134 +329,7 @@ function removeBootloaderModel(version) {
 
 // UTIL:
 
-function _clearReleaseFromUsers(releaseField, filter) {
-  let action = () => {
-    let userModel = APP.dataSources.mongoDs.getModel(TYPES.user);
-    let amountOfUsers = 0;
-    let counter = 0;
 
-    return userModel.find(filter)
-      .then((results) => {
-        amountOfUsers = results.length;
-        if (amountOfUsers > 0) {
-          return promiseBatchPerformer(results, 0, (user) => {
-            counter++;
-            if (counter % 5 === 0) {
-              console.log("Clearing ", releaseField, " from ", counter, "/", amountOfUsers, " users.");
-            }
-            if (CHANGE_DATA === true) {
-              user[releaseField] = {};
-              return user.save()
-            }
-            else {
-              console.log("Would have cleared ", user.firstName, user.lastName, "'s  ", releaseField, " (", user.email,")");
-              return new Promise((resolve, reject) => { resolve() })
-            }
-          })
-        }
-      })
-      .then(() => {
-        if (CHANGE_DATA === true) {
-          console.log("DONE! -- Removed release ",releaseField," version from ", amountOfUsers, " users.");
-        }
-        else {
-          console.log("DONE! Matched ", amountOfUsers, " users for ", releaseField);
-        }
-      })
-      .catch((err) => { console.log("Could not remove firmware", err); })
-  };
-
-  if (CHANGE_DATA === true) {
-    return ask('CLEAR USER RELEASE: Are you absolutely sure you want to clear releases in ' + releaseField + filter ? ' from users with filter ' + JSON.stringify(filter) : '. ( YES / NO )')
-      .then((answer) => {
-        if (answer === "YES") {
-          return action();
-        }
-        else {
-          return new Promise((resolve, reject) => { reject("PERMISSION DENIED BY USER. Rerun script and type YES."); });
-        }
-      })
-  }
-  else {
-    return action();
-  }
-}
-
-function _releaseToUsers(type, version, hwTypes, accessLevel) {
-  let releaseField = null;
-  if (type === TYPES.firmware) {
-    releaseField = TYPES.firmwareField;
-  }
-  else if (type === TYPES.bootloader) {
-    releaseField = TYPES.bootloaderField;
-  }
-  else {
-    throw new Error("Not a valid type!");
-  }
-
-  let action = () => {
-    let userModel = APP.dataSources.mongoDs.getModel(TYPES.user);
-    let content = {};
-    hwTypes.forEach((hwType) => {
-      content[hwType] = version;
-    });
-
-    let amountOfUsers = 0;
-    let counter = 0;
-
-    let filter = undefined;
-    if (accessLevel > 0) {
-      filter = { where: { earlyAccessLevel: {gte : accessLevel} }};
-    }
-
-    return userModel.find(filter)
-      .then((results) => {
-        amountOfUsers = results.length;
-        if (amountOfUsers > 0) {
-          return promiseBatchPerformer(results, 0, (user) => {
-            counter++;
-            if (counter % 5 === 0) {
-              console.log("Releasing version", version, " in ", releaseField, " from ", counter, "/", amountOfUsers, " users.");
-            }
-            if (CHANGE_DATA === true) {
-              user[releaseField] = content;
-              return user.save();
-            }
-            else {
-              console.log("Would have released", version, "to", user.firstName, user.lastName, "'s", releaseField, "(", user.email,")");
-              return new Promise((resolve, reject) => { resolve(); })
-            }
-          })
-        }
-      })
-      .then(() => {
-        if (CHANGE_DATA === true) {
-          console.log("DONE! ---- Released ", releaseField, " version ", version, " to ", amountOfUsers, " users.");
-        }
-        else {
-          console.log("Finished Test Run! Matched", amountOfUsers, "users for release in", releaseField);
-        }
-      })
-      .catch((err) => {
-        console.log("Could not release version: " + version, err);
-      })
-  };
-
-  if (CHANGE_DATA === true) {
-    return ask('USER RELEASE Are you absolutely sure you want to release ' + version + ' in ' + releaseField + ' to users? ( YES / NO )')
-      .then((answer) => {
-        if (answer === "YES") {
-          return action();
-        }
-        else {
-          return new Promise((resolve, reject) => { reject("PERMISSION DENIED BY USER. Rerun script and type YES."); });
-        }
-      })
-  }
-  else {
-    return action();
-  }
-}
 
 
 function _getAll(model) {
@@ -561,13 +346,14 @@ function _getVersion(model, version) {
     })
 }
 
-function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes) {
+function _release(model, type, releaseVersion, minimumCompatibleVersion, minimumAppVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes) {
   console.log("\n-- Releasing ", type, releaseVersion, "to level", releaseLevel);
   let action = () => {
     return model.create({
       version: releaseVersion,
       supportedHardwareVersions: hardwareVersions,
       minimumCompatibleVersion: minimumCompatibleVersion,
+      minimumAppVersion: minimumAppVersion,
       sha1hash: hash.replace(/( )/g, ""),
       downloadUrl: downloadUrl,
       releaseLevel: releaseLevel,
@@ -576,7 +362,6 @@ function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwar
       .then((result) => {
         console.log(type, "version ", releaseVersion, " added successfully!");
         console.log("Result:", result);
-        return _releaseToUsers(type, releaseVersion, hardwareVersions, releaseLevel);
       })
       .catch((err) => {
         console.log("Error adding", type, "version:", releaseVersion, ' :', err);
@@ -595,30 +380,36 @@ function _release(model, type, releaseVersion, minimumCompatibleVersion, hardwar
   }
   else {
     console.log("Not releasing", type, releaseVersion, "to", hardwareVersions, "because CHANGE_DATA = false.");
-    return _releaseToUsers(type, releaseVersion, hardwareVersions, releaseLevel);
   }
 }
 
 function _remove(model, version, type) {
-  let action = () => {
-    return model.find({version:version})
+  console.log("\n-- REMOVING ", type, version);
+  let action = (allowDelete = false) => {
+    return model.find({where:{version:version}})
       .then((results) => {
         let deletionPromises = [];
-        results.forEach((result) => {
-          deletionPromises.push(model.destroyById(result.id))
-        });
-        return Promise.all(deletionPromises);
+        if (allowDelete === true) {
+          results.forEach((result) => {
+            deletionPromises.push(model.destroyById(result.id))
+          });
+          return Promise.all(deletionPromises)
+            .then(() => {
+              console.log("Successfully deleted " + type + ": ",version, ' :');
+            })
+        }
+        else {
+          console.log("Did not delete " + type + " due to CHANGE_DATA = false. Would have deleted: ", results);
+        }
       })
-      .then(() => {
-        console.log("Successfully deleted " + type + ": ",version, ' :');
-      })
+
       .catch((err) => { console.log("Error DELETING "+type+" version: ",version, ' :', err); })
   };
   if (CHANGE_DATA === true) {
     return ask('DELETE SINGLE: Are you absolutely sure you want to REMOVE ' + type + ' v: ' + version + ' ( YES / NO )')
       .then((answer) => {
         if (answer === "YES") {
-          return action();
+          return action(true);
         }
         else {
           return new Promise((resolve, reject) => { reject("PERMISSION DENIED BY USER. Rerun script and type YES."); });
@@ -626,8 +417,7 @@ function _remove(model, version, type) {
       })
   }
   else {
-    console.log("NOT REMOVING DUE TO CHANGE_DATA = false");
-    return new Promise((resolve, reject) => { resolve(); });
+    return action(false);
   }
 }
 

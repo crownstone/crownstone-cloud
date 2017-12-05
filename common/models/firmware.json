@@ -23,10 +23,6 @@
       "type": "array",
       "required": true
     },
-    "factoryResetIfBeforeFirmwareVersion": {
-      "type": "string",
-      "required": true
-    },
     "minimumAppVersion": {
       "type": "string",
       "required": true

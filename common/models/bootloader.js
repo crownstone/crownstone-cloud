@@ -77,10 +77,10 @@ module.exports = function(model) {
             }
           }
           // nothing found.
-          callback(null, null);
+          callback(null, []);
         }
         else {
-          callback(null, null);
+          callback(null, []);
         }
       })
       .catch((err) => {
@@ -129,6 +129,9 @@ module.exports = function(model) {
             }
           })
           .catch((err) => { reject(err); })
+      }
+      else {
+        reject({"statusCode": 401,"message": "Authorization Required"})
       }
     })
       .then(() => {
