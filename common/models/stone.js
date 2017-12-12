@@ -174,6 +174,15 @@ module.exports = function(model) {
 
   model.disableRemoteMethodByName('prototype.__count__schedules');
 
+  model.disableRemoteMethodByName('prototype.__count__diagnostics');
+  model.disableRemoteMethodByName('prototype.__create__diagnostics');
+  model.disableRemoteMethodByName('prototype.__findById__diagnostics');
+  model.disableRemoteMethodByName('prototype.__destroyById__diagnostics');
+  model.disableRemoteMethodByName('prototype.__deleteById__diagnostics');
+  model.disableRemoteMethodByName('prototype.__delete__diagnostics');
+  model.disableRemoteMethodByName('prototype.__updateById__diagnostics');
+  model.disableRemoteMethodByName('prototype.__get__diagnostics');
+
   model.disableRemoteMethodByName('prototype.__count__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__powerUsageHistory');
@@ -646,6 +655,17 @@ module.exports = function(model) {
       });
     })
   };
+  model.deleteAllDiagnosticHistory = function(id, callback) {
+    debug("deleteAllDiagnosticHistory");
+    model.findById(id, function(err, stone) {
+      if (err) return callback(err);
+      if (model.checkForNullError(stone, callback, "id: " + id)) return;
+
+      stone.diagnostics.destroyAll(function(err) {
+        callback(err);
+      });
+    })
+  };
 
   model.remoteMethod(
     'deleteAllEnergyUsageHistory',
@@ -673,6 +693,17 @@ module.exports = function(model) {
     'deleteAllSwitchStateHistory',
     {
       http: {path: '/:id/deleteAllSwitchStateHistory', verb: 'delete'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      description: "Delete all switch state history of this Stone"
+    }
+  );
+
+  model.remoteMethod(
+    'deleteAllDiagnosticHistory',
+    {
+      http: {path: '/:id/deleteAllDiagnosticHistory', verb: 'delete'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
@@ -778,6 +809,7 @@ module.exports = function(model) {
       limit = Math.min(limit || 1000, 1000);
       skip = skip || 0;
 
+
       stone[historyField]({where: {timestamp: {between: [from, to]}}, limit: limit, skip: skip, order: ascending ? 'timestamp ASC' : 'timestamp DESC' })
         .then((result) => {
           next(null, result);
@@ -798,6 +830,9 @@ module.exports = function(model) {
 
   model.getSwitchStateHistory = function(stoneId, from, to, limit, skip, ascending, next) {
     getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next);
+  };
+  model.getDiagnosticsHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('diagnostics', stoneId, from, to, limit, skip, ascending, next);
   };
 
   model.remoteMethod(
@@ -855,6 +890,26 @@ module.exports = function(model) {
       returns: {arg: 'data', type: '[PowerUsage]', root: true},
       description: '<div style="text-align:right;">' +
       'Get an array of collected power measurement samples from the specified Crownstone.' +
+      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+    }
+  );
+
+  model.remoteMethod(
+    'getDiagnosticsHistory',
+    {
+      http: {path: '/:id/diagnosticsHistory/', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+      ],
+      returns: {arg: 'data', type: '[Diagnostic]', root: true},
+      description: '<div style="text-align:right;">' +
+      'Get an array of the gathered statistics of the specified Crownstone.' +
       '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
       '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
     }
@@ -1049,6 +1104,40 @@ module.exports = function(model) {
       '<br />Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming.'
     }
   );
+
+
+  model.setDiagnostics = function(stoneId, diagnosticData, next) {
+    debug("setDiagnostics");
+
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      diagnosticData.stoneId = stoneId;
+      diagnosticData.sphereId = stone.sphereId;
+
+      stone.diagnostics.create(diagnosticData, function(err, instance) {
+        if (err) return next(err);
+        next(null, instance);
+      });
+    })
+  };
+
+  model.remoteMethod(
+    'setDiagnostics',
+    {
+      http: {path: '/:id/diagnostics', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data', type: 'Diagnostic', required: true, http: { source : 'body' }},
+      ],
+      returns: {arg: 'data', type: 'Diagnostic', root: true},
+      description: 'Store diagnostic information about this Crownstone'
+    }
+  );
+
+
+
 
 
 };

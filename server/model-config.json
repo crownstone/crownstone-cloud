@@ -149,5 +149,9 @@
   "GeoLocation": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "Diagnostic": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }
