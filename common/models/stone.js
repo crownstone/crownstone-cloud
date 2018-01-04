@@ -235,21 +235,65 @@ module.exports = function(model) {
   function injectUID(item, next) {
     if (!item.uid) {
       // debug("inject uid");
-      model.find({where: {sphereId: item.sphereId}, order: "uid DESC", limit: "1"}, function(err, instances) {
-        if (err) return next(err);
 
-        if (instances.length > 0) {
-          let stone = instances[0];
-          item.uid = stone.uid + 1;
-        } else {
-          item.uid = 1;
-        }
-        // debug("uid:", item.uid);
-        next();
-      })
-    } else {
+      // To inject a UID, we look for the highest available one. The new one is one higher
+      // If this is more than the allowed amount of Crownstones, we loop over all Crownstones in the Sphere to check for gaps
+      // Gaps can form when Crownstones are deleted.
+      // If all gaps are filled, we throw an error to tell the user that he reached the maximum amount.
+      model.find({where: {sphereId: item.sphereId}, order: "uid DESC", limit: "1"})
+        .then((result) => {
+          if (result.length > 0) {
+            let stone = result[0];
+            if ((stone.uid + 1) > 255) {
+              injectUIDinGap(item, next);
+            }
+            else {
+              item.uid = stone.uid + 1;
+              next();
+            }
+          }
+          else {
+            item.uid = 1;
+            next();
+          }
+        })
+        .catch((err) => {
+          next(err);
+        })
+    }
+    else {
       next();
     }
+  }
+
+  function injectUIDinGap(item, next) {
+    model.find({where: {sphereId: item.sphereId}, order: "uid ASC"})
+      .then((fullResults) => {
+        let availableUID = 0;
+        for (let i = 0; i < fullResults.length; i++) {
+          let expectedUID = i+1;
+          if (fullResults[i].uid !== expectedUID) {
+            availableUID = expectedUID;
+            break;
+          }
+        }
+
+        if (availableUID > 0 && availableUID < 256) {
+          item.uid = availableUID;
+          next();
+        }
+        else {
+          let err = {
+            statusCode: 422,
+            name: "ValidationError",
+            message: "The maximum number of Crownstones per Sphere, 255, has been reached. You cannot add another Crownstone without deleting one first."
+          };
+          throw err;
+        }
+      })
+      .catch((err) => {
+        next(err);
+      })
   }
 
   function enforceUniqueness(ctx, next) {

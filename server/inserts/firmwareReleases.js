@@ -74,7 +74,7 @@ function performFirmwareOperations(app) {
     // .then(() => { return changeFirmwareReleaseLevel('1.5.1',3); })
     // .then(() => { return getFirmwareVersion('1.5.1') })
     // .then(() => { return clearFirmwares(); })
-    // .then(() => { return removeFirmwareVersion('1.7.0'); })
+    // .then(() => { return removeFirmwareVersion('1.7.1'); })
     // .then(() => { return clearBootloaders(); })
     // .then(() => { return clearFirmwareAtUsers() })
     // .then(() => { return clearBootloaderAtUsers() })
@@ -124,7 +124,7 @@ function performFirmwareOperations(app) {
     //   return releaseFirmware(
     //     '1.7.0', // release version
     //     '1.3.1', // minimum compatible version,
-    //     '1.12.0', // minimum App version,
+    //     '1.10.0', // minimum App version,
     //     plugAndBuiltinVariations, // hardware versions
     //     '6942f0c646696fa884f6aa39e8d982282759ad80', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.7.0/bin/crownstone_1.7.0.zip',
@@ -143,10 +143,34 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     '1.7.1', // release version
+    //     '1.3.1', // minimum compatible version,
+    //     '1.0.0', // minimum App version,
+    //     plugAndBuiltinVariations, // hardware versions
+    //     '8b1e4b7e4510ba5d9536dc11721d8015ff6682ce', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.7.1/bin/crownstone_1.7.1.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- More hardware safeguards added.\n\n' +
+    //       '- Dimming done by trailing edge dimming (currently compatible with EU Standard 50Hz grid).\n\n' +
+    //       '- Dimming will work with app 1.12, which will be released in January.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
     // .then(() => {return clearFirmwares(firmwareModel) })
     // .then(() => {return clearBootloaders(bootloaderModel) })
+
     // .then(() => {
     //   return releaseBootloader(
     //     bootloaderModel,
@@ -157,6 +181,7 @@ function performFirmwareOperations(app) {
     //     'https://github.com/crownstone/bluenet-release/raw/master/bootloader_1.2.2/bin/bootloader_1.2.2.zip'
     //   );
     // })
+    // .then(() => { return updateReleaseRollout_legacy() })
     .then(() => { console.log("performFirmwareOperations: DONE") })
     .catch((err) => {
       console.log("performFirmwareOperations: Error", err);
@@ -443,6 +468,146 @@ function _removeAll(model, type) {
     console.log("NOT REMOVING DUE TO CHANGE_DATA = false");
     return new Promise((resolve, reject) => { resolve(); });
   }
+}
+
+
+
+function updateReleaseRollout_legacy() {
+  console.log("\n-- Updating release rollout.");
+  let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
+  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
+  let userModel = APP.dataSources.mongoDs.getModel(TYPES.user);
+
+  // get firmware versions
+  let firmwares = [];
+  let bootloaders = [];
+  let users = [];
+
+  let allHardware = hardwareVersions.util.getAllVersions();
+  let counter = 0;
+
+  return new Promise((resolve, reject) => {
+    if (CHANGE_DATA) {
+      return ask("Update Release Rollout: Change Data is enabled. Continue? (YES/NO)")
+        .then((answer) => {
+          if (answer === 'YES') {
+            resolve();
+          }
+          else {
+            reject("User permission denied for changing data during Update Release Rollout. Rerun script and type YES.");
+          }
+        })
+    }
+    else {
+      resolve();
+    }
+  })
+    .then(() => { return _getAll(firmwareModel) })
+    .then((result) => { firmwares = result; return _getAll(bootloaderModel)})
+    .then((result) => { bootloaders = result; return _getAll(userModel)})
+    .then((result) => { users = result; })
+    .then(() => {
+      let firmwareAccessLevels = {};
+      let bootloaderAccessLevels = {};
+
+      let fillList = (source, list) => {
+        source.forEach((item) => {
+          allHardware.forEach((hardwareVersion) => {
+            if (item.supportedHardwareVersions.indexOf(hardwareVersion) !== -1) {
+              if (list[hardwareVersion] === undefined) {
+                list[hardwareVersion] = {};
+              }
+              if (list[hardwareVersion][item.releaseLevel] === undefined) {
+                list[hardwareVersion][item.releaseLevel] = item.version;
+              }
+
+              if (versionUtil.isHigher(item.version, list[hardwareVersion][item.releaseLevel])) {
+                list[hardwareVersion][item.releaseLevel] = item.version;
+              }
+            }
+          })
+        })
+      };
+
+      fillList(firmwares, firmwareAccessLevels);
+      fillList(bootloaders, bootloaderAccessLevels);
+
+
+      return promiseBatchPerformer(users, 0, (user) => {
+        let userLevel = user.earlyAccessLevel || 0;
+        let firmwareData = {};
+        let bootloaderData = {};
+        let fillUserList = (source, list) => {
+          allHardware.forEach((hardwareVersion) => {
+            if (source[hardwareVersion] && source[hardwareVersion][userLevel]) {
+              list[hardwareVersion] = source[hardwareVersion][userLevel]
+            }
+            else if (source[hardwareVersion]) {
+              let allAccessLevels = Object.keys(source[hardwareVersion]);
+              let allAccessLevelsNumeric = [];
+              allAccessLevels.forEach((level) => { allAccessLevelsNumeric.push(Number(level) )});
+              allAccessLevelsNumeric.sort();
+
+              for (let i = 0; i < allAccessLevelsNumeric.length; i++) {
+                if (allAccessLevelsNumeric[i] <= userLevel) {
+                  list[hardwareVersion] = source[hardwareVersion][allAccessLevelsNumeric[i]]
+                }
+              }
+            }
+          });
+        };
+
+        fillUserList(firmwareAccessLevels, firmwareData);
+        fillUserList(bootloaderAccessLevels, bootloaderData);
+
+        counter++;
+        if (counter % 5 === 0) {
+          console.log("Release rollout: ", counter, "/", users.length, " users.");
+        }
+        if (CHANGE_DATA === true) {
+          let changed = false;
+          if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData)) {
+            user[TYPES.firmwareField] = firmwareData;
+            changed = true;
+          }
+          if (JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
+            user[TYPES.bootloaderField] = bootloaderData;
+            changed = true;
+          }
+
+          if (changed) {
+            return user.save().catch((err) => { console.log("ERROR:", err, user); })
+          }
+          else {
+            return new Promise((resolve, reject) => { resolve(); })
+          }
+        }
+        else {
+          if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData) && JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
+            console.log("Would have released firmware: ", firmwareData, " and bootloader:", bootloaderData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
+          }
+          else if (JSON.stringify(user[TYPES.bootloaderField]) !== JSON.stringify(bootloaderData)) {
+            console.log("Would have released bootloader:", bootloaderData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
+          }
+          else if (JSON.stringify(user[TYPES.firmwareField]) !== JSON.stringify(firmwareData)) {
+            console.log("Would have released firmware: ", firmwareData, "to", user.firstName, user.lastName, " (", user.email, ") level:", userLevel);
+          }
+          else {
+            if (user.email === 'bart@dobots.nl') {
+              console.log(JSON.stringify(user[TYPES.firmwareField]) , JSON.stringify(firmwareData))
+            }
+            console.log("Skipping ", user.firstName, user.lastName, " (", user.email, ")", userLevel);
+          }
+          return new Promise((resolve, reject) => { resolve(); })
+        }
+      })
+
+    })
+  // get bootloader versions
+
+  // get users
+  // match users with access level and release level
+  // save
 }
 
 
