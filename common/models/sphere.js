@@ -1,5 +1,8 @@
 "use strict";
 
+
+const notificationHandler = require('../../server/modules/NotificationHandler');
+
 const loopback = require('loopback');
 const uuid = require('node-uuid');
 const crypto = require('crypto');
@@ -252,6 +255,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__create__users');
   model.disableRemoteMethodByName('prototype.__delete__users');
   model.disableRemoteMethodByName('prototype.__destroyById__users');
+  model.disableRemoteMethodByName('prototype.__deleteById__users');
   model.disableRemoteMethodByName('prototype.__updateById__users');
   model.disableRemoteMethodByName('prototype.__link__users');
   model.disableRemoteMethodByName('prototype.__count__users');
@@ -299,8 +303,28 @@ module.exports = function(model) {
 
       if (String(user.id) === String(sphere.ownerId)) {
         return next(new Error("can't remove owner from sphere"));
-      } else {
-        next();
+      }
+      else {
+        // we collect the users because we need the userIds of all users in the sphere, including the one whos is about to be deleted.
+        // this promise takes care of a race condition where the user is deleted before we get his id.
+        notificationHandler.collectSphereUsers(String(sphere.id))
+          .then((users) => {
+            let payload = {
+              data: {
+                sphereId: String(sphere.id),
+                command: "sphereUserRemoved",
+                removedUserId: String(user.id)
+              },
+              silent: true
+            };
+            // tell other people in the sphere to refresh their sphere user list.
+            notificationHandler.notifyUsers( users, payload );
+            next();
+          })
+          .catch((err) => {
+            // ignoring errors, notifcations are optional.
+            next();
+          })
       }
     })
   });
@@ -605,7 +629,8 @@ module.exports = function(model) {
           if (!user) {
             debug("create new user");
             createAndInviteUser(sphere, email, access, options, next);
-          } else {
+          }
+          else {
             // user exists, check if he is already part of the sphere
             sphere.users.exists(user.id, function(err, exists) {
               if (exists) {
@@ -618,10 +643,12 @@ module.exports = function(model) {
                 addExistingUser(email, sphereId, access, options, next);
               }
             })
-
           }
+          // tell other people in the sphere to refresh their sphere user list.
+          notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"sphereUsersUpdated" }, silent: true });
         });
-      } else {
+      }
+      else {
         debug("no sphere");
         next(new Error("no sphere found with this id"));
       }
@@ -631,7 +658,6 @@ module.exports = function(model) {
 
 
   model.pendingInvites = function(id, callback) {
-
     const SphereAccess = loopback.getModel('SphereAccess');
     SphereAccess.find(
       {where: {and: [{sphereId: id}, {invitePending: true}]}, include: "user"},

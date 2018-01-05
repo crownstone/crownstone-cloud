@@ -11,6 +11,7 @@ const messageUtils = {
     notificationHandler.notifyUserIds(userIds, this._getMessageFormat(message));
   },
 
+
   _getMessageFormat: function(message) {
     return {
       title: 'New message found! \n\n' + message.content,

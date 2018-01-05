@@ -1,6 +1,7 @@
 let sha1 = require('sha1');
 let request = require('request');
 let bodyParser = require('body-parser');
+const notificationHandler = require("../modules/NotificationHandler");
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function (app) {
@@ -234,6 +235,8 @@ module.exports = function (app) {
           if (err) console.log("failed to remove user from sphere");
           user.destroy(function (err, info) {
             if (err) console.log("failed to delete user");
+            // tell other people in the sphere to refresh their sphere user list.
+            notificationHandler.notifySphereUsers(req.query.sphere_id, {data: { sphereId: req.query.sphere_id, command:"sphereUsersUpdated" }, silent: true });
 
             res.render('response', {
               title: 'Invite declined',
@@ -293,7 +296,10 @@ module.exports = function (app) {
               redirectTo: '/',
               redirectToLinkText: 'Log in',
             });
-          } else {
+          }
+          else {
+            // tell other people in the sphere to refresh their sphere user list.
+            notificationHandler.notifySphereUsers(req.query.sphere_id, {data: { sphereId: req.query.sphere_id, command:"sphereUsersUpdated" }, silent: true });
             res.render('response', {
               title: 'Invite accepted',
               content: 'You have accepted the invitation',
@@ -352,7 +358,10 @@ module.exports = function (app) {
               redirectTo: '/',
               redirectToLinkText: 'Log in',
             });
-          } else {
+          }
+          else {
+            // tell other people in the sphere to refresh their sphere user list.
+            notificationHandler.notifySphereUsers(req.query.sphere_id, {data: { sphereId: req.query.sphere_id, command:"sphereUsersUpdated" }, silent: true });
             res.render('response', {
               title: 'Invite declined',
               content: 'You have declined the invitation',
@@ -432,7 +441,8 @@ module.exports = function (app) {
               redirectTo: '/',
               redirectToLinkText: 'Back'
             });
-          } else {
+          }
+          else {
 
             user.emailVerified = true;
             user.new = false;
@@ -441,6 +451,9 @@ module.exports = function (app) {
             user.password = hashPassword(req.body.password);
             user.save(function (err, user) {
               if (err) return res.sendStatus(404);
+
+              // tell other people in the sphere to refresh their sphere user list.
+              notificationHandler.notifySphereUsers(req.query.sphere_id, {data: { sphereId: req.query.sphere_id, command:"sphereUsersUpdated" }, silent: true });
 
               access.invitePending = false;
               access.save(function (err, access) {

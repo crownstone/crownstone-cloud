@@ -12,18 +12,39 @@ let loopback = require('loopback');
  *    title: string   // title of the notification.
  *  }
  *
- *  Provide a sphere object to notify the hubs, a list of user objects or a list of user ids
+ *  Provide a sphereId, or a sphere object to notify the hubs, a list of user objects or a list of user ids
  */
 class NotificationHandlerClass {
   constructor() {
     // TODO: possibly start the apn connection and the gcm sender?
   }
 
+  collectSphereUsers(sphereId) {
+    let sphereModel = loopback.getModel("Sphere");
+    return sphereModel.findById(sphereId)
+      .then((sphere) => {
+        if (sphere) {
+          sphere.users({fields: {id:true}}, (err, userIdArray) => {
+            if (!err && userIdArray.length > 0) {
+              return userIdArray;
+            }
+          })
+        }
+      });
+  }
+
+  notifySphereUsers(sphereId, messageData) {
+    this.collectSphereUsers(sphereId)
+      .then((userIdArray) => {
+        this.notifyUsers(userIdArray, messageData);
+      });
+  }
+
   notifyHubs(sphere, messageData) {
     // get users
     let iosTokens = [];
     let androidTokens = [];
-    
+
     let iosUniqueTokens = {};
     let androidUniqueTokens = {};
 
@@ -208,6 +229,8 @@ class NotificationHandlerClass {
     if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
       production = false;
     }
+
+    // console.log("USING PRODUCTION FOR NOTIFICATIONS", production)
 
     let options = {
       token: {
