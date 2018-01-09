@@ -656,7 +656,6 @@ module.exports = function(model) {
   }
 
 
-
   model.pendingInvites = function(id, callback) {
     const SphereAccess = loopback.getModel('SphereAccess');
     SphereAccess.find(

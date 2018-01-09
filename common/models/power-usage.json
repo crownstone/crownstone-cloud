@@ -20,6 +20,10 @@
     "power": {
       "type": "number",
       "required": true
+    },
+    "powerFactor": {
+      "type": "number",
+      "required": false
     }
   },
   "hidden": [

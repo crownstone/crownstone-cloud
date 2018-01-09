@@ -580,7 +580,6 @@ module.exports = function(model) {
   model.removeAppliance = function(stoneId, applianceId, next) {
     debug("removeAppliance");
 
-    const Appliance = loopback.getModel('Appliance');
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
