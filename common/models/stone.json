@@ -80,7 +80,7 @@
       "type": "boolean"
     },
     "meshNetworkId" : {
-      "type": "number"
+      "type": "string"
     },
     "hidden": {
       "type": "boolean"
