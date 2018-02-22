@@ -153,11 +153,11 @@ assert-plus@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/assert-plus/-/assert-plus-0.2.0.tgz#d74e1b87e7affc0db8aadb7021f3fe48101ab234"
 
-async-hook@^1.7.1:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/async-hook/-/async-hook-1.7.1.tgz#dfc7d90236e45a8b04be7c1e8c81024b6bce9c2a"
+async-hook-jl@^1.7.6:
+  version "1.7.6"
+  resolved "https://registry.yarnpkg.com/async-hook-jl/-/async-hook-jl-1.7.6.tgz#4fd25c2f864dbaf279c610d73bf97b1b28595e68"
   dependencies:
-    stack-chain "^1.3.1"
+    stack-chain "^1.3.7"
 
 async@*, async@^2.0.0, async@^2.0.1, async@^2.1.5, async@~2.1.4:
   version "2.1.5"
@@ -172,12 +172,6 @@ async@^0.9.0, async@~0.9.0:
 async@^1.0.0, async@^1.4.2, async@^1.5.2:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
-
-async@^2.3.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/async/-/async-2.5.0.tgz#843190fd6b7357a0b9e1c956edddd5ec8462b54d"
-  dependencies:
-    lodash "^4.14.0"
 
 asynckit@^0.4.0:
   version "0.4.0"
@@ -383,12 +377,6 @@ caseless@~0.12.0:
   version "0.12.0"
   resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
 
-cassandra-driver@^3.2.0:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/cassandra-driver/-/cassandra-driver-3.2.2.tgz#bcbae15169141df08b4e32d477fa58b99eac5040"
-  dependencies:
-    long "^2.2.0"
-
 chalk@^1.1.1:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-1.1.3.tgz#a8115c55e4a702fe4d150abd3872822a7e09fc98"
@@ -410,12 +398,13 @@ cli@0.6.x:
     exit "0.1.2"
     glob "~ 3.2.1"
 
-cls-hooked@^4.0.1:
-  version "4.1.5"
-  resolved "https://registry.yarnpkg.com/cls-hooked/-/cls-hooked-4.1.5.tgz#ff397a44e9e2fc727219de3c9de83be4ce96d955"
+cls-hooked@^4.2.0:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/cls-hooked/-/cls-hooked-4.2.2.tgz#ad2e9a4092680cdaffeb2d3551da0e225eae1908"
   dependencies:
-    async-hook "^1.7.1"
+    async-hook-jl "^1.7.6"
     emitter-listener "^1.0.1"
+    semver "^5.4.1"
 
 co@^4.6.0:
   version "4.6.0"
@@ -1495,10 +1484,6 @@ lodash@~3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.5.0.tgz#19bb3f4d51278f0b8c818ed145c74ecf9fe40e6d"
 
-long@^2.2.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/long/-/long-2.4.0.tgz#9fa180bb1d9500cdc29c4156766a1995e1f4524f"
-
 loopback-boot@2.24.0:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/loopback-boot/-/loopback-boot-2.24.0.tgz#802c2b152f5452b8ceac1acaa5924d05119918ce"
@@ -1554,16 +1539,6 @@ loopback-component-storage-gridfs@1.1.1:
     mongodb "^2.1.7"
     zip-stream "^1.0.0"
 
-loopback-connector-cassandra@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/loopback-connector-cassandra/-/loopback-connector-cassandra-1.2.0.tgz#4385f234984285b026630202dd06e15ff3569840"
-  dependencies:
-    async "^2.3.0"
-    cassandra-driver "^3.2.0"
-    debug "^2.2.0"
-    loopback-connector "^4.0.0"
-    strong-globalize "^2.8.2"
-
 loopback-connector-mongodb@3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/loopback-connector-mongodb/-/loopback-connector-mongodb-3.1.0.tgz#83e50e9cb94ad16e56a0d2a976994380b30e7847"
@@ -1609,11 +1584,11 @@ loopback-connector@^4.0.0:
     msgpack5 "^3.4.1"
     strong-globalize "^2.5.8"
 
-loopback-context@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/loopback-context/-/loopback-context-3.1.0.tgz#5d167bced22c46cb8e9c578ee1c2a198e1ff4daa"
+loopback-context@3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/loopback-context/-/loopback-context-3.3.0.tgz#b4842867b95a2c3dea49b095445391592a72e0bc"
   dependencies:
-    cls-hooked "^4.0.1"
+    cls-hooked "^4.2.0"
 
 loopback-datasource-juggler@^3.0.0:
   version "3.2.0"
@@ -2346,6 +2321,10 @@ semver@^5.1.0, semver@^5.3.0:
   version "5.3.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.3.0.tgz#9b2ce5d3de02d17c6012ad326aa6b4d0cf54f94f"
 
+semver@^5.4.1:
+  version "5.5.0"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.0.tgz#dc4bbc7a6ca9d916dee5d43516f0092b58f7b8ab"
+
 send@0.15.1:
   version "0.15.1"
   resolved "https://registry.yarnpkg.com/send/-/send-0.15.1.tgz#8a02354c26e6f5cca700065f5f0cdeba90ec7b5f"
@@ -2551,7 +2530,7 @@ stable@^0.1.5:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/stable/-/stable-0.1.6.tgz#910f5d2aed7b520c6e777499c1f32e139fdecb10"
 
-stack-chain@^1.3.1:
+stack-chain@^1.3.7:
   version "1.3.7"
   resolved "https://registry.yarnpkg.com/stack-chain/-/stack-chain-1.3.7.tgz#d192c9ff4ea6a22c94c4dd459171e3f00cea1285"
 
@@ -2651,7 +2630,7 @@ strong-error-handler@^1.0.0:
     js2xmlparser "^2.0.2"
     strong-globalize "^2.6.7"
 
-strong-globalize@^2.5.8, strong-globalize@^2.6.0, strong-globalize@^2.6.2, strong-globalize@^2.6.6, strong-globalize@^2.6.7, strong-globalize@^2.7.0, strong-globalize@^2.8.2:
+strong-globalize@^2.5.8, strong-globalize@^2.6.0, strong-globalize@^2.6.2, strong-globalize@^2.6.6, strong-globalize@^2.6.7, strong-globalize@^2.7.0:
   version "2.8.2"
   resolved "https://registry.yarnpkg.com/strong-globalize/-/strong-globalize-2.8.2.tgz#5ff3e94f60100def324d2ce2b6692efa90bd73cf"
   dependencies:

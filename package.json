@@ -29,7 +29,7 @@
     "loopback-component-storage-gridfs": "1.1.1",
     "loopback-connector-mongodb": "3.1.0",
     "loopback-connector-sendgrid": "1.2.3",
-    "loopback-context": "3.1.0",
+    "loopback-context": "3.3.0",
     "minimatch": "3.0.2",
     "node-fetch": "^1.7.1",
     "node-gcm": "0.14.5",
@@ -51,6 +51,6 @@
   },
   "description": "Crownstone",
   "engines": {
-    "node": "8.1.4"
+    "node": "^8.1.4"
   }
 }

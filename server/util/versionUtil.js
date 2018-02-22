@@ -104,7 +104,26 @@ const versionUtil = {
         }
       }
     }
-  }
+  },
+
+  isHigherOrEqual: function(version, compareWithVersion) {
+    if (!version || !compareWithVersion) {
+      return false;
+    }
+
+    let [versionClean, versionRc] = getRC(version);
+    let [compareWithVersionClean, compareWithVersionRc] = getRC(compareWithVersion);
+
+    if (checkSemVer(versionClean) === false || checkSemVer(compareWithVersionClean) === false) {
+      return false;
+    }
+
+    if (version === compareWithVersion && version && compareWithVersion) {
+      return true;
+    }
+
+    return versionUtil.isHigher(version, compareWithVersion);
+  },
 };
 
 function getRC(version) {
