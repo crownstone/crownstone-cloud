@@ -72,23 +72,15 @@ const versionUtil = {
       return false;
     }
 
-    // a git commit hash is never higher, we pick 12 so 123.122.1234 is the max semver length.
-    if (version.length > 12) {
+    let [versionClean, versionRc] = getRC(version);
+    let [compareWithVersionClean, compareWithVersionRc] = getRC(compareWithVersion);
+
+    if (checkSemVer(versionClean) === false || checkSemVer(compareWithVersionClean) === false) {
       return false;
     }
 
-    let A = version.split('.');
-
-    // further ensure only semver is compared
-    if (A.length !== 3) {
-      return false;
-    }
-
-    let B = compareWithVersion.split('.');
-
-    if (B.length !== 3) {
-      return false;
-    }
+    let A = versionClean.split('.');
+    let B = compareWithVersionClean.split('.');
 
     if (A[0] < B[0]) return false;
     else if (A[0] > B[0]) return true;
@@ -96,10 +88,53 @@ const versionUtil = {
       if (A[1] < B[1]) return false;
       else if (A[1] > B[1]) return true;
       else { // A[1] == B[1]
-        return (A[2] > B[2]);
+        if (A[2] < B[2]) return false;
+        else if (A[2] > B[2]) return true;
+        else { // A[2] == B[2]
+          if (versionRc !== null && compareWithVersionRc !== null) {
+            return (versionRc > compareWithVersionRc);
+          }
+          else if (versionRc !== null) {
+            // 2.0.0.rc0 is smaller than 2.0.0
+            return false;
+          }
+          else {
+            return true;
+          }
+        }
       }
     }
   }
+};
+
+function getRC(version) {
+  let lowerCaseVersion = version.toLowerCase()
+  let lowerCaseRC_split = lowerCaseVersion.split("-rc");
+  let RC = null
+  if (lowerCaseRC_split.length > 1) {
+    RC = lowerCaseRC_split[1];
+  }
+
+  return [lowerCaseRC_split[0], RC];
+}
+
+
+let checkSemVer = (str) => {
+  if (!str) { return false; }
+
+  // a git commit hash is longer than 12, we pick 12 so 123.122.1234 is the max semver length.
+  if (str.length > 12) {
+    return false;
+  }
+
+  let A = str.split('.');
+
+  // further ensure only semver is compared
+  if (A.length !== 3) {
+    return false;
+  }
+
+  return true;
 };
 
 module.exports = versionUtil;
