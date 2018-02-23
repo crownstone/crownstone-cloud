@@ -141,7 +141,7 @@ module.exports = function(model) {
         let filteredByAppVersion = [];
         if (appVersion) {
           results.forEach((result) => {
-            if (versionUtil.isHigherOrEqual(appVersion, result.minimumAppVersion)) {
+            if (versionUtil.isHigherOrEqual(appVersion, result.minimumAppVersion) || !result.minimumAppVersion) {
               filteredByAppVersion.push(result);
             }
           });
