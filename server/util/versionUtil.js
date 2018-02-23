@@ -91,7 +91,10 @@ const versionUtil = {
         if (A[2] < B[2]) return false;
         else if (A[2] > B[2]) return true;
         else { // A[2] == B[2]
-          if (versionRc !== null && compareWithVersionRc !== null) {
+          if (versionRc === null && compareWithVersionRc === null) {
+            return false;
+          }
+          else if (versionRc !== null && compareWithVersionRc !== null) {
             return (versionRc > compareWithVersionRc);
           }
           else if (versionRc !== null) {
