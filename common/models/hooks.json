@@ -12,8 +12,9 @@
     }
   },
   "hidden": [
-    "ownerId",
     "sphereId",
+    "ownerId",
+    "permissionId",
     "locationId",
     "stoneId",
     "deviceId",
@@ -36,6 +37,10 @@
       "type": "boolean",
       "required": true,
       "default":true
+    },
+    "permissionId": {
+      "type":"string",
+      "required":true
     }
   },
   "relations": {

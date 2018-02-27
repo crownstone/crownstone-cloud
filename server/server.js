@@ -84,7 +84,7 @@ let options = {
   resourceServer: true,
   authorizationServer: true,
   decisionView: 'dialog',
-  loginPage: '/loginOauth', // The login page URL
+  loginPage: '/loginOauth',      // The login page URL
   loginPath: '/loginOauthStep2', // The login form processing URL
   tokenPath: '/oauth/token',
 };

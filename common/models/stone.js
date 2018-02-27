@@ -479,6 +479,7 @@ module.exports = function(model) {
           }
 
           const insertMostRecent = (currentId) => {
+            // TODO: trigger event for hooks
             stone[currentIdFieldName] = currentId;
             return stone.save()
               .then(() => {

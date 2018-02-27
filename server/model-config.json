@@ -40,11 +40,11 @@
     "public": false
   },
   "Hook": {
-    "dataSource": "db",
+    "dataSource": "mongoDs",
     "public": false
   },
   "HooksWhitelist": {
-    "dataSource": "db",
+    "dataSource": "mongoDs",
     "public": false
   },
   "user": {

@@ -43,12 +43,28 @@
               {
                 "methods": "get",
                 "path": "/api/users/:id/currentLocation"
+              },
+              {
+                "methods": ["get","put","post"],
+                "path": "/api/Device/:id/hooks"
+              },
+              {
+                "methods": ["get","put","post","delete"],
+                "path": "/api/Device/:id/hooks/:fk"
               }
             ],
             "stone_information": [
               {
                 "methods": "get",
                 "path": "/api/Stones/all"
+              },
+              {
+                "methods": ["get","put","post"],
+                "path": "/api/Stones/:id/hooks"
+              },
+              {
+                "methods": ["get","put","post","delete"],
+                "path": "/api/Stones/:id/hooks/:fk"
               }
             ],
             "switch_stone": [

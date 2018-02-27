@@ -123,7 +123,7 @@ module.exports = function (model, options) {
           // todo: OPTIMIZE
           for (let i = 0; i < hooks.length; i++) {
             let hook = hooks[i];
-            if (!hook.uri || hook.enabled === false) { return; }
+            if (!hook.uri || hook.enabled === false) { continue; }
             for (let j = 0; j < hook.events.length; j++) {
               if (hook.events[j] === eventName) {
                 _getModelInstanceWithoutHooks(ctx, changedData)
@@ -158,6 +158,8 @@ module.exports = function (model, options) {
       data: changedData,
       parent: parentInstance
     });
+
+
 
     let config = { method: 'POST', headers, body: body};
     fetch(hook.uri, config).catch((err) => { console.log("Error while notifying endpoint.", err); });

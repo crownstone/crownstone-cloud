@@ -4,8 +4,8 @@ function performWhitelistOperations(app) {
   let whitelistModel = app.dataSources.mongoDs.getModel('HooksWhitelist');
 
   clearWhitelistDatabase(whitelistModel);
-  addToWhitelist(whitelistModel, '', 'localhost');
-  addToWhitelist(whitelistModel, 'triggi', 'com');
+  // addToWhitelist(whitelistModel, '', 'localhost');
+   addToWhitelist(whitelistModel, 'triggi', 'com');
 }
 
 function clearWhitelistDatabase(whitelistModel) {
