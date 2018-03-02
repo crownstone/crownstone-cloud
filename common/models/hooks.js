@@ -5,7 +5,19 @@ const loopback = require('loopback');
 const crypto = require('crypto');
 const parseDomain = require('parse-domain');
 
+
+const PERMISSION_ID_PREFIX = "permission_";
+
 module.exports = function(model) {
+
+  const _getPermissionId = function(ctx) {
+    let isOAuthAccess = ctx.options.accessToken.appId !== undefined;
+    let permissionId = ctx.options.accessToken.userId;
+    if (isOAuthAccess) {
+      permissionId = ctx.options.accessToken.appId;
+    }
+    return PERMISSION_ID_PREFIX + permissionId;
+  }
 
   /************************************
    **** Model Validation
@@ -13,28 +25,20 @@ module.exports = function(model) {
 
   model.observe('access', (context, callback) => {
     if (context.options && context.options.accessToken) {
-      let isOAuthAccess = context.options.accessToken.appId !== undefined;
-      let permissionId = context.options.accessToken.userId;
-      if (isOAuthAccess) {
-        permissionId = context.options.accessToken.appId;
-      }
-      let filter = {permissionId: permissionId};
+      let filter = {permissionId: _getPermissionId(context)};
       const where = context.query.where ? { and: [ context.query.where, filter ] } : filter;
       context.query.where = where;
-
       callback();
     }
     else {
-      callback({statusCode: 400, message: "Access Denied (no keys in context)."});
+      callback();
     }
-
   });
 
   model.observe('before save', function (ctx, next) {
     if (!(ctx.instance && ctx.instance.uri)) {
       return next({statusCode: 400, message: "Invalid request."});
     }
-
     let uri = ctx.instance.uri;
 
     let domainInfo = parseDomain(String(uri), { customTlds:/localhost|\.local/ });
@@ -48,11 +52,7 @@ module.exports = function(model) {
     }
 
     let isOAuthAccess = ctx.options.accessToken.appId !== undefined;
-    let permissionId = ctx.options.accessToken.userId;
-    if (isOAuthAccess) {
-      permissionId = ctx.options.accessToken.appId;
-    }
-    ctx.instance.permissionId = permissionId;
+    ctx.instance.permissionId = _getPermissionId(ctx);
 
     if (isOAuthAccess) {
       let parentModel = null;
@@ -82,6 +82,16 @@ module.exports = function(model) {
             'No access to this event with your OAuth2 scopes, allowed scopes: ' + JSON.stringify(Object.keys(allowedScopes))});
         }
       }
+    }
+
+    let production = true;
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
+      production = false;
+    }
+
+    if (production === false) {
+      console.log("Hooks: Bypassing URL whitelist check.");
+      return next();
     }
 
     let whiteList = loopback.getModel('HooksWhitelist');

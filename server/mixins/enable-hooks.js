@@ -135,6 +135,9 @@ module.exports = function (model, options) {
           }
         }
       })
+      .catch((err) => {
+
+      })
   };
 
 
