@@ -39,7 +39,6 @@
     "serve-favicon": "2.0.1",
     "sha1": "1.1.1",
     "strong-error-handler": "2.0.0",
-    "strong-supervisor": "6.1.4",
     "util": "*"
   },
   "devDependencies": {
