@@ -99,6 +99,11 @@ module.exports = function (model, options) {
     if (Array.isArray(http)) {
       http = http[0];
     }
+
+    if (changedData === undefined) {
+      changedData = ctx.args || ctx.req && ctx.req.params || null;
+    }
+
     let verb = http.verb;
     if (verb === 'post' || verb === 'put' || verb === 'patch' || verb === 'delete') {
       _checkForHooksOnEndpoint(ctx, changedData, eventName);
@@ -116,7 +121,7 @@ module.exports = function (model, options) {
    * @private
    */
   let _checkForHooksOnEndpoint = function(ctx, changedData, eventName) {
-    _getModelInstanceForRequest(ctx, changedData)
+    _getModelInstanceForRequest(ctx, changedData, true)
       .then((parentInstance) => {
         if (parentInstance && parentInstance.hooks && parentInstance.hooks.length > 0) {
           let hooks = parentInstance.hooks();
@@ -126,7 +131,7 @@ module.exports = function (model, options) {
             if (!hook.uri || hook.enabled === false) { continue; }
             for (let j = 0; j < hook.events.length; j++) {
               if (hook.events[j] === eventName) {
-                _getModelInstanceWithoutHooks(ctx, changedData)
+                _getModelInstanceForRequest(ctx, changedData, false)
                   .then((result) => {
                     _notifySubscribers(changedData, result, eventName, hook);
                   })
@@ -136,7 +141,7 @@ module.exports = function (model, options) {
         }
       })
       .catch((err) => {
-
+        console.log("Error while getting endpoints.", err);
       })
   };
 
@@ -155,13 +160,13 @@ module.exports = function (model, options) {
       'Content-Type': 'application/json',
       'X-Hook-Secret': hook.secret,
     };
+
     let body = JSON.stringify({
       event: eventName,
       secret: hook.secret,
       data: changedData,
       parent: parentInstance
     });
-
 
 
     let config = { method: 'POST', headers, body: body};
@@ -175,43 +180,27 @@ module.exports = function (model, options) {
    * @param modelInstance
    * @private
    */
-  let _getModelInstanceForRequest = function(ctx, modelInstance) {
+  let _getModelInstanceForRequest = function(ctx, modelInstance, includeHooks = false) {
     let idField = model.modelName.toLowerCase() + 'Id';
+
+    let filter = includeHooks ? {include: 'hooks'} : undefined;
 
     if (!modelInstance) {
       if (ctx && ctx.args && ctx.args.id) {
-        return model.findById(ctx.args.id, {include: 'hooks'});
+        return model.findById(ctx.args.id, filter);
       }
     }
 
     if (modelInstance[idField]) {
-      return model.findById(modelInstance[idField], {include: 'hooks'});
+      return model.findById(modelInstance[idField], filter);
     }
     else if (modelInstance.id) {
-      return model.findById(modelInstance.id, {include: 'hooks'})
+      return model.findById(modelInstance.id, filter)
     }
     else {
       if (ctx && ctx.args && ctx.args.id) {
-        return model.findById(ctx.args.id, {include: 'hooks'});
+        return model.findById(ctx.args.id, filter);
       }
-    }
-  };
-
-
-  /**
-   * Get model instance from context without the added webhooks.
-   * @param ctx
-   * @param modelInstance
-   * @returns {Promise}
-   * @private
-   */
-  let _getModelInstanceWithoutHooks = function(ctx, modelInstance) {
-    let idField = model.modelName.toLowerCase() + 'Id';
-    if (modelInstance[idField]) {
-      return model.findById(modelInstance[idField]);
-    }
-    else {
-      return new Promise((resolve, reject) => { resolve(modelInstance); });
     }
   };
 

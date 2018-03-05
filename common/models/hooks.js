@@ -41,10 +41,18 @@ module.exports = function(model) {
     }
     let uri = ctx.instance.uri;
 
-    let domainInfo = parseDomain(String(uri), { customTlds:/localhost|\.local/ });
+    let production = true;
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
+      production = false;
+    }
+    let domainInfo = {};
 
-    if (!domainInfo) {
-      return next({statusCode: 400, message: 'Could not parse domain.'});
+    if (production === true) {
+      domainInfo = parseDomain(String(uri), {customTlds: /localhost|\.local/});
+
+      if (!domainInfo) {
+        return next({statusCode: 400, message: 'Could not parse domain.'});
+      }
     }
 
     if (!(ctx.options && ctx.options.accessToken)) {
@@ -82,11 +90,6 @@ module.exports = function(model) {
             'No access to this event with your OAuth2 scopes, allowed scopes: ' + JSON.stringify(Object.keys(allowedScopes))});
         }
       }
-    }
-
-    let production = true;
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
-      production = false;
     }
 
     if (production === false) {
