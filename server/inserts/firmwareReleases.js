@@ -192,13 +192,13 @@ function performFirmwareOperations(app) {
     // })
     // .then(() => {
     //   return releaseFirmware(
-    //     '2.0.1-RC2', // release version
+    //     '2.0.1', // release version
     //     '1.3.1', // minimum compatible version,
     //     '2.0.0', // minimum App version,
     //     plugAndBuiltinVariations, // hardware versions
-    //     '74e6b8afb3fabd462cb81a68c8cf3131470256c5', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_2.0.1-RC2/bin/crownstone_2.0.1-RC2.zip',
-    //     BETA_RELEASE_LEVEL, // release level
+    //     '77f4bd9638b756b6d3b0b64cc17a9b7f4ac2e7d8', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_2.0.1/bin/crownstone_2.0.1.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level
     //     {  // release notes
     //       'en' :
     //       '- Introducing Dimming functionality.\n\n' +
