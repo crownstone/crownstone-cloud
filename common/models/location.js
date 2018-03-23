@@ -144,6 +144,92 @@ module.exports = function(model) {
 	model.disableRemoteMethodByName('prototype.__deleteById__stones');
 	model.disableRemoteMethodByName('prototype.__destroyById__stones');
 
+
+
+
+  model.observe('before save', initLocation);
+
+  function initLocation(ctx, next) {
+    debug("initLocation");
+    // debug("ctx", ctx);
+    let item = ctx.instance;
+
+    if (item) {
+      injectUID(item, next);
+    }
+    else {
+      next();
+    }
+  }
+
+  function injectUID(item, next) {
+    if (!item.uid) {
+      // debug("inject uid");
+
+      // To inject a UID, we look for the highest available one. The new one is one higher
+      // If this is more than the allowed amount of Locations, we loop over all Locations in the Sphere to check for gaps
+      // Gaps can form when Locations are deleted.
+      // If all gaps are filled, we throw an error to tell the user that he reached the maximum amount.
+      model.find({where: {sphereId: item.sphereId}, order: "uid DESC", limit: "1"})
+        .then((result) => {
+          if (result.length > 0) {
+            let location = result[0];
+            if ((location.uid + 1) > 255) {
+              injectUIDinGap(item, next);
+            }
+            else {
+              item.uid = location.uid + 1;
+              next();
+            }
+          }
+          else {
+            item.uid = 1;
+            next();
+          }
+        })
+        .catch((err) => {
+          next(err);
+        })
+    }
+    else {
+      next();
+    }
+  }
+
+  function injectUIDinGap(item, next) {
+    model.find({where: {sphereId: item.sphereId}, order: "uid ASC"})
+      .then((fullResults) => {
+        let availableUID = 0;
+        for (let i = 0; i < fullResults.length; i++) {
+          let expectedUID = i+1;
+          if (fullResults[i].uid !== expectedUID) {
+            availableUID = expectedUID;
+            break;
+          }
+        }
+
+        if (availableUID > 0 && availableUID < 256) {
+          item.uid = availableUID;
+          next();
+        }
+        else {
+          let err = {
+            statusCode: 422,
+            name: "ValidationError",
+            message: "The maximum number of Locations per Sphere, 255, has been reached. You cannot add another Location without deleting one first."
+          };
+          throw err;
+        }
+      })
+      .catch((err) => {
+        next(err);
+      })
+  }
+
+
+
+
+
 	/************************************
 	 **** Model Validation
 	 ************************************/

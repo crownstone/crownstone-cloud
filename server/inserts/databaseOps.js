@@ -2,10 +2,94 @@
 const fs = require("fs");
 const { ask, promiseBatchPerformer } = require("./insertUtil");
 
-let CHANGE_DATA = true;
+let CHANGE_DATA = false;
 let DELETE_TIMESERIES = false;
 
 function performDatabaseOperations(app) {
+
+  // insertLocationUids(app);
+}
+
+function insertLocationUids(app) {
+  let userModel = app.dataSources.mongoDs.getModel('user');
+  let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
+  let locationModel = app.dataSources.mongoDs.getModel('Location');
+  let stoneModel = app.dataSources.mongoDs.getModel('Stone');
+  let devicesModel = app.dataSources.mongoDs.getModel('Device');
+  let installationModel = app.dataSources.mongoDs.getModel('AppInstallation');
+  let appliancesModel = app.dataSources.mongoDs.getModel('Appliance');
+  let powerUsageModel = app.dataSources.mongoDs.getModel('PowerUsage');
+  let energyUsageModel = app.dataSources.mongoDs.getModel('EnergyUsage');
+
+  let locationCounter = 0
+  let sphereCounter = 0
+
+  let doIt = function() {
+    sphereModel.find()
+      .then((results) => {
+        let promises = []
+        console.log("Found ", results.length, " spheres ")
+        results.forEach((sphere) => {
+          sphereCounter++
+          promises.push(new Promise((resolve, reject) => {
+            let sphereLocationCounter = 0
+            let sphereLocationCount = 0
+            locationModel.find({where: {sphereId: sphere.id}})
+              .then((locations) => {
+                sphereLocationCount = locations.length
+                for (let i = 0; i < locations.length; i++) {
+                  let location = locations[i];
+                  locationCounter++
+                  sphereLocationCounter++
+
+                  if (CHANGE_DATA === true) {
+                    location.uid = i + 1
+                    return location.save()
+                  }
+                }
+              })
+              .then(() => {
+                // console.log("Finished Sphere", sphereCounter, " location", sphereLocationCounter, "out of ", sphereLocationCount)
+                resolve()
+              })
+              .catch((err) => {
+                console.log("ERROR", err)
+              })
+            })
+          )
+        })
+        return Promise.all(promises)
+      })
+      .then(() => {
+        if (CHANGE_DATA !== true) {
+          console.log("Because change data is false nothing was changed. I would have added a UID to ", locationCounter, " locations in ", sphereCounter, " Spheres.")
+        }
+        else {
+          console.log("FINISHED")
+        }
+      })
+  }
+
+  if (CHANGE_DATA === true) {
+    ask("Database Operations: DO YOU WANT TO ADD UIDS TO ALL LOCATIONS? Continue? (YES/NO)")
+      .then((answer) => {
+        if (answer === 'YES') {
+          console.log("STARTING OPERATION")
+          doIt()
+        }
+        else {
+          return new Promise((resolve, reject) => {
+            reject("User permission denied for adding uids to locations. Restart script and type YES to continue.")
+          });
+        }
+      })
+  }
+  else {
+    doIt()
+  }
+}
+
+function powerusageRun(app) {
   console.log("Starting Database Operations run");
 
   let userModel = app.dataSources.mongoDs.getModel('user');
@@ -133,8 +217,8 @@ function performDatabaseOperations(app) {
     .catch((err) => {
       console.log("Error during performDatabaseOperations:", err);
     })
-
 }
+
 
 
 module.exports = performDatabaseOperations;

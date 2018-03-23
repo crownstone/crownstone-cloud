@@ -26,6 +26,9 @@
       "type": "string",
       "required": true
     },
+    "uid": {
+      "type": "number"
+    },
     "description": {
       "type": "string"
     },
