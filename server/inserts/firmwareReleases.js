@@ -190,6 +190,29 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     '2.0.1', // release version
+    //     '1.3.1', // minimum compatible version,
+    //     '2.0.0', // minimum App version,
+    //     plugAndBuiltinVariations, // hardware versions
+    //     '77f4bd9638b756b6d3b0b64cc17a9b7f4ac2e7d8', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_2.0.1/bin/crownstone_2.0.1.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- Introducing Dimming functionality.\n\n' +
+    //       '- More hardware safeguards added.\n\n' +
+    //       '- Dimming done by trailing edge dimming (currently compatible with EU Standard 50Hz grid).\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
     // .then(() => {return clearFirmwares(firmwareModel) })
