@@ -2,7 +2,7 @@
 
 const loopback = require('loopback');
 const fetch = require('node-fetch');
-
+const eventHandler = require('../modules/EventHandler');
 /**
  * Mixin that hooks the Webhook system into existing models. It generates a list of available events based on the REST endpoints.
  *
@@ -133,7 +133,7 @@ module.exports = function (model, options) {
               if (hook.events[j] === eventName) {
                 _getModelInstanceForRequest(ctx, changedData, false)
                   .then((result) => {
-                    _notifySubscribers(changedData, result, eventName, hook);
+                    eventHandler.notifySubscribers(changedData, result, eventName, hook);
                   })
               }
             }
@@ -143,34 +143,6 @@ module.exports = function (model, options) {
       .catch((err) => {
         console.log("Error while getting endpoints.", err);
       })
-  };
-
-
-  /**
-   * Notify all webhooks on this event
-   * @param changedData         // this is the changed data
-   * @param parentInstance      // this is the parent model, like a stone or a sphere. If a ownedStone from a sphere changes, the parent is the sphere.
-   * @param eventName           // name of the event
-   * @param hook                // the webhook object.
-   * @private
-   */
-  let _notifySubscribers = function(changedData, parentInstance, eventName, hook) {
-    let headers = {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-      'X-Hook-Secret': hook.secret,
-    };
-
-    let body = JSON.stringify({
-      event: eventName,
-      secret: hook.secret,
-      data: changedData,
-      parent: parentInstance
-    });
-
-
-    let config = { method: 'POST', headers, body: body};
-    fetch(hook.uri, config).catch((err) => { console.log("Error while notifying endpoint.", err); });
   };
 
 

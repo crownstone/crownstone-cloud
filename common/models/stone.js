@@ -4,6 +4,7 @@ let loopback = require('loopback');
 let crypto = require('crypto');
 
 const notificationHandler = require('../../server/modules/NotificationHandler');
+const eventHandler = require('../../server/modules/EventHandler');
 const debug = require('debug')('loopback:dobots');
 
 let util = require('../../server/emails/util');
@@ -463,6 +464,7 @@ module.exports = function(model) {
 
           // get the most recent timestamp in the batch that we have uploaded
           let mostRecentId = null;
+          let mostRecentEntry = null;
           let mostRecentTimestamp = 0;
           if (Array.isArray(insertResult)) {
             for (let i = 0; i < insertResult.length; i++) {
@@ -470,16 +472,29 @@ module.exports = function(model) {
               if (mostRecentTimestamp < checkTimestamp) {
                 mostRecentTimestamp = checkTimestamp;
                 mostRecentId = insertResult[i].id;
+                mostRecentEntry = insertResult[i];
               }
             }
           }
           else {
             mostRecentId = insertResult.id;
+            mostRecentEntry = insertResult;
             mostRecentTimestamp = new Date(insertResult.timestamp).valueOf();
           }
 
-          const insertMostRecent = (currentId) => {
-            // TODO: trigger event for hooks
+          const insertMostRecent = (currentId, mostRecentEntry) => {
+            let eventName = null;
+            switch (fieldName) {
+              case 'powerUsage':
+                eventName = 'setCurrentPowerUsage'; break;
+              case 'energyUsage':
+                eventName = 'setCurrentEnergyUsage'; break;
+            }
+
+            if (eventName) {
+              eventHandler.notifyHooks(model, stoneId, mostRecentEntry, eventName)
+            }
+
             stone[currentIdFieldName] = currentId;
             return stone.save()
               .then(() => {
@@ -492,16 +507,16 @@ module.exports = function(model) {
             return stone[historyFieldName].findById(stone[currentIdFieldName])
               .then((mostRecentEntry) => {
                 if (!mostRecentEntry) {
-                  return insertMostRecent(mostRecentId);
+                  return insertMostRecent(mostRecentId, mostRecentEntry);
                 }
 
                 if (mostRecentTimestamp > new Date(mostRecentEntry.timestamp).valueOf()) {
-                  return insertMostRecent(mostRecentId);
+                  return insertMostRecent(mostRecentId, mostRecentEntry);
                 }
               })
           }
           else {
-            return insertMostRecent(mostRecentId);
+            return insertMostRecent(mostRecentId, mostRecentEntry);
           }
         })
         .then((insertResult) => {

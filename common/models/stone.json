@@ -87,6 +87,9 @@
     },
     "locked": {
       "type": "boolean"
+    },
+    "switchCraft": {
+      "type": "boolean"
     }
   },
   "validations": [],

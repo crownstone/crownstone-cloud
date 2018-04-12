@@ -20,8 +20,7 @@ var runner = {
 	*/
 
 	generateAccessAddress : function() {
-
-		random = crypto.randomBytes(4);
+		let random = crypto.randomBytes(4);
 		if (!this.validate(random.readUInt32BE())) {
 			retries++;
 			return this.generateAccessAddress();
