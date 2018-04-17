@@ -1,0 +1,39 @@
+{
+  "name": "FingerprintLinker",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "mixins": {
+    "DisableCommon": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {},
+  "relations": {
+    "fingerprint": {
+      "type": "belongsTo",
+      "model": "Fingerprint",
+      "foreignKey": "fingerprintId"
+    },
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
+    },
+    "sphere": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "sphereId"
+    },
+    "device": {
+      "type": "belongsTo",
+      "model": "Device",
+      "foreignKey": "deviceId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

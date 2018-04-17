@@ -79,6 +79,11 @@
       "type": "hasMany",
       "model": "AppInstallation",
       "foreignKey": "deviceId"
+    },
+    "fingerprintLinks": {
+      "type": "hasMany",
+      "model": "FingerprintLinker",
+      "foreignKey": "deviceId"
     }
   },
   "acls": [],

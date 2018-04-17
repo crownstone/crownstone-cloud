@@ -1,0 +1,50 @@
+{
+  "name": "Fingerprint",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "mixins": {
+    "DisableCommon": true,
+    "SphereContent": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "phoneType": {
+      "type": "string",
+      "required": true
+    },
+    "data": {
+      "type":"Object",
+      "required": true
+    },
+    "isTransformed": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  },
+  "relations": {
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
+    },
+    "sphere": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "sphereId"
+    },
+    "owner": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "ownerId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
+

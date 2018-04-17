@@ -68,6 +68,11 @@
       "foreignKey": "currentLocationId",
       "through": "Device",
       "keyThrough": "ownerId"
+    },
+    "fingerprints": {
+      "type": "hasMany",
+      "model": "Fingerprint",
+      "foreignKey": "locationId"
     }
   },
   "acls": [],

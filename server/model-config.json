@@ -153,5 +153,13 @@
   "Diagnostic": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "Fingerprint": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "FingerprintLinker": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

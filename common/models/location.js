@@ -137,6 +137,19 @@ module.exports = function(model) {
 	model.disableRemoteMethodByName('prototype.__create__presentPeople');
 	model.disableRemoteMethodByName('prototype.__delete__presentPeople');
 
+  // model.disableRemoteMethodByName('prototype.__get__fingerprints');
+  model.disableRemoteMethodByName('prototype.__count__fingerprints');
+  model.disableRemoteMethodByName('prototype.__exists__fingerprints');
+  model.disableRemoteMethodByName('prototype.__link__fingerprints');
+  model.disableRemoteMethodByName('prototype.__unlink__fingerprints');
+  model.disableRemoteMethodByName('prototype.__findById__fingerprints');
+  model.disableRemoteMethodByName('prototype.__updateById__fingerprints');
+  model.disableRemoteMethodByName('prototype.__unlink__fingerprints');
+  model.disableRemoteMethodByName('prototype.__deleteById__fingerprints');
+  model.disableRemoteMethodByName('prototype.__destroyById__fingerprints');
+  model.disableRemoteMethodByName('prototype.__create__fingerprints');
+  model.disableRemoteMethodByName('prototype.__delete__fingerprints');
+
 	model.disableRemoteMethodByName('prototype.__create__stones');
 	model.disableRemoteMethodByName('prototype.__exists__stones');
 	model.disableRemoteMethodByName('prototype.__delete__stones');
