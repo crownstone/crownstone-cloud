@@ -11,7 +11,9 @@
       "validateUpsert": true
     }
   },
-  "properties": {},
+  "properties": {
+
+  },
   "relations": {
     "fingerprint": {
       "type": "belongsTo",

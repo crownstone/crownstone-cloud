@@ -387,11 +387,12 @@ module.exports = function(model) {
 
 
   model.getFingerprintsInLocations = function(deviceId, locationIds, options, callback) {
+    if (!Array.isArray(locationIds) || locationIds.length == 0) {
+      return callback("Invalid input for locationIds");
+    }
+
     _getFingerprints({where : {and: [{deviceId: deviceId}, {locationId: {inq: locationIds}}]}, fields:{fingerprintId:true}}, callback);
   };
-  model.getFingerprintsInSphere = function(deviceId, sphereId, options, callback) {
-    _getFingerprints({where : {and: [{deviceId: deviceId}, {sphereId: sphereId}]},             fields:{fingerprintId:true}}, callback);
-  }
 
 
  let _getFingerprints = function(filterquery, callback) {
@@ -420,13 +421,13 @@ module.exports = function(model) {
      });
  }
 
-  let _getMatchingFingerprint = function(deviceModel, locationId, userId) {
+  let _getMatchingFingerprint = function(deviceType, locationId, userId) {
     // NO results yet. Search for one from a matching phone model that we made ourselves.
-    return fingerprintModel.findOne({where : {and: [{phoneType: deviceModel}, {locationId: locationId}, {ownerId: userId}]}})
+    return fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}, {ownerId: userId}]}})
       .then((fingerprint) => {
         if (!fingerprint) {
           // if we can't find an fingerprint that we made ourselves, we try those from others
-          return fingerprintModel.findOne({where : {and: [{phoneType: deviceModel}, {locationId: locationId}]}})
+          return fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}]}})
             .then((fingerprint) => {
               if (!fingerprint) {
                 return null;
@@ -442,7 +443,12 @@ module.exports = function(model) {
       })
   };
 
-  model.getMatchingFingerprint = function(deviceId, locationId, options, callback) {
+
+  model.getMatchingFingerprintsInLocations = function(deviceId, locationIds, options, callback) {
+    if (!Array.isArray(locationIds) || locationIds.length == 0) {
+      return callback("Invalid input for locationIds");
+    }
+
     const userId = options.accessToken.userId;
 
     // look for appName in the App model.
@@ -450,41 +456,72 @@ module.exports = function(model) {
     const fingerprintModel = loopback.getModel('Fingerprint');
     let myDevice = null;
 
+    let locationIdMap = {};
+    for (let i = 0; i < locationIds.length; i++) {
+      locationIdMap[locationIds[i]] = true;
+    }
 
+    let resultingFingerPrints = []
 
-    // check if we already have one
+    let processLinkerEntry = function(deviceType, linkerEntry) {
+      // we have a linker entry, get the fingerprint that corresponds to it.
+      return fingerprintModel.findById(linkerEntry.fingerprintId)
+        .then((fingerprint) => {
+          if (!fingerprint) {
+            // this appearently is an orphaned linker entry, search for a fingerprint we can use and clean up the orphaned linker entry.
+            return _getMatchingFingerprint(deviceType, linkerEntry.locationId, userId)
+              .then((result) => {
+                if (result !== null) {
+                  resultingFingerPrints.push(result);
+                }
+                // delete orphaned linker entry
+                return fingerprintLinkerModel.destroyById(linkerEntry.id);
+              })
+          }
+          else {
+            resultingFingerPrints.push(fingerprint);
+          }
+        })
+    }
+
+    // check if we already have linker entries for the provided ids
     model.findById(deviceId)
       .then((device) => {
         if (!device) { throw "Unknown device" }
         myDevice = device;
-        return fingerprintLinkerModel.findOne({where : {and: [{deviceId: deviceId}, {locationId: locationId}]}})
+        return fingerprintLinkerModel.find({where : {and: [{deviceId: deviceId}, {locationId: {inq: locationIds}}]}})
       })
-      .then((linkerEntry) => {
-        if (linkerEntry === null) {
-          // linker entry is empty, search for an existing fingerprint that we can use.
-          return _getMatchingFingerprint(myDevice.model, locationId, userId);
+      .then((linkerEntries) => {
+        // all the linker entries that we already have will be checked and cleaned if they are orphaned.
+        let promises = [];
+        for (let i = 0; i < linkerEntries.length; i++) {
+          delete locationIdMap[linkerEntries[i].locationId];
+          promises.push(processLinkerEntry(myDevice.deviceType, linkerEntries[i]));
         }
-        else {
-          // we have a linker entry, get the fingerprint that corresponds to it.
-          return fingerprintModel.findById(linkerEntry.fingerprintId)
-            .then((fingerprint) => {
-              if (!fingerprint) {
-                // this appearently is an orphaned linker entry, search for a fingerprint we can use and clean up the orphaned linker entry.
-                return _getMatchingFingerprint(myDevice.model, locationId, userId)
-                  .then(() => {
-                    // delete orphaned linker entry
-                    return fingerprintLinkerModel.destroyById(linkerEntry.id);
-                  })
-              }
-              else {
-                return fingerprint;
-              }
+
+        // the locations not covered by the linked entries will be given their best estimate.
+        // THIS METHOD WILL NOT STORE OR COPY THESE FINGERPRINTS IN THE DATABASE.
+        let leftoverLocationIds = Object.keys(locationIdMap);
+        for (let i = 0; i < leftoverLocationIds.length; i++) {
+          promises.push(
+            new Promise((resolve, reject) => {
+              _getMatchingFingerprint(myDevice.deviceType, leftoverLocationIds[i], userId)
+                .then((fingerprint) => {
+                  resultingFingerPrints.push(fingerprint);
+                  resolve();
+                })
+                .catch((err) => {
+                  reject(err)
+                })
             })
+          )
         }
+
+        return Promise.all(promises);
       })
-      .then((matchingFingerprint) => {
+      .then(() => {
         // console.log("Got matchingFingerprint", matchingFingerprint);
-        callback(null, matchingFingerprint);
+        callback(null, resultingFingerPrints);
       })
       .catch((err) => {
         // console.log("Error while getting matchingFingerprint", err);
@@ -511,23 +548,22 @@ module.exports = function(model) {
                 return fingerprintLinkerModel.destroyById(linkerEntry.id);
               }
               else {
-                if (fingerprint.ownerId === userId) {
-                  // TODO: handle the case where there are other people using this fingerprint.
-                  // this is my fingerprint. DELETE IT
-                  return fingerprintModel.destroyById(linkerEntry.fingerprintId)
-                    .then(() => {
-                      return fingerprintLinkerModel.destroyById(linkerEntry.id);
-                    })
-                }
-                else {
-                  // DELETE LINKED LIST
-                  return fingerprintLinkerModel.destroyById(linkerEntry.id);
-                }
+                // Delete the linked entry, then check if the fingerprint is still being used by someone. If it is not, then we
+                // delete the fingerprint.
+                return fingerprintLinkerModel.destroyById(linkerEntry.id)
+                  .then(() => {
+                    return fingerprintLinkerModel.find({where: {fingerprintId: linkerEntry.fingerprintId}})
+                  })
+                  .then((linksUsingFingerprint) => {
+                    if (linksUsingFingerprint.length === 0) {
+                      return fingerprintModel.destroyById(linkerEntry.fingerprintId)
+                    }
+                  })
               }
             })
         }
       })
-      .then((result) => {
+      .then(() => {
         // console.log("Created Fingerprint", result);
         callback(null);
       })
@@ -536,6 +572,47 @@ module.exports = function(model) {
         callback(err);
       });
   };
+
+
+  model.linkFingerprints = function(deviceId, fingerprintIds, options, callback) {
+    if (!Array.isArray(fingerprintIds) || fingerprintIds.length == 0) {
+      return callback("Invalid input for fingerprintIds");
+    }
+
+    const fingerprintLinkerModel = loopback.getModel('FingerprintLinker');
+    const fingerprintModel = loopback.getModel('Fingerprint');
+
+    fingerprintModel.find({where:{id:{inq:fingerprintIds}}, fields: ['locationId', 'sphereId', 'id']})
+      .then((fingerprints) => {
+        let promises = [];
+        if (fingerprints.length == 0) { throw "No fingerprints found."; }
+
+        for (let i = 0; i < fingerprints.length; i++) {
+          let fingerprint = fingerprints[i];
+          promises.push(
+            // check if there already is a link between this device and this fingerprint.
+            fingerprintLinkerModel.find({where: {and: [{deviceId: deviceId}, {fingerprintId: fingerprint.id}]}})
+              .then((existingLinkEntries) => {
+                if (existingLinkEntries.length === 0) {
+                  // if there is no link, make one.
+                  return fingerprintLinkerModel.create({
+                    locationId: fingerprint.locationId,
+                    sphereId: fingerprint.sphereId,
+                    deviceId: deviceId,
+                    fingerprintId: fingerprint.id,
+                  })
+                }
+              })
+          )
+        }
+
+        return Promise.all(promises);
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => { callback(err); })
+  }
 
 
   model.remoteMethod(
@@ -550,20 +627,6 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: 'Fingerprint', root:true},
       description: "Creates a fingerprint from this model."
-    }
-  );
-
-  model.remoteMethod(
-    'getFingerprintsInSphere',
-    {
-      http: {path: '/:id/fingerprintsInSphere', verb: 'get'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'data', type: ['Fingerprint'], root:true},
-      description: "Get all fingerprints in the sphere that can be used with this device."
     }
   );
 
@@ -584,19 +647,31 @@ module.exports = function(model) {
 
 
   model.remoteMethod(
-    'getMatchingFingerprint',
+    'getMatchingFingerprintsInLocations',
     {
-      http: {path: '/:id/matchingFingerprint', verb: 'get'},
+      http: {path: '/:id/matchingFingerprints', verb: 'get'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'locationId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'locationIds', type: ['string'], required: true, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      returns: {arg: 'data', type: 'Fingerprint', root:true},
-      description: "Creates a fingerprint from this model."
+      returns: {arg: 'data', type: ['Fingerprint'], root:true},
+      description: "Get fingerprints for an array of locations that this device can use, if there are any."
     }
   );
 
+  model.remoteMethod(
+    'linkFingerprints',
+    {
+      http: {path: '/:id/linkFingerprints', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'fingerprintIds', type: ['string'], required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Link fingerprints with the provided fingerprint ids to this device."
+    }
+  );
 
   model.remoteMethod(
     'deleteFingerprint',
