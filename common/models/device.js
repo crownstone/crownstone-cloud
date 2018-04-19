@@ -414,11 +414,20 @@ module.exports = function(model) {
   };
 
 
+  model.getFingerprints = function(deviceId, fingerprintIds, options, callback) {
+    if (!Array.isArray(fingerprintIds) || fingerprintIds.length == 0) {
+      return callback("Invalid input for fingerprintIds");
+    }
+
+    _getFingerprints({where : {fingerprintId: {inq: fingerprintIds}}}, callback);
+  };
+
+
  let _getFingerprints = function(filterquery, callback) {
    const fingerprintLinkerModel = loopback.getModel('FingerprintLinker');
    const fingerprintModel = loopback.getModel('Fingerprint');
 
-   fingerprintLinkerModel.find()
+   fingerprintLinkerModel.find(filterquery)
      .then((result) => {
        let idArray = [];
        for (let i = 0; i < result.length; i++) {
@@ -683,14 +692,28 @@ module.exports = function(model) {
   model.remoteMethod(
     'getFingerprintsInLocations',
     {
-      http: {path: '/:id/fingerprints', verb: 'get'},
+      http: {path: '/:id/fingerprintsForLocations', verb: 'get'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'locationIds', type: ['string'], required: true, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: ['Fingerprint'], root:true},
-      description: "Get all fingerprints in the sphere that can be used with this device."
+      description: "Get fingerprints for an array of locations that have been linked to this device."
+    }
+  );
+
+  model.remoteMethod(
+    'getFingerprints',
+    {
+      http: {path: '/:id/fingerprints', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'fingerprintIds', type: ['string'], required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['Fingerprint'], root:true},
+      description: "Get fingerprints from an array of fingerprint IDs."
     }
   );
 
