@@ -289,6 +289,25 @@ module.exports = function(model) {
     }
   );
 
+  model.updateFingerprint = function(deviceId, fingerprintId, fingerprintData, options, callback) {
+    const fingerprintModel = loopback.getModel('Fingerprint');
+
+    fingerprintModel.findById(fingerprintId)
+      .then((fingerprint) => {
+        if (!fingerprint) {
+          // the expected fingerprint does not exist (anymore)
+          throw "Fingerprint with this ID does not exist."
+        }
+        else {
+          let locationId = fingerprint.locationId;
+          model.createFingerprint(deviceId, locationId, fingerprintData, options, callback);
+        }
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
   model.createFingerprint = function(deviceId, locationId, fingerprintData, options, callback) {
     // look for appName in the App model.
     const userId = options.accessToken.userId;
@@ -496,6 +515,7 @@ module.exports = function(model) {
         let promises = [];
         for (let i = 0; i < linkerEntries.length; i++) {
           delete locationIdMap[linkerEntries[i].locationId];
+          // TODO: optimize this to use a single find call
           promises.push(processLinkerEntry(myDevice.deviceType, linkerEntries[i]));
         }
 
@@ -614,6 +634,20 @@ module.exports = function(model) {
       .catch((err) => { callback(err); })
   }
 
+  model.getUpdateTimeForFingerprints = function(deviceId, fingerprintIds, options, callback) {
+    if (!Array.isArray(fingerprintIds) || fingerprintIds.length == 0) {
+      return callback("Invalid input for fingerprintIds");
+    }
+
+    const fingerprintModel = loopback.getModel('Fingerprint');
+
+    fingerprintModel.find({where:{id:{inq:fingerprintIds}}, fields: ['id','updatedAt']})
+      .then((fingerprints) => {
+        callback(null, fingerprints);
+      })
+      .catch((err) => { callback(err); })
+  }
+
 
   model.remoteMethod(
     'createFingerprint',
@@ -632,6 +666,21 @@ module.exports = function(model) {
 
 
   model.remoteMethod(
+    'updateFingerprint',
+    {
+      http: {path: '/:id/fingerprint', verb: 'put'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'fingerprintId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'data', type: 'Object', required: true, http: { source : 'body' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: 'Fingerprint', root:true},
+      description: "Update an fingerprint's data. The locationId it is referencing will not change."
+    }
+  );
+
+  model.remoteMethod(
     'getFingerprintsInLocations',
     {
       http: {path: '/:id/fingerprints', verb: 'get'},
@@ -645,11 +694,25 @@ module.exports = function(model) {
     }
   );
 
+  model.remoteMethod(
+    'getUpdateTimeForFingerprints',
+    {
+      http: {path: '/:id/fingerprintsUpdatedAt', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'fingerprintIds', type: ['string'], required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['Fingerprint'], root:true},
+      description: "Get the updatedAt time for the fingerprints with the provided ids."
+    }
+  );
+
 
   model.remoteMethod(
     'getMatchingFingerprintsInLocations',
     {
-      http: {path: '/:id/matchingFingerprints', verb: 'get'},
+      http: {path: '/:id/fingerprintsMatching', verb: 'get'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'locationIds', type: ['string'], required: true, http: { source : 'query' }},
@@ -663,7 +726,7 @@ module.exports = function(model) {
   model.remoteMethod(
     'linkFingerprints',
     {
-      http: {path: '/:id/linkFingerprints', verb: 'post'},
+      http: {path: '/:id/fingerprintsLink', verb: 'post'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'fingerprintIds', type: ['string'], required: true, http: { source : 'query' }},
