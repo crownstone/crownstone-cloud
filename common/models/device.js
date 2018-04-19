@@ -450,6 +450,7 @@ module.exports = function(model) {
  }
 
   let _getMatchingFingerprint = function(deviceType, locationId, userId) {
+    const fingerprintModel = loopback.getModel('Fingerprint');
     // NO results yet. Search for one from a matching phone model that we made ourselves.
     return fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}, {ownerId: userId}]}})
       .then((fingerprint) => {
