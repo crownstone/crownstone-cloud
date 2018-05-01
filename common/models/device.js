@@ -490,7 +490,7 @@ module.exports = function(model) {
       locationIdMap[locationIds[i]] = true;
     }
 
-    let resultingFingerPrints = []
+    let resultingFingerPrints = [];
 
     let processLinkerEntry = function(deviceType, linkerEntry) {
       // we have a linker entry, get the fingerprint that corresponds to it.
@@ -537,7 +537,9 @@ module.exports = function(model) {
             new Promise((resolve, reject) => {
               _getMatchingFingerprint(myDevice.deviceType, leftoverLocationIds[i], userId)
                 .then((fingerprint) => {
-                  resultingFingerPrints.push(fingerprint);
+                  if (fingerprint) {
+                    resultingFingerPrints.push(fingerprint);
+                  }
                   resolve();
                 })
                 .catch((err) => {
@@ -550,7 +552,7 @@ module.exports = function(model) {
         return Promise.all(promises);
       })
       .then(() => {
-        // console.log("Got matchingFingerprint", matchingFingerprint);
+        console.log("Got matchingFingerprint", resultingFingerPrints);
         callback(null, resultingFingerPrints);
       })
       .catch((err) => {
@@ -666,7 +668,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'locationId', type: 'string', required: true, http: { source : 'query' }},
-        {arg: 'data', type: 'Object', required: true, http: { source : 'body' }},
+        {arg: 'data', type: 'any', required: true, http: { source : 'body' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: 'Fingerprint', root:true},
@@ -682,7 +684,7 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'fingerprintId', type: 'string', required: true, http: { source : 'query' }},
-        {arg: 'data', type: 'Object', required: true, http: { source : 'body' }},
+        {arg: 'data', type: 'any', required: true, http: { source : 'body' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: 'Fingerprint', root:true},
