@@ -255,7 +255,7 @@ module.exports = function(model) {
 
 	// if the sphere is deleted, delete also all files stored for this sphere
 	model.observe('before delete', function(context, next) {
-		model.deleteImage(context.where.id, function() {
+		model.deleteImage(context.where.id, {}, function() {
 			next();
 		});
 	});
