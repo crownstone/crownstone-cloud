@@ -135,7 +135,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__link__installations');
   model.disableRemoteMethodByName('prototype.__unlink__installations');
   model.disableRemoteMethodByName('prototype.__count__installations');
-  
+
   model.disableRemoteMethodByName('prototype.__get__messages');
   model.disableRemoteMethodByName('prototype.__findById__messages');
   model.disableRemoteMethodByName('prototype.__exists__messages');
@@ -477,46 +477,46 @@ module.exports = function(model) {
   /************************************
    **** Container Methods
    ************************************/
+  //
+  // model.listFiles = function(id, options, callback) {
+  //   const Container = loopback.getModel('UserContainer');
+  //   Container._getFiles(id, options, callback);
+  // };
+  //
+  // model.remoteMethod(
+  //   'listFiles',
+  //   {
+  //     http: {path: '/:id/files', verb: 'get'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: "options", type: "object", http: "optionsFromRequest"},
+  //     ],
+  //     returns: {arg: 'files', type: 'array', root: true},
+  //     description: "Queries files of User"
+  //   }
+  // );
+  //
+  // model.countFiles = function(id, options, callback) {
+  //   const Container = loopback.getModel('UserContainer');
+  //   Container._getFiles(id, options, function(err, res) {
+  //     if (err) return callback(err);
+  //
+  //     callback(null, res.length);
+  //   });
+  // };
 
-  model.listFiles = function(id, options, callback) {
-    const Container = loopback.getModel('UserContainer');
-    Container._getFiles(id, options, callback);
-  };
-
-  model.remoteMethod(
-    'listFiles',
-    {
-      http: {path: '/:id/files', verb: 'get'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'files', type: 'array', root: true},
-      description: "Queries files of User"
-    }
-  );
-
-  model.countFiles = function(id, options, callback) {
-    const Container = loopback.getModel('UserContainer');
-    Container._getFiles(id, options, function(err, res) {
-      if (err) return callback(err);
-
-      callback(null, res.length);
-    });
-  };
-
-  model.remoteMethod(
-    'countFiles',
-    {
-      http: {path: '/:id/files/count', verb: 'get'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'count', type: 'number'},
-      description: "Count files of User"
-    }
-  );
+  // model.remoteMethod(
+  //   'countFiles',
+  //   {
+  //     http: {path: '/:id/files/count', verb: 'get'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: "options", type: "object", http: "optionsFromRequest"},
+  //     ],
+  //     returns: {arg: 'count', type: 'number'},
+  //     description: "Count files of User"
+  //   }
+  // );
 
 
   model.deleteFile = function(id, fk, options, callback) {
@@ -524,18 +524,18 @@ module.exports = function(model) {
     Container._deleteFile(id, fk, options, callback);
   };
 
-  model.remoteMethod(
-    'deleteFile',
-    {
-      http: {path: '/:id/files/:fk', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      description: "Delete a file by id"
-    }
-  );
+  // model.remoteMethod(
+  //   'deleteFile',
+  //   {
+  //     http: {path: '/:id/files/:fk', verb: 'delete'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: "options", type: "object", http: "optionsFromRequest"},
+  //     ],
+  //     description: "Delete a file by id"
+  //   }
+  // );
 
   model.downloadFile = function(id, fk, res, options, callback) {
     const Container = loopback.getModel('UserContainer');
@@ -544,39 +544,39 @@ module.exports = function(model) {
       callback(null, file);
     });
   };
-
-  model.remoteMethod(
-    'downloadFile',
-    {
-      http: {path: '/:id/files/:fk', verb: 'get'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'res', type: 'object', 'http': { source: 'res' }},
-        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
-      ],
-      description: "Download a file by id"
-    }
-  );
-
+  //
+  // model.remoteMethod(
+  //   'downloadFile',
+  //   {
+  //     http: {path: '/:id/files/:fk', verb: 'get'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'fk', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'res', type: 'object', 'http': { source: 'res' }},
+  //       {arg: 'options', type: 'object', http: 'optionsFromRequest'},
+  //     ],
+  //     description: "Download a file by id"
+  //   }
+  // );
+  //
   model.uploadFile = function(id, req, options, callback) {
     const Container = loopback.getModel('UserContainer');
     Container._upload(id, req, options, callback);
   };
-
-  model.remoteMethod(
-    'uploadFile',
-    {
-      http: {path: '/:id/files', verb: 'post'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'req', type: 'object', http: { source: 'req' }},
-        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
-      ],
-      returns: {arg: 'file', type: 'object', root: true},
-      description: "Upload a file to User"
-    }
-  );
+  //
+  // model.remoteMethod(
+  //   'uploadFile',
+  //   {
+  //     http: {path: '/:id/files', verb: 'post'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'req', type: 'object', http: { source: 'req' }},
+  //       {arg: 'options', type: 'object', http: 'optionsFromRequest'},
+  //     ],
+  //     returns: {arg: 'file', type: 'object', root: true},
+  //     description: "Upload a file to User"
+  //   }
+  // );
 
   model.uploadProfilePic = function(id, req, options, callback) {
     // debug("uploadProfilePic");
@@ -585,7 +585,7 @@ module.exports = function(model) {
       // upload the file
       model.uploadFile(user.id, req, options, function(err, file) {
         if (err) return callback(err);
-        
+
         // and set the id as profilePicId
         user.profilePicId = String(file._id);
         user.save();

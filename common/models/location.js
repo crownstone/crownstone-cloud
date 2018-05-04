@@ -1,7 +1,7 @@
 // "use strict";
 
 let loopback = require('loopback');
-
+const idUtil = require('./sharedUtil/idUtil');
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function(model) {
@@ -282,15 +282,14 @@ module.exports = function(model) {
 	 **** Image Methods
 	 ************************************/
 
-	model.uploadImage = function(id, req, next) {
+	model.uploadImage = function(id, req, options, next) {
 		debug("uploadImage");
 
 		const Sphere = loopback.getModel('Sphere');
 
-		let upload = function(location, req) {
-
+		let upload = function(location, req, options) {
 			// upload the file
-			Sphere.uploadFile(location.sphereId, req, function(err, file) {
+			Sphere.uploadFile(location.sphereId, req, options, function(err, file) {
 				if (err) return next(err);
 
 				// and set the id as profilePicId
@@ -307,12 +306,13 @@ module.exports = function(model) {
 
 			// if there is already an uploaded, delete the old one first
 			if (location.imageId) {
-				Sphere.deleteFile(location.sphereId, location.imageId, function(err, file) {
+				Sphere.deleteFile(location.sphereId, location.imageId, options, function(err, file) {
 					if (err) return next(err);
-					upload(location, req);
+					upload(location, req, options);
 				});
-			} else {
-				upload(location, req);
+			}
+			else {
+				upload(location, req, options);
 			}
 
 		});
@@ -324,14 +324,15 @@ module.exports = function(model) {
 			http: {path: '/:id/image', verb: 'post'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'req', type: 'object', http: { source: 'req' }}
+				{arg: 'req', type: 'object', http: { source: 'req' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			returns: {arg: 'file', type: 'object', root: true},
 			description: "Upload image to location"
 		}
 	);
 
-	model.downloadImage = function(id, res, next) {
+	model.downloadImage = function(id, res, options, next) {
 		debug("downloadImage");
 
 		const Sphere = loopback.getModel('Sphere');
@@ -341,7 +342,7 @@ module.exports = function(model) {
 			if (err) return next(err);
 			if (model.checkForNullError(location, next, "id: " + id)) return;
 
-			Sphere.downloadFile(location.sphereId, location.imageId, res, next);
+			Sphere.downloadFile(location.sphereId, location.imageId, res, options, next);
 		});
 	};
 
@@ -351,32 +352,56 @@ module.exports = function(model) {
 			http: {path: '/:id/image', verb: 'get'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-				{arg: 'res', type: 'object', 'http': { source: 'res' }}
+				{arg: 'res', type: 'object', 'http': { source: 'res' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			description: "Download image of the location"
 		}
 	);
 
-	model.deleteImage = function(id, next) {
+	model.deleteImage = function(id, options, callback) {
 		debug("deleteImage");
 
 		const Sphere = loopback.getModel('Sphere');
 
 		// get the location instance
 		model.findById(id, function(err, location) {
-			if (err) return next(err);
-			if (model.checkForNullError(location, next, "id: " + id)) return;
+			if (err) return callback(err);
+			if (model.checkForNullError(location, callback, "id: " + id)) return;
+      if (idUtil.verifyMongoId(location.imageId) === false) {
+        // remove the profile pic
+        location.imageId = undefined;
+        location.save()
+          .then(() => {
+            callback();
+          })
+      }
+      else {
+			  Sphere.deleteFile(location.sphereId, location.imageId, options, (err, result) => {
+          if (err) { return callback(err); }
 
-			Sphere.deleteFile(location.sphereId, location.imageId, {}, next);
+          // remove the profile pic
+          location.imageId = undefined;
+          location.save()
+            .then(() => {
+              callback();
+            })
+            .catch((err) => {
+              callback(err);
+            })
+        })
+      }
+
 		});
 	};
 
 	model.remoteMethod(
 		'deleteImage',
 		{
-			http: {path: '/:id/image/:fk', verb: 'delete'},
+			http: {path: '/:id/image/', verb: 'delete'},
 			accepts: [
 				{arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'options', type: 'object', http: 'optionsFromRequest'},
 			],
 			description: "Delete image of the location"
 		}
