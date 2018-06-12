@@ -213,6 +213,29 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
+    .then(() => {
+      return releaseFirmware(
+        '2.1.0-RC0', // release version
+        '1.3.1', // minimum compatible version,
+        '2.1.0', // minimum App version,
+        plugAndBuiltinVariations, // hardware versions
+        '5e44e89eed1c416978f7e86185159b09fef2ca29', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_2.1.0-RC0/bin/crownstone_2.1.0-RC0.zip',
+        BETA_RELEASE_LEVEL, // release level
+        {  // release notes
+          'en' :
+          '- Introducing switchcraft.\n\n' +
+          '- RSSI between mesh nodes are now advertised.\n\n' +
+          '- Setup is now a single command.\n\n'
+          ,
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
     // .then(() => {return clearFirmwares(firmwareModel) })
