@@ -789,7 +789,7 @@ module.exports = function(model) {
     {
       http: {path: '/:id/guests', verb: 'put'},
       accepts: [
-        {arg: 'email', type: 'string', required: true},
+        {arg: 'email', type: 'string', required: true, http: { source : 'query' }},
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
@@ -808,7 +808,7 @@ module.exports = function(model) {
     {
       http: {path: '/:id/members', verb: 'put'},
       accepts: [
-        {arg: 'email', type: 'string', required: true},
+        {arg: 'email', type: 'string', required: true, http: { source : 'query' }},
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
@@ -827,7 +827,7 @@ module.exports = function(model) {
     {
       http: {path: '/:id/admins', verb: 'put'},
       accepts: [
-        {arg: 'email', type: 'string', required: true},
+        {arg: 'email', type: 'string', required: true, http: { source : 'query' }},
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],

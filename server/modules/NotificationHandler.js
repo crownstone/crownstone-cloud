@@ -24,19 +24,24 @@ class NotificationHandlerClass {
     return sphereModel.findById(sphereId)
       .then((sphere) => {
         if (sphere) {
-          sphere.users({fields: {id:true}}, (err, userIdArray) => {
-            if (!err && userIdArray.length > 0) {
-              return userIdArray;
-            }
+          return new Promise((resolve, reject) => {
+            sphere.users({fields: {id:true}}, (err, userIdArray) => {
+              if (!err && userIdArray.length > 0) {
+                return resolve(userIdArray);
+              }
+            })
           })
         }
-      });
+      })
+
   }
 
   notifySphereUsers(sphereId, messageData) {
     this.collectSphereUsers(sphereId)
       .then((userIdArray) => {
-        this.notifyUsers(userIdArray, messageData);
+        if (userIdArray && Array.isArray(userIdArray)) {
+          this.notifyUsers(userIdArray, messageData);
+        }
       });
   }
 
@@ -100,7 +105,6 @@ class NotificationHandlerClass {
     for (let i = 0; i < userIds.length; i++) {
       userIdArray.push({id:userIds[i]});
     }
-
     this._notifyUsers(userIdArray, messageData);
   }
 
