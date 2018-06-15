@@ -702,10 +702,9 @@ module.exports = function(model) {
         // debug("user", user);
 
         const SphereAccess = loopback.getModel('SphereAccess');
-        SphereAccess.findOne(
-          {where: {and: [{sphereId: id}, {userId: user.id}, {invitePending: true}]}},
+        SphereAccess.findOne({where: {and: [{sphereId: id}, {userId: user.id}, {invitePending: true}]}},
           function(err, access) {
-            if (err) return callback(err);
+            if (err)     return callback(err);
             if (!access) return callback(new Error("User not found in invites"));
 
             if (user.new) {
@@ -719,13 +718,12 @@ module.exports = function(model) {
                   sendInvite(user, options, sphere, true, accessToken.id);
                   callback();
                 });
-
               })
-            } else {
-              sendInvite(user, options, sphere, false);
             }
-
-            callback();
+            else {
+              sendInvite(user, options, sphere, false);
+              callback();
+            }
           }
         );
       });
