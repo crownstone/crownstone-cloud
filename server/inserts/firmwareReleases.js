@@ -6,6 +6,7 @@ const versionUtil = require('../../server/util/versionUtil');
 const { ask, promiseBatchPerformer } = require("./insertUtil");
 
 let plugAndBuiltinVariations = hardwareVersions.util.getAllPlugs().concat(hardwareVersions.util.getAllBuiltIns());
+let plugAndBuiltinAndDongleVariations = hardwareVersions.util.getAllPlugs().concat(hardwareVersions.util.getAllBuiltIns()).concat(hardwareVersions.util.getAllDongles());
 
 let APP;
 let CHANGE_DATA = false;
@@ -74,7 +75,7 @@ function performFirmwareOperations(app) {
     // .then(() => { return changeFirmwareReleaseLevel('1.5.1',3); })
     // .then(() => { return getFirmwareVersion('1.5.1') })
     // .then(() => { return clearFirmwares(); })
-    // .then(() => { return removeFirmwareVersion('1.7.1'); })
+    // .then(() => { return removeFirmwareVersion('2.1.2'); })
     // .then(() => { return clearBootloaders(); })
     // .then(() => { return clearFirmwareAtUsers() })
     // .then(() => { return clearBootloaderAtUsers() })
@@ -213,29 +214,53 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-    .then(() => {
-      return releaseFirmware(
-        '2.1.0-RC0', // release version
-        '1.3.1', // minimum compatible version,
-        '2.1.0', // minimum App version,
-        plugAndBuiltinVariations, // hardware versions
-        '5e44e89eed1c416978f7e86185159b09fef2ca29', // sha1 hash to validate download
-        'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_2.1.0-RC0/bin/crownstone_2.1.0-RC0.zip',
-        BETA_RELEASE_LEVEL, // release level
-        {  // release notes
-          'en' :
-          '- Introducing switchcraft.\n\n' +
-          '- RSSI between mesh nodes are now advertised.\n\n' +
-          '- Setup is now a single command.\n\n'
-          ,
-          'nl' : '',
-          'de' : '',
-          'es' : '',
-          'it' : '',
-          'fr' : ''
-        }
-      );
-    })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     '2.1.2', // release version
+    //     '1.3.1', // minimum compatible version,
+    //     '2.1.0', // minimum App version,
+    //     plugAndBuiltinAndDongleVariations, // hardware versions
+    //     'fa5403234a7f1ffbb8dbcc9088ca5b36eb0c7b76', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_2.1.2/bin/crownstone_2.1.2.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- Introducing the mesh.\n\n' +
+    //       '- Fast setup.\n\n' +
+    //       '- Improved quality of power measurement.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     '2.1.3', // release version
+    //     '1.3.1', // minimum compatible version,
+    //     '2.1.0', // minimum App version,
+    //     hardwareVersions.util.getAllGuideStones(), // hardware versions
+    //     '112ad5f0ad8c1c7d30ec74a723e271f3fb3affdc', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/guidestone_2.1.3/bin/guidestone_2.1.3.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- Introducing the mesh.\n\n' +
+    //       '- Fast setup.\n\n' +
+    //       '- Improved quality of power measurement.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
     // .then(() => {return clearFirmwares(firmwareModel) })

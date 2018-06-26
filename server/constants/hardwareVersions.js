@@ -31,6 +31,10 @@ const hardwareVersionExportData = {
 
       guidestoneVersions: [
         "10104010000", // GUIDESTONE
+      ],
+
+      dongleVersions: [
+        "10105000000",
       ]
     }
   },
@@ -53,6 +57,14 @@ const hardwareVersionExportData = {
 
     getAllBuiltIns() {
       return combineAll(hardwareVersionExportData.hardwareVersionElements.types.builtinVersions);
+    },
+
+    getAllGuideStones() {
+      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.guidestoneVersions);
+    },
+
+    getAllDongles() {
+      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.dongleVersions);
     }
   }
 };
