@@ -418,7 +418,7 @@ function releaseFirmware(firmwareVersion, minimumCompatibleVersion, minimumAppVe
   );
 }
 
-function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
+function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, minimumAppVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
   if (downloadUrl.indexOf("bootloader") === -1) {
     throw new Error("Release bootloader releaseURL does not contain the word bootloader: this likely is a bug!");
   }
