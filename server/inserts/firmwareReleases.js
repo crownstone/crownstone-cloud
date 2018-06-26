@@ -98,6 +98,25 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
+    .then(() => {
+      return releaseBootloader(
+        '1.4.0', // release version
+        '1.2.2', // minimum compatible version
+        '2.1.0', // minimum App version,
+        hardwareVersions.util.getAllDongles(), // dongle only, as this update only adds support for dongle.
+        'dd511852f293f19ad5d7034bcdff7dc579424f0f', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.4.0/bin/bootloader_1.4.0.zip',
+        PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
+        {  // release notes
+          'en' : 'Crownstone USB support',
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
     // .then(() => {
     //   return releaseFirmware(
     //     '1.5.1', // release version
