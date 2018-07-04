@@ -252,6 +252,9 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('replaceById');
   model.disableRemoteMethodByName('createChangeStream');
 
+  model.disableRemoteMethodByName('prototype.__create__floatingLocationPosition');
+  model.disableRemoteMethodByName('prototype.__update__floatingLocationPosition');
+
   model.disableRemoteMethodByName('prototype.__create__users');
   model.disableRemoteMethodByName('prototype.__delete__users');
   model.disableRemoteMethodByName('prototype.__destroyById__users');
@@ -1717,6 +1720,44 @@ module.exports = function(model) {
   };
 
 
+  model.setFloatingLocationPosition = function(data, sphereId, next) {
+    model.findById(sphereId)
+      .then((sphere) => {
+        if (!sphere) { throw "Sphere with id" + sphereId + " does not exist."; }
+
+        sphere.floatingLocationPosition(function(err, pos)  {
+          if (err) { return next(err); }
+          if (pos == null) {
+            sphere.floatingLocationPosition.create(data, function(err, newPos) {
+              if (err) { return next(err); }
+              next(null, newPos)
+            })
+          }
+          else {
+            sphere.floatingLocationPosition.update(data, function(err, newPos) {
+              if (err) { return next(err); }
+              next(null, newPos)
+            })
+          }
+        })
+      })
+      .catch((err) => {
+        next(err);
+      })
+  };
+
+  model.remoteMethod(
+    'setFloatingLocationPosition',
+    {
+      http: {path: '/:id/floatingLocationPosition', verb: 'post'},
+      accepts: [
+        {arg: 'data', type: 'Position', required: true, http: { source : 'body' }},
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      returns: {arg: 'role', type: 'Position', root: true},
+      description: "Set the position of the floating location"
+    }
+  );
 
 
   /************************************

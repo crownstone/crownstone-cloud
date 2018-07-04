@@ -126,6 +126,9 @@ module.exports = function(model) {
 
   model.disableRemoteMethodByName('prototype.__get__owner');
 
+  model.disableRemoteMethodByName('prototype.__create__sphereOverviewPosition');
+  model.disableRemoteMethodByName('prototype.__update__sphereOverviewPosition');
+
 	model.disableRemoteMethodByName('prototype.__exists__presentPeople');
 	model.disableRemoteMethodByName('prototype.__link__presentPeople');
 	model.disableRemoteMethodByName('prototype.__unlink__presentPeople');
@@ -406,5 +409,45 @@ module.exports = function(model) {
 			description: "Delete image of the location"
 		}
 	);
+
+
+  model.setSphereOverviewPosition = function(data, locationId, next) {
+    model.findById(locationId)
+      .then((location) => {
+        if (!location) { throw "location with id" + locationId + " does not exist."; }
+
+        location.sphereOverviewPosition(function(err, pos)  {
+          if (err) { return next(err); }
+          if (pos == null) {
+            location.sphereOverviewPosition.create(data, function(err, newPos) {
+              if (err) { return next(err); }
+              next(null, newPos)
+            })
+          }
+          else {
+            location.sphereOverviewPosition.update(data, function(err, newPos) {
+              if (err) { return next(err); }
+              next(null, newPos)
+            })
+          }
+        })
+      })
+      .catch((err) => {
+        next(err);
+      })
+  };
+
+  model.remoteMethod(
+    'setSphereOverviewPosition',
+    {
+      http: {path: '/:id/sphereOverviewPosition', verb: 'post'},
+      accepts: [
+        {arg: 'data', type: 'Position', required: true, http: { source : 'body' }},
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      returns: {arg: 'role', type: 'Position', root: true},
+      description: "Set the position of the location in the sphere overview"
+    }
+  );
 
 };
