@@ -8,6 +8,10 @@
     "validateUpsert": true
   },
   "mixins": {
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    },
     "DisableCommon": true,
     "Util": true
   },
