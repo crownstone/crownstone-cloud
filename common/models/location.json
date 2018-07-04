@@ -32,18 +32,11 @@
     "description": {
       "type": "string"
     },
-    "groundTruth": {
-      "type": "boolean"
-    },
     "icon": {
       "type": "string"
     },
     "imageId": {
       "type": "any"
-    },
-    "metaLevel": {
-      "type": "number",
-      "default": 0
     },
     "fingerprint": {
       "type": "string"
@@ -72,6 +65,11 @@
     "fingerprints": {
       "type": "hasMany",
       "model": "Fingerprint",
+      "foreignKey": "locationId"
+    },
+    "sphereOverviewPosition": {
+      "type": "hasOne",
+      "model": "Position",
       "foreignKey": "locationId"
     }
   },

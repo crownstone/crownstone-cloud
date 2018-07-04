@@ -110,7 +110,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__spheres');
   model.disableRemoteMethodByName('prototype.__link__spheres');
   model.disableRemoteMethodByName('prototype.__count__spheres');
-  model.disableRemoteMethodByName('prototype.__get__spheres');
+  // model.disableRemoteMethodByName('prototype.__get__spheres');
 
   model.disableRemoteMethodByName('prototype.__delete__hooks');
   model.disableRemoteMethodByName('prototype.__updateById__hooks');
@@ -388,41 +388,20 @@ module.exports = function(model) {
   );
 
 
-  model.spheres = function(id, callback) {
-    model.findById(id, function(err, instance) {
-      if (err) return callback(err);
-      if (model.checkForNullError(instance, callback, "id: " + id)) return;
-
-      instance.spheres(function(err, spheres) {
-        if (err) return callback(err);
-
-        // debug("spheres:", spheres);
-
-        const SphereAccess = loopback.getModel('SphereAccess');
-        SphereAccess.find(
-          {where: {and: [{userId: id}, {invitePending: {neq: true}}]}, field: "sphereId"},
-          function(err, res) {
-            if (err) return callback(err);
-
-            let filteredSpheres = [];
-            for (let i = 0; i < spheres.length; ++i) {
-              let sphere = spheres[i];
-              for (let j = 0; j < res.length; ++j) {
-                let access = res[j];
-
-                // String cast is required because loopback can use an internal ObjectID object for ids.
-                if (String(sphere.id) === String(access.sphereId)) {
-                  filteredSpheres.push(sphere);
-                  break;
-                }
-              }
-            }
-            // debug("found spheres: ", filteredSpheres);
-            callback(null, filteredSpheres);
-          }
-        );
-      });
-    });
+  model.spheres = function(id, filter, callback) {
+    // we filter out the spheres to which we have not yet finalized the invite.
+    const SphereAccess = loopback.getModel('SphereAccess');
+    SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, field: "sphereId"})
+      .then((sphereIds) => {
+        let sphereModel = loopback.getModel('Sphere');
+        return sphereModel.find({where: {inq: sphereIds}, filter: filter})
+      })
+      .then((spheres) => {
+        callback(null, spheres)
+      })
+      .catch((err) => {
+        callback(err);
+      })
   };
 
   model.remoteMethod(
@@ -430,7 +409,8 @@ module.exports = function(model) {
     {
       http: {path: '/:id/spheres', verb: 'get'},
       accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'filter', type: 'any', required: false, http: { source : 'query' }}
       ],
       returns: {arg: 'data', type: ['Sphere'], root: true},
       description: "Queries spheres of user"

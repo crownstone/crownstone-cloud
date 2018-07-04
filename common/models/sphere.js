@@ -782,6 +782,7 @@ module.exports = function(model) {
     invite(id, email, "guest", options, callback);
   };
 
+
   model.remoteMethod(
     'addGuest',
     {

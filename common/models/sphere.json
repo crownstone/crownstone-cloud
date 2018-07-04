@@ -110,6 +110,11 @@
       "type":"hasOne",
       "model": "geoLocation",
       "foreignKey": "sphereId"
+    },
+    "floatingLocationPosition": {
+      "type":"hasOne",
+      "model": "Position",
+      "foreignKey": "sphereId"
     }
   },
   "acls": [],

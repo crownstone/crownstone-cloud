@@ -1,0 +1,52 @@
+{
+  "name": "Position",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "Util": true
+  },
+  "properties": {
+    "x": {
+      "type": "number",
+      "required": true
+    },
+    "y": {
+      "type": "number",
+      "required": true
+    },
+    "z": {
+      "type": "number",
+      "required": false
+    },
+    "label": {
+      "type": "string",
+      "required": false
+    }
+  },
+  "hidden": [
+    "id",
+    "locationId",
+    "sphereId"
+  ],
+  "validations": [],
+  "relations": {
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
+    },
+    "sphere": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "sphereId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

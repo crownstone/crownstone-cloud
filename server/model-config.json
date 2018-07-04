@@ -161,5 +161,9 @@
   "FingerprintLinker": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "Position": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }
