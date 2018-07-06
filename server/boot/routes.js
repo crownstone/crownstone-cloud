@@ -23,6 +23,18 @@ module.exports = function (app) {
     });
   });
 
+  //login page
+  app.get('/apple-app-site-association', function (req, res) {
+    let payload = {
+      applinks: {
+        apps: [],
+        details: []
+      }
+    };
+    payload.applinks.details.push({appID:"6LYJ9PNC3V.com.crownstone.Crownstone",paths:['callbackURL']});
+    res.send(JSON.stringify(payload, undefined, 2));
+  });
+
   //callback page
   app.use( bodyParser.json() );
   app.post('/test', function (req, res) {
