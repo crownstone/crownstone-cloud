@@ -152,10 +152,7 @@ module.exports = function(model) {
     device.currentLocationId = null;
 
     device.save(function(err, deviceInstance) {
-      if (next) {
-        if (err) return next(err);
-        next();
-      }
+      next(err);
     })
 
   };
@@ -188,7 +185,7 @@ module.exports = function(model) {
   model.setCurrentSphere = function(device, sphereId, next) {
     if ((device.currentSphereId === sphereId) ||
       (String(device.currentSphereId) === String(sphereId))) {
-      debug("location == current location, nothing to do!");
+      debug("sphere == current sphere, nothing to do!");
       return next();
     }
 
@@ -204,15 +201,13 @@ module.exports = function(model) {
     });
   };
 
-  model.clearCurrentSphere = function(device, next) {
-    debug("clearing current sphere");
+  model.clearCurrentSphereAndLocation = function(device, next) {
+    debug("clearing current sphere and location");
     device.currentSphereId = null;
+    device.currentLocationId = null;
 
     device.save(function(err, deviceInstance) {
-      if (next) {
-        if (err) return next(err);
-        next();
-      }
+      next(err);
     })
 
   };
@@ -225,7 +220,7 @@ module.exports = function(model) {
       if (sphereId) {
         model.setCurrentSphere(device, sphereId, next);
       } else {
-        model.clearCurrentSphere(device, next);
+        model.clearCurrentSphereAndLocation(device, next);
       }
     })
   };
@@ -238,7 +233,7 @@ module.exports = function(model) {
         {arg: 'fk', type: 'any', 'http': {source: 'path'}},
         {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
       ],
-      description: "Set the current Sphere of the device"
+      description: "Set the current Sphere of the device. On null, both the Sphere and Location ids are cleared since you can't be in a location but not in a Sphere."
     }
   );
 
@@ -552,7 +547,7 @@ module.exports = function(model) {
         return Promise.all(promises);
       })
       .then(() => {
-        console.log("Got matchingFingerprint", resultingFingerPrints);
+        // console.log("Got matchingFingerprint", resultingFingerPrints);
         callback(null, resultingFingerPrints);
       })
       .catch((err) => {
