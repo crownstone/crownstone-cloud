@@ -234,7 +234,6 @@ class NotificationHandlerClass {
       production = false;
     }
 
-    // console.log("USING PRODUCTION FOR NOTIFICATIONS", production)
 
     let options = {
       token: {
@@ -256,7 +255,7 @@ class NotificationHandlerClass {
 
     let silent = messageData.silent;
     if (messageData.silentIOS !== undefined) {
-      silent = messageData.silent;
+      silent = messageData.silentIOS;
     }
 
     if (silent) {

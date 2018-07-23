@@ -791,7 +791,7 @@ module.exports = function(model) {
                   type: 'setSwitchStateRemotely',
                   data:{stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchState)), command:'setSwitchStateRemotely'},
                   silentAndroid: true,
-                  silentIOS: false
+                  silentIOS: true
                 });
               }
               else {
