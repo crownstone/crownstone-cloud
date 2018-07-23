@@ -110,7 +110,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__spheres');
   model.disableRemoteMethodByName('prototype.__link__spheres');
   model.disableRemoteMethodByName('prototype.__count__spheres');
-  // model.disableRemoteMethodByName('prototype.__get__spheres');
+  model.disableRemoteMethodByName('prototype.__get__spheres');
 
   model.disableRemoteMethodByName('prototype.__delete__hooks');
   model.disableRemoteMethodByName('prototype.__updateById__hooks');
@@ -391,10 +391,18 @@ module.exports = function(model) {
   model.spheres = function(id, filter, callback) {
     // we filter out the spheres to which we have not yet finalized the invite.
     const SphereAccess = loopback.getModel('SphereAccess');
-    SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, field: "sphereId"})
+    SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, fields: "sphereId"})
       .then((sphereIds) => {
+        let idArray = [];
+        for (let i = 0; i < sphereIds.length; i++) {
+          idArray.push(sphereIds[i].sphereId)
+        }
+        let query = {where: {id: {inq: idArray}}};
+        if (filter.include) {
+          query.include = filter.include;
+        }
         let sphereModel = loopback.getModel('Sphere');
-        return sphereModel.find({where: {inq: sphereIds}, filter: filter})
+        return sphereModel.find(query)
       })
       .then((spheres) => {
         callback(null, spheres)
@@ -678,7 +686,7 @@ module.exports = function(model) {
 
   model.getEncryptionKeys = function(id, callback) {
     const SphereAccess = loopback.getModel('SphereAccess');
-    SphereAccess.find({where: {userId: id}, include: "sphere"}, function(err, objects) {
+    SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, include: "sphere"}, function(err, objects) {
       let keys = Array.from(objects, function(access) {
         let sphere = { sphereId: access.sphereId, keys: {}};
         let sphereData = access.sphere();
