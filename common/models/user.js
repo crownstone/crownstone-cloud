@@ -398,7 +398,7 @@ module.exports = function(model) {
           idArray.push(sphereIds[i].sphereId)
         }
         let query = {where: {id: {inq: idArray}}};
-        if (filter.include) {
+        if (filter && typeof filter === 'object' && filter.include) {
           query.include = filter.include;
         }
         let sphereModel = loopback.getModel('Sphere');
