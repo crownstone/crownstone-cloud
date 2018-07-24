@@ -230,7 +230,8 @@ class NotificationHandlerClass {
     }
 
     let production = true;
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
+    console.log("Using production for notifications", !process.env.NODE_ENV || process.env.NODE_ENV === 'local' || process.env.NOTIFICATION_TYPE !== undefined && process.env.NOTIFICATION_TYPE === 'development')
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local' || process.env.NOTIFICATION_TYPE !== undefined && process.env.NOTIFICATION_TYPE === 'development') {
       production = false;
     }
 
@@ -269,9 +270,10 @@ class NotificationHandlerClass {
     }
 
     // Send the notification to the API with send, which returns a promise.
+    console.log("sending this notificaiton", notification)
     apnProvider.send(notification, tokens)
       .then((result) => {
-        // console.log("IOS PUSH RESULT", JSON.stringify(result, undefined,2));
+        console.log("IOS PUSH RESULT", JSON.stringify(result, undefined,2));
       })
       .then(() => {
         apnProvider.shutdown()
