@@ -19,7 +19,9 @@ class MongoDbConnector {
 
       // Use connect method to connect to the server
       MongoClient.connect(url, function(err, client) {
-        return reject(err);
+        if ( err ) {
+          return reject(err);
+        }
         console.log("Connected successfully to mongo server");
 
         this.userDb = client.db(datasources.userDs.name);
