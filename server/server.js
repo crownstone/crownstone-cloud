@@ -1,26 +1,24 @@
 "use strict";
 
-const loopback = require('loopback');
-const boot = require('loopback-boot');
-const path = require('path');
-const bodyParser = require('body-parser');
+const loopback    = require('loopback');
+const boot        = require('loopback-boot');
+const path        = require('path');
+const bodyParser  = require('body-parser');
 const compression = require('compression');
 
-const oauth2 = require('loopback-component-oauth2');
+const oauth2  = require('loopback-component-oauth2');
 const express = require('express');
 const session = require('express-session');
 
 const MongoStore = require('connect-mongo')(session);
-let datasources = require('./datasources.' + (process.env.NODE_ENV || 'local'));
-let config = require('./config.' + (process.env.NODE_ENV || 'local'));
+let datasources  = require('./datasources.' + (process.env.NODE_ENV || 'local'));
+let config       = require('./config.' + (process.env.NODE_ENV || 'local'));
 
 
 let store;
 if (datasources.userDs && datasources.userDs.url) {
   store = new MongoStore({url: datasources.userDs.url, mongoOptions: {collection: 'OAuthSessions'}});
 }
-
-// let updateDS = require('./updateDS.js');
 
 const app = module.exports = loopback();
 
@@ -46,7 +44,6 @@ app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(compression());
-// console.log("enable compression");
 
 
 
