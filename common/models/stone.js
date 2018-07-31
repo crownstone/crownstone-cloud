@@ -1213,14 +1213,17 @@ module.exports = function(model) {
   );
 
 
-  model.activityLogBatch = function(stoneId, batchOfLogs, timestamp, next) {
+  model.activityLogBatch = function(stoneId, batchOfLogs, timestamp, options, next) {
     let dt = new Date().valueOf() - ((timestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
-    console.log("upload dt", dt)
+    if (Math.abs(dt) < 1000) {
+      dt = 0;
+    }
+
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      if (timestamp && timestamp > 0) {
+      if (timestamp && timestamp > 0 && dt !== 0) {
         for (let i = 0; i < batchOfLogs.length; i++) {
           if (batchOfLogs[i].timestamp) {
             // map the time to cloud time.
@@ -1228,7 +1231,6 @@ module.exports = function(model) {
           }
         }
       }
-
 
       // create the new data in the database
       stone.activityLog.create(batchOfLogs)
@@ -1248,30 +1250,32 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'data', type: '[ActivityLog]', required: true, http: { source : 'body' }},
-        {arg: 'timestamp', type: 'number', required: true, http: { source : 'body' }},
+        {arg: 'timestamp', type: 'number', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: '[ActivityLog]', root: true},
       description: 'Store activity logs for this Crownstone'
     }
   );
 
-  model.getActivityLogs = function(stoneId, yourTimestamp, excludeUserId, sinceTimestamp, next) {
+  model.getActivityLogs = function(stoneId, yourTimestamp, excludeUserId, sinceTimestamp, options, next) {
     let dt = new Date().valueOf() - ((yourTimestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
-    console.log("download dt", dt)
+    if (Math.abs(dt) < 1000) {
+      dt = 0;
+    }
+
     let activityLogModel = loopback.getModel("ActivityLog")
     let query = {where: {and: [{stoneId:stoneId}]}};
     if (excludeUserId)  { query.where.and.push({userId:    {neq: excludeUserId}});  }
     if (sinceTimestamp) { query.where.and.push({timestamp: {gte: sinceTimestamp}}); }
     activityLogModel.find(query)
       .then((data) => {
-
-        if (yourTimestamp && yourTimestamp > 0) {
+        if (yourTimestamp && yourTimestamp > 0 && dt !== 0) {
           for (let i = 0; i < data.length; i++) {
             // map the time to phone time
             data[i].timestamp -= dt;
           }
         }
-
         next(null, data)
       })
       .catch((err) => {
@@ -1286,9 +1290,10 @@ module.exports = function(model) {
       http: {path: '/:id/activityLogs', verb: 'get'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'yourTimestamp', type: 'number', required: true, http: { source : 'body' }},
+        {arg: 'yourTimestamp', type: 'number', required: false, http: { source : 'query' }},
         {arg: 'excludeUserId', type: 'string', required: false, http: { source : 'query' }},
         {arg: 'sinceTimestamp', type: 'number', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: '[ActivityLog]', root: true},
       description: 'Get last activity logs for this Crownstone'

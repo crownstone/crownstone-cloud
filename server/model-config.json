@@ -152,7 +152,7 @@
   },
   "Diagnostic": {
     "dataSource": "mongoDs",
-    "public": false
+    "public": true
   },
   "Fingerprint": {
     "dataSource": "mongoDs",
@@ -168,6 +168,6 @@
   },
   "ActivityLog": {
     "dataSource": "mongoDs",
-    "public": false
+    "public": true
   }
 }

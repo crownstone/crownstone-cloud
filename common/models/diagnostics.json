@@ -8,7 +8,7 @@
     "validateUpsert": true
   },
   "mixins": {
-    "DisableCommon": true,
+    "DisableAll": true,
     "SphereContent": true,
     "Util": true
   },
