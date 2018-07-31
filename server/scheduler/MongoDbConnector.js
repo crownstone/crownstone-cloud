@@ -1,7 +1,7 @@
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 
-let datasources = require('./datasources.' + (process.env.NODE_ENV || 'local'));
+let datasources = require('../datasources.' + (process.env.NODE_ENV || 'local'));
 
 
 
