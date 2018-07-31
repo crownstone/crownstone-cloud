@@ -18,11 +18,10 @@ class MongoDbConnector {
       let url = datasources.mongoDs.url;
 
       // Use connect method to connect to the server
-      MongoClient.connect(url, function(err, client) {
-        if ( err ) {
-          return reject(err);
-        }
-        console.log("Connected successfully to mongo server");
+      MongoClient.connect(url, (err, client) => {
+        if ( err ) { return reject(err); }
+
+        console.log("CRONJOBS: Connected successfully to mongo server");
 
         this.userDb = client.db(datasources.userDs.name);
         this.dataDb = client.db(datasources.mongoDs.name);
@@ -34,7 +33,7 @@ class MongoDbConnector {
   }
 
   close() {
-    this.mongoClient = client.close();
+    this.mongoClient.close();
   }
 }
 

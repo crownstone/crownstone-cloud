@@ -13,6 +13,8 @@ function performSanitation(app) {
   let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
   let locationModel = app.dataSources.mongoDs.getModel('Location');
   let stoneModel = app.dataSources.mongoDs.getModel('Stone');
+  let schedulesModel = app.dataSources.mongoDs.getModel('Schedule');
+  let activityLogModel = app.dataSources.mongoDs.getModel('ActivityLog');
   let devicesModel = app.dataSources.mongoDs.getModel('Device');
   let installationModel = app.dataSources.mongoDs.getModel('AppInstallation');
   let appliancesModel = app.dataSources.mongoDs.getModel('Appliance');
@@ -88,99 +90,99 @@ function performSanitation(app) {
           // fs.writeFileSync('devices' + new Date().getFullYear() + '-' + (new Date().getMonth()+1) + '-' +  new Date().getDate() + '.json', JSON.stringify(usedDevices, undefined, 2))
         })
     })
-    // .then(() => {
-    //   return installationModel.find()
-    //     .then((results) => {
-    //       allInstallations = results;
-    //       let toBeDeletedDeviceCount = 0;
-    //       results.forEach((installation) => {
-    //         if (unownedDevicesIds[installation.deviceId] === true) {
-    //           toBeDeletedDeviceCount++;
-    //         }
-    //         if (allDeviceIds[installation.deviceId] === undefined || unownedDevicesIds[installation.deviceId] === true) {
-    //           unownedInstallationIds[installation.id] = true;
-    //         }
-    //       });
-    //       let unownedAmount = Object.keys(unownedInstallationIds).length;
-    //       console.log("Unowned Installations: ", unownedAmount, 'out of', allInstallations.length, ' (',  Math.round((unownedAmount / allInstallations.length)*100), '% ) -- ', toBeDeletedDeviceCount, " of which are in unowned Devices.")
-    //     })
-    // })
-    // .then(() => {
-    //   return sphereModel.find({ include: "users" })
-    //     .then((results) => {
-    //       allSpheres = results;
-    //       results.forEach((sphere) => {
-    //         allSphereIds[sphere.id] = true;
-    //         let unused = true;
-    //         let unowned = false;
-    //         if (userIds[sphere.ownerId] === undefined) { unowned = true; }
-    //         let sphereUsers = sphere.users();
-    //         for (let i = 0; i < sphereUsers.length; i++) {
-    //           if (userIds[sphereUsers[i].id] !== undefined) {
-    //             unused = false;
-    //             break;
-    //           }
-    //         }
-    //         if (unused && unowned) {
-    //           unownedSphereIds[sphere.id] = true;
-    //         }
-    //       })
-    //       let unownedAmount = Object.keys(unownedSphereIds).length;
-    //       console.log("Unowned spheres: ", unownedAmount, 'out of', allSpheres.length, ' (',  Math.round((unownedAmount / allSpheres.length)*100), '% )');
-    //     })
-    // })
-    // .then(() => {
-    //   return stoneModel.find()
-    //     .then((results) => {
-    //       allStones = results;
-    //       let toBeDeletedSphereCount = 0;
-    //       results.forEach((stone) => {
-    //         allStoneIds[stone.id] = true;
-    //         if (unownedSphereIds[stone.sphereId] === true) {
-    //           toBeDeletedSphereCount++;
-    //         }
-    //         if (allSphereIds[stone.sphereId] === undefined || unownedSphereIds[stone.sphereId] === true) {
-    //           unownedStoneIds[stone.id] = true;
-    //         }
-    //       });
-    //       let unownedAmount = Object.keys(unownedStoneIds).length;
-    //       console.log("Unowned stones: ", unownedAmount, 'out of', allStones.length,' (',  Math.round((unownedAmount / allStones.length)*100), '% ) -- ', toBeDeletedSphereCount, " of which are in unowned Spheres.")
-    //     })
-    // })
-    // .then(() => {
-    //   return locationModel.find()
-    //     .then((results) => {
-    //       allLocations = results;
-    //       let toBeDeletedSphereCount = 0;
-    //       results.forEach((location) => {
-    //         if (unownedSphereIds[location.sphereId] === true) {
-    //           toBeDeletedSphereCount++;
-    //         }
-    //         if (allSphereIds[location.sphereId] === undefined || unownedSphereIds[location.sphereId] === true) {
-    //           unownedLocationIds[location.id] = true;
-    //         }
-    //       });
-    //       let unownedAmount = Object.keys(unownedLocationIds).length;
-    //       console.log("Unowned locations: ", unownedAmount, 'out of', allLocations.length, ' (',  Math.round((unownedAmount / allLocations.length)*100), '% ) -- ', toBeDeletedSphereCount, " of which are in unowned Spheres.")
-    //     })
-    // })
-    // .then(() => {
-    //   return appliancesModel.find()
-    //     .then((results) => {
-    //       allAppliances = results;
-    //       let toBeDeletedSphereCount = 0;
-    //       results.forEach((appliance) => {
-    //         if (unownedSphereIds[appliance.sphereId] === true) {
-    //           toBeDeletedSphereCount++;
-    //         }
-    //         if (allSphereIds[appliance.sphereId] === undefined || unownedSphereIds[appliance.sphereId] === true) {
-    //           unownedApplianceIds[appliance.id] = true;
-    //         }
-    //       });
-    //       let unownedAmount = Object.keys(unownedApplianceIds).length;
-    //       console.log("Unowned appliances: ", unownedAmount, 'out of', allLocations.length, ' (',  Math.round((unownedAmount / allLocations.length)*100), '% ) -- ', toBeDeletedSphereCount, " of which are in unowned Spheres.")
-    //     })
-    // })
+    .then(() => {
+      return installationModel.find()
+        .then((results) => {
+          allInstallations = results;
+          let toBeDeletedDeviceCount = 0;
+          results.forEach((installation) => {
+            if (unownedDevicesIds[installation.deviceId] === true) {
+              toBeDeletedDeviceCount++;
+            }
+            if (allDeviceIds[installation.deviceId] === undefined || unownedDevicesIds[installation.deviceId] === true) {
+              unownedInstallationIds[installation.id] = true;
+            }
+          });
+          let unownedAmount = Object.keys(unownedInstallationIds).length;
+          console.log("Unowned Installations: ", unownedAmount, 'out of', allInstallations.length, ' (',  Math.round((unownedAmount / allInstallations.length)*100), '% ) -- ', toBeDeletedDeviceCount, " of which are in unowned Devices.")
+        })
+    })
+    .then(() => {
+      return sphereModel.find({ include: "users" })
+        .then((results) => {
+          allSpheres = results;
+          results.forEach((sphere) => {
+            allSphereIds[sphere.id] = true;
+            let unused = true;
+            let unowned = false;
+            if (userIds[sphere.ownerId] === undefined) { unowned = true; }
+            let sphereUsers = sphere.users();
+            for (let i = 0; i < sphereUsers.length; i++) {
+              if (userIds[sphereUsers[i].id] !== undefined) {
+                unused = false;
+                break;
+              }
+            }
+            if (unused && unowned) {
+              unownedSphereIds[sphere.id] = true;
+            }
+          })
+          let unownedAmount = Object.keys(unownedSphereIds).length;
+          console.log("Unowned spheres: ", unownedAmount, 'out of', allSpheres.length, ' (',  Math.round((unownedAmount / allSpheres.length)*100), '% )');
+        })
+    })
+    .then(() => {
+      return stoneModel.find()
+        .then((results) => {
+          allStones = results;
+          let toBeDeletedSphereCount = 0;
+          results.forEach((stone) => {
+            allStoneIds[stone.id] = true;
+            if (unownedSphereIds[stone.sphereId] === true) {
+              toBeDeletedSphereCount++;
+            }
+            if (allSphereIds[stone.sphereId] === undefined || unownedSphereIds[stone.sphereId] === true) {
+              unownedStoneIds[stone.id] = true;
+            }
+          });
+          let unownedAmount = Object.keys(unownedStoneIds).length;
+          console.log("Unowned stones: ", unownedAmount, 'out of', allStones.length,' (',  Math.round((unownedAmount / allStones.length)*100), '% ) -- ', toBeDeletedSphereCount, " of which are in unowned Spheres.")
+        })
+    })
+    .then(() => {
+      return locationModel.find()
+        .then((results) => {
+          allLocations = results;
+          let toBeDeletedSphereCount = 0;
+          results.forEach((location) => {
+            if (unownedSphereIds[location.sphereId] === true) {
+              toBeDeletedSphereCount++;
+            }
+            if (allSphereIds[location.sphereId] === undefined || unownedSphereIds[location.sphereId] === true) {
+              unownedLocationIds[location.id] = true;
+            }
+          });
+          let unownedAmount = Object.keys(unownedLocationIds).length;
+          console.log("Unowned locations: ", unownedAmount, 'out of', allLocations.length, ' (',  Math.round((unownedAmount / allLocations.length)*100), '% ) -- ', toBeDeletedSphereCount, " of which are in unowned Spheres.")
+        })
+    })
+    .then(() => {
+      return appliancesModel.find()
+        .then((results) => {
+          allAppliances = results;
+          let toBeDeletedSphereCount = 0;
+          results.forEach((appliance) => {
+            if (unownedSphereIds[appliance.sphereId] === true) {
+              toBeDeletedSphereCount++;
+            }
+            if (allSphereIds[appliance.sphereId] === undefined || unownedSphereIds[appliance.sphereId] === true) {
+              unownedApplianceIds[appliance.id] = true;
+            }
+          });
+          let unownedAmount = Object.keys(unownedApplianceIds).length;
+          console.log("Unowned appliances: ", unownedAmount, 'out of', allLocations.length, ' (',  Math.round((unownedAmount / allLocations.length)*100), '% ) -- ', toBeDeletedSphereCount, " of which are in unowned Spheres.")
+        })
+    })
     // .then(() => {
     //   return powerUsageModel.find()
     //     .then((results) => {
