@@ -1,0 +1,60 @@
+{
+  "name": "ActivityLog",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "Util": true
+  },
+  "properties": {
+    "switchedToState": {
+      "type": "number",
+      "required": true
+    },
+    "type": {
+      "type": "string",
+      "required": true
+    },
+    "intent": {
+      "type": "number",
+      "required": false
+    },
+    "delayInCommand": {
+      "type": "number",
+      "required": true
+    },
+    "viaMesh": {
+      "type": "boolean",
+      "required": true
+    },
+    "commandUuid": {
+      "type": "string",
+      "required": true
+    },
+    "userId": {
+      "type": "string",
+      "required": true
+    },
+    "timestamp": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "hidden": [
+    "stoneId"
+  ],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

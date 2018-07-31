@@ -165,5 +165,9 @@
   "Position": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "ActivityLog": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

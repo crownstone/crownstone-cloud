@@ -18,8 +18,5 @@
   "filesDs": {
     "name": "filesDs",
     "connector": "memory"
-  },
-  "sessionKey": {
-    "key": "HIDDEN"
   }
 }

@@ -12,6 +12,7 @@ const session = require('express-session');
 
 const MongoStore = require('connect-mongo')(session);
 let datasources = require('./datasources.' + (process.env.NODE_ENV || 'local'));
+let config = require('./config.' + (process.env.NODE_ENV || 'local'));
 
 
 let store;
@@ -28,7 +29,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.middleware('session', session({
-  secret: process.env.SESSION_SECRET || datasources.sessionKey.key || 'keyboard kittens',
+  secret: process.env.SESSION_SECRET || config.sessionKey.key || 'keyboard kittens',
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   },

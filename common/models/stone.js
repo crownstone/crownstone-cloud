@@ -139,6 +139,14 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:guest",
         "permission": "ALLOW",
+        "property": "activityLogBatch"
+      }
+    );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "ALLOW",
         "property": "notifyOnRecovery"
       }
     );
@@ -190,6 +198,15 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__deleteById__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__powerUsageHistory');
+
+  model.disableRemoteMethodByName('prototype.__count__activityLog');
+  model.disableRemoteMethodByName('prototype.__create__activityLog');
+  model.disableRemoteMethodByName('prototype.__findById__activityLog');
+  model.disableRemoteMethodByName('prototype.__updateById__activityLog');
+  model.disableRemoteMethodByName('prototype.__destroyById__activityLog');
+  model.disableRemoteMethodByName('prototype.__deleteById__activityLog');
+  model.disableRemoteMethodByName('prototype.__delete__activityLog');
+  model.disableRemoteMethodByName('prototype.__get__activityLog');
 
   model.disableRemoteMethodByName('prototype.__count__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
@@ -1196,8 +1213,59 @@ module.exports = function(model) {
   );
 
 
+  model.activityLogBatch = function(stoneId, batchOfLogs, next) {
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
+      // create the new data in the database
+      stone.activityLog.create(batchOfLogs)
+        .then((insertResult) => {
+          next(null, insertResult)
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  }
 
+  model.remoteMethod(
+    'activityLogBatch',
+    {
+      http: {path: '/:id/activityLogBatch', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data', type: '[ActivityLog]', required: true, http: { source : 'body' }},
+      ],
+      returns: {arg: 'data', type: '[ActivityLog]', root: true},
+      description: 'Store activity logs for this Crownstone'
+    }
+  );
+
+  model.getActivityLogs = function(stoneId, excludeUserId, next) {
+    let activityLogModel = loopback.getModel("ActivityLog")
+    activityLogModel.find({where:{stoneId:stoneId, userId: {neq:excludeUserId}}})
+      .then((data) => {
+        next(null, data)
+      })
+      .catch((err) => {
+        next(err);
+      })
+
+  }
+
+  model.remoteMethod(
+    'getActivityLogs',
+    {
+      http: {path: '/:id/activityLogs', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'excludeUserId', type: 'string', required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'data', type: '[ActivityLog]', root: true},
+      description: 'Get last activity logs for this Crownstone'
+    }
+  );
 
 };
 
