@@ -5,7 +5,8 @@ var test = function(){
   let mongo = new MongoDbConnector();
   mongo.connect()
     .then(() => {
-      return mongo.userDb.find().count()
+      let userTable = mongo.userDb.collection("user")
+      return userTable.findOne({})
     })
     .then((results) => {
       console.log("HERE", results)
@@ -19,8 +20,9 @@ var test = function(){
 }
 // setInterval(test, 60000);
 
-console.log(test)
+test()
 
+//web: ./node_modules/.bin/sl-run server/server.js
 // //For specific times, use a chron job
 // var fifteenSeconsAfterMinute = function() {
 //   console.log("Another minute is gone forever. Hopefully, you made the most of it...");
