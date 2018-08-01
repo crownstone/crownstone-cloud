@@ -11,14 +11,15 @@ const debug = require('debug')('loopback:dobots');
 
 const config = require('../../server/config.json');
 const emailUtil = require('../../server/emails/util');
+const ToonAPI = require('../../server/integrations/Toon');
 const mesh = require('../../server/middleware/mesh-access-address');
 
 const messageUtils = require('./sharedUtil/messageUtil');
 const firmwareUtils = require('./sharedUtil/firmwareUtil');
 
+
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
-
 
 module.exports = function(model) {
 
@@ -274,6 +275,15 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__presentPeople');
   model.disableRemoteMethodByName('prototype.__exists__presentPeople');
 
+  // model.disableRemoteMethodByName('prototype.__destroyById__Toons');
+  // model.disableRemoteMethodByName('prototype.__updateById__Toons');
+  // model.disableRemoteMethodByName('prototype.__deleteById__Toons');
+  model.disableRemoteMethodByName('prototype.__create__Toons');
+  model.disableRemoteMethodByName('prototype.__findById__Toons');
+  model.disableRemoteMethodByName('prototype.__delete__Toons');
+  model.disableRemoteMethodByName('prototype.__exists__Toons');
+  model.disableRemoteMethodByName('prototype.__count__Toons');
+
   model.disableRemoteMethodByName('prototype.__delete__ownedLocations');
   model.disableRemoteMethodByName('prototype.__delete__ownedStones');
   model.disableRemoteMethodByName('prototype.__delete__ownedAppliances');
@@ -458,21 +468,11 @@ module.exports = function(model) {
 
   function afterSave(ctx, next) {
     updateOwnerAccess(ctx, next);
-    // addSuperUser(ctx)
   }
 
   // model.afterRemote('create', updateOwnerAccess);
   model.observe('after save', afterSave);
 
-  // model.beforeRemote('**', function(ctx, instance, next) {
-  // 	debug("method.name: ", ctx.method.name);
-  // 	next();
-  // });
-
-  // model.beforeRemote('*.__get__users', function(ctx, instance, next) {
-  // 	debug("ctx:", ctx);
-  // 	next();
-  // });
 
   /************************************
    **** Membership Methods
@@ -1756,6 +1756,46 @@ module.exports = function(model) {
       ],
       returns: {arg: 'role', type: 'Position', root: true},
       description: "Set the position of the floating location"
+    }
+  );
+
+
+  model.createToon = function(id, data, next) {
+    model.findById(id)
+      .then((sphere) => {
+        if (!sphere) {
+          throw "Sphere with id" + id + " does not exist.";
+        }
+
+        return ToonAPI.getAccessToken(data.refreshToken)
+      })
+      .then((token) => {
+        return ToonAPI.getSchedule(token, data.toonAgreementId);
+      })
+      .then((schedule) => {
+        data.schedule = ToonAPI.parseScheduleFormat(schedule);
+        // return sphere.Toons.create(data);
+      })
+
+      .then((toon) => {
+        next(null, toon)
+      })
+      .catch((err) => {
+        next(err);
+      })
+  }
+
+
+  model.remoteMethod(
+    'createToon',
+    {
+      http: {path: '/:id/Toons', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data', type: 'Toon', required: true, http: { source : 'body' }},
+      ],
+      returns: {arg: 'role', type: 'Toon', root: true},
+      description: "Create a new Toon integration for this Sphere"
     }
   );
 

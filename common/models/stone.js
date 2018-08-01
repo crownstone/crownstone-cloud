@@ -804,7 +804,7 @@ module.exports = function(model) {
           sphereModel.findById(stone.sphereId)
             .then((sphere) => {
               if (sphere) {
-                notificationHandler.notifyHubs(sphere, {
+                notificationHandler.notifySphereDevices(sphere, {
                   type: 'setSwitchStateRemotely',
                   data:{stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchState)), command:'setSwitchStateRemotely'},
                   silentAndroid: true,
@@ -1217,6 +1217,10 @@ module.exports = function(model) {
     let dt = new Date().valueOf() - ((timestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
     if (Math.abs(dt) < 1000) {
       dt = 0;
+    }
+
+    if (!Array.isArray(batchOfLogs)) {
+      batchOfLogs = [batchOfLogs];
     }
 
     model.findById(stoneId, function(err, stone) {

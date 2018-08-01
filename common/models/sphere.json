@@ -5,7 +5,8 @@
   "strictDelete": true,
   "idInjection": true,
   "options": {
-    "validateUpsert": true
+    "validateUpsert": true,
+    "strict":"filter"
   },
   "mixins": {
     "DisableCommon": true,
@@ -71,6 +72,11 @@
     "ownedLocations": {
       "type": "hasMany",
       "model": "Location",
+      "foreignKey": "sphereId"
+    },
+    "Toons": {
+      "type": "hasMany",
+      "model": "Toon",
       "foreignKey": "sphereId"
     },
     "ownedStones": {

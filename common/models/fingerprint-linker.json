@@ -4,6 +4,9 @@
   "base": "PersistedModel",
   "strictDelete": true,
   "idInjection": true,
+  "options": {
+    "strict":"filter"
+  },
   "mixins": {
     "DisableCommon": true,
     "TimeStamps": {

@@ -5,7 +5,8 @@
   "strictDelete": true,
   "idInjection": true,
   "options": {
-    "validateUpsert": true
+    "validateUpsert": true,
+    "strict":"filter"
   },
   "properties": {
     "sphereId": {

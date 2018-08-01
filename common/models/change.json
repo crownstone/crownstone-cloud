@@ -6,7 +6,8 @@
   "idInjection": true,
   "options": {
     "validateUpsert": true,
-    "strictObjectIDCoercion": true
+    "strictObjectIDCoercion": true,
+    "strict":"filter"
   },
   "mixins": {
     "SphereContent": true,

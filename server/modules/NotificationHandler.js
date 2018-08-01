@@ -45,7 +45,7 @@ class NotificationHandlerClass {
       });
   }
 
-  notifyHubs(sphere, messageData) {
+  notifySphereDevices(sphere, messageData) {
     // get users
     let iosTokens = [];
     let androidTokens = [];
@@ -58,25 +58,23 @@ class NotificationHandlerClass {
       for (let i = 0; i < users.length; i++) {
         let devices = users[i].devices();
         for (let j = 0; j < devices.length; j++) {
-          if (devices[j].hubFunction === true) {
-            let installations = devices[j].installations();
-            for (let k = 0; k < installations.length; k++) {
-              let token = installations[k].deviceToken;
-              if (token) {
-                switch (installations[k].deviceType) {
-                  case 'ios':
-                    if (iosUniqueTokens[token] === undefined) {
-                      iosUniqueTokens[token] = true;
-                      iosTokens.push(token);
-                    }
-                    break;
-                  case 'android':
-                    if (androidUniqueTokens[token] === undefined) {
-                      androidUniqueTokens[token] = true;
-                      androidTokens.push(token);
-                    }
-                    break;
-                }
+          let installations = devices[j].installations();
+          for (let k = 0; k < installations.length; k++) {
+            let token = installations[k].deviceToken;
+            if (token) {
+              switch (installations[k].deviceType) {
+                case 'ios':
+                  if (iosUniqueTokens[token] === undefined) {
+                    iosUniqueTokens[token] = true;
+                    iosTokens.push(token);
+                  }
+                  break;
+                case 'android':
+                  if (androidUniqueTokens[token] === undefined) {
+                    androidUniqueTokens[token] = true;
+                    androidTokens.push(token);
+                  }
+                  break;
               }
             }
           }

@@ -23,5 +23,9 @@
   "acl_enabled": false,
   "sessionKey": {
     "key": "HIDDEN"
+  },
+  "ToonIntegration": {
+    "clientId": "clientIdHere",
+    "clientSecret": "clientSecretHere"
   }
 }

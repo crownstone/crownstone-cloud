@@ -1,5 +1,5 @@
 {
-  "name": "PowerCurve",
+  "name": "Toon",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,
@@ -9,40 +9,38 @@
     "strict":"filter"
   },
   "mixins": {
-    "DisableCommon": true,
+    "DisableAll": true,
     "SphereContent": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    },
     "Util": true
   },
   "properties": {
-    "timestamp": {
-      "type": "date",
-      "default": "$now"
-    },
-    "voltage": {
-      "type": [
-        "number"
-      ],
+    "toonAgreementId": {
+      "type": "string",
       "required": true
     },
-    "voltageTimestamps": {
-      "type": [
-        "number"
-      ],
+    "toonAddress": {
+      "type": "string",
+      "required": false
+    },
+    "refreshToken": {
+      "type": "string",
       "required": true
     },
-    "current": {
-      "type": [
-        "number"
-      ],
-      "required": true
+    "schedule": {
+      "type": "string"
     },
-    "currentTimestamps": {
-      "type": [
-        "number"
-      ],
+    "enabled": {
+      "type": "boolean",
       "required": true
     }
   },
+  "hidden": [
+    "sphereId"
+  ],
   "validations": [],
   "relations": {},
   "acls": [],
