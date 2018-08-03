@@ -275,9 +275,9 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__presentPeople');
   model.disableRemoteMethodByName('prototype.__exists__presentPeople');
 
-  // model.disableRemoteMethodByName('prototype.__destroyById__Toons');
   // model.disableRemoteMethodByName('prototype.__updateById__Toons');
-  // model.disableRemoteMethodByName('prototype.__deleteById__Toons');
+  model.disableRemoteMethodByName('prototype.__destroyById__Toons');
+  model.disableRemoteMethodByName('prototype.__deleteById__Toons');
   model.disableRemoteMethodByName('prototype.__create__Toons');
   model.disableRemoteMethodByName('prototype.__findById__Toons');
   model.disableRemoteMethodByName('prototype.__delete__Toons');
@@ -1761,12 +1761,13 @@ module.exports = function(model) {
 
 
   model.createToon = function(id, data, next) {
+    let sphereInstance;
     model.findById(id)
       .then((sphere) => {
         if (!sphere) {
           throw "Sphere with id" + id + " does not exist.";
         }
-
+        sphereInstance = sphere;
         return ToonAPI.getAccessToken(data.refreshToken)
       })
       .then((token) => {
@@ -1774,9 +1775,8 @@ module.exports = function(model) {
       })
       .then((schedule) => {
         data.schedule = ToonAPI.parseScheduleFormat(schedule);
-        // return sphere.Toons.create(data);
+        return sphereInstance.Toons.create(data);
       })
-
       .then((toon) => {
         next(null, toon)
       })
@@ -1796,6 +1796,48 @@ module.exports = function(model) {
       ],
       returns: {arg: 'role', type: 'Toon', root: true},
       description: "Create a new Toon integration for this Sphere"
+    }
+  );
+
+
+  model.deleteAllToons = function(sphereId, next) {
+    const ToonModel = loopback.getModel('Toon');
+    ToonModel.find({where: {sphereId: sphereId}})
+      .then((Toons) => {
+        if (Toons.length == 0) {
+          return; // we don't have to do anything.
+        }
+
+        let promises = [];
+        for (let i = 0; i < Toons.length; i++) {
+          let toon = Toons[i];
+          promises.push(
+            ToonAPI.getAccessToken(toon.refreshToken).then((token) => { return ToonAPI.revokeToken(token) }).catch(() => {})
+          );
+        }
+
+        return Promise.all(promises);
+      })
+      .then(() => {
+        return ToonModel.destroyAll({sphereId: sphereId})
+      })
+      .then(() => {
+        next(null)
+      })
+      .catch((err) => {
+        next(err);
+      })
+  }
+
+
+  model.remoteMethod(
+    'deleteAllToons',
+    {
+      http: {path: '/:id/Toons', verb: 'delete'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      description: "Delete all Toons in this Sphere and have their tokens revoked their tokens"
     }
   );
 

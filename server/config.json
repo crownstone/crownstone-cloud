@@ -15,6 +15,9 @@
       "limit": "100kb"
     },
     "cors": false,
+    "types":{
+      "warnOnUnknownType": false
+    },
     "errorHandler": {
       "disableStackTrace": false
     }

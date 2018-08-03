@@ -1,5 +1,5 @@
 {
-  "name": "Toon",
+  "name": "Preference",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,
@@ -10,7 +10,6 @@
   },
   "mixins": {
     "DisableAll": true,
-    "SphereContent": true,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true
@@ -18,34 +17,20 @@
     "Util": true
   },
   "properties": {
-    "toonAgreementId": {
+    "property": {
       "type": "string",
       "required": true
     },
-    "toonAddress": {
-      "type": "string",
+    "value": {
+      "type": "any",
       "required": false
-    },
-    "refreshToken": {
-      "type": "string",
-      "required": true
-    },
-    "schedule": {
-      "type": "string"
     }
   },
   "hidden": [
-    "refreshToken",
-    "sphereId"
+    "deviceId"
   ],
   "validations": [],
-  "relations": {
-    "sphere": {
-      "type": "belongsTo",
-      "model": "Sphere",
-      "foreignKey": "sphereId"
-    }
-  },
+  "relations": {},
   "acls": [],
   "methods": {}
 }

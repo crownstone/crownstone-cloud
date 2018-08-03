@@ -85,6 +85,11 @@
       "type": "hasMany",
       "model": "FingerprintLinker",
       "foreignKey": "deviceId"
+    },
+    "preferences": {
+      "type": "hasMany",
+      "model": "Preference",
+      "foreignKey": "deviceId"
     }
   },
   "acls": [],

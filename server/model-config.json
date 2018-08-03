@@ -173,5 +173,9 @@
   "Toon": {
     "dataSource": "mongoDs",
     "public": true
+  },
+  "Preference": {
+    "dataSource": "mongoDs",
+    "public": true
   }
 }

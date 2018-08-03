@@ -25,3 +25,5 @@ client/
 
 server/inserts/keyData
 backup
+
+__prototypes/

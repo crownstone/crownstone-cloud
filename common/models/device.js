@@ -72,6 +72,18 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__installations');
 
 
+  model.disableRemoteMethodByName('prototype.__exists__preferences');
+  model.disableRemoteMethodByName('prototype.__link__preferences');
+  model.disableRemoteMethodByName('prototype.__findById__preferences');
+  model.disableRemoteMethodByName('prototype.__unlink__preferences');
+  // model.disableRemoteMethodByName('prototype.__updateById__preferences');
+  // model.disableRemoteMethodByName('prototype.__deleteById__preferences');
+  // model.disableRemoteMethodByName('prototype.__destroyById__preferences');
+  // model.disableRemoteMethodByName('prototype.__create__preferences');
+  model.disableRemoteMethodByName('prototype.__delete__preferences');
+  model.disableRemoteMethodByName('prototype.__count__preferences');
+  // model.disableRemoteMethodByName('prototype.__get__preferences');
+  
   model.disableRemoteMethodByName('prototype.__exists__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__link__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__findById__fingerprintLinks');
@@ -89,6 +101,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('count');
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('updateAll');
+  model.disableRemoteMethodByName('replaceById');
 
   let injectOwner = function(ctx, next) {
     let item;
