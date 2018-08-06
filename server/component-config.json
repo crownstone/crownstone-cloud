@@ -1,6 +1,12 @@
 {
   "loopback-component-explorer": {
-    "mountPath": "/explorer"
+    "mountPath": "/explorer",
+    "swaggerUI": true,
+    "uiDirs": ["./server/explorer"],
+    "apiInfo": {
+      "contact": "team@crownstone.rocks",
+      "license": "Apache 2.0 || MIT || LGPLv3"
+    }
   },
   "loopback-component-oauth2": {
     "dataSource": "userDs",

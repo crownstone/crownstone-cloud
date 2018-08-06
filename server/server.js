@@ -45,8 +45,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(compression());
 
-
-
 loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { idInjection: false });
 
 

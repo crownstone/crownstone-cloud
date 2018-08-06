@@ -11,7 +11,7 @@ const debug = require('debug')('loopback:dobots');
 
 const config = require('../../server/config.json');
 const emailUtil = require('../../server/emails/util');
-const ToonAPI = require('../../server/integrations/Toon');
+const ToonAPI = require('../../server/integrations/toon/Toon');
 const mesh = require('../../server/middleware/mesh-access-address');
 
 const messageUtils = require('./sharedUtil/messageUtil');
@@ -1774,7 +1774,7 @@ module.exports = function(model) {
         return ToonAPI.getSchedule(token, data.toonAgreementId);
       })
       .then((schedule) => {
-        data.schedule = ToonAPI.parseScheduleFormat(schedule);
+        data.schedule = JSON.stringify(schedule);
         return sphereInstance.Toons.create(data);
       })
       .then((toon) => {

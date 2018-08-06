@@ -32,6 +32,14 @@
     },
     "schedule": {
       "type": "string"
+    },
+    "changedToProgram": {
+      "type": "string",
+      "default": "NONE"
+    },
+    "changedProgramTime": {
+      "type": "number",
+      "default": 0
     }
   },
   "hidden": [

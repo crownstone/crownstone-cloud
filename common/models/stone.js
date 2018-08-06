@@ -833,8 +833,8 @@ module.exports = function(model) {
         {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
       ],
       description: 'Set the switchState of a stone. Requires a hub device to work.' +
-        '<br />Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming.' +
-        '<br />If the stone does not support dimming (or is configured that way), anything over 0 is full on.'
+        '\n\nPossible values are between 0 and 1. 0 is off, 1 is on, between is dimming.' +
+        '\n\nIf the stone does not support dimming (or is configured that way), anything over 0 is full on.'
     }
   );
 
@@ -924,10 +924,9 @@ module.exports = function(model) {
         {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: '[SwitchState]', root: true},
-      description: '<div style="text-align:right;">' +
-      'Get an array of the known switch states of the specified Crownstone.' +
-      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+      description: 'Get an array of the known switch states of the specified Crownstone.' +
+      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '\nTime is filtered like this: (from <= timestamp <= to).'
     }
   );
 
@@ -944,10 +943,9 @@ module.exports = function(model) {
         {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: '[EnergyUsage]', root: true},
-      description: '<div style="text-align:right;">' +
-      'Get an array of collected energy usage samples from the specified Crownstone.' +
-      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+      description: 'Get an array of collected energy usage samples from the specified Crownstone.' +
+      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '\nTime is filtered like this: (from <= timestamp <= to).'
     }
   );
 
@@ -964,10 +962,9 @@ module.exports = function(model) {
         {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: '[PowerUsage]', root: true},
-      description: '<div style="text-align:right;">' +
-      'Get an array of collected power measurement samples from the specified Crownstone.' +
-      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+      description: 'Get an array of collected power measurement samples from the specified Crownstone.' +
+      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '\nTime is filtered like this: (from <= timestamp <= to).'
     }
   );
 
@@ -984,10 +981,9 @@ module.exports = function(model) {
         {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: '[Diagnostic]', root: true},
-      description: '<div style="text-align:right;">' +
-      'Get an array of the gathered statistics of the specified Crownstone.' +
-      '<br />Limit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+      description: 'Get an array of the gathered statistics of the specified Crownstone.' +
+      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+      '\nTime is filtered like this: (from <= timestamp <= to).'
     }
   );
 
@@ -1030,7 +1026,7 @@ module.exports = function(model) {
         {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
-      description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
     }
   );
 
@@ -1044,7 +1040,7 @@ module.exports = function(model) {
         {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
-      description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
     }
   );
 
@@ -1058,7 +1054,7 @@ module.exports = function(model) {
         {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
-      description: '<div style="text-align:right;">Get the amount of data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to).</div>'
+      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
     }
   );
 
@@ -1103,7 +1099,7 @@ module.exports = function(model) {
         {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
-      description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
+      description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
     }
   );
 
@@ -1117,7 +1113,7 @@ module.exports = function(model) {
         {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
-      description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
+      description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
     }
   );
 
@@ -1132,7 +1128,7 @@ module.exports = function(model) {
         {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'count', type: 'number', root: true},
-      description: "Delete all data points in between the from and to times.<br />Time is filtered like this: (from <= timestamp <= to)."
+      description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
     }
   );
 
@@ -1177,7 +1173,7 @@ module.exports = function(model) {
         {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
       ],
       description: 'Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
-      '<br />Possible values are between 0 and 1. 0 is off, 1 is on, between is dimming.'
+      '\n\nPossible values are between 0 and 1. 0 is off, 1 is on, between is dimming.'
     }
   );
 
