@@ -6,6 +6,15 @@ let idMap = {
   4: 'holiday'
 };
 
+let idMapInverse = {
+  'comfort':  0,
+  'home':     1,
+  'sleep':    2,
+  'away':     3,
+  'holiday':  4,
+};
+
+
 let ToonUtil = {
   parseScheduleFormat: function(toonSchedule) {
     let days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -57,14 +66,15 @@ let ToonUtil = {
 
     return {
       scheduleActive: state.programState === 1,
-      temperatureSet: state.currentSetPoint / 100,
-      currentTemperature: state.currentDisplayTemp / 100,
+      temperatureSet: (state.currentSetpoint || 0) / 100,
+      currentTemperature: (state.currentDisplayTemp || 0) / 100,
       currentProgram: idMap[state.activeState],
     }
   },
 
 
-  idMap: idMap
+  idMap: idMap,
+  idMapInverse: idMapInverse,
 }
 
 

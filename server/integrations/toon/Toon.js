@@ -90,7 +90,7 @@ const ToonAPI = {
       'authorization': 'Bearer ' + accessToken,
     };
     let config = {method: 'GET', headers};
-    return fetch("https://api.toon.eu/toon/v3/" + agreementId + "thermostat", config)
+    return fetch("https://api.toon.eu/toon/v3/" + agreementId + "/thermostat", config)
       .then((res) => {
         return res.json();
       })
@@ -112,7 +112,7 @@ const ToonAPI = {
       'authorization': 'Bearer ' + accessToken,
     };
     let config = {method: 'PUT', body: JSON.stringify(data), headers};
-    return fetch("https://api.toon.eu/toon/v3/" + agreementId + "thermostat", config)
+    return fetch("https://api.toon.eu/toon/v3/" + agreementId + "/thermostat", config)
       .then((res) => {
         return res.json();
       })
@@ -126,7 +126,7 @@ const ToonAPI = {
     let data = {
       "currentSetpoint": 0, // required, but does not matter
       "programState":    2, // set the mode to temporary program
-      "activeState":     ToonUtil.idMap[program]  // required, but does not matter
+      "activeState":     ToonUtil.idMapInverse[program]  // required, but does not matter
     }
     let headers = {
       'content-type': 'application/json',
@@ -134,7 +134,7 @@ const ToonAPI = {
       'authorization': 'Bearer ' + accessToken,
     };
     let config = {method: 'PUT', body: JSON.stringify(data), headers};
-    return fetch("https://api.toon.eu/toon/v3/" + agreementId + "thermostat", config)
+    return fetch("https://api.toon.eu/toon/v3/" + agreementId + "/thermostat", config)
       .then((res) => {
         return res.json();
       })
