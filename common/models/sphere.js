@@ -1762,6 +1762,7 @@ module.exports = function(model) {
 
   model.createToon = function(id, data, next) {
     let sphereInstance;
+    let tokens;
     model.findById(id)
       .then((sphere) => {
         if (!sphere) {
@@ -1770,10 +1771,12 @@ module.exports = function(model) {
         sphereInstance = sphere;
         return ToonAPI.getAccessToken(data.refreshToken)
       })
-      .then((token) => {
-        return ToonAPI.getSchedule(token, data.toonAgreementId);
+      .then((receivedTokens) => {
+        tokens = receivedTokens;
+        return ToonAPI.getSchedule(tokens, data.toonAgreementId);
       })
       .then((schedule) => {
+        data.refreshToken = tokens.refreshToken;
         data.schedule = JSON.stringify(schedule);
         return sphereInstance.Toons.create(data);
       })
@@ -1812,7 +1815,7 @@ module.exports = function(model) {
         for (let i = 0; i < Toons.length; i++) {
           let toon = Toons[i];
           promises.push(
-            ToonAPI.getAccessToken(toon.refreshToken).then((token) => { return ToonAPI.revokeToken(token) }).catch(() => {})
+            ToonAPI.getAccessToken(toon.refreshToken, toon.id).then((tokens) => { return ToonAPI.revokeToken(tokens.accessToken) }).catch(() => {})
           );
         }
 

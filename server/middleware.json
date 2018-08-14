@@ -118,7 +118,7 @@
       "params": {
         "debug": false,
         "log": false,
-        "safeFields": ["errorCode","message"]
+        "safeFields": ["errorCode","message","model"]
       }
     }
   }

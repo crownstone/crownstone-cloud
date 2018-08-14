@@ -1,4 +1,5 @@
 
+const loopback = require('loopback');
 
 const fetch = require('node-fetch');
 const localConfig = require('../../config.' + (process.env.NODE_ENV || 'local'));
@@ -46,7 +47,7 @@ const ToonUtil = require('./ToonUtil')
  * @type {{getAccessToken: (function(*=): Promise<any | never | never>), getSchedule: (function(*, *): Promise<any | never>), parseScheduleFormat: ToonAPI.parseScheduleFormat}}
  */
 const ToonAPI = {
-  getAccessToken: function(refreshToken) {
+  getAccessToken: function(refreshToken, toonId = null) {
     let payload = {
       client_id: localConfig.ToonIntegration.clientId,
       client_secret: localConfig.ToonIntegration.clientSecret,
@@ -62,20 +63,25 @@ const ToonAPI = {
         return res.json();
       })
       .then((tokens) => {
-        return tokens.access_token;
+        let tokenData = {
+          refreshToken: tokens.refresh_token,
+          accessToken: tokens.access_token,
+          toonId: toonId,
+        }
+        return tokenData;
       })
   },
 
-  getSchedule: function(accessToken, agreementId) {
+  getSchedule: function(tokens, agreementId) {
     let headers = {
       'content-type': 'application/json',
       'cache-control': 'no-cache',
-      'authorization': 'Bearer ' + accessToken,
+      'authorization': 'Bearer ' + tokens.accessToken,
     };
     let config = {method: 'GET', headers};
     return fetch("https://api.toon.eu/toon/v3/" + agreementId + "/thermostat/programs", config)
       .then((res) => {
-        return res.json();
+        return ToonAPI.verifyResult(res, tokens, (tokenData) => { return ToonAPI.getSchedule(tokenData, agreementId)});
       })
       .then((schedule) => {
         return ToonUtil.parseScheduleFormat(schedule);
@@ -83,16 +89,16 @@ const ToonAPI = {
   },
 
 
-  getToonState: function(accessToken, agreementId) {
+  getToonState: function(tokens, agreementId) {
     let headers = {
       'content-type': 'application/json',
       'cache-control': 'no-cache',
-      'authorization': 'Bearer ' + accessToken,
+      'authorization': 'Bearer ' + tokens.accessToken,
     };
     let config = {method: 'GET', headers};
     return fetch("https://api.toon.eu/toon/v3/" + agreementId + "/thermostat", config)
       .then((res) => {
-        return res.json();
+        return ToonAPI.verifyResult(res, tokens, (tokenData) => { return ToonAPI.getToonState(tokenData, agreementId)});
       })
       .then((toonState) => {
         return ToonUtil.parseStateFormat(toonState);
@@ -100,7 +106,7 @@ const ToonAPI = {
   },
 
 
-  restoreToonSchedule: function(accessToken, agreementId) {
+  restoreToonSchedule: function(tokens, agreementId) {
     let data = {
       "currentSetpoint": 0, // required, but does not matter
       "programState":    1, // turn on the schedule program
@@ -109,12 +115,12 @@ const ToonAPI = {
     let headers = {
       'content-type': 'application/json',
       'cache-control': 'no-cache',
-      'authorization': 'Bearer ' + accessToken,
+      'authorization': 'Bearer ' + tokens.accessToken,
     };
     let config = {method: 'PUT', body: JSON.stringify(data), headers};
     return fetch("https://api.toon.eu/toon/v3/" + agreementId + "/thermostat", config)
       .then((res) => {
-        return res.json();
+        return ToonAPI.verifyResult(res, tokens, (tokenData) => { return ToonAPI.restoreToonSchedule(tokenData, agreementId)});
       })
       .then((toonState) => {
         return ToonUtil.parseStateFormat(toonState);
@@ -122,7 +128,7 @@ const ToonAPI = {
   },
 
 
-  setToonState: function(program, accessToken, agreementId) {
+  setToonState: function(program, tokens, agreementId) {
     let data = {
       "currentSetpoint": 0, // required, but does not matter
       "programState":    2, // set the mode to temporary program
@@ -131,12 +137,12 @@ const ToonAPI = {
     let headers = {
       'content-type': 'application/json',
       'cache-control': 'no-cache',
-      'authorization': 'Bearer ' + accessToken,
+      'authorization': 'Bearer ' + tokens.accessToken,
     };
     let config = {method: 'PUT', body: JSON.stringify(data), headers};
     return fetch("https://api.toon.eu/toon/v3/" + agreementId + "/thermostat", config)
       .then((res) => {
-        return res.json();
+        return ToonAPI.verifyResult(res, tokens, (tokenData) => { return ToonAPI.setToonState(program, tokenData, agreementId)});
       })
       .then((toonState) => {
         return ToonUtil.parseStateFormat(toonState);
@@ -203,6 +209,64 @@ const ToonAPI = {
       return true;
     }
     return false
+  },
+
+
+  verifyResult(res, tokens, retryCallback) {
+    let toonCloudReply;
+    return res.json()
+      .then((receivedToonCloudReply) => {
+        toonCloudReply = receivedToonCloudReply;
+        if (toonCloudReply.fault && typeof toonCloudReply.fault === 'object' &&
+            toonCloudReply.fault.detail && typeof toonCloudReply.fault.detail === 'object') {
+          if (
+            toonCloudReply.fault.detail.errorcode === "keymanagement.service.access_token_expired" ||
+            toonCloudReply.fault.detail.errorcode === "keymanagement.service.invalid_access_token") {
+            return ToonAPI.checkForTokenRepair(tokens)
+          }
+          throw toonCloudReply;
+        }
+        return true;
+      })
+      .then((tokens) => {
+        // there is no problem if this is true
+        if (tokens === true) {
+          return toonCloudReply;
+        }
+        // alternatively, tokens is a new tokens object.
+        else {
+          return retryCallback(tokens)
+        }
+      })
+
+  },
+
+  checkForTokenRepair(tokensUsedInRequest) {
+    let refreshToken = tokensUsedInRequest.refreshToken;
+    const Toon = loopback.findModel('Toon');
+    let toon, tokens;
+    return Toon.findById(tokensUsedInRequest.toonId)
+      .then((foundToon) => {
+        if (!foundToon) {
+          throw {message:"The access token has expired and we could not get a new one...", code: "INVALID_TOKEN"};
+        }
+        else {
+          toon = foundToon;
+          return ToonAPI.getAccessToken(refreshToken, tokensUsedInRequest.toonId)
+        }
+      })
+      .then((receivedTokens) => {
+        tokens = receivedTokens;
+        tokens.toonId = tokensUsedInRequest.toonId;
+        if (toon.refreshToken === tokens.refreshToken) {
+          throw {message:"The access token has expired and refreshing it did not help...", code: "INVALID_TOKEN"};
+        }
+        toon.refreshToken = tokens.refreshToken;
+        return toon.save();
+      })
+      .then(() => {
+        return receivedTokens;
+      })
   },
 }
 

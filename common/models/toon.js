@@ -46,11 +46,11 @@ module.exports = function(model) {
   model.setToonProgram = function(toonId, targetProgram, ignoreDeviceId, next) {
     if (targetProgram !== 'away' && targetProgram !== 'home') { return next("Only away and home are valid programs."); }
 
-    let accessToken = null;
+    let accessTokens = null;
     let toon = null;
     model.findById(toonId)
       .then((storedToon) => {
-        if (!storedToon) { throw("No Toon found with this id.")}
+        if (!storedToon) { throw {message:"No Toon found with this ID.", code: "TOON_NOT_FOUND"}}
 
         toon = storedToon;
 
@@ -65,7 +65,7 @@ module.exports = function(model) {
           // we have not changed the program yet after the start of this scheduled AWAY slot..
           if (toon.changedProgramTime > 0 && toon.changedProgramTime < timestampOfStartProgram || toon.changedToProgram === 'away') {
             // continue with the state change, we do not need to worry about other users to stay warm!
-            return false
+            return false;
           }
           else {
             throw {message:"Toon's currently scheduled program has already been changed by Crownstone.", code: "ALREADY_CHANGED"};
@@ -76,7 +76,6 @@ module.exports = function(model) {
           if (toon.changedToProgram === 'home') {
             // check if there are people we would leave in the cold
             return checkIfDevicesArePresent(toon.sphereId, toon.toonAgreementId, ignoreDeviceId);
-
           }
           else {
             throw {message:"Toon's program should already be 'away'. If it is not, a user has changed this and we will not override it.", code: "ALREADY_ON_AWAY"};
@@ -85,15 +84,17 @@ module.exports = function(model) {
       })
       .then((usersAreStillPresent) => {
         if (usersAreStillPresent === false) {
-          return ToonAPI.getAccessToken(toon.refreshToken)
+          return ToonAPI.getAccessToken(toon.refreshToken, toon.id)
         }
         else {
           throw {message:"There are still people in the Sphere. We cannot just turn off the heating!.", code: "PEOPLE_STILL_THERE"};
         }
       })
-      .then((newAccessToken) => {
-        accessToken = newAccessToken;
-        return ToonAPI.getToonState(accessToken, toon.toonAgreementId);
+      .then((newAccessTokens) => {
+        accessTokens = newAccessTokens;
+        toon.refreshToken = accessTokens.refreshToken;
+        toon.save();
+        return ToonAPI.getToonState(accessTokens, toon.toonAgreementId);
       })
       .then((toonState) => {
         // it's already on the desired target! We do not need to do anything.
@@ -101,14 +102,14 @@ module.exports = function(model) {
 
         if (targetProgram === 'home' && toonState.scheduleActive === true) {
           // DO IT!
-          return ToonAPI.setToonState('home', accessToken, toon.toonAgreementId)
+          return ToonAPI.setToonState('home', accessTokens, toon.toonAgreementId)
         }
         else if (targetProgram === 'home' && toonState.scheduleActive !== true) {
           throw {message:"Toon is not following it's schedule at the moment. We will not override manual user input.", code: "SCHEDULE_DISABLED"};
         }
         else if (targetProgram === 'away' && toonState.currentProgram === 'home' && toonState.scheduleActive === false) {
           // DO IT!
-          return ToonAPI.restoreToonSchedule(accessToken, toon.toonAgreementId)
+          return ToonAPI.restoreToonSchedule(accessTokens, toon.toonAgreementId)
         }
         else {
           // target == away
@@ -121,15 +122,21 @@ module.exports = function(model) {
         }
       })
       .then(() => {
-        toon['changedToProgram'] = targetProgram;
-        toon['changedProgramTime'] = new Date().valueOf();
+        toon.refreshToken = accessTokens.refreshToken;
+        toon.changedToProgram = targetProgram;
+        toon.changedProgramTime = new Date().valueOf();
         return toon.save();
       })
       .then(() => {
         next(null, toon);
       })
       .catch((err) => {
-        next({"statusCode": 405, "message": err.message, "errorCode":errorCode.code});
+        if (typeof err === "object" && err.message && err.code) {
+          next({"statusCode": 405, "message": err.message, "errorCode": err.code, model: toon});
+        }
+        else {
+          next(err);
+        }
       })
   }
 
