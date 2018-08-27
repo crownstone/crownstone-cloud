@@ -63,7 +63,7 @@ module.exports = function(model) {
 
         if (targetProgram === 'home') {
           // we have not changed the program yet after the start of this scheduled AWAY slot..
-          if (toon.changedProgramTime > 0 && toon.changedProgramTime < timestampOfStartProgram || toon.changedToProgram === 'away') {
+          if (toon.changedProgramTime === 0 || toon.changedProgramTime > 0 && toon.changedProgramTime < timestampOfStartProgram || toon.changedToProgram !== 'home') {
             // continue with the state change, we do not need to worry about other users to stay warm!
             return false;
           }
@@ -73,7 +73,7 @@ module.exports = function(model) {
         }
         else {
           // targetProgram === 'away'
-          if (toon.changedToProgram === 'home') {
+          if (toon.changedToProgram !== 'away') {
             // check if there are people we would leave in the cold
             return checkIfDevicesArePresent(toon.sphereId, toon.toonAgreementId, ignoreDeviceId);
           }
