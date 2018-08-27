@@ -123,4 +123,3 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
   // let performDatabaseOperations = require("./inserts/databaseOps");
   // performDatabaseOperations(app);
 }
-

@@ -1765,9 +1765,9 @@ loopback-component-explorer@6.2.0:
     strong-globalize "^4.1.1"
     swagger-ui "^2.2.5"
 
-"loopback-component-oauth2@git://github.com/crownstone/loopback-component-oauth2#master":
+"loopback-component-oauth2@git://github.com/crownstone/loopback-component-oauth2#ba3c9334cd2c4994ca703f9858f546d7364e780b":
   version "3.0.0"
-  resolved "git://github.com/crownstone/loopback-component-oauth2#53ec1922f7f04fcc093dc0688e25498dc3d7f9fb"
+  resolved "git://github.com/crownstone/loopback-component-oauth2#ba3c9334cd2c4994ca703f9858f546d7364e780b"
   dependencies:
     async "^1.5.2"
     body-parser "^1.15.2"

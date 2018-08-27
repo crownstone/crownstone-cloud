@@ -29,6 +29,7 @@ function performOauthClientOperations(app) {
   // empty promise so all clients that are added are in matching then statements
   new Promise((resolve, reject) => { resolve() })
     // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
+    // .then(() => { return createClient(permissionModel, "test", ["stone_information"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
     // .then(() => { return createClient(permissionModel, "Triggi", allScopes); })
     // .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information','user_location','stone_information','switch_stone']); })

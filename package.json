@@ -26,7 +26,7 @@
     "loopback": "3.21.0",
     "loopback-boot": "2.24.0",
     "loopback-component-explorer": "6.2.0",
-    "loopback-component-oauth2": "git://github.com/crownstone/loopback-component-oauth2#master",
+    "loopback-component-oauth2": "git://github.com/crownstone/loopback-component-oauth2#ba3c9334cd2c4994ca703f9858f546d7364e780b",
     "loopback-component-storage-gridfs": "1.1.1",
     "loopback-connector-mongodb": "3.5.0",
     "loopback-connector-sendgrid": "1.2.3",
