@@ -90,8 +90,6 @@ oauth2.oAuth2Provider(
   options // The options
 );
 
-
-
 // this is only allowed in a local environment
 if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
   // Uncomment these lines to view/add/remove/modify the OAUTH2 clients
