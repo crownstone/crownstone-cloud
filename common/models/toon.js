@@ -1,6 +1,7 @@
 // "use strict";
 const ToonAPI = require('../../server/integrations/toon/Toon');
 const loopback = require('loopback');
+const luxon = require('luxon')
 
 module.exports = function(model) {
 
@@ -55,7 +56,7 @@ module.exports = function(model) {
         toon = storedToon;
 
         let scheduledProgram = ToonAPI.getScheduledProgram(toon.schedule);
-        let timestampOfStartProgram = new Date(new Date().setHours(scheduledProgram.start.hour)).setMinutes(scheduledProgram.start.minute)
+        let timestampOfStartProgram = luxon.DateTime.fromObject({hour:scheduledProgram.start.hour, minute:scheduledProgram.start.minute, zone: "Europe/Amsterdam"}).toMillis()
 
         if (scheduledProgram.program !== 'away') {
           throw {message:"Toon's scheduled program is not 'away' at the moment. We can only change it if the schedule is set to 'away'.", code: "STATE_IS_NOT_AWAY"};
