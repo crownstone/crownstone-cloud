@@ -74,7 +74,7 @@ module.exports = function(model) {
         return next({statusCode: 400, message: 'Unknown parent model.'});
       }
 
-      let scopes = ctx.options.accessToken.scopes;
+      let scopes = ctx.options.accessToken.oauthScopes;
       let events = ctx.instance.events;
       for (let i = 0; i < events.length; i++) {
         let allowedScopes = OauthEventPermissions[parentModel][events[i]];
