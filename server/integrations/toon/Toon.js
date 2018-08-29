@@ -1,9 +1,13 @@
 
 const loopback = require('loopback');
 
-const fetch = require('node-fetch');
+let configRequiredPostfix = process.env.NODE_ENV;
+if (configRequiredPostfix === 'test') { process.env.NODE_ENV = 'local' }
+
+const luxon       = require('luxon')
+const fetch       = require('node-fetch');
 const localConfig = require('../../config.' + (process.env.NODE_ENV || 'local'));
-const ToonUtil = require('./ToonUtil')
+const ToonUtil    = require('./ToonUtil')
 
 /**
  *
@@ -169,7 +173,7 @@ const ToonAPI = {
    * @returns {boolean}
    */
   getScheduledProgram: function(scheduleString) {
-    let currentDate = new Date();
+    let currentDate = luxon.DateTime.local().setZone("Europe/Amsterdam")
     let scheduleObj = null;
     try {
       scheduleObj = JSON.parse(scheduleString);
@@ -179,11 +183,11 @@ const ToonAPI = {
       return null;
     }
 
-    let day = currentDate.getDay(); // 0 for Sunday, ... 6 Saturday
-    let dayMap = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+    let day = currentDate.weekday - 1; //  1 is Monday and 7 is Sunday, -1 makes 0 monday and 6 sunday, like this array
+    let dayMap = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 
-    let hours = currentDate.getHours();
-    let minutes = currentDate.getMinutes();
+    let hours = currentDate.hour;
+    let minutes = currentDate.minute;
 
     let minutesSinceMidnight = hours*60 + minutes;
 

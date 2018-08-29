@@ -1,19 +1,9 @@
 // "use strict";
-const ToonAPI = require('../../server/integrations/toon/Toon');
+const ToonAPI  = require('../../server/integrations/toon/Toon');
 const loopback = require('loopback');
-const luxon = require('luxon')
+const luxon    = require('luxon')
 
 module.exports = function(model) {
-  model.settings.acls.push(
-    {
-      "accessType": "EXECUTE",
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW",
-      "property": "getTime"
-    }
-  );
-
   model.validatesUniquenessOf('toonAgreementId', {scopedTo: ['sphereId'], message: 'a Toon with this agreementId was already added!'});
 
   model.disableRemoteMethodByName('prototype.__get__sphere');
@@ -164,17 +154,4 @@ module.exports = function(model) {
     }
   );
 
-  model.getTime = function(next) {
-    let time = luxon.DateTime.fromObject({hour: 8, minute: 0, zone: "Europe/Amsterdam"}).toMillis()
-    next(null, time);
-  }
-
-  model.remoteMethod(
-    'getTime',
-    {
-      http: {path: '/getTime', verb: 'get'},
-      returns: {arg: 'data', type: 'any', root: true},
-      description: 'get time'
-    }
-  );
 };
