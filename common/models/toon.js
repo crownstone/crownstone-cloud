@@ -4,12 +4,21 @@ const loopback = require('loopback');
 const luxon = require('luxon')
 
 module.exports = function(model) {
-
+  model.settings.acls.push(
+    {
+      "accessType": "EXECUTE",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW",
+      "property": "getTime"
+    }
+  );
 
   model.validatesUniquenessOf('toonAgreementId', {scopedTo: ['sphereId'], message: 'a Toon with this agreementId was already added!'});
 
   model.disableRemoteMethodByName('prototype.__get__sphere');
   model.disableRemoteMethodByName('prototype.__get__owner');
+
 
   function checkIfDevicesArePresent(sphereId, agreementId, ignoreDeviceId) {
     const Sphere = loopback.findModel('Sphere');
@@ -152,6 +161,20 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: 'Toon', root: true},
       description: 'Set a program on the Toon. Possible programs: [away, home]'
+    }
+  );
+
+  model.getTime = function(next) {
+    let time = luxon.DateTime.fromObject({hour: 8, minute: 0, zone: "Europe/Amsterdam"}).toMillis()
+    next(null, time);
+  }
+
+  model.remoteMethod(
+    'getTime',
+    {
+      http: {path: '/getTime', verb: 'get'},
+      returns: {arg: 'data', type: 'any', root: true},
+      description: 'get time'
     }
   );
 };
