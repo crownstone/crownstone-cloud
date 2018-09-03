@@ -101,6 +101,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__deleteById__currentLocation');
   model.disableRemoteMethodByName('prototype.__destroyById__currentLocation');
   model.disableRemoteMethodByName('prototype.__count__currentLocation');
+  model.disableRemoteMethodByName('prototype.__exists__currentLocation');
   model.disableRemoteMethodByName('prototype.__link__currentLocation');
   model.disableRemoteMethodByName('prototype.__unlink__currentLocation');
   model.disableRemoteMethodByName('prototype.__findById__currentLocation');
@@ -110,6 +111,8 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__spheres');
   model.disableRemoteMethodByName('prototype.__link__spheres');
   model.disableRemoteMethodByName('prototype.__count__spheres');
+  model.disableRemoteMethodByName('prototype.__exists__spheres');
+  model.disableRemoteMethodByName('prototype.__findById__spheres');
   model.disableRemoteMethodByName('prototype.__get__spheres');
 
   model.disableRemoteMethodByName('prototype.__delete__hooks');
@@ -425,24 +428,24 @@ module.exports = function(model) {
     }
   );
 
-  model.countSpheres = function(id, callback) {
-    model.spheres(id, function(err, res) {
-      if (err) callback(err);
-      callback(null, res.length);
-    })
-  };
-
-  model.remoteMethod(
-    'countSpheres',
-    {
-      http: {path: '/:id/spheres/count', verb: 'get'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }}
-      ],
-      returns: {arg: 'count', type: 'number'},
-      description: "Count spheres of user"
-    }
-  );
+  // model.countSpheres = function(id, callback) {
+  //   model.spheres(id, function(err, res) {
+  //     if (err) callback(err);
+  //     callback(null, res.length);
+  //   })
+  // };
+  //
+  // model.remoteMethod(
+  //   'countSpheres',
+  //   {
+  //     http: {path: '/:id/spheres/count', verb: 'get'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+  //     ],
+  //     returns: {arg: 'count', type: 'number'},
+  //     description: "Count spheres of user"
+  //   }
+  // );
 
   // model.notifyDevices = function(message, id, callback) {
   //   // debug("notifyDevices:", message);

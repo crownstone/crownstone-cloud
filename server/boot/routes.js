@@ -32,6 +32,7 @@ module.exports = function (app) {
       }
     };
     payload.applinks.details.push({appID:"6LYJ9PNC3V.com.crownstone.Crownstone",paths:['callbackURL']});
+    res.set("Content-Type","application/pkcs7-mime");
     res.send(JSON.stringify(payload, undefined, 2));
   });
 

@@ -51,10 +51,6 @@
       "type": "boolean",
       "default": false
     },
-    "hubFunction": {
-      "type": "boolean",
-      "default": false
-    },
     "tapToToggleCalibration": {
       "type": "number"
     }

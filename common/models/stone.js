@@ -832,7 +832,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
       ],
-      description: 'Set the switchState of a stone. Requires a hub device to work.' +
+      description: 'Set the switchState of a stone.' +
         '\n\nPossible values are between 0 and 1. 0 is off, 1 is on, between is dimming.' +
         '\n\nIf the stone does not support dimming (or is configured that way), anything over 0 is full on.'
     }
