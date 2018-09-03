@@ -51,7 +51,14 @@ module.exports = function (app) {
 
   //callbackURL page
   app.get('/callbackURL', function (req, res) {
-    res.send('<a href="https://my.crownstone.rocks' + req.originalUrl + '">clickMe</a>');
+    let codeExtractRegex = /code=(.*?)&/gm;
+    let result = codeExtractRegex.exec(req.originalUrl);
+
+    if (!result || result.length != 2) { return this.setState({failed: true}); }
+
+    let code = result[1];
+    res.render('callbackURL', { code : code });
+    // res.send('<a href="https://my.crownstone.rocks' + req.originalUrl + '">clickMe</a>');
   });
 
   //verified
