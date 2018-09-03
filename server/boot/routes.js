@@ -48,6 +48,12 @@ module.exports = function (app) {
     res.render('callback');
   });
 
+
+  //callbackURL page
+  app.get('/callbackURL', function (req, res) {
+    res.send('<a href="https://my.crownstone.rocks' + req.originalUrl + '">clickMe</a>');
+  });
+
   //verified
   app.get('/verified', function (req, res) {
     res.render('verified', {});
