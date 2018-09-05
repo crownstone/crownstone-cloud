@@ -20,32 +20,6 @@ module.exports = function(model) {
 
   model.validatesUniquenessOf('downloadUrl', {message: 'This bootloader download url already exists.'});
 
-  let app = require('../../server/server');
-  if (app.get('acl_enabled')) {
-    model.disableRemoteMethodByName('find');
-
-    //***************************
-    // GENERAL:
-    //   - nothing
-    //***************************
-    model.settings.acls.push(
-      {
-        "accessType": "*",
-        "principalType": "ROLE",
-        "principalId": "$everyone",
-        "permission": "DENY"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "accessType": "READ",
-        "principalType": "ROLE",
-        "principalId": "$everyone",
-        "permission": "ALLOW"
-      }
-    );
-  }
-
   model.disableRemoteMethodByName('create');
   model.disableRemoteMethodByName('replaceOrCreate');
   model.disableRemoteMethodByName('patchOrCreate');
