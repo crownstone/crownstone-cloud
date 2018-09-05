@@ -14,8 +14,7 @@
   },
   "properties": {
     "switchedToState": {
-      "type": "number",
-      "required": true
+      "type": "number"
     },
     "type": {
       "type": "string",
