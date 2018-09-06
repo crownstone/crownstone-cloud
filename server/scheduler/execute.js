@@ -6,7 +6,7 @@ function execute(task) {
   mongo.connect()
     .then(() => {
       console.log("CRONJOBS: Executing:", task.id);
-      return action(mongo);
+      return task.action(mongo);
     })
     .then(() => {
       console.log("CRONJOBS: Finished:", task.id);
