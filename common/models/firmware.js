@@ -107,7 +107,7 @@ module.exports = function(model) {
           .catch((err) => { reject(err); })
       }
       else {
-        reject({"statusCode": 401,"message": "Authorization Required"})
+        resolve()
       }
     })
       .then(() => {
