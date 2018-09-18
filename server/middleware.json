@@ -49,12 +49,8 @@
                 "path": "/api/users/:id/devices"
               },
               {
-                "methods": ["get","put","post"],
-                "path": "/api/Device/:id/hooks"
-              },
-              {
                 "methods": ["get","put","post","delete"],
-                "path": "/api/Device/:id/hooks/:fk"
+                "path": "/api/Device/:id/hooks"
               }
             ],
             "stone_information": [
@@ -63,12 +59,8 @@
                 "path": "/api/Stones/all"
               },
               {
-                "methods": ["get","put","post"],
-                "path": "/api/Stones/:id/hooks"
-              },
-              {
                 "methods": ["get","put","post","delete"],
-                "path": "/api/Stones/:id/hooks/:fk"
+                "path": "/api/Stones/:id/hooks"
               }
             ],
             "switch_stone": [

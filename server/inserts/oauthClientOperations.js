@@ -3,6 +3,8 @@ let crypto = require('crypto');
 
 let allScopes = [
   'user_information',     // get /api/users/me
+  'location_information',
+  'sphere_information',
   'user_location',        // get /api/users/:id/currentLocation
   'user_id',              // get /api/users/userId
   'stone_information',    // get /api/Stones/all
@@ -31,10 +33,22 @@ function performOauthClientOperations(app) {
     // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return createClient(permissionModel, "test", ["stone_information"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
-    // .then(() => { return createClient(permissionModel, "Triggi", allScopes); })
+    // .then(() => { return updateClient(permissionModel, "Triggi", allScopes); })
     // .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information','user_location','stone_information','switch_stone']); })
     .then(() => { console.log("OATH DONE")})
     .catch((err) => { console.log("Error during performOauthClientOperations",err); })
+}
+
+function updateClient(permissionModel, clientName, scopes) {
+  return permissionModel.find({where:{name: clientName}})
+    .then((results) => {
+      if (results.length === 1) {
+        let user = results[0];
+        user.scopes = scopes;
+        return user.save()
+      }
+      console.log("Error: Not just one result found:", results);
+    })
 }
 
 function clearClientDatabase(permissionModel) {

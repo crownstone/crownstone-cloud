@@ -3,9 +3,10 @@
 function performWhitelistOperations(app) {
   let whitelistModel = app.dataSources.mongoDs.getModel('HooksWhitelist');
 
-  clearWhitelistDatabase(whitelistModel);
+  //clearWhitelistDatabase(whitelistModel);
   // addToWhitelist(whitelistModel, '', 'localhost');
-   addToWhitelist(whitelistModel, 'triggi', 'com');
+   //addToWhitelist(whitelistModel, 'triggi', 'com');
+   // addToWhitelist(whitelistModel, 'annevanrossum', 'com');
 }
 
 function clearWhitelistDatabase(whitelistModel) {
