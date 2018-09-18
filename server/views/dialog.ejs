@@ -47,11 +47,15 @@
       var permissionArray = permissions.split(",");
 
       var permissionMap = {
-        user_information:  'Access to your account details like name, email address, settings and preferences.',  // get /api/users/me
-        user_location:     'Access to your location within the house. ',  // get /api/users/:id/currentLocation
-        stone_information: 'Access to information about your Crownstones.',  // get /api/Stones
-        switch_stone:      'Access to switch your Crownstones.',  // put /api/Stones/:id/setSwitchStateRemotely
-        power_consumption: 'Access to the power consumption of your Crownstones.',  // get /api/Stones/:id/currentEnergyUsage
+        user_information:     'Access to your account details like name, email address, settings and preferences.', // get /api/users/me
+        user_id:              'Access to your user ID but not to your personal information.',  // get /api/users/userId
+        user_location:        "Access to your location. This includes the room you're in and/or which Sphere you're in as well as the type of phone you are using.",
+        switch_stone:         'Access to switch your Crownstones.',  // put /api/Stones/:id/setSwitchStateRemotely
+        power_consumption:    'Access to the power consumption of your Crownstones.',  // get /api/Stones/:id/currentEnergyUsage
+        stone_information:    'Access to information about your Crownstones.',  // get /api/Stones
+        sphere_information:   'Access to information on your Spheres.',  // get /api/users/:id/spheres
+        location_information: 'Access to information on your Rooms.',  // get /api/Locations/all
+
         all: 'Full read/write/update/delete permissions for everything tied to your account.',
       };
 

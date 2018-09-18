@@ -450,4 +450,40 @@ module.exports = function(model) {
     }
   );
 
+
+  model.getAllAccessibleLocations = function(options, next) {
+    if (options && options.accessToken) {
+      let userId = options.accessToken.userId;
+      // get get all sphereIds the user has access to.
+      const sphereAccess = loopback.getModel("SphereAccess");
+      sphereAccess.find({where: {userId: userId}, fields:{sphereId: true}})
+        .then((results) => {
+          let possibleIds = [];
+          for (let i = 0; i < results.length; i++) {
+            possibleIds.push(results[i].sphereId);
+          }
+          let filter = {sphereId: {inq: possibleIds}};
+
+          return model.find({where: filter})
+        })
+        .then((results) => {
+          next(null, results);
+        })
+        .catch((err) => {
+          next(err);
+        })
+    }
+  };
+
+  model.remoteMethod(
+    'getAllAccessibleLocations',
+    {
+      http: {path: '/all/', verb: 'GET'},
+      accepts: [
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: '[Location]', root: true},
+      description: "Get a list of all Locations your account has access to."
+    }
+  );
 };

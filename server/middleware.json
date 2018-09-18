@@ -45,6 +45,10 @@
                 "path": "/api/users/:id/currentLocation"
               },
               {
+                "methods": "get",
+                "path": "/api/users/:id/devices"
+              },
+              {
                 "methods": ["get","put","post"],
                 "path": "/api/Device/:id/hooks"
               },
@@ -71,6 +75,18 @@
               {
                 "methods": "put",
                 "path": "/api/Stones/:id/setSwitchStateRemotely"
+              }
+            ],
+            "sphere_information": [
+              {
+                "methods": "get",
+                "path": "/api/users/:id/spheres"
+              }
+            ],
+            "location_information": [
+              {
+                "methods": "get",
+                "path": "/api/Locations/all"
               }
             ],
             "power_consumption": [
