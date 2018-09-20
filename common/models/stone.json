@@ -151,6 +151,11 @@
       "model": "ActivityLog",
       "foreignKey": "stoneId"
     },
+    "activityRange": {
+      "type": "hasMany",
+      "model": "ActivityRange",
+      "foreignKey": "stoneId"
+    },
     "diagnostics": {
       "type": "hasMany",
       "model": "Diagnostic",

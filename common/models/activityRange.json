@@ -1,0 +1,58 @@
+{
+  "name": "ActivityRange",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "strict":"filter"
+  },
+  "mixins": {
+    "DisableAll": true,
+    "Util": true
+  },
+  "properties": {
+    "switchedToState": {
+      "type": "number"
+    },
+    "type": {
+      "type": "string",
+      "required": true
+    },
+    "delayInCommand": {
+      "type": "number",
+      "required": true
+    },
+    "count": {
+      "type": "number",
+      "required": true
+    },
+    "userId": {
+      "type": "string",
+      "required": true
+    },
+    "startTime": {
+      "type": "number",
+      "required": true
+    },
+    "lastDirectTime": {
+      "type": "number"
+    },
+    "lastMeshTime": {
+      "type": "number"
+    }
+  },
+  "hidden": [
+    "stoneId"
+  ],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

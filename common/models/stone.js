@@ -208,6 +208,15 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__activityLog');
   model.disableRemoteMethodByName('prototype.__get__activityLog');
 
+  model.disableRemoteMethodByName('prototype.__count__activityRange');
+  model.disableRemoteMethodByName('prototype.__create__activityRange');
+  model.disableRemoteMethodByName('prototype.__findById__activityRange');
+  model.disableRemoteMethodByName('prototype.__updateById__activityRange');
+  model.disableRemoteMethodByName('prototype.__destroyById__activityRange');
+  model.disableRemoteMethodByName('prototype.__deleteById__activityRange');
+  model.disableRemoteMethodByName('prototype.__delete__activityRange');
+  model.disableRemoteMethodByName('prototype.__get__activityRange');
+
   model.disableRemoteMethodByName('prototype.__count__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__energyUsageHistory');
@@ -1299,6 +1308,162 @@ module.exports = function(model) {
       description: 'Get last activity logs for this Crownstone'
     }
   );
+
+
+
+  model.remoteMethod(
+    'getActivityRanges',
+    {
+      http: {path: '/:id/activityRanges', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'yourTimestamp', type: 'number', required: false, http: { source : 'query' }},
+        {arg: 'excludeUserId', type: 'string', required: false, http: { source : 'query' }},
+        {arg: 'sinceTimestamp', type: 'number', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: '[ActivityRanges]', root: true},
+      description: 'Get last activity ranges for this Crownstone'
+    }
+  );
+
+  model.remoteMethod(
+    'activityRangeBatchCreate',
+    {
+      http: {path: '/:id/activityRangeBatch', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data', type: '[ActivityRange]', required: true, http: { source : 'body' }},
+        {arg: 'timestamp', type: 'number', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: '[ActivityRanges]', root: true},
+      description: 'Get last activity ranges for this Crownstone'
+    }
+  );
+
+  model.remoteMethod(
+    'activityRangeBatchUpdate',
+    {
+      http: {path: '/:id/activityRangeBatch', verb: 'put'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data', type: '[ActivityRange]', required: true, http: { source : 'body' }},
+        {arg: 'timestamp', type: 'number', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: 'Get last activity ranges for this Crownstone'
+    }
+  );
+
+
+  model.getActivityRanges = function(stoneId, yourTimestamp, excludeUserId, sinceTimestamp, options, next) {
+    let dt = new Date().valueOf() - ((yourTimestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
+    if (Math.abs(dt) < 1000) {
+      dt = 0;
+    }
+
+    let activityRangeModel = loopback.getModel("ActivityRange")
+    let query = {where: {and: [{stoneId:stoneId}]}};
+    if (excludeUserId)  { query.where.and.push({userId:    {neq: excludeUserId}});  }
+    if (sinceTimestamp) { query.where.and.push({startTime: {gte: sinceTimestamp}}); }
+    activityRangeModel.find(query)
+      .then((data) => {
+        if (yourTimestamp && yourTimestamp > 0 && dt !== 0) {
+          for (let i = 0; i < data.length; i++) {
+            // map the time to phone time
+            data[i].startTime -= dt;
+            if (data[i].lastDirectTime) { data[i].lastDirectTime -= dt; }
+            if (data[i].lastMeshTime)   { data[i].lastMeshTime   -= dt; }
+          }
+        }
+        next(null, data)
+      })
+      .catch((err) => {
+        next(err);
+      })
+
+  }
+
+  model.activityRangeBatchCreate = function(stoneId, batchOfRanges, timestamp, options, next) {
+    let dt = new Date().valueOf() - ((timestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
+    if (Math.abs(dt) < 1000) {
+      dt = 0;
+    }
+
+    if (!Array.isArray(batchOfRanges)) {
+      batchOfRanges = [batchOfRanges];
+    }
+
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      if (timestamp && timestamp > 0 && dt !== 0) {
+        for (let i = 0; i < batchOfRanges.length; i++) {
+          batchOfRanges[i].startTime += dt;
+          if (batchOfRanges[i].lastDirectTime) { batchOfRanges[i].lastDirectTime += dt; }
+          if (batchOfRanges[i].lastMeshTime)   { batchOfRanges[i].lastMeshTime   += dt; }
+        }
+      }
+
+      // create the new data in the database
+      stone.activityRange.create(batchOfRanges)
+        .then((insertResult) => {
+          next(null, insertResult)
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  }
+
+  model.activityRangeBatchUpdate = function(stoneId, batchOfRanges, timestamp, options, next) {
+    let dt = new Date().valueOf() - ((timestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
+    if (Math.abs(dt) < 1000) {
+      dt = 0;
+    }
+
+    if (!Array.isArray(batchOfRanges)) {
+      batchOfRanges = [batchOfRanges];
+    }
+
+    let activityRangeModel = loopback.getModel("ActivityRange")
+    model.findById(stoneId, function(err, stone) {
+      if (err) return next(err);
+      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+      let idArray = [];
+      let batchMap = {}
+      for (let i = 0; i < batchOfRanges.length; i++) {
+        idArray.push(batchOfRanges[i].id)
+        batchMap[batchOfRanges[i].id] = batchOfRanges[i];
+      }
+
+      // create the new data in the database
+      activityRangeModel.find({where:{id:{inq:idArray}}})
+        .then((res) => {
+          if (res.length > 0) {
+            for (let i = 0; i < res.length; i++) {
+              let item = res[i];
+              let updatedItem = batchMap[item.id];
+              if (item.count !== updatedItem.count) {
+                item.count = updatedItem.count;
+                item.lastDirectTime  = updatedItem.lastDirectTime + dt;
+                item.lastMeshTime    = updatedItem.lastMeshTime   + dt;
+                item.switchedToState = updatedItem.switchedToState;
+                item.delayInCommand  = updatedItem.delayInCommand;
+                item.save();
+              }
+            }
+          }
+          next(null)
+        })
+        .catch((err) => {
+          next(err);
+        })
+    })
+  }
 
 };
 

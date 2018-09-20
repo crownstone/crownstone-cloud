@@ -170,6 +170,10 @@
     "dataSource": "mongoDs",
     "public": true
   },
+  "ActivityRange": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
   "Toon": {
     "dataSource": "mongoDs",
     "public": true

@@ -35,7 +35,7 @@ function performOauthClientOperations(app) {
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
     // .then(() => { return updateClient(permissionModel, "Triggi", allScopes); })
     // .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information','user_location','stone_information','switch_stone']); })
-    .then(() => { console.log("OATH DONE")})
+    .then(() => { console.log("OAUTH DONE")})
     .catch((err) => { console.log("Error during performOauthClientOperations",err); })
 }
 
