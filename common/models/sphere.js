@@ -1778,6 +1778,7 @@ module.exports = function(model) {
       .then((schedule) => {
         data.refreshToken = tokens.refreshToken;
         data.schedule = JSON.stringify(schedule);
+        data.updatedScheduleTime = new Date().valueOf();
         return sphereInstance.Toons.create(data);
       })
       .then((toon) => {

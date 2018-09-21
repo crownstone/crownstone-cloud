@@ -154,4 +154,54 @@ module.exports = function(model) {
     }
   );
 
+
+  model.updateSchedule = function(toonId, next) {
+    let toon;
+    let schedule;
+    model.findById(toonId)
+      .then((storedToon) => {
+        if (!storedToon) {
+          throw {message: "No Toon found with this ID.", code: "TOON_NOT_FOUND"}
+        }
+
+        toon = storedToon;
+
+        return ToonAPI.getAccessToken(toon.refreshToken);
+      })
+      .then((receivedTokens) => {
+        toon.refreshToken = receivedTokens.refreshToken;
+        return ToonAPI.getSchedule(receivedTokens, toon.toonAgreementId);
+      })
+      .then((receivedSchedule) => {
+        schedule = receivedSchedule;
+        toon.schedule = JSON.stringify(receivedSchedule);
+        toon.updatedScheduleTime = new Date().valueOf();
+        return toon.save()
+      })
+      .then(() => {
+        next(null, toon);
+      })
+      .catch((err) => {
+        if (typeof err === "object" && err.message && err.code) {
+          next({"statusCode": 405, "message": err.message, "errorCode": err.code, model: toon});
+        }
+        else {
+          next(err);
+        }
+        return toon.save()
+      })
+  }
+
+  model.remoteMethod(
+    'updateSchedule',
+    {
+      http: {path: '/:id/updateSchedule', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      returns: {arg: 'data', type: 'Toon', root: true},
+      description: 'Force an update of the Toon schedule. This is normally done by the cloud once a day, but if you just changed your schedule on the Toon you can refresh it with this.'
+    }
+  );
+
 };

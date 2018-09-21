@@ -16,7 +16,7 @@ function refreshToonSchedules(mongo) {
           .then((schedule) => {
             toonCollection.updateOne(
               { _id: toon._id},
-              { refreshToken: tokens.refreshToken, schedule: JSON.stringify(schedule) },
+              { refreshToken: tokens.refreshToken, schedule: JSON.stringify(schedule), updatedScheduleTime: new Date().valueOf() },
               (err,result) => {
                 resolve();
               }

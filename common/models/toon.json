@@ -33,6 +33,10 @@
     "schedule": {
       "type": "string"
     },
+    "updatedScheduleTime": {
+      "type": "number",
+      "default": 0
+    },
     "changedToProgram": {
       "type": "string",
       "default": "NONE"

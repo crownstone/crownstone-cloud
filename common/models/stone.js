@@ -1276,7 +1276,7 @@ module.exports = function(model) {
     let activityLogModel = loopback.getModel("ActivityLog")
     let query = {where: {and: [{stoneId:stoneId}]}};
     if (excludeUserId)  { query.where.and.push({userId:    {neq: excludeUserId}});  }
-    if (sinceTimestamp) { query.where.and.push({timestamp: {gte: sinceTimestamp}}); }
+    if (sinceTimestamp) { query.where.and.push({timestamp: {gte: sinceTimestamp - dt}}); }
     activityLogModel.find(query)
       .then((data) => {
         if (yourTimestamp && yourTimestamp > 0 && dt !== 0) {
@@ -1366,7 +1366,7 @@ module.exports = function(model) {
     let activityRangeModel = loopback.getModel("ActivityRange")
     let query = {where: {and: [{stoneId:stoneId}]}};
     if (excludeUserId)  { query.where.and.push({userId:  {neq: excludeUserId}});  }
-    if (sinceTimestamp) { query.where.and.push({or:     [{lastDirectTime: {gte:sinceTimestamp}}, {lastMeshTime: {gte:sinceTimestamp}}]}); }
+    if (sinceTimestamp) { query.where.and.push({or:     [{lastDirectTime: {gte: sinceTimestamp - dt}}, {lastMeshTime: {gte: sinceTimestamp - dt}}]}); }
     activityRangeModel.find(query)
       .then((data) => {
         if (yourTimestamp && yourTimestamp > 0 && dt !== 0) {
