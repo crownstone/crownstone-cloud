@@ -1322,7 +1322,7 @@ module.exports = function(model) {
         {arg: 'sinceTimestamp', type: 'number', required: false, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      returns: {arg: 'data', type: '[ActivityRanges]', root: true},
+      returns: {arg: 'data', type: '[ActivityRange]', root: true},
       description: 'Get last activity ranges for this Crownstone'
     }
   );
@@ -1337,7 +1337,7 @@ module.exports = function(model) {
         {arg: 'timestamp', type: 'number', required: false, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      returns: {arg: 'data', type: '[ActivityRanges]', root: true},
+      returns: {arg: 'data', type: '[ActivityRange]', root: true},
       description: 'Get last activity ranges for this Crownstone'
     }
   );
@@ -1363,10 +1363,12 @@ module.exports = function(model) {
       dt = 0;
     }
 
+    console.log("sinceTimestamp",sinceTimestamp)
+
     let activityRangeModel = loopback.getModel("ActivityRange")
     let query = {where: {and: [{stoneId:stoneId}]}};
-    if (excludeUserId)  { query.where.and.push({userId:    {neq: excludeUserId}});  }
-    if (sinceTimestamp) { query.where.and.push({startTime: {gte: sinceTimestamp}}); }
+    if (excludeUserId)  { query.where.and.push({userId:  {neq: excludeUserId}});  }
+    if (sinceTimestamp) { query.where.and.push({or:     [{lastDirectTime: {gte:sinceTimestamp}}, {lastMeshTime: {gte:sinceTimestamp}}]}); }
     activityRangeModel.find(query)
       .then((data) => {
         if (yourTimestamp && yourTimestamp > 0 && dt !== 0) {
@@ -1453,7 +1455,7 @@ module.exports = function(model) {
                   item.lastDirectTime = updatedItem.lastDirectTime + dt;
                 }
                 if (updatedItem.lastMeshTime) {
-                  item.lastMeshTime    = updatedItem.lastMeshTime   + dt;
+                  item.lastMeshTime = updatedItem.lastMeshTime + dt;
                 }
                 item.switchedToState = updatedItem.switchedToState;
                 item.delayInCommand  = updatedItem.delayInCommand;
