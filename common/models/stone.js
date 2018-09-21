@@ -1358,12 +1358,10 @@ module.exports = function(model) {
 
 
   model.getActivityRanges = function(stoneId, yourTimestamp, excludeUserId, sinceTimestamp, options, next) {
-    let dt = new Date().valueOf() - ((yourTimestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
+    let dt = new Date().valueOf() - ((yourTimestamp || 0) + 50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
     if (Math.abs(dt) < 1000) {
       dt = 0;
     }
-
-    console.log("sinceTimestamp",sinceTimestamp)
 
     let activityRangeModel = loopback.getModel("ActivityRange")
     let query = {where: {and: [{stoneId:stoneId}]}};
