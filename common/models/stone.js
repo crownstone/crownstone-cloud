@@ -1449,8 +1449,12 @@ module.exports = function(model) {
               let updatedItem = batchMap[item.id];
               if (item.count !== updatedItem.count) {
                 item.count = updatedItem.count;
-                item.lastDirectTime  = updatedItem.lastDirectTime + dt;
-                item.lastMeshTime    = updatedItem.lastMeshTime   + dt;
+                if (updatedItem.lastDirectTime) {
+                  item.lastDirectTime = updatedItem.lastDirectTime + dt;
+                }
+                if (updatedItem.lastMeshTime) {
+                  item.lastMeshTime    = updatedItem.lastMeshTime   + dt;
+                }
                 item.switchedToState = updatedItem.switchedToState;
                 item.delayInCommand  = updatedItem.delayInCommand;
                 item.save();
