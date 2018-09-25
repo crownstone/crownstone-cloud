@@ -2,6 +2,9 @@
 
 let loopback = require('loopback');
 var ObjectID = require('mongodb').ObjectID;
+
+const notificationHandler = require('../../server/modules/NotificationHandler');
+
 const debug = require('debug')('loopback:dobots');
 module.exports = function(model) {
 
@@ -782,5 +785,48 @@ module.exports = function(model) {
       description: "Delete a fingerprint from this model."
     }
   );
+
+
+  model.testNotification = function(deviceId, payload, options, callback) {
+    // check if we already have linker entries for the provided ids
+    model.findById(deviceId)
+      .then((device) => {
+        if (!device) { throw "Unknown device" }
+        let message = {
+          type: 'testNotification',
+          data:{},
+          silentAndroid: true,
+          silentIOS: true
+        }
+
+        notificationHandler.notifyDevice(device, message)
+
+      })
+      .then(() => {
+        // console.log("Created Fingerprint", result);
+        callback(null);
+      })
+      .catch((err) => {
+        // console.log("ERR createFingerprint", err);
+        callback(err);
+      });
+
+
+
+  }
+
+  model.remoteMethod(
+    'testNotification',
+    {
+      http: {path: '/:id/testNotification', verb: 'delete'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'payload', type: 'any', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Delete a fingerprint from this model."
+    }
+  );
+
 
 };

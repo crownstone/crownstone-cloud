@@ -36,6 +36,37 @@ class NotificationHandlerClass {
 
   }
 
+  notifyDevice(device, messageData) {
+    let iosTokens = [];
+    let androidTokens = [];
+
+    let iosUniqueTokens = {};
+    let androidUniqueTokens = {};
+    let installations = device.installations();
+    for (let k = 0; k < installations.length; k++) {
+      let token = installations[k].deviceToken;
+      if (token) {
+        switch (installations[k].deviceType) {
+          case 'ios':
+            if (iosUniqueTokens[token] === undefined) {
+              iosUniqueTokens[token] = true;
+              iosTokens.push(token);
+            }
+            break;
+          case 'android':
+            if (androidUniqueTokens[token] === undefined) {
+              androidUniqueTokens[token] = true;
+              androidTokens.push(token);
+            }
+            break;
+        }
+      }
+    }
+
+    // check if we have to do something
+    this.notifyTokens(iosTokens, androidTokens, messageData);
+  }
+
   notifySphereUsers(sphereId, messageData) {
     this.collectSphereUsers(sphereId)
       .then((userIdArray) => {
@@ -82,20 +113,24 @@ class NotificationHandlerClass {
       }
 
       // check if we have to do something
-      if (iosTokens.length > 0 || androidTokens.length > 0) {
-        // get app, currently hardcoded.
-        loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
-          .then((appResult) => {
-            if (appResult && appResult.pushSettings) {
-              this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
-              this._notifyIOS(appResult.pushSettings.apns, iosTokens, messageData);
-            }
-            else {
-              throw "No App to Push to."
-            }
-          })
-      }
+      this.notifyTokens(iosTokens, androidTokens, messageData);
     });
+  }
+
+  notifyTokens(iosTokens, androidTokens, messageData) {
+    if (iosTokens.length > 0 || androidTokens.length > 0) {
+      // get app, currently hardcoded.
+      loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
+        .then((appResult) => {
+          if (appResult && appResult.pushSettings) {
+            this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
+            this._notifyIOS(appResult.pushSettings.apns,    iosTokens, messageData);
+          }
+          else {
+            throw "No App to Push to."
+          }
+        })
+    }
   }
 
   notifyUserIds(userIds, messageData) {
@@ -158,19 +193,7 @@ class NotificationHandlerClass {
       // console.log('iosTokens', iosTokens, 'androidTokens', androidTokens);
 
       // check if we have to do something
-      if (iosTokens.length > 0 || androidTokens.length > 0) {
-        // get app, currently hardcoded.
-        loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
-          .then((appResult) => {
-            if (appResult && appResult.pushSettings) {
-              this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
-              this._notifyIOS(appResult.pushSettings.apns, iosTokens, messageData);
-            }
-            else {
-              throw "No App to Push to."
-            }
-          })
-      }
+      this.notifyTokens(iosTokens, androidTokens, messageData);
     });
   }
 
