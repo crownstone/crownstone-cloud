@@ -789,12 +789,12 @@ module.exports = function(model) {
 
   model.testNotification = function(deviceId, payload, options, callback) {
     // check if we already have linker entries for the provided ids
-    model.findById(deviceId)
+    model.findById(deviceId, {include: 'installations'})
       .then((device) => {
         if (!device) { throw "Unknown device" }
         let message = {
           type: 'testNotification',
-          data:{},
+          data:{type:'testNotification', payload:payload},
           silentAndroid: true,
           silentIOS: true
         }
@@ -811,20 +811,18 @@ module.exports = function(model) {
         callback(err);
       });
 
-
-
   }
 
   model.remoteMethod(
     'testNotification',
     {
-      http: {path: '/:id/testNotification', verb: 'delete'},
+      http: {path: '/:id/testNotification', verb: 'post'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'payload', type: 'any', required: false, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Delete a fingerprint from this model."
+      description: "Will send a notification with type=testNotification and payload=your payload to this device."
     }
   );
 

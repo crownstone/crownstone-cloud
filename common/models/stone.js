@@ -488,12 +488,24 @@ module.exports = function(model) {
         .then((insertResult) => {
           if (!insertResult) { return insertResult; }
 
+          let averageFieldKey = "power";
+          if (fieldName === 'energyUsage') {
+            averageFieldKey = "energy";
+          }
+          let averageValue = 0;
+          let averageCount = 0;
+
           // get the most recent timestamp in the batch that we have uploaded
           let mostRecentId = null;
           let mostRecentEntry = null;
           let mostRecentTimestamp = 0;
           if (Array.isArray(insertResult)) {
             for (let i = 0; i < insertResult.length; i++) {
+              if (insertResult[i][averageFieldKey] !== undefined) {
+                averageCount++;
+                averageValue += insertResult[i][averageFieldKey];
+              }
+
               let checkTimestamp = new Date(insertResult[i].timestamp).valueOf();
               if (mostRecentTimestamp < checkTimestamp) {
                 mostRecentTimestamp = checkTimestamp;
@@ -506,6 +518,11 @@ module.exports = function(model) {
             mostRecentId = insertResult.id;
             mostRecentEntry = insertResult;
             mostRecentTimestamp = new Date(insertResult.timestamp).valueOf();
+          }
+
+          if (averageCount > 0) {
+            averageValue /= averageCount;
+            mostRecentEntry[averageFieldKey] = averageValue;
           }
 
           const insertMostRecent = (currentId, mostRecentEntry) => {
