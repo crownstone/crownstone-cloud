@@ -147,6 +147,14 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:guest",
         "permission": "ALLOW",
+        "property": "activityRangeBatchCreate"
+      }
+    );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "ALLOW",
         "property": "notifyOnRecovery"
       }
     );
