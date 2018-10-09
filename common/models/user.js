@@ -283,6 +283,7 @@ module.exports = function(model) {
   model.on('resetPasswordRequest', function(info) {
     let email = info.email;
     console.log("Send password request to " + email);
+    let app = require('../../server/server');
     let baseUrl = app.baseUrl || 'https://' + config.host + ':' + config.port ;
     let url = baseUrl + '/reset-password';
     let token = info.accessToken.id;
