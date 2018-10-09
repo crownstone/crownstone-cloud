@@ -32,7 +32,7 @@ module.exports = function(model) {
     "principalType": "ROLE",
     "principalId": "$everyone",
     "permission": "ALLOW",
-    "property": "resendVerification"
+    "property": "sendVerification" // TODO: was resendVerification? is this necessary?
   });
   model.settings.acls.push({
     "principalType": "ROLE",
@@ -242,24 +242,16 @@ module.exports = function(model) {
    **** Custom functions
    ************************************/
 
+  /**
+   * TODO: If the email bounces, the user is not notified. If the user registers again the user will get the message
+   * "Email already exists".
+   *
+   * It seems to be the case that user does not contain user.firstName and user.lastName. How is that?
+   */
   model.sendVerification = function(user, tokenGenerator, callback) {
+    console.log("New account. Send email to verify user.");
     let options = util.getVerificationEmailOptions(user);
     options.generateVerificationToken = tokenGenerator;
-    // let options = {
-    // 	type: 'email',
-    // 	to: user.email,
-    // 	from: 'noreply@crownstone.rocks',
-    // 	subject: 'Thanks for registering.',
-    // 	template: path.resolve(__dirname, '../../server/views/verify.ejs'),
-    // 	redirect: '/verified',
-    // 	user: user,
-    // 	protocol: 'http',
-    // 	port: 80,
-    // 	generateVerificationToken: func
-    // };
-
-    // console.log("options: " + JSON.stringify(options));
-
     debug("sending verification");
     user.verify(options, callback);
   };
@@ -289,14 +281,17 @@ module.exports = function(model) {
 
   //send password reset link when requested
   model.on('resetPasswordRequest', function(info) {
-    let url = 'https://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/reset-password';
-    let token = info.accessToken.id;
     let email = info.email;
+    console.log("Send password request to " + email);
+    let baseUrl = app.baseUrl || 'https://' + config.host + ':' + config.port ;
+    let url = baseUrl + '/reset-password';
+    let token = info.accessToken.id;
     util.sendResetPasswordRequest(url, token, email);
   });
 
   model.resendVerification = function(email, callback) {
     model.findOne({where: {email: email}}, function(err, user) {
+      //console.log("Resend to user", user);
       if (err) return callback(err);
       if (model.checkForNullError(user, callback, "email: " + email)) return;
 

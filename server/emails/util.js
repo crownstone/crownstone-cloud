@@ -5,11 +5,126 @@ const Email = loopback.findModel('Email');
 let app = require('../../server/server');
 
 let util = {
+  
+  /* 
+   * See node_modules/loopback/common/models/user.js for options overview
+   */
+  getDefaultEmailOptions: function(email_to, email_subject) {
+    let options = {
+      to: email_to,
+      type: 'email',
+      from: 'ask@crownstone.rocks',
+      fromname: 'Crownstone',
+      subject: email_subject,
+      protocol: 'https',
+      port: 443
+    };
+    return options;
+  },
+  
+  /*
+   * See https://docs.strongloop.com/display/public/LB/Registering+users for information on registering new users.
+   */
+  getVerificationEmailOptions: function(user) {
+    let template = path.resolve(__dirname, './verificationEmail.html');
 
+    let subject = 'Welcome at Crownstone! One step to protect your account!';
+    let options = this.getDefaultEmailOptions(user.email, subject);
+    options.firstName = user.firstName;
+    options.lastName = user.lastName;
+    options.redirect = '/verified';
+    options.user = user;
+   
+    if (user.firstName === undefined && user.lastName === undefined) {
+      options.invitedUser = 'there';
+    } else {
+      options.invitedUser = user.firstName + ' ' + user.lastName;
+    }
+    options.template = template;
+
+    return options;
+  },
+
+  /**
+   * Send a email to allow the user to reset a password.
+   */
+  sendResetPasswordRequest : function(baseUrl, token, email) {
+    let resetUrl = baseUrl + '?access_token=' + token;
+    let params = {resetUrl: resetUrl };
+    let renderer = loopback.template(path.resolve(__dirname, './passwordResetEmail.html'));
+    let html = renderer(params);
+    let subject = 'Reset Crownstone password';
+    let options = this.getDefaultEmailOptions(email, subject);
+    options.html = html;
+
+    Email.send(
+      options, 
+      function(err) {
+        if (err) return debug('error sending password reset email');
+        debug('sending password reset email to:', email);
+    });
+  },
+
+  /*
+   * Send an email to a user that is not yet known in the system. This means that only user.email is filled. No
+   * information about first or last name is yet available. The currentUser is the user that is inviting the new user.
+   * This can be used to make the email more personal with a sentence like "invited by".
+   */
+  sendNewUserInviteEmail: function(user, currentUser, sphere, acceptUrl, declineUrl, token) {
+    let fullAcceptUrl = acceptUrl + '?access_token=' + token + '&sphere_id=' + sphere.id;
+    let fullDeclineUrl = declineUrl + '?access_token=' + token + '&sphere_id=' + sphere.id;
+    let invitedByText = '';
+    if (currentUser !== null) {
+      invitedByText = 'by ' + currentUser.firstName + ' ' + currentUser.lastName + ' ';
+    }
+    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
+      sphereName: sphere.name };
+    let renderer = loopback.template(path.resolve(__dirname, './inviteNewUserEmail.html'));
+    let html = renderer(params);
+    let subject = 'Welcome! You just have been invited!';
+    let options = this.getDefaultEmailOptions(user.email, subject);
+    options.html = html;
+
+    Email.send(
+      options, 
+      function(err) {
+        if (err) return debug('error sending invitation email to new user');
+        debug('sending invitation email to:', user.email);
+    });
+  },
+
+  /*
+   * Send an email to a user that is already known in the system. The currentUser is the user that is inviting the
+   * other user. This can be used to make the email more personal with a sentence like "invited by".
+   */
+  sendExistingUserInviteEmail: function(user, currentUser, sphere, acceptUrl, declineUrl) {
+    let fullAcceptUrl = acceptUrl + '&sphere_id=' + sphere.id;
+    let fullDeclineUrl = declineUrl + '&sphere_id=' + sphere.id;
+    let invitedByText = '';
+    if (currentUser !== null) {
+      invitedByText = 'by ' + currentUser.firstName + ' ' + currentUser.lastName + ' ';
+    }
+    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
+      sphereName: sphere.name };
+    let renderer = loopback.template(path.resolve(__dirname, './inviteExistingUserEmail.html'));
+    let html = renderer(params);
+    let subject = 'You just have been invited to sphere ' + sphere.name;
+    let options = this.getDefaultEmailOptions(user.email, subject);
+    options.html = html;
+
+    Email.send(
+      options,
+      function(err) {
+        if (err) return debug('error sending invitation email to existing user');
+        debug('sending invitation email to:', user.email);
+      });
+  },
+
+  // TODO
   sendStoneRecoveredEmail : function(user, stone) {
     Email.send({
       to: user.email,
-      from: 'noreply@crownstone.rocks',
+      from: 'ask@crownstone.rocks',
       fromname: 'Crownstone',
       subject: 'Notification email',
       template: path.resolve(__dirname, './stoneRecoveredEmail.ejs'),
@@ -22,6 +137,7 @@ let util = {
     });
   },
 
+  // TODO
   sendRemovedFromSphereEmail : function(unlinkedUser, executingUser, sphere) {
     let html = 'You were removed from the Sphere <b>' + sphere.name + '</b>.';
     if (executingUser !== null) {
@@ -29,93 +145,16 @@ let util = {
     }
     Email.send({
       to: unlinkedUser.email,
-      from: 'noreply@crownstone.rocks',
+      from: 'ask@crownstone.rocks',
       fromname: 'Crownstone',
-      from_name: 'Crownstone',
       subject: 'Notification email',
       html: html
     }, function(err) {
       if (err) return debug('failed to send notification email');
       debug('sending remove notification email to:', unlinkedUser.email);
     });
-  },
-
-  sendResetPasswordRequest : function(url, token, email) {
-    let html = 'Click <a href="' + url + '?access_token=' +
-      token + '">here</a> to reset your password';
-    Email.send({
-      to: email,
-      from: 'noreply@crownstone.rocks',
-      fromname: 'Crownstone',
-      subject: 'Password reset',
-      html: html
-    }, function(err) {
-      if (err) return debug('error sending password reset email');
-      debug('sending password reset email to:', email);
-    });
-  },
-
-  getVerificationEmailOptions: function(user) {
-    // see node_modules/loopback/common/models/user.js for options overview
-    // and docs at https://docs.strongloop.com/display/public/LB/Registering+users
-    let options = {
-      type: 'email',
-      to: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      from: 'noreply@crownstone.rocks',
-      fromname: 'Crownstone',
-      subject: 'Thanks for registering.',
-      template: path.resolve(__dirname, './verificationEmail.ejs'),
-      redirect: '/verified',
-      user: user,
-      protocol: 'https',
-      port: 443
-    };
-
-    return options;
-  },
-
-  sendNewUserInviteEmail: function(sphere, email, acceptUrl, declineUrl, token) {
-    let html = 'You have been invited to the sphere <b>' + sphere.name + '</b>. ' +
-      'You can use the following link to follow up on the registration:<br>' +
-      acceptUrl + '?access_token=' + token + '&sphere_id=' + sphere.id + '<br>' +
-      'Or click here to decline:<br>' +
-      declineUrl + '?access_token=' + token + '&sphere_id=' + sphere.id;
-
-    Email.send({
-      to: email,
-      from: 'noreply@crownstone.rocks',
-      fromname: 'Crownstone',
-      subject: 'Invitation to sphere ' + sphere.name,
-      html: html
-    }, function(err) {
-      if (err) return debug('error sending invitation email');
-      debug('sending invitation email to:', email);
-    });
-
-  },
-
-  sendExistingUserInviteEmail: function(user, currentUser, sphere, acceptUrl, declineUrl) {
-    let html = 'You have been invited to the sphere <b>' + sphere.name + '</b> by ' +
-      currentUser.firstName + ' ' + currentUser.lastName + '. ' +
-      'To complete the process, please click the following link to accept:<br>' +
-      acceptUrl + '?sphere_id=' + sphere.id + '<br>' +
-      'Or click here to decline:<br>' +
-      declineUrl + '?sphere_id=' + sphere.id;
-
-    Email.send({
-      to: user.email,
-      from: 'noreply@crownstone.rocks',
-      fromname: 'Crownstone',
-      subject: 'Invitation to sphere ' + sphere.name,
-      html: html
-    }, function(err) {
-      if (err) return debug('error sending invitation email');
-      debug('sending invitation email to:', user.email);
-    });
-
   }
+
 };
 
 module.exports = util;

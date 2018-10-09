@@ -55,6 +55,10 @@ app.start = function() {
     app.emit('started');
     let baseUrl = app.get('url').replace(/\/$/, '');
     console.log('Web server listening at: %s', baseUrl);
+    if (process.env.BASE_URL === undefined) {
+      console.error('BASE_URL is undefined, might lead to errors in the code base, consider setting to baseUrl=' + baseUrl);
+    }
+    app.baseUrl = baseUrl;
     if (app.get('loopback-component-explorer')) {
       let explorerPath = app.get('loopback-component-explorer').mountPath;
       console.log('Browse your REST API at %s%s', baseUrl, explorerPath);

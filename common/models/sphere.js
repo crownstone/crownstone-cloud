@@ -315,7 +315,9 @@ module.exports = function(model) {
       if (!user) return next();
 
       if (String(user.id) === String(sphere.ownerId)) {
-        return next(new Error("can't remove owner from sphere"));
+        let error = new Error("Can't remove owner from sphere");
+        error.statusCode = error.status = 409;
+        return next(error);
       }
       else {
         // we collect the users because we need the userIds of all users in the sphere, including the one whos is about to be deleted.
@@ -352,7 +354,10 @@ module.exports = function(model) {
 
     // if the user does not exist any more, ignore notifying him
     if (!unlinkedUserKey) {
-      next(new Error("Did not find user to send notification email after removing user from Sphere."));
+      let error = new Error("User has been removed from sphere. No notification email will be sent.");
+      error.statusCode = error.status = 409;
+      return callback(error);
+      next(error);
       return;
     }
 
@@ -388,7 +393,9 @@ module.exports = function(model) {
     model.findById(ctx.where.id, {include: 'ownedStones'}, function(err, sphere) {
       if (sphere) {
         if (sphere.ownedStones().length > 0) {
-          return next(new Error("Can't delete a sphere with assigned crownstones."));
+          let error = new Error("Can't delete sphere with crownstones still assigned to it.");
+          error.statusCode = error.status = 409;
+          return next(error);
         }
       }
       next();
@@ -502,7 +509,6 @@ module.exports = function(model) {
     else {
       next();
     }
-
   }
 
   function addSphereAccess(user, sphere, access, invite, callback) {
@@ -519,15 +525,29 @@ module.exports = function(model) {
       });
   }
 
+  /*
+   * TODO: baseUrl is now defined on app, maybe store in within another object to make sure no conflicts are resulting
+   * from this.
+   */
   function sendInvite(user, options, sphere, isNew, accessTokenId) {
-    let baseUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port));
+    let baseUrl = app.baseUrl || 'http://' + config.host + ':' + config.port ;
     if (isNew) {
+      console.log('Send invite to new user ' + user.email);
       let acceptUrl = baseUrl + '/profile-setup';
       let declineUrl = baseUrl + '/decline-invite-new';
 
-      emailUtil.sendNewUserInviteEmail(sphere, user.email, acceptUrl, declineUrl, accessTokenId);
+      let userIdFromContext = options && options.accessToken && options.accessToken.userId || undefined;
+      const User = loopback.findModel('user');
+      User.findById(userIdFromContext)
+        .then((currentUser) => {
+          emailUtil.sendNewUserInviteEmail(user, currentUser, sphere, acceptUrl, declineUrl, accessTokenId);
+        })
+        .catch((err) => {
+          console.log("ERROR DURING sendInvite", err);
+        })
     }
     else {
+      console.log('Send invite to existing user ' + user.email);
       let acceptUrl = baseUrl + '/accept-invite';
       let declineUrl = baseUrl + '/decline-invite';
 
@@ -535,9 +555,7 @@ module.exports = function(model) {
       const User = loopback.findModel('user');
       User.findById(userIdFromContext)
         .then((currentUser) => {
-          if (currentUser !== null) {
-            emailUtil.sendExistingUserInviteEmail(user, currentUser, sphere, acceptUrl, declineUrl);
-          }
+          emailUtil.sendExistingUserInviteEmail(user, currentUser, sphere, acceptUrl, declineUrl);
         })
         .catch((err) => {
           console.log("ERROR DURING sendInvite", err);
@@ -568,22 +586,21 @@ module.exports = function(model) {
 
                 addSphereAccess(user, sphere, access, true, function(err) {
                   if (err) return callback(err);
-
-                  // let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
-                  // let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
-
-                  // emailUtil.sendExistingUserInviteEmail(user, sphere, acceptUrl, declineUrl);
                   sendInvite(user, options, sphere, false);
                   callback();
                 });
               } else {
-                callback(new Error("no user found with this email"));
+                let error = new Error("User not found amongst friends");
+                error.statusCode = error.status = 409;
+                callback(error);
               }
             }
           });
         } else {
-          // debug("no sphere", sphere, sphereId)
-          callback(new Error("no sphere found with this id"));
+          debug("Sphere not found");
+          let error = new Error("Sphere not found");
+          error.statusCode = error.status = 409;
+          callback(error);
         }
       }
     });
@@ -604,9 +621,6 @@ module.exports = function(model) {
             if (err) return next(err);
             addSphereAccess(user, sphere, access, true, function(err) {
               if (err) return next(err);
-              // let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/profile-setup'
-              // let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite-new'
-              // emailUtil.sendNewUserInviteEmail(sphere, email, acceptUrl, declineUrl, accessToken.id);
               sendInvite(user, options, sphere, true, accessToken.id);
               next();
             });
@@ -638,7 +652,7 @@ module.exports = function(model) {
             sphere.users.exists(user.id, function(err, exists) {
               if (exists) {
                 debug("user is already part of the sphere");
-                let error = new Error("user is already part of the sphere");
+                let error = new Error("User is already part of the sphere");
                 error.statusCode = error.status = 200;
                 next(error);
               } else {
@@ -652,8 +666,11 @@ module.exports = function(model) {
         });
       }
       else {
-        debug("no sphere");
-        next(new Error("no sphere found with this id"));
+        debug("Sphere not found");
+        let error = new Error("Sphere not found");
+        error.statusCode = error.status = 409;
+        callback(error);
+        next(error);
       }
     });
   }
@@ -695,6 +712,12 @@ module.exports = function(model) {
     }
   );
 
+  /**
+   * Find user in list of invites and resend an email if found. When the user does not exist in the database, the
+   * same message "User not found in invites" will be send, so not to leak information about who is present in the
+   * database. A 409 (conflict) error is returned. This is namely not a server-side error, but it is an error that 
+   * can be solved at the client-side.
+   */
   model.resendInvite = function(id, email, options, callback) {
     model.findById(id, function(err, sphere) {
       if (err) return callback(err);
@@ -702,13 +725,24 @@ module.exports = function(model) {
       const User = loopback.findModel('user');
       User.findOne({where: {email: email}}, function(err, user) {
         if (err) return callback(err);
-        // debug("user", user);
+        //debug("user", user);
+        if (!user) {
+          let error = new Error("User not found in invites");
+          error.name = "Invitation error";
+          error.statusCode = error.status = 409;
+          return callback(error);
+        }
 
         const SphereAccess = loopback.getModel('SphereAccess');
         SphereAccess.findOne({where: {and: [{sphereId: id}, {userId: user.id}, {invitePending: true}]}},
           function(err, access) {
             if (err)     return callback(err);
-            if (!access) return callback(new Error("User not found in invites"));
+            if (!access) {
+              let error = new Error("User not found in invites");
+              error.name = "Invitation error";
+              error.statusCode = error.status = 409;
+              return callback(error);
+            }
 
             if (user.new) {
               user.accessTokens.destroyAll(function(err, info) {
@@ -746,18 +780,32 @@ module.exports = function(model) {
     }
   );
 
+  /**
+   * Again, just as in resendInvite we try not to leak information about the existence of a user. The error message
+   * is always "User not found in invites".
+   */
   model.removeInvite = function(id, email, callback) {
     const User = loopback.findModel('user');
     User.findOne({where: {email: email}}, function(err, user) {
       if (err) return callback(err);
-      if (!user) return callback(new Error("could not find user with this email"));
+      if (!user) {
+        let error = new Error("User not found in invites");
+        error.name = "Invitation error";
+        error.statusCode = error.status = 409;
+        return callback(error);
+      }
 
       const SphereAccess = loopback.getModel('SphereAccess');
       SphereAccess.findOne(
         {where: {and: [{sphereId: id}, {userId: user.id}, {invitePending: true}]}},
         function(err, access) {
           if (err) return callback(err);
-          if (!access) return callback(new Error("could not find user in invites"));
+          if (!access) {
+            let error = new Error("User not found in invites");
+            error.name = "Invitation error";
+            error.statusCode = error.status = 409;
+            return callback(error);
+          }
 
           SphereAccess.deleteById(access.id, callback);
         }
@@ -795,7 +843,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Add an existing user as a member to this sphere"
+      description: "Add an existing user as a guest to this sphere"
     }
   );
 
@@ -814,7 +862,7 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Add an existing user as a guest to this sphere"
+      description: "Add an existing user as a member to this sphere"
     }
   );
 
@@ -1027,7 +1075,10 @@ module.exports = function(model) {
 
             }
             else {
-              return callback(new Error("user is not part of the sphere!"));
+              let error = new Error("User is not part of sphere");
+              error.name = "Membership error";
+              error.statusCode = error.status = 409;
+              return callback(error);
             }
           })
         } else {
@@ -1108,17 +1159,6 @@ module.exports = function(model) {
 
         if (success) {
           const SphereAccess = loopback.findModel("SphereAccess");
-          // SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-          // 	if (err) return callback(err);
-          // 	debug(objects);
-          // 	roles = Array.from(objects, access => access.role)
-          // 	callback(null, roles);
-          // })
-          // SphereAccess.updateAll({and: [{userId: user.id}, {sphereId: id}]}, {role: role}, function(err, info) {
-          // 	if (err) return callback(err);
-          // 	debug(info);
-          // 	callback();
-          // })
           SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
             if (err) return callback(err);
 
@@ -1129,11 +1169,17 @@ module.exports = function(model) {
                 callback();
               });
             } else {
-              return callback(new Error("user is not part of the sphere!"));
+              let error = new Error("User is not part of sphere");
+              error.name = "Membership error";
+              error.statusCode = error.status = 409;
+              return callback(error);
             }
           })
         } else {
-          return callback(new Error("not allowed to change owners. Use /changeOwnership instead!"));
+          let error = new Error("Not allowed to change owners. Use /changeOwnership instead.");
+          error.name = "Permission error";
+          error.statusCode = error.status = 409;
+          return callback(error);
         }
       });
 
@@ -1310,7 +1356,12 @@ module.exports = function(model) {
       sphere.users({where: {email: email}}, function(err, users) {
         if (err) return callback(err);
 
-        if (users.length === 0) return callback(new Error("user not found"));
+        if (users.length === 0) {
+          let error = new Error("User not found amongst friends");
+          error.name = "Availability error";
+          error.statusCode = error.status = 409;
+          return callback(error);
+        }
         let user = users[0];
 
         const User = loopback.getModel('user');
@@ -1844,59 +1895,5 @@ module.exports = function(model) {
       description: "Delete all Toons in this Sphere and have their tokens revoked their tokens"
     }
   );
-
-
-  /************************************
-   **** Sending Emails
-   ************************************/
-
-  // model.afterRemote("*.__link__users", function(context, instance, next) {
-  // 	debug("link users");
-
-  // 	// do not need to wait for result of email
-  // 	next();
-
-  // 	const User = loopback.findModel('user');
-  // 	User.findById(context.args.fk, function(err, user) {
-  // 		if (err || !user) return debug("did not find user to send notification email");
-
-  // 		let acceptUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/accept-invite'
-  // 		let declineUrl = 'http://' + (process.env.BASE_URL || (config.host + ':' + config.port)) + '/decline-invite'
-
-  // 		emailUtil.sendExistingUserInviteEmail(user, context.instance, acceptUrl, declineUrl);
-
-  // 		// emailUtil.sendAddedToSphereEmail(user, context.instance, next);
-  // 	});
-  // });
-
-  // model.afterRemote("addMember", function(context, instance, next) {
-  // 	// do not need to wait for result of email
-  // 	next();
-
-  // 	const User = loopback.findModel('user');
-  // 	User.findOne({where: {email: context.args.email}}, function(err, user) {
-  // 		if (err || !user) return debug("did not find user to send notification email");
-
-  // 		model.findById(context.args.id, function(err, sphere) {
-  // 			if (err || !sphere) return debug("did not find sphere to send notification email");
-  // 			emailUtil.sendAddedToSphereEmail(user, sphere, next);
-  // 		});
-  // 	});
-  // });
-
-  // model.afterRemote("addGuest", function(context, instance, next) {
-  // 	// do not need to wait for result of email
-  // 	next();
-
-  // 	const User = loopback.findModel('user');
-  // 	User.findOne({where: {email: context.args.email}}, function(err, user) {
-  // 		if (err || !user) return debug("did not find user to send notification email");
-
-  // 		model.findById(context.args.id, function(err, sphere) {
-  // 			if (err || !sphere) return debug("did not find sphere to send notification email");
-  // 			emailUtil.sendAddedToSphereEmail(user, sphere, next);
-  // 		});
-  // 	});
-  // });
 
 };

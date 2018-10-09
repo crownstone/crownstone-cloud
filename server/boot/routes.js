@@ -525,6 +525,7 @@ module.exports = function (app) {
       });
     }
 
+    console.log("Create user: " + req.body.firstName);
     User.create({
         firstName: req.body.firstName,
         lastName: req.body.lastName,
