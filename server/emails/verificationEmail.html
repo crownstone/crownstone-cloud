@@ -7,6 +7,7 @@
 			margin                  : 0px;
 			background-color        : #e1e5e8;
 			padding                 : 0px;
+      font-family             : 'Lato', sans-serif !important;
 		}
 
 		container {
@@ -15,6 +16,7 @@
 			background-color        : #e1e5e8;
 			width                   : 100%;
 			table-layout            : fixed;
+      font-family             : 'Lato', sans-serif !important;
 		}
 
 		box {
@@ -33,7 +35,7 @@
 			background-color        : #ffffff;
 			width                   : 100%;
 			max-width               : 600px;
-			height                  : 100%;
+			min-height              : 700px;
 			color                   : #333333;
 			font-family             : 'Lato', sans-serif;
 		}
@@ -86,8 +88,6 @@
 			padding-right           : 30px;
 			padding-bottom          : 15px;
 			padding-left            : 30px;
-			width                   : 75px;
-			height                  : 93px;
 		}
 
 		table.email-body td.password_text_box {
@@ -100,8 +100,7 @@
 
 		table.email-body td.password_text_box p.h1 {
 			margin                  : 0px;
-			margin-bottom           : 26px;
-			font-family             : 'Lato', sans-serif;
+			margin-bottom           : 30px;
 			font-size               : 30px;
 			font-weight             : 100;
 			text-align              : center;
@@ -181,14 +180,15 @@
 		.myButton {
 			display                 : inline-block;
 			cursor                  : pointer;
+			margin-top              : 20px;
 			margin-bottom           : 20px;
 			border                  : 1px solid #003e52;
 			border-radius           : 25px;
 			background-color        : #003e52;
 			padding                 : 15px 50px;
-			width                   : 100px;
+			width                   : 150px;
 			height                  : 20px;
-            line-height             : 20px !important;
+      line-height             : 20px !important;
 			color                   : #ffffff !important;
 			font-family             : 'Lato', sans-serif;
 			font-size               : 17px;
@@ -208,39 +208,45 @@
 			border                  : 1px solid #FFFFFF;
 		}
 	</style>
-	<link href="https://fonts.googleapis.com/css?family=Lato:400,400i,700,700i,900,900i" rel="stylesheet">
 	<title>Verify your email for Crownstone.</title>
 </head>
 <body>
-	<div class ="container">
-    <div style="display:none">Let's verify your email!</div>
-		<div class ="box">
+  <link href="https://fonts.googleapis.com/css?family=Lato:100i,400,400i,700,700i,900,900i" rel="stylesheet">
+	<div class ="container" style="background-color: #e5e5e5; font-family: 'Lato', sans-serif !important;">
+    <div style="display:none">Let's verify your email to finalize your account creation!</div>
+		<div class ="box" style="min-height:700px;">
 			<table class="table">
 				<tbody>
-					<!-- Logo -->
-					<tr>
-						<td class="logo_top">
-							<a href="https://crownstone.rocks" target="_blank"><img alt="Crownstone Logo" src="https://crownstone.rocks/attachments/email/logo.png" /></a>
-						</td>
-					</tr>
+					<!-- Padding Top -->
+					<tr style="height:30px;" />
 					<!-- Start of Email Body-->
 					<tr>
 						<td>
 							<table class="email-body">
 								<tr>
-									<td class="image_validate" align="center">
-										<img alt="Validate" src="https://crownstone.rocks/attachments/email/validate.png" />
+									<td class="image_validate" align="center" style="width:100%; height:221px;">
+                      <table style="width:430px; height: 221px; border-spacing:0px; background-image: url(https://crownstone.rocks/attachments/email/crownstoneHello.png)">
+                        <tr style="height:111px">
+                          <td style="width:234px; background-color:transparent;" />
+                          <td style="font-family: 'Lato', sans-serif !important; background-color: transparent; color:#fff; font-size:50px; font-weight:100; line-height: 111px; text-align:center">
+                            <i>Hello!</i>
+                          </td>
+                        </tr>
+                        <tr />
+                      </table>
 									</td>
 								</tr>
+                <tr style="height:30px;" />
 								<tr>
 									<td class="password_text_box">
 										<p class="h1">Hi <%= invitedUser %>!</p>
 										<p class="description">Do we have the right email address to reach you? To confirm your e-mail address, click the button below.</p>
 									</td>
 								</tr>
+
 								<tr>
-									<td class="table_button" align="center">
-										<a href="<%= verifyHref %>" class="myButton">Confirm</a>
+									<td align="center">
+										<a href="<%= verifyHref %>" class="myButton">Let's get started!</a>
 									</td>
 								</tr>
 							</table>
@@ -263,6 +269,8 @@
 							<p>or call us at 010-3073955.</p>
 						</td>
 					</tr>
+          <!-- Padding Bottom -->
+          <tr style="height:50px;" />
 				</tbody>
 			</table>
 		</div>

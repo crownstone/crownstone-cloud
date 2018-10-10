@@ -242,9 +242,10 @@ module.exports = function(model) {
    *
    */
   model.sendVerification = function(user, tokenGenerator, callback) {
-    console.log("New account. Send email to verify user.", user);
+    console.log("New account. Send email to verify user.");
     let options = util.getVerificationEmailOptions(user);
     options.generateVerificationToken = tokenGenerator;
+    options.host = app.__baseUrl;
     debug("sending verification");
     user.verify(options, callback);
   };
