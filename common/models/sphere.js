@@ -16,14 +16,14 @@ const mesh = require('../../server/middleware/mesh-access-address');
 
 const messageUtils = require('./sharedUtil/messageUtil');
 const firmwareUtils = require('./sharedUtil/firmwareUtil');
-
+const app = require('../../server/server');
 
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
 
 module.exports = function(model) {
 
-  let app = require('../../server/server');
+
   if (app.get('acl_enabled')) {
     model.disableRemoteMethodByName('find');
 
@@ -530,7 +530,7 @@ module.exports = function(model) {
    * from this.
    */
   function sendInvite(user, options, sphere, isNew, accessTokenId) {
-    let baseUrl = app.baseUrl || 'http://' + config.host + ':' + config.port ;
+    let baseUrl = app.__baseUrl;
     if (isNew) {
       console.log('Send invite to new user ' + user.email);
       let acceptUrl = baseUrl + '/profile-setup';

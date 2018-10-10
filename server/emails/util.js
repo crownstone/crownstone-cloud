@@ -28,7 +28,7 @@ let util = {
   getVerificationEmailOptions: function(user) {
     let template = path.resolve(__dirname, './verificationEmail.html');
 
-    let subject = 'Welcome at Crownstone! One step to protect your account!';
+    let subject = 'Welcome to Crownstone!';
     let options = this.getDefaultEmailOptions(user.email, subject);
     options.firstName = user.firstName;
     options.lastName = user.lastName;
@@ -120,7 +120,7 @@ let util = {
       });
   },
 
-  // TODO
+  // TODO: actually use this email
   sendStoneRecoveredEmail : function(user, stone) {
     Email.send({
       to: user.email,
@@ -137,7 +137,7 @@ let util = {
     });
   },
 
-  // TODO
+  // TODO: actually use this email
   sendRemovedFromSphereEmail : function(unlinkedUser, executingUser, sphere) {
     let html = 'You were removed from the Sphere <b>' + sphere.name + '</b>.';
     if (executingUser !== null) {

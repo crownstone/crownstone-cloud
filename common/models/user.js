@@ -1,9 +1,9 @@
 // "use strict";
 
-const config = require('../../server/config.json');
+const config = require('../../server/config');
 const path = require('path');
 const loopback = require('loopback');
-
+const app = require('../../server/server');
 const debug = require('debug')('loopback:dobots');
 
 const util = require('../../server/emails/util');
@@ -27,12 +27,6 @@ module.exports = function(model) {
     "principalType": "ROLE",
     "principalId": "$everyone",
     "permission": "DENY"
-  });
-  model.settings.acls.push({
-    "principalType": "ROLE",
-    "principalId": "$everyone",
-    "permission": "ALLOW",
-    "property": "sendVerification" // TODO: was resendVerification? is this necessary?
   });
   model.settings.acls.push({
     "principalType": "ROLE",
@@ -246,10 +240,9 @@ module.exports = function(model) {
    * TODO: If the email bounces, the user is not notified. If the user registers again the user will get the message
    * "Email already exists".
    *
-   * It seems to be the case that user does not contain user.firstName and user.lastName. How is that?
    */
   model.sendVerification = function(user, tokenGenerator, callback) {
-    console.log("New account. Send email to verify user.");
+    console.log("New account. Send email to verify user.", user);
     let options = util.getVerificationEmailOptions(user);
     options.generateVerificationToken = tokenGenerator;
     debug("sending verification");
@@ -283,8 +276,8 @@ module.exports = function(model) {
   model.on('resetPasswordRequest', function(info) {
     let email = info.email;
     console.log("Send password request to " + email);
-    let app = require('../../server/server');
-    let baseUrl = app.baseUrl || 'https://' + config.host + ':' + config.port ;
+
+    let baseUrl = app.__baseUrl;
     let url = baseUrl + '/reset-password';
     let token = info.accessToken.id;
     util.sendResetPasswordRequest(url, token, email);

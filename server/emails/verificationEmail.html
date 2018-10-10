@@ -179,17 +179,16 @@
 		}
 
 		.myButton {
-			-moz-border-radius      : 28px;
-			-webkit-border-radius   : 28px;
 			display                 : inline-block;
 			cursor                  : pointer;
 			margin-bottom           : 20px;
 			border                  : 1px solid #003e52;
-			border-radius           : 20px;
+			border-radius           : 25px;
 			background-color        : #003e52;
 			padding                 : 15px 50px;
 			width                   : 100px;
 			height                  : 20px;
+            line-height             : 20px !important;
 			color                   : #ffffff !important;
 			font-family             : 'Lato', sans-serif;
 			font-size               : 17px;
@@ -214,13 +213,14 @@
 </head>
 <body>
 	<div class ="container">
+    <div style="display:none">Let's verify your email!</div>
 		<div class ="box">
 			<table class="table">
 				<tbody>
 					<!-- Logo -->
 					<tr>
 						<td class="logo_top">
-							<a href="https://crownstone.rocks" target=""><img alt="Logo" src="https://crownstone.rocks/attachments/email/logo.png"</a>
+							<a href="https://crownstone.rocks" target="_blank"><img alt="Crownstone Logo" src="https://crownstone.rocks/attachments/email/logo.png" /></a>
 						</td>
 					</tr>
 					<!-- Start of Email Body-->
@@ -229,7 +229,7 @@
 							<table class="email-body">
 								<tr>
 									<td class="image_validate" align="center">
-										<a href="<%= verifyHref %>" target=""><img alt="Validate" src="https://crownstone.rocks/attachments/email/validate.png"</a>
+										<img alt="Validate" src="https://crownstone.rocks/attachments/email/validate.png" />
 									</td>
 								</tr>
 								<tr>
@@ -249,8 +249,8 @@
 					<!-- Social Media -->
 					<tr>
 						<td class="social_media" align="center">
-							<a href="https://www.facebook.com/crownstones/" target=""><img class="facebook" alt="Facebook" src="https://crownstone.rocks/attachments/email/facebook.png"></a>
-							<a href="https://twitter.com/CrownstoneRocks" target=""><img class="twitter" alt="Twitter" src="https://crownstone.rocks/attachments/email/twitter.png"></a>
+							<a href="https://www.facebook.com/crownstones/" target=""><img class="facebook" alt="Facebook" src="https://crownstone.rocks/attachments/email/facebook.png" /></a>
+							<a href="https://twitter.com/CrownstoneRocks" target=""><img class="twitter" alt="Twitter" src="https://crownstone.rocks/attachments/email/twitter.png" /></a>
 						</td>
 					</tr>
 					<!-- Footer -->
