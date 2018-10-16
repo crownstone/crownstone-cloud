@@ -460,26 +460,45 @@ module.exports = function(model) {
      });
  }
 
+
   let _getMatchingFingerprint = function(deviceType, locationId, userId) {
     const fingerprintModel = loopback.getModel('Fingerprint');
     // NO results yet. Search for one from a matching phone model that we made ourselves.
+    let fingerprintResult = null;
     return fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}, {ownerId: userId}]}})
       .then((fingerprint) => {
+        fingerprintResult = fingerprint;
         if (!fingerprint) {
           // if we can't find an fingerprint that we made ourselves, we try those from others
-          return fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}]}})
-            .then((fingerprint) => {
-              if (!fingerprint) {
-                return null;
-              }
-              else {
-                return fingerprint;
-              }
-            })
+          return fingerprintModel.findOne({where: {and: [{phoneType: deviceType}, {locationId: locationId}]}})
         }
-        else {
-          return fingerprint;
+        throw fingerprintResult;
+      })
+      .then((fingerprint) => {
+        fingerprintResult = fingerprint;
+        if (!fingerprint) {
+          // if we cant find any fingerprint with this phone type, broaded the search and get ANY fingerprint that we made ourselves
+          return fingerprintModel.findOne({where : {and: [{locationId: locationId}, {ownerId: userId}]}})
         }
+        throw fingerprintResult;
+      })
+      .then((fingerprint) => {
+        fingerprintResult = fingerprint;
+        if (!fingerprint) {
+          // if we cant find any fingerprint with this phone type, broaded the search and get ANY fingerprint that we made ourselves
+          return fingerprintModel.findOne({where : {locationId: locationId}})
+        }
+        throw fingerprintResult;
+      })
+      .then((fingerprint) => {
+        fingerprintResult = fingerprint;
+        return fingerprintResult;
+      })
+      .catch((err) => {
+        if (err === fingerprintResult) {
+          return fingerprintResult
+        }
+        throw err;
       })
   };
 
