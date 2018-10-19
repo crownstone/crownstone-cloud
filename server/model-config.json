@@ -74,6 +74,14 @@
     "dataSource": "mongoDs",
     "public": true
   },
+  "DeviceSphereMap": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "DeviceLocationMap": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
   "PowerUsage": {
     "dataSource": "mongoDs",
     "public": true

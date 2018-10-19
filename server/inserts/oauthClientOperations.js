@@ -30,6 +30,7 @@ function performOauthClientOperations(app) {
 
   // empty promise so all clients that are added are in matching then statements
   new Promise((resolve, reject) => { resolve() })
+    // .then(() => { return showClientDetails(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return createClient(permissionModel, "test", ["stone_information"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })

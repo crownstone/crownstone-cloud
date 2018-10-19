@@ -89,17 +89,6 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__destroyById__accessTokens');
   model.disableRemoteMethodByName('prototype.__updateById__accessTokens');
 
-  model.disableRemoteMethodByName('prototype.__create__currentLocation');
-  model.disableRemoteMethodByName('prototype.__delete__currentLocation');
-  model.disableRemoteMethodByName('prototype.__updateById__currentLocation');
-  model.disableRemoteMethodByName('prototype.__deleteById__currentLocation');
-  model.disableRemoteMethodByName('prototype.__destroyById__currentLocation');
-  model.disableRemoteMethodByName('prototype.__count__currentLocation');
-  model.disableRemoteMethodByName('prototype.__exists__currentLocation');
-  model.disableRemoteMethodByName('prototype.__link__currentLocation');
-  model.disableRemoteMethodByName('prototype.__unlink__currentLocation');
-  model.disableRemoteMethodByName('prototype.__findById__currentLocation');
-
   model.disableRemoteMethodByName('prototype.__delete__spheres');
   model.disableRemoteMethodByName('prototype.__updateById__spheres');
   model.disableRemoteMethodByName('prototype.__destroyById__spheres');
@@ -829,6 +818,124 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
       description: "Delete all spheres of User"
+    }
+  );
+
+
+  model.currentLocation = function(id, callback) {
+    const deviceModel   = loopback.getModel("Device");
+    const sphereModel   = loopback.getModel("Sphere");
+    const locationModel = loopback.getModel("Location");
+    const sphereMapModel   = loopback.getModel("DeviceSphereMap");
+    const locationMapModel = loopback.getModel("DeviceLocationMap");
+
+    let sphereIds = [];
+    let locationIds = [];
+    let sphereMap = {};
+    let locationMap = {};
+    let deviceResults = [];
+    let deviceMap = {};
+
+    deviceModel.find({where: {ownerId: id}, fields: ["id","name"]})
+      .then((results) => {
+        if (results.length === 0) {
+          callback(null, [])
+          return;
+        }
+        else {
+          deviceResults = results;
+          let deviceIds = [];
+          for (let i = 0; i < results.length; i++) {
+            deviceIds.push(results[i].id);
+          }
+
+          return sphereMapModel.find({where: {deviceId: {inq: deviceIds}}})
+            .then((sphereMapResults) => {
+              for ( let i = 0; i < sphereMapResults.length; i++ ) {
+                sphereIds.push(sphereMapResults[i].sphereId);
+                if (deviceMap[sphereMapResults[i].deviceId] === undefined) {
+                  deviceMap[sphereMapResults[i].deviceId] = {};
+                }
+                deviceMap[sphereMapResults[i].deviceId][sphereMapResults[i].sphereId] = [];
+              }
+              return locationMapModel.find({where: {deviceId: {inq: deviceIds}}});
+            })
+            .then((locationMapResults) => {
+              for (let i = 0; i < locationMapResults.length; i++) {
+                locationIds.push(locationMapResults[i].locationId);
+                deviceMap[locationMapResults[i].deviceId][locationMapResults[i].sphereId].push(locationMapResults[i].locationId);
+              }
+
+              return sphereModel.find({where: {id: {inq: sphereIds}}, fields: ["id", "name"]})
+            })
+            .then((sphereResults) => {
+              sphereResults.forEach((sphereRes) => {
+                sphereMap[sphereRes.id] = sphereRes;
+              })
+
+              if (locationIds.length > 0) {
+                return locationModel.find({where: {id: {inq: locationIds}}, fields: ["id", "name", "sphereId"]});
+              }
+              return [];
+            })
+            .then((locationResults) => {
+              locationResults.forEach((locationRes) => {
+                locationMap[locationRes.id] = locationRes;
+              })
+            })
+            .then(() => { // construct the return data.
+              let returnData = [];
+              deviceResults.forEach((deviceRes) => {
+                let deviceId = deviceRes.id;
+                if (deviceMap[deviceId] === undefined) {
+                  return;
+                }
+
+                let data = {
+                  deviceId: deviceId,
+                  deviceName: deviceRes.name,
+                  inSpheres: []
+                };
+
+                let sphereIds = Object.keys(deviceMap[deviceId]);
+                sphereIds.forEach((sphereId) => {
+                  let sphereData = {
+                    sphereId: sphereId,
+                    sphereName: sphereMap[sphereId].name,
+                    inLocations: []
+                  }
+
+                  deviceMap[deviceId][sphereId].forEach((locationId) => {
+                    sphereData.inLocations.push({
+                      locationId: locationId,
+                      locationName: locationMap[locationId].name
+                    })
+                  })
+
+                  data.inSpheres.push(sphereData);
+                })
+
+                returnData.push(data);
+              })
+
+              callback(null, returnData);
+            })
+        }
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+  model.remoteMethod(
+    'currentLocation',
+    {
+      http: {path: '/:id/currentLocation', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      returns: {arg: 'data', type: ['object'], root: true},
+      description: "Get the current location data of this user."
     }
   );
 };

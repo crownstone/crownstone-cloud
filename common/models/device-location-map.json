@@ -1,0 +1,52 @@
+{
+  "name": "DeviceLocationMap",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "strict":"filter"
+  },
+  "mixins": {
+    "DisableAll": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "sphereId": {
+      "type": "string",
+      "required": true
+    },
+    "locationId": {
+      "type": "string",
+      "required": true
+    },
+    "deviceId": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
+    },
+    "sphere": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "sphereId"
+    },
+    "device": {
+      "type": "belongsTo",
+      "model": "Device",
+      "foreignKey": "deviceId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

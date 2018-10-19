@@ -70,13 +70,6 @@
       "model": "Hook",
       "foreignKey": "ownerId"
     },
-    "currentLocation": {
-      "type": "hasMany",
-      "model": "Location",
-      "foreignKey": "ownerId",
-      "through": "Device",
-      "keyThrough": "currentLocationId"
-    },
     "spheres": {
       "type": "hasMany",
       "model": "Sphere",

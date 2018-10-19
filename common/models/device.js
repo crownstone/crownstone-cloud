@@ -846,4 +846,245 @@ module.exports = function(model) {
   );
 
 
+  model.enterSphere = function(deviceId, sphereId, options, callback) {
+    const sphereAccess = loopback.getModel("SphereAccess");
+    const sphereMapModel = loopback.getModel("DeviceSphereMap");
+    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
+      .then((sphere) => {
+        if (!sphere) {
+          let error = new Error("Authorization Required");
+          error.statusCode = error.status = 401;
+          error.code = "AUTHORIZATION_REQUIRED";
+          throw error;
+        }
+        return sphereMapModel.findOne({where: {deviceId: deviceId}})
+      })
+      .then((result) => {
+        return new Promise((resolve, reject) => {
+          if (!result) {
+            sphereMapModel.create({sphereId: sphereId, deviceId: deviceId}, (createErr, obj) => {
+              if (createErr) {
+                reject(err);
+                return;
+              }
+              resolve();
+            })
+          }
+          else {
+            result.updatedAt = new Date().valueOf();
+            result.save({}, (err, obj) => {
+              if (err) { reject(err); }
+              resolve();
+            });
+          }
+        })
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+  model.exitSphere = function(deviceId, sphereId, options, callback) {
+    const sphereAccess = loopback.getModel("SphereAccess");
+    const sphereMapModel = loopback.getModel("DeviceSphereMap");
+    const locationMapModel = loopback.getModel("DeviceLocationMap");
+    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
+      .then((sphere) => {
+        if (!sphere) {
+          let error = new Error("Authorization Required");
+          error.statusCode = error.status = 401;
+          error.code = "AUTHORIZATION_REQUIRED";
+          throw error;
+        }
+        return sphereMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}]})
+      })
+      .then(() => {
+        return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}]})
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err)
+      })
+  }
+
+  model.enterLocation = function(deviceId, sphereId, locationId, leftLocationId, options, callback) {
+    const sphereAccess = loopback.getModel("SphereAccess");
+    const sphereMapModel = loopback.getModel("DeviceSphereMap");
+    const locationMapModel = loopback.getModel("DeviceLocationMap");
+    const locationModel = loopback.getModel("Location");
+
+    // check if we are allowed to use this sphere.
+    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
+      .then((sphere) => {
+        if (!sphere) {
+          let error = new Error("Authorization Required");
+          error.statusCode = error.status = 401;
+          error.code = "AUTHORIZATION_REQUIRED";
+          throw error;
+        }
+
+        // check if this location exists
+        return locationModel.findById(locationId);
+      })
+      .then((location) => {
+        if (!location) {
+          let error = new Error("Invalid Location");
+          error.statusCode = error.status = 404;
+          throw error;
+        }
+        else if (location.sphereId === sphereId) {
+          let error = new Error("Invalid Location");
+          error.statusCode = error.status = 404;
+          throw error;
+        }
+
+        // check if we are already in this sphere map
+        return sphereMapModel.findOne({where: {deviceId: deviceId}});
+      })
+      .then((result) => {
+        return new Promise((resolve, reject) => {
+          if (!result) {
+            sphereMapModel.create({sphereId: sphereId, deviceId: deviceId}, (createErr, obj) => {
+              if (createErr) {
+                reject(err);
+                return;
+              }
+              resolve();
+            })
+          }
+          else {
+            result.updatedAt = new Date().valueOf();
+            result.save({}, (err, obj) => {
+              if (err) { reject(err); }
+              resolve();
+            });
+          }
+        })
+      })
+      .then(() => {
+        // check if we are already in this location map
+        return locationMapModel.findOne({where: {and: [{deviceId: deviceId}, {sphereId: sphereId}, {locationId: locationId}]}});
+      })
+      .then((result) => {
+        return new Promise((resolve, reject) => {
+          if (!result) {
+            locationMapModel.create({sphereId: sphereId, deviceId: deviceId, locationId:locationId}, (createErr, obj) => {
+              if (createErr) {
+                reject(err);
+                return;
+              }
+              resolve();
+            })
+          }
+          else {
+            result.updatedAt = new Date().valueOf();
+            result.save({}, (err, obj) => {
+              if (err) { reject(err); }
+              resolve();
+            });
+          }
+        })
+      })
+      .then(() => {
+        if (leftLocationId) {
+          return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: leftLocationId}]})
+        }
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err)
+      })
+  }
+
+  model.exitLocation = function(deviceId, sphereId, locationId, options, callback) {
+    const sphereAccess = loopback.getModel("SphereAccess");
+    const locationMapModel = loopback.getModel("DeviceLocationMap");
+    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
+      .then((sphere) => {
+        if (!sphere) {
+          let error = new Error("Authorization Required");
+          error.statusCode = error.status = 401;
+          error.code = "AUTHORIZATION_REQUIRED";
+          throw error;
+        }
+        return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: locationId}]})
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err)
+      })
+  }
+
+
+
+  model.remoteMethod(
+    'enterLocation',
+    {
+      http: {path: '/:id/enterLocation', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'locationId', type: 'string', required: true,  http: { source : 'query' }},
+        {arg: 'leftLocationId', type: 'string', required: false,  http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "This device has entered a location. Optionally provide the location that you left to save a call. If you are not in the provided SphereId yet," +
+        "You will also be placed in that Sphere. This method is stack safe, you can only be in a certain sphere/location once per device."
+    }
+  );
+
+  model.remoteMethod(
+    'enterSphere',
+    {
+      http: {path: '/:id/enterSphere', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "This device has entered a Sphere. This method is stack safe, you can only be in a certain Sphere once per device."
+    }
+  );
+
+  model.remoteMethod(
+    'exitLocation',
+    {
+      http: {path: '/:id/exitLocation', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'locationId', type: 'string', required: true,  http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "This device has left a location. This method is stack safe, you can only leave a certain location once per device."
+    }
+  );
+
+  model.remoteMethod(
+    'exitSphere',
+    {
+      http: {path: '/:id/exitSphere', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "This device has left a Sphere. You will also automatically leave all rooms in this Sphere. " +
+        "This method is stack safe, you can only leave a certain Sphere once per device."
+    }
+  );
+
+
+
+
+
 };
