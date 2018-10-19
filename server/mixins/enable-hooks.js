@@ -113,6 +113,17 @@ module.exports = function (model, options) {
   };
 
 
+  let clean = function(changedData) {
+    let result = {};
+    let keys = Object.keys(changedData);
+    for (let i = 0; i < keys.length; i++) {
+      if (keys[i] !== 'options') {
+        result[keys[i]] = changedData[keys[i]];
+      }
+    }
+    return result;
+  }
+
   /**
    * Check if there are listeners on this endpoint.
    * @param ctx
@@ -123,6 +134,8 @@ module.exports = function (model, options) {
   let _checkForHooksOnEndpoint = function(ctx, changedData, eventName) {
     _getModelInstanceForRequest(ctx, changedData, true)
       .then((parentInstance) => {
+        // we will remove the OPTIONS field since this can contain user sensitive information.
+        let cleanedChangedData = clean(changedData);
         if (parentInstance && parentInstance.hooks && parentInstance.hooks.length > 0) {
           let hooks = parentInstance.hooks();
           // todo: OPTIMIZE
@@ -131,9 +144,9 @@ module.exports = function (model, options) {
             if (!hook.uri || hook.enabled === false) { continue; }
             for (let j = 0; j < hook.events.length; j++) {
               if (hook.events[j] === eventName) {
-                _getModelInstanceForRequest(ctx, changedData, false)
+                _getModelInstanceForRequest(ctx, cleanedChangedData, false)
                   .then((result) => {
-                    eventHandler.notifySubscribers(changedData, result, eventName, hook);
+                    eventHandler.notifySubscribers(cleanedChangedData, result, eventName, hook);
                   })
               }
             }
