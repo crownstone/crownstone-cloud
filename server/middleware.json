@@ -50,7 +50,7 @@
               },
               {
                 "methods": ["get","put","post","delete"],
-                "path": "/api/Device/:id/hooks"
+                "path": "/api/Devices/:id/hooks"
               }
             ],
             "stone_information": [
