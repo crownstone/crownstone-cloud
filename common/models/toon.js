@@ -10,8 +10,10 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__get__owner');
 
 
-  function checkIfDevicesArePresent(sphereId, agreementId, ignoreDeviceId) {
+  function LEGACYcheckIfDevicesArePresent(sphereId, agreementId, ignoreDeviceId) {
     const Sphere = loopback.findModel('Sphere');
+
+    // OLD METHOD
     return Sphere.findById(sphereId)
       .then((sphere) => {
         return sphere.users({include: {relation: 'devices', scope: {include: 'preferences'}}})
@@ -38,6 +40,45 @@ module.exports = function(model) {
 
         // nobody here!
         return false;
+      })
+  }
+
+  function checkIfDevicesArePresent(sphereId, agreementId, ignoreDeviceId) {
+    const sphereMapModel  = loopback.getModel("DeviceSphereMap");
+    const preferenceModel = loopback.getModel("Preference");
+
+    return sphereMapModel.find({where: {sphereId: sphereId}})
+      .then((results) => {
+        let deviceIds = [];
+        // these are the devices in the sphere.
+        for (let i = 0; i < results.length; i++) {
+          if (results[i].deviceId !== ignoreDeviceId) {
+            deviceIds.push([results[i].deviceId]);
+          }
+        }
+
+        let preferenceKey = 'toon_enabled_agreementId.' + agreementId;
+        let preferenceQueryPart = {};
+        preferenceQueryPart[preferenceKey] = true;
+
+        // search for preferences where one of these devices has this Toon enabled
+        return preferenceModel.find({where: {and: [{deviceId: {inq: deviceIds}}, preferenceQueryPart]}})
+      })
+      .then((results) => {
+        if (results.length > 0) {
+          return true;
+        }
+        return false;
+      })
+  }
+
+  function JOINEDcheckIfDevicesArePresent(sphereId, agreementId, ignoreDeviceId) {
+    return checkIfDevicesArePresent(sphereId, agreementId, ignoreDeviceId)
+      .then((result) => {
+        if (result === false) {
+          return LEGACYcheckIfDevicesArePresent(sphereId, agreementId, ignoreDeviceId);
+        }
+        return true;
       })
   }
 
@@ -75,7 +116,7 @@ module.exports = function(model) {
           // targetProgram === 'away'
           if (toon.changedToProgram !== 'away') {
             // check if there are people we would leave in the cold
-            return checkIfDevicesArePresent(toon.sphereId, toon.toonAgreementId, ignoreDeviceId);
+            return JOINEDcheckIfDevicesArePresent(toon.sphereId, toon.toonAgreementId, ignoreDeviceId);
           }
           else {
             throw {message:"Toon's program should already be 'away'. If it is not, a user has changed this and we will not override it.", code: "ALREADY_ON_AWAY"};

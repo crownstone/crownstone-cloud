@@ -265,16 +265,6 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__users');
   model.disableRemoteMethodByName('prototype.__get__users');
 
-  model.disableRemoteMethodByName('prototype.__link__presentPeople');
-  model.disableRemoteMethodByName('prototype.__unlink__presentPeople');
-  model.disableRemoteMethodByName('prototype.__findById__presentPeople');
-  model.disableRemoteMethodByName('prototype.__updateById__presentPeople');
-  model.disableRemoteMethodByName('prototype.__destroyById__presentPeople');
-  model.disableRemoteMethodByName('prototype.__deleteById__presentPeople');
-  model.disableRemoteMethodByName('prototype.__create__presentPeople');
-  model.disableRemoteMethodByName('prototype.__delete__presentPeople');
-  model.disableRemoteMethodByName('prototype.__exists__presentPeople');
-
   // model.disableRemoteMethodByName('prototype.__updateById__Toons');
   model.disableRemoteMethodByName('prototype.__destroyById__Toons');
   model.disableRemoteMethodByName('prototype.__deleteById__Toons');
@@ -1893,6 +1883,68 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
       description: "Delete all Toons in this Sphere and have their tokens revoked their tokens"
+    }
+  );
+
+  model.presentPeople = function(id, callback) {
+    const sphereAccessModel = loopback.getModel("SphereAccess");
+    const locationModel     = loopback.getModel("Location");
+    const sphereMapModel    = loopback.getModel("DeviceSphereMap");
+
+    let locationMapResult = null;
+    let userIds = [];
+    let userMap = {};
+    sphereAccessModel.find({where: {and: [{sphereId: id}, {invitePending: false}]}, fields: {userId:true}})
+      .then((users) => {
+        for (let i = 0; i < users.length; i++) {
+          userIds.push(users[i].userId);
+          userMap[users[i].userId] = {present:false, locations: []};
+        }
+        return locationModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}});
+      })
+      .then((result) => {
+        locationMapResult = result;
+
+        return sphereMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}})
+      })
+      .then((sphereMapResult) => {
+        for (let i = 0; i < locationMapResult.length; i++) {
+          if (userMap[locationMapResult[i].userId] !== undefined) {
+            userMap[locationMapResult[i].userId].present = true;
+            userMap[locationMapResult[i].userId].locations.push(locationMapResult[i].locationId)
+          }
+        }
+
+        for (let i = 0; i < sphereMapResult.length; i++) {
+          if (userMap[sphereMapResult[i].userId] !== undefined) {
+            userMap[sphereMapResult[i].userId].present = true;
+          }
+        }
+
+        let result = [];
+        for (let i = 0; i < userIds.length; i++) {
+          if (userMap[userIds[i]].present === true) {
+            result.push({ userId: userIds[i], locations: userMap[userIds[i]].locations})
+          }
+        };
+
+        callback(null, result);
+      })
+
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+  model.remoteMethod(
+    'presentPeople',
+    {
+      http: {path: '/:id/presentPeople', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      returns: {arg: 'data', type: ['object'], root: true},
+      description: "Get the current location data of this user."
     }
   );
 

@@ -849,7 +849,9 @@ module.exports = function(model) {
   model.enterSphere = function(deviceId, sphereId, options, callback) {
     const sphereAccess = loopback.getModel("SphereAccess");
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
-    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
+    let userId = options.accessToken.userId;
+
+    sphereAccess.findOne({where: {sphereId: sphereId, userId: userId}})
       .then((sphere) => {
         if (!sphere) {
           let error = new Error("Authorization Required");
@@ -862,9 +864,10 @@ module.exports = function(model) {
       .then((result) => {
         return new Promise((resolve, reject) => {
           if (!result) {
-            sphereMapModel.create({sphereId: sphereId, deviceId: deviceId}, (createErr, obj) => {
+            let datapoint = {sphereId: sphereId, deviceId: deviceId, userId: String(userId)};
+            sphereMapModel.create(datapoint, (createErr, obj) => {
               if (createErr) {
-                reject(err);
+                reject(createErr);
                 return;
               }
               resolve();
@@ -899,6 +902,7 @@ module.exports = function(model) {
           error.code = "AUTHORIZATION_REQUIRED";
           throw error;
         }
+
         return sphereMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}]})
       })
       .then(() => {
@@ -918,8 +922,10 @@ module.exports = function(model) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
     const locationModel = loopback.getModel("Location");
 
+    let userId = options.accessToken.userId;
+
     // check if we are allowed to use this sphere.
-    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
+    sphereAccess.findOne({where: {sphereId: sphereId, userId: userId}})
       .then((sphere) => {
         if (!sphere) {
           let error = new Error("Authorization Required");
@@ -949,9 +955,9 @@ module.exports = function(model) {
       .then((result) => {
         return new Promise((resolve, reject) => {
           if (!result) {
-            sphereMapModel.create({sphereId: sphereId, deviceId: deviceId}, (createErr, obj) => {
+            sphereMapModel.create({sphereId: sphereId, deviceId: deviceId, userId: userId}, (createErr, obj) => {
               if (createErr) {
-                reject(err);
+                reject(createErr);
                 return;
               }
               resolve();
@@ -973,9 +979,9 @@ module.exports = function(model) {
       .then((result) => {
         return new Promise((resolve, reject) => {
           if (!result) {
-            locationMapModel.create({sphereId: sphereId, deviceId: deviceId, locationId:locationId}, (createErr, obj) => {
+            locationMapModel.create({sphereId: sphereId, deviceId: deviceId, locationId:locationId, userId: userId}, (createErr, obj) => {
               if (createErr) {
-                reject(err);
+                reject(createErr);
                 return;
               }
               resolve();

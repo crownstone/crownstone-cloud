@@ -105,13 +105,6 @@
       "model": "Message",
       "foreignKey": "sphereId"
     },
-    "presentPeople": {
-      "type": "hasMany",
-      "model": "user",
-      "foreignKey": "currentSphereId",
-      "through": "Device",
-      "keyThrough": "ownerId"
-    },
     "geoLocation": {
       "type":"hasOne",
       "model": "geoLocation",

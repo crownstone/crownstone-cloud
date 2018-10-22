@@ -23,6 +23,10 @@
     "deviceId": {
       "type": "string",
       "required": true
+    },
+    "userId": {
+      "type": "string",
+      "required": true
     }
   },
   "validations": [],
@@ -36,6 +40,11 @@
       "type": "belongsTo",
       "model": "Device",
       "foreignKey": "deviceId"
+    },
+    "user": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "userId"
     }
   },
   "acls": [],
