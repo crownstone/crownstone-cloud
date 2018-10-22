@@ -1886,7 +1886,7 @@ module.exports = function(model) {
     }
   );
 
-  model.presentPeople = function(id, callback) {
+  model.presentPeople = function(id, ignoreDeviceId, callback) {
     const sphereAccessModel = loopback.getModel("SphereAccess");
     const locationModel     = loopback.getModel("Location");
     const sphereMapModel    = loopback.getModel("DeviceSphereMap");
@@ -1894,7 +1894,7 @@ module.exports = function(model) {
     let locationMapResult = null;
     let userIds = [];
     let userMap = {};
-    sphereAccessModel.find({where: {and: [{sphereId: id}, {invitePending: false}]}, fields: {userId:true}})
+    sphereAccessModel.find({where: {and: [{sphereId: id}, {invitePending: false}]}, fields: {userId: true}})
       .then((users) => {
         for (let i = 0; i < users.length; i++) {
           userIds.push(users[i].userId);
@@ -1909,6 +1909,10 @@ module.exports = function(model) {
       })
       .then((sphereMapResult) => {
         for (let i = 0; i < locationMapResult.length; i++) {
+          if (locationMapResult[i].deviceId === ignoreDeviceId) {
+            continue;
+          }
+
           if (userMap[locationMapResult[i].userId] !== undefined) {
             userMap[locationMapResult[i].userId].present = true;
             userMap[locationMapResult[i].userId].locations.push(locationMapResult[i].locationId)
@@ -1916,6 +1920,10 @@ module.exports = function(model) {
         }
 
         for (let i = 0; i < sphereMapResult.length; i++) {
+          if (sphereMapResult[i].deviceId === ignoreDeviceId) {
+            continue;
+          }
+
           if (userMap[sphereMapResult[i].userId] !== undefined) {
             userMap[sphereMapResult[i].userId].present = true;
           }
@@ -1942,9 +1950,10 @@ module.exports = function(model) {
       http: {path: '/:id/presentPeople', verb: 'get'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'ignoreDeviceId', type: 'string', required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: ['object'], root: true},
-      description: "Get the current location data of this user."
+      description: "Get an overview of the people that are currently in this Sphere. You can optionally provide a ignoreDeviceId, which is the device that will not be taken into account when determining the locations of the users."
     }
   );
 

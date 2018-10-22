@@ -998,14 +998,14 @@ module.exports = function(model) {
       })
       .then(() => {
         if (leftLocationId) {
-          return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: leftLocationId}]})
+          return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: leftLocationId}]});
         }
       })
       .then(() => {
         callback(null);
       })
       .catch((err) => {
-        callback(err)
+        callback(err);
       })
   }
 
@@ -1088,9 +1088,4 @@ module.exports = function(model) {
         "This method is stack safe, you can only leave a certain Sphere once per device."
     }
   );
-
-
-
-
-
 };
