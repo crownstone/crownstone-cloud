@@ -891,22 +891,17 @@ module.exports = function(model) {
   }
 
   model.exitSphere = function(deviceId, sphereId, options, callback) {
-    const sphereAccess = loopback.getModel("SphereAccess");
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
-    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
-      .then((sphere) => {
-        if (!sphere) {
-          let error = new Error("Authorization Required");
-          error.statusCode = error.status = 401;
-          error.code = "AUTHORIZATION_REQUIRED";
-          throw error;
-        }
 
-        return sphereMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}]})
-      })
+    let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}]}
+    if (sphereId === '*') {
+      query =  {deviceId: deviceId}
+    }
+
+    sphereMapModel.destroyAll(query)
       .then(() => {
-        return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}]})
+        return locationMapModel.destroyAll(query)
       })
       .then(() => {
         callback(null);
@@ -916,7 +911,7 @@ module.exports = function(model) {
       })
   }
 
-  model.enterLocation = function(deviceId, sphereId, locationId, leftLocationId, options, callback) {
+  model.enterLocation = function(deviceId, sphereId, locationId, options, callback) {
     const sphereAccess = loopback.getModel("SphereAccess");
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
@@ -997,9 +992,7 @@ module.exports = function(model) {
         })
       })
       .then(() => {
-        if (leftLocationId) {
-          return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: leftLocationId}]});
-        }
+        return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: {neq: locationId}}]});
       })
       .then(() => {
         callback(null);
@@ -1010,18 +1003,14 @@ module.exports = function(model) {
   }
 
   model.exitLocation = function(deviceId, sphereId, locationId, options, callback) {
-    const sphereAccess = loopback.getModel("SphereAccess");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
-    sphereAccess.findOne({where: {sphereId: sphereId, userId: options.accessToken.userId}})
-      .then((sphere) => {
-        if (!sphere) {
-          let error = new Error("Authorization Required");
-          error.statusCode = error.status = 401;
-          error.code = "AUTHORIZATION_REQUIRED";
-          throw error;
-        }
-        return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: locationId}]})
-      })
+
+    let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: locationId}]};
+    if (locationId === '*') {
+      query = {and: [{sphereId: sphereId}, {deviceId: deviceId}]};
+    }
+
+    locationMapModel.destroyAll(query)
       .then(() => {
         callback(null);
       })
@@ -1040,11 +1029,10 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
         {arg: 'locationId', type: 'string', required: true,  http: { source : 'query' }},
-        {arg: 'leftLocationId', type: 'string', required: false,  http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       description: "This device has entered a location. Optionally provide the location that you left to save a call. If you are not in the provided SphereId yet," +
-        "You will also be placed in that Sphere. This method is stack safe, you can only be in a certain sphere/location once per device."
+        "You will also be placed in that Sphere. This method is stack safe, you can only be in a certain sphere/location once per device as well as one location per sphere."
     }
   );
 
@@ -1071,7 +1059,7 @@ module.exports = function(model) {
         {arg: 'locationId', type: 'string', required: true,  http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "This device has left a location. This method is stack safe, you can only leave a certain location once per device."
+      description: "This device has left a location. This method is stack safe, you can only leave a certain location once per device. You can use * as a wildcard."
     }
   );
 
@@ -1085,7 +1073,7 @@ module.exports = function(model) {
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       description: "This device has left a Sphere. You will also automatically leave all rooms in this Sphere. " +
-        "This method is stack safe, you can only leave a certain Sphere once per device."
+        "This method is stack safe, you can only leave a certain Sphere once per device. You can use * as a wildcard."
     }
   );
 };

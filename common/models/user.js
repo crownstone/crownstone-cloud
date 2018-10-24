@@ -902,14 +902,14 @@ module.exports = function(model) {
                   let sphereData = {
                     sphereId: sphereId,
                     sphereName: sphereMap[sphereId].name,
-                    inLocations: []
+                    inLocations: {}
                   }
 
                   deviceMap[deviceId][sphereId].forEach((locationId) => {
-                    sphereData.inLocations.push({
+                    sphereData.inLocation = {
                       locationId: locationId,
                       locationName: locationMap[locationId].name
-                    })
+                    }
                   })
 
                   data.inSpheres.push(sphereData);
