@@ -67,6 +67,9 @@ const ToonAPI = {
         return res.json();
       })
       .then((tokens) => {
+        if (tokens.refreshToken === undefined) {
+          throw {message:"We have not received a token from the TOON cloud.", code: "NO_TOKEN_RECEIVED"};
+        }
         let tokenData = {
           refreshToken: tokens.refresh_token,
           accessToken: tokens.access_token,
