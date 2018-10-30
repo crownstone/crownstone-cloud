@@ -1,5 +1,7 @@
 {
   "restApiRoot": "/api",
+  "host": "0.0.0.0",
+  "acl_enabled": true,
   "remoting": {
     "rest": {
       "normalizeHttpPath": false,

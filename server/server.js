@@ -27,7 +27,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.middleware('session', session({
-  secret: process.env.SESSION_SECRET || config.sessionKey.key || 'keyboard kittens',
+  secret: process.env.SESSION_SECRET || (config.sessionKey && config.sessionKey.key) || 'keyboard kittens',
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
   },
