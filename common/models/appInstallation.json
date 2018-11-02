@@ -27,6 +27,11 @@
     "deviceToken": {
       "type": "string",
       "required": false
+    },
+    "developmentApp": {
+      "type": "boolean",
+      "required": true,
+      "default": false
     }
   },
   "relations": {
