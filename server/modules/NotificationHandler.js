@@ -64,7 +64,7 @@ class NotificationHandlerClass {
   }
 
   notifyTokens(iosTokens, iosDevTokens, androidTokens, messageData) {
-    if (iosTokens.length > 0 || androidTokens.length > 0) {
+    if (iosTokens.length > 0 || iosDevTokens.length > 0 || androidTokens.length > 0) {
       // get app, currently hardcoded.
       loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
         .then((appResult) => {
@@ -159,26 +159,27 @@ class NotificationHandlerClass {
    * @private
    */
   _notifyIOS(keys, tokens, devTokens, messageData = {}) {
-    if (tokens.length === 0) {
-      return;
-    }
-
-    let production = true;
-    // console.log("Using production for notifications", !process.env.NODE_ENV || process.env.NODE_ENV === 'local' || process.env.NOTIFICATION_TYPE !== undefined && process.env.NOTIFICATION_TYPE === 'development')
-    if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local' || process.env.NOTIFICATION_TYPE !== undefined && process.env.NOTIFICATION_TYPE === 'development') {
-      production = false;
-    }
-
-
     let options = {
       token: {
         key: keys.keyToken,
         keyId: keys.keyId,
         teamId: keys.teamId
       },
-      production: production
+      production: false
     };
 
+    if (tokens.length > 0)  {
+      options.production = true;
+      this._sendIOSNotifications(tokens,options,messageData);
+    }
+
+    if (devTokens.length > 0)  {
+      options.production = false;
+      this._sendIOSNotifications(devTokens,options,messageData);
+    }
+  }
+
+  _sendIOSNotifications(tokens, options, messageData) {
     let apnProvider = new apn.Provider(options);
 
     let notification = new apn.Notification();
@@ -198,8 +199,8 @@ class NotificationHandlerClass {
       notification.contentAvailable = true;
     }
     else {
-      notification.sound = "ping.aiff";             // do not add if no sound should play
-      notification.body =  messageData.type;        // alert message body, do not add if no alert has to be shown.
+      notification.sound = "ping.aiff";       // do not add if no sound should play
+      notification.body =  messageData.type;  // alert message body, do not add if no alert has to be shown.
       notification.alert = messageData.title || 'Notification Received'; // alert message, do not add if no alert has to be shown.
     }
 
@@ -234,7 +235,7 @@ function getTokensFromInstallations(installations, iosUniqueTokens, iosDevUnique
     if (token) {
       switch (installations[k].deviceType) {
         case 'ios':
-          if (installations[k].developmentApp === false) {
+          if (installations[k].developmentApp === true) {
             if (iosDevUniqueTokens[token] === undefined) {
               iosDevUniqueTokens[token] = true;
               iosDevTokens.push(token);
