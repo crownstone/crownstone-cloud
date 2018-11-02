@@ -76,6 +76,7 @@ function performFirmwareOperations(app) {
     // .then(() => { return getFirmwareVersion('1.5.1') })
     // .then(() => { return clearFirmwares(); })
     // .then(() => { return removeFirmwareVersion('2.1.2'); })
+    // .then(() => { return removeBootloaderVersion('1.2.2'); })
     // .then(() => { return clearBootloaders(); })
     // .then(() => { return clearFirmwareAtUsers() })
     // .then(() => { return clearBootloaderAtUsers() })
@@ -83,8 +84,8 @@ function performFirmwareOperations(app) {
     //   return releaseBootloader(
     //     '1.2.2', // release version
     //     '1.2.2', // minimum compatible version
-    //     '1.12.0', // minimum App version,
-    //     plugAndBuiltinVariations, // hardware versions
+    //     '2.1.0', // minimum App version,
+    //     hardwareVersions.util.getAllGuideStones().concat(plugAndBuiltinVariations), // hardware versions
     //     '45306bf3ed920dc9768a57c3df3fd16954ea5b97', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.2.2/bin/bootloader_1.2.2.zip',
     //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
@@ -98,25 +99,44 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-    .then(() => {
-      return releaseBootloader(
-        '1.4.0', // release version
-        '1.2.2', // minimum compatible version
-        '2.1.0', // minimum App version,
-        hardwareVersions.util.getAllDongles(), // dongle only, as this update only adds support for dongle.
-        'dd511852f293f19ad5d7034bcdff7dc579424f0f', // sha1 hash to validate download
-        'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.4.0/bin/bootloader_1.4.0.zip',
-        PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
-        {  // release notes
-          'en' : 'Crownstone USB support',
-          'nl' : '',
-          'de' : '',
-          'es' : '',
-          'it' : '',
-          'fr' : ''
-        }
-      );
-    })
+    // .then(() => {
+    //   return releaseBootloader(
+    //     '1.3.0', // release version
+    //     '1.3.0', // minimum compatible version
+    //     '2.1.0', // minimum App version,
+    //     ["101020103000000000000000000QFAAB0"], // 1B2G only, as this update only added support for 1B2G.
+    //     'b098b1df1f1a4f81be54880e4dd3486b2d46091a', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.3.0/bin/bootloader_1.3.0.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
+    //     {  // release notes
+    //       'en' : 'Crownstone USB support',
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+    // .then(() => {
+    //   return releaseBootloader(
+    //     '1.4.0', // release version
+    //     '1.2.2', // minimum compatible version
+    //     '2.1.0', // minimum App version,
+    //     hardwareVersions.util.getAllDongles(), // dongle only, as this update only adds support for dongle.
+    //     'dd511852f293f19ad5d7034bcdff7dc579424f0f', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.4.0/bin/bootloader_1.4.0.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
+    //     {  // release notes
+    //       'en' : 'Crownstone USB support',
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
     // .then(() => {
     //   return releaseFirmware(
     //     '1.5.1', // release version
@@ -270,6 +290,27 @@ function performFirmwareOperations(app) {
     //       '- Introducing the mesh.\n\n' +
     //       '- Fast setup.\n\n' +
     //       '- Improved quality of power measurement.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     '2.1.4-RC0', // release version
+    //     '1.3.1', // minimum compatible version,
+    //     '2.1.0', // minimum App version,
+    //     ["101020103000000000000000000QFAAB0"], // hardware versions
+    //     '339c1aa3355435133fa4d036a6a432e92994e1c4', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_2.1.4-RC0/bin/crownstone_2.1.4-RC0.zip',
+    //     BETA_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- Support for new batch of Crownstones.\n\n'
     //       ,
     //       'nl' : '',
     //       'de' : '',
@@ -461,7 +502,7 @@ function removeFirmwareVersion(version) {
   return _remove(firmwareModel, version, TYPES.firmware);
 }
 
-function removeBootloaderModel(version) {
+function removeBootloaderVersion(version) {
   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
   return _remove(bootloaderModel, version, TYPES.bootloader);
 }

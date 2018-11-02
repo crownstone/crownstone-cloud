@@ -37,34 +37,11 @@ class NotificationHandlerClass {
   }
 
   notifyDevice(device, messageData) {
-    let iosTokens = [];
-    let androidTokens = [];
-
-    let iosUniqueTokens = {};
-    let androidUniqueTokens = {};
     let installations = device.installations();
-    for (let k = 0; k < installations.length; k++) {
-      let token = installations[k].deviceToken;
-      if (token) {
-        switch (installations[k].deviceType) {
-          case 'ios':
-            if (iosUniqueTokens[token] === undefined) {
-              iosUniqueTokens[token] = true;
-              iosTokens.push(token);
-            }
-            break;
-          case 'android':
-            if (androidUniqueTokens[token] === undefined) {
-              androidUniqueTokens[token] = true;
-              androidTokens.push(token);
-            }
-            break;
-        }
-      }
-    }
+    let {iosTokens, iosDevTokens, androidTokens} = getTokensFromInstallations(installations, {},{},{})
 
     // check if we have to do something
-    this.notifyTokens(iosTokens, androidTokens, messageData);
+    this.notifyTokens(iosTokens, iosDevTokens, androidTokens, messageData);
   }
 
   notifySphereUsers(sphereId, messageData) {
@@ -78,53 +55,22 @@ class NotificationHandlerClass {
 
   notifySphereDevices(sphere, messageData) {
     // get users
-    let iosTokens = [];
-    let androidTokens = [];
-
-    let iosUniqueTokens = {};
-    let androidUniqueTokens = {};
-
     sphere.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
-      // collect all tokens.
-      for (let i = 0; i < users.length; i++) {
-        let devices = users[i].devices();
-        for (let j = 0; j < devices.length; j++) {
-          let installations = devices[j].installations();
-          for (let k = 0; k < installations.length; k++) {
-            let token = installations[k].deviceToken;
-            if (token) {
-              switch (installations[k].deviceType) {
-                case 'ios':
-                  if (iosUniqueTokens[token] === undefined) {
-                    iosUniqueTokens[token] = true;
-                    iosTokens.push(token);
-                  }
-                  break;
-                case 'android':
-                  if (androidUniqueTokens[token] === undefined) {
-                    androidUniqueTokens[token] = true;
-                    androidTokens.push(token);
-                  }
-                  break;
-              }
-            }
-          }
-        }
-      }
+      let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users)
 
       // check if we have to do something
-      this.notifyTokens(iosTokens, androidTokens, messageData);
+      this.notifyTokens(iosTokens, iosDevTokens, androidTokens, messageData);
     });
   }
 
-  notifyTokens(iosTokens, androidTokens, messageData) {
+  notifyTokens(iosTokens, iosDevTokens, androidTokens, messageData) {
     if (iosTokens.length > 0 || androidTokens.length > 0) {
       // get app, currently hardcoded.
       loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
         .then((appResult) => {
           if (appResult && appResult.pushSettings) {
             this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
-            this._notifyIOS(appResult.pushSettings.apns,    iosTokens, messageData);
+            this._notifyIOS(appResult.pushSettings.apns,    iosTokens, iosDevTokens, messageData);
           }
           else {
             throw "No App to Push to."
@@ -154,46 +100,13 @@ class NotificationHandlerClass {
     if (userIdArray.length === 0) {
       return;
     }
-    // get users
-    let iosTokens = [];
-    let androidTokens = [];
-
-    let iosUniqueTokens = {};
-    let androidUniqueTokens = {};
 
     let userModel = loopback.getModel('user');
     let filter = {where: {or:userIdArray}, include: {relation: 'devices', scope: {include: 'installations'}}};
     userModel.find(filter, (err, users) => {
-      // collect all tokens.
-      for (let i = 0; i < users.length; i++) {
-        let devices = users[i].devices();
-        for (let j = 0; j < devices.length; j++) {
-          let installations = devices[j].installations();
-          for (let k = 0; k < installations.length; k++) {
-            let token = installations[k].deviceToken;
-            if (token) {
-              switch (installations[k].deviceType) {
-                case 'ios':
-                  if (iosUniqueTokens[token] === undefined) {
-                    iosUniqueTokens[token] = true;
-                    iosTokens.push(token);
-                  }
-                  break;
-                case 'android':
-                  if (androidUniqueTokens[token] === undefined) {
-                    androidUniqueTokens[token] = true;
-                    androidTokens.push(token);
-                  }
-                  break;
-              }
-            }
-          }
-        }
-      }
-      // console.log('iosTokens', iosTokens, 'androidTokens', androidTokens);
-
+      let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users)
       // check if we have to do something
-      this.notifyTokens(iosTokens, androidTokens, messageData);
+      this.notifyTokens(iosTokens, iosDevTokens, androidTokens, messageData);
     });
   }
 
@@ -245,7 +158,7 @@ class NotificationHandlerClass {
    * @param messageData  JSON
    * @private
    */
-  _notifyIOS(keys, tokens, messageData = {}) {
+  _notifyIOS(keys, tokens, devTokens, messageData = {}) {
     if (tokens.length === 0) {
       return;
     }
@@ -309,6 +222,75 @@ class NotificationHandlerClass {
   }
 
 }
+
+
+function getTokensFromInstallations(installations, iosUniqueTokens, iosDevUniqueTokens, androidUniqueTokens) {
+  let iosTokens = [];
+  let iosDevTokens = [];
+  let androidTokens = [];
+
+  for (let k = 0; k < installations.length; k++) {
+    let token = installations[k].deviceToken;
+    if (token) {
+      switch (installations[k].deviceType) {
+        case 'ios':
+          if (installations[k].developmentApp === false) {
+            if (iosDevUniqueTokens[token] === undefined) {
+              iosDevUniqueTokens[token] = true;
+              iosDevTokens.push(token);
+            }
+          }
+          else if (iosUniqueTokens[token] === undefined) {
+            iosUniqueTokens[token] = true;
+            iosTokens.push(token);
+          }
+          break;
+        case 'android':
+          if (androidUniqueTokens[token] === undefined) {
+            androidUniqueTokens[token] = true;
+            androidTokens.push(token);
+          }
+          break;
+      }
+    }
+  }
+
+  return {iosTokens, iosDevTokens, androidTokens}
+}
+
+function getTokensFromUsers(users) {
+  // get users
+  let total_iosTokens = [];
+  let total_iosDevTokens = [];
+  let total_androidTokens = [];
+
+  let iosUniqueTokens = {};
+  let iosDevUniqueTokens = {};
+  let androidUniqueTokens = {};
+
+  // collect all tokens.
+  for (let i = 0; i < users.length; i++) {
+    let devices = users[i].devices();
+    for (let j = 0; j < devices.length; j++) {
+      let installations = devices[j].installations();
+      let {iosTokens, iosDevTokens, androidTokens} = getTokensFromInstallations(installations, iosUniqueTokens, iosDevUniqueTokens, androidUniqueTokens);
+      total_iosTokens     = total_iosTokens.concat(iosTokens);
+      total_iosDevTokens  = total_iosDevTokens.concat(iosDevTokens);
+      total_androidTokens = total_androidTokens.concat(androidTokens);
+    }
+  }
+
+  return {
+    iosTokens: total_iosTokens,
+    iosDevTokens: total_iosDevTokens,
+    androidTokens: total_androidTokens
+  }
+}
+
+
+
+
+
 
 module.exports = new NotificationHandlerClass();
 

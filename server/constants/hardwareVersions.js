@@ -18,6 +18,7 @@ const hardwareVersionExportData = {
         "10102000100", // ACR01B2A :: CROWNSTONE PLUG
         "10102000200", // ACR01B2B :: CROWNSTONE PLUG
         "10102010000", // ACR01B2C :: CROWNSTONE PLUG
+        "10102010300", // ACR01B2G :: CROWNSTONE PLUG
       ],
 
       builtinVersions: [
