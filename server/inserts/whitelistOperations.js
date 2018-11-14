@@ -5,7 +5,7 @@ function performWhitelistOperations(app) {
 
   //clearWhitelistDatabase(whitelistModel);
   // addToWhitelist(whitelistModel, '', 'localhost');
-   //addToWhitelist(whitelistModel, 'triggi', 'com');
+  //  addToWhitelist(whitelistModel, 'mitel', 'io');
    // addToWhitelist(whitelistModel, 'annevanrossum', 'com');
 }
 

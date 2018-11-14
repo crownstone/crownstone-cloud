@@ -846,7 +846,7 @@ module.exports = function(model) {
   );
 
 
-  model.enterSphere = function(deviceId, sphereId, options, callback) {
+  model.inSphere = function(deviceId, sphereId, options, callback) {
     const sphereAccess = loopback.getModel("SphereAccess");
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     let userId = options.accessToken.userId;
@@ -911,7 +911,7 @@ module.exports = function(model) {
       })
   }
 
-  model.enterLocation = function(deviceId, sphereId, locationId, options, callback) {
+  model.inLocation = function(deviceId, sphereId, locationId, options, callback) {
     const sphereAccess = loopback.getModel("SphereAccess");
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
@@ -1022,30 +1022,30 @@ module.exports = function(model) {
 
 
   model.remoteMethod(
-    'enterLocation',
+    'inLocation',
     {
-      http: {path: '/:id/enterLocation', verb: 'post'},
+      http: {path: '/:id/inLocation', verb: 'post'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
         {arg: 'locationId', type: 'string', required: true,  http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "This device has entered a location. Optionally provide the location that you left to save a call. If you are not in the provided SphereId yet," +
+      description: "This device has entered a location, or is in a location. Optionally provide the location that you left to save a call. If you are not in the provided SphereId yet," +
         "You will also be placed in that Sphere. This method is stack safe, you can only be in a certain sphere/location once per device as well as one location per sphere."
     }
   );
 
   model.remoteMethod(
-    'enterSphere',
+    'inSphere',
     {
-      http: {path: '/:id/enterSphere', verb: 'post'},
+      http: {path: '/:id/inSphere', verb: 'post'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "This device has entered a Sphere. This method is stack safe, you can only be in a certain Sphere once per device."
+      description: "This device has entered a Sphere, or is in a Sphere. This method is stack safe, you can only be in a certain Sphere once per device."
     }
   );
 

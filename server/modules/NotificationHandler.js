@@ -290,9 +290,6 @@ function getTokensFromUsers(users) {
 
 
 
-
-
-
 module.exports = new NotificationHandlerClass();
 
 
