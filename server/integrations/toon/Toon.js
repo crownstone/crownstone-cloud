@@ -72,6 +72,9 @@ const ToonAPI = {
         }
         let tokenData = {
           refreshToken: tokens.refresh_token,
+          refreshTokenTTL: tokens.refresh_token_expires_in,
+          refreshTokenUpdatedAt: new Date().valueOf(),
+          refreshTokenUpdatedFrom: "mainCloud",
           accessToken: tokens.access_token,
           toonId: toonId,
         }

@@ -133,7 +133,10 @@ module.exports = function(model) {
       })
       .then((newAccessTokens) => {
         accessTokens = newAccessTokens;
-        toon.refreshToken = accessTokens.refreshToken;
+        toon.refreshToken            = accessTokens.refreshToken;
+        toon.refreshTokenTTL         = accessTokens.refreshTokenTTL;
+        toon.refreshTokenUpdatedAt   = accessTokens.refreshTokenUpdatedAt;
+        toon.refreshTokenUpdatedFrom = accessTokens.refreshTokenUpdatedFrom + "_setToonProgram";
         toon.save();
         return ToonAPI.getToonState(accessTokens, toon.toonAgreementId);
       })
@@ -163,7 +166,6 @@ module.exports = function(model) {
         }
       })
       .then(() => {
-        toon.refreshToken = accessTokens.refreshToken;
         toon.changedToProgram = targetProgram;
         toon.changedProgramTime = new Date().valueOf();
         return toon.save();
@@ -210,7 +212,10 @@ module.exports = function(model) {
         return ToonAPI.getAccessToken(toon.refreshToken);
       })
       .then((receivedTokens) => {
-        toon.refreshToken = receivedTokens.refreshToken;
+        toon.refreshToken            = receivedTokens.refreshToken;
+        toon.refreshTokenTTL         = receivedTokens.refreshTokenTTL;
+        toon.refreshTokenUpdatedAt   = receivedTokens.refreshTokenUpdatedAt;
+        toon.refreshTokenUpdatedFrom = receivedTokens.refreshTokenUpdatedFrom + "_updateSchedule";
         return ToonAPI.getSchedule(receivedTokens, toon.toonAgreementId);
       })
       .then((receivedSchedule) => {

@@ -1817,7 +1817,10 @@ module.exports = function(model) {
         return ToonAPI.getSchedule(tokens, data.toonAgreementId);
       })
       .then((schedule) => {
-        data.refreshToken = tokens.refreshToken;
+        data.refreshToken            = tokens.refreshToken;
+        data.refreshTokenTTL         = tokens.refreshTokenTTL;
+        data.refreshTokenUpdatedAt   = tokens.refreshTokenUpdatedAt;
+        data.refreshTokenUpdatedFrom = tokens.refreshTokenUpdatedFrom + "_createToon";
         data.schedule = JSON.stringify(schedule);
         data.updatedScheduleTime = new Date().valueOf();
         return sphereInstance.Toons.create(data);

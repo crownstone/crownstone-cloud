@@ -30,6 +30,18 @@
       "type": "string",
       "required": true
     },
+    "refreshTokenTTL": {
+      "type": "number",
+      "required": true
+    },
+    "refreshTokenUpdatedAt": {
+      "type": "number",
+      "required": true
+    },
+    "refreshTokenUpdatedFrom": {
+      "type": "string",
+      "required": true
+    },
     "schedule": {
       "type": "string"
     },
