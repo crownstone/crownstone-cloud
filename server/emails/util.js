@@ -49,7 +49,7 @@ let util = {
    * Send a email to allow the user to reset a password.
    */
   sendResetPasswordRequest : function(baseUrl, token, email) {
-    let resetUrl = baseUrl + '?access_token=' + token;
+    let resetUrl = 'https://' + baseUrl + '?access_token=' + token;
     let params = {resetUrl: resetUrl };
     let renderer = loopback.template(path.resolve(__dirname, './passwordResetEmail.html'));
     let html = renderer(params);
