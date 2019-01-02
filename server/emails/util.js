@@ -49,7 +49,7 @@ let util = {
    * Send a email to allow the user to reset a password.
    */
   sendResetPasswordRequest : function(baseUrl, token, email) {
-    let resetUrl = 'https://' + baseUrl + '?access_token=' + token;
+    let resetUrl = 'https://' + baseUrl + '?' + 'access_token=' + token;
     let params = {resetUrl: resetUrl };
     let renderer = loopback.template(path.resolve(__dirname, './passwordResetEmail.html'));
     let html = renderer(params);
@@ -71,8 +71,8 @@ let util = {
    * This can be used to make the email more personal with a sentence like "invited by".
    */
   sendNewUserInviteEmail: function(user, currentUser, sphere, acceptUrl, declineUrl, token) {
-    let fullAcceptUrl = acceptUrl + '?access_token=' + token + '&sphere_id=' + sphere.id;
-    let fullDeclineUrl = declineUrl + '?access_token=' + token + '&sphere_id=' + sphere.id;
+    let fullAcceptUrl = acceptUrl + '?' + 'access_token=' + token + '&' + 'sphere_id=' + sphere.id;
+    let fullDeclineUrl = declineUrl + '?' + 'access_token=' + token + '&' + 'sphere_id=' + sphere.id;
     let invitedByText = '';
     if (currentUser !== null) {
       invitedByText = 'by ' + currentUser.firstName + ' ' + currentUser.lastName + ' ';
@@ -98,8 +98,8 @@ let util = {
    * other user. This can be used to make the email more personal with a sentence like "invited by".
    */
   sendExistingUserInviteEmail: function(user, currentUser, sphere, acceptUrl, declineUrl) {
-    let fullAcceptUrl = acceptUrl + '&sphere_id=' + sphere.id;
-    let fullDeclineUrl = declineUrl + '&sphere_id=' + sphere.id;
+    let fullAcceptUrl = acceptUrl + '?' + 'sphere_id=' + sphere.id;
+    let fullDeclineUrl = declineUrl + '?' + 'sphere_id=' + sphere.id;
     let invitedByText = '';
     if (currentUser !== null) {
       invitedByText = 'by ' + currentUser.firstName + ' ' + currentUser.lastName + ' ';
