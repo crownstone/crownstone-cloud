@@ -234,7 +234,7 @@ module.exports = function(model) {
     console.log("New account. Send email to verify user.");
     let options = util.getVerificationEmailOptions(user);
     options.generateVerificationToken = tokenGenerator;
-    options.host = app.__baseUrl;
+    options.verifyHref = app.__baseUrl + '/api/users/confirm?uid=' + user.id + '&redirect=/verified';
     debug("sending verification");
     user.verify(options, callback);
   };
@@ -282,19 +282,14 @@ module.exports = function(model) {
       if (!user.emailVerified) {
         if (user.verificationToken) {
           model.sendVerification(user,
-            function(user, tokenProvider) {
-              tokenProvider(null, user.verificationToken);
-            },
-            function(err, response) {
-              callback(err);
-            }
+            function(user, tokenProvider) { tokenProvider(null, user.verificationToken); },
+            function(err, response) { callback(err); }
           );
         } else {
-          model.sendVerification(user, null, function(err, response) {
-            callback(err);
-          });
+          model.sendVerification(user, null, function(err, response) { callback(err); });
         }
-      } else {
+      }
+      else {
         let err = new Error("user already verified");
         err.statusCode = 400;
         err.code = 'ALREADY_VERIFIED';
@@ -939,5 +934,3 @@ module.exports = function(model) {
     }
   );
 };
-
-

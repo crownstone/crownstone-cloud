@@ -14,7 +14,6 @@ const MongoStore = require('connect-mongo')(session);
 let datasources  = require('./datasources.' + (process.env.NODE_ENV || 'local'));
 let config       = require('./config.' + (process.env.NODE_ENV || 'local'));
 
-
 let store;
 if (datasources.userDs && datasources.userDs.url) {
   store = new MongoStore({url: datasources.userDs.url, mongoOptions: {collection: 'OAuthSessions'}});
@@ -53,7 +52,13 @@ app.start = function() {
   let port = process.env.PORT || 3000;
   return app.listen(port, function () {
     app.emit('started');
+
+    console.log("BASE URL", process.env.BASE_URL)
+    console.log("get URL", app.get('url').replace(/\/$/, ''))
     let baseUrl = process.env.BASE_URL || app.get('url').replace(/\/$/, '');
+    if (baseUrl.indexOf("http://") === -1 && baseUrl.indexOf("https://") === -1) {
+      baseUrl = 'https://' + baseUrl
+    }
     console.log('Web server listening at: %s', baseUrl);
     app.__baseUrl = baseUrl;
     if (app.get('loopback-component-explorer')) {
@@ -70,7 +75,7 @@ boot(app, __dirname, function(err) {
   if (err) { throw err; }
 
   // start the server if `$ node server.js`
-  if (require.main === module) {
+  if (require.main === module || global.__RUNNING_TEST_SCRIPTS === true) {
     app.start();
   }
 });
@@ -90,6 +95,8 @@ oauth2.oAuth2Provider(
   app, // The app instance
   options // The options
 );
+
+
 
 // this is only allowed in a local environment
 if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {

@@ -16,8 +16,6 @@ let util = {
       from: 'ask@crownstone.rocks',
       fromname: 'Crownstone',
       subject: email_subject,
-      protocol: 'https',
-      port: 443
     };
     return options;
   },
@@ -36,9 +34,9 @@ let util = {
     options.user = user;
    
     if (user.firstName === undefined && user.lastName === undefined) {
-      options.invitedUser = 'there';
+      options.newUser = 'there';
     } else {
-      options.invitedUser = user.firstName + ' ' + user.lastName;
+      options.newUser = user.firstName + ' ' + user.lastName;
     }
     options.template = template;
 
@@ -49,7 +47,7 @@ let util = {
    * Send a email to allow the user to reset a password.
    */
   sendResetPasswordRequest : function(baseUrl, token, email) {
-    let resetUrl = 'https://' + baseUrl + '?' + 'access_token=' + token;
+    let resetUrl = baseUrl + '?' + 'access_token=' + token;
     let params = {resetUrl: resetUrl };
     let renderer = loopback.template(path.resolve(__dirname, './passwordResetEmail.html'));
     let html = renderer(params);
