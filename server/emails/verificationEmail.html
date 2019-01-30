@@ -1,278 +1,300 @@
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<style>
-		body {
-			margin                  : 0px;
-			background-color        : #e1e5e8;
-			padding                 : 0px;
-			font-family             : 'Lato', sans-serif !important;
-		}
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    margin                  : 0px;
+    background-color        : #e1e5e8;
+    padding                 : 0px;
+    font-family             : 'Lato', sans-serif !important;
+  }
 
-		container {
-			-ms-text-size-adjust    : 100%;
-			-webkit-text-size-adjust: 100%;
-			background-color        : #e1e5e8;
-			width                   : 100%;
-			table-layout            : fixed;
-			font-family             : 'Lato', sans-serif !important;
-		}
+  container {
+    -ms-text-size-adjust    : 100%;
+    -webkit-text-size-adjust: 100%;
+    background-color        : #e1e5e8;
+    width                   : 100%;
+    table-layout            : fixed;
+    font-family             : 'Lato', sans-serif !important;
+  }
 
-		box {
-			margin-top              : 0;
-			margin-right            : auto;
-			margin-bottom           : 0;
-			margin-left             : auto;
-			background-color        : #ffffff;
-			max-width               : 600px;
-		}
+  box {
+    margin-top              : 0;
+    margin-right            : auto;
+    margin-bottom           : 0;
+    margin-left             : auto;
+    background-color        : #ffffff;
+    max-width               : 600px;
+  }
 
-		table.table {
-			align-content           : center;
-			margin                  : 0 auto;
-			border-spacing          : 0px;
-			background-color        : #ffffff;
-			width                   : 100%;
-			max-width               : 600px;
-			min-height              : 700px;
-			color                   : #333333;
-			font-family             : 'Lato', sans-serif;
-		}
+  table.table {
+    align-content           : center;
+    margin                  : 0 auto;
+    border-spacing          : 0px;
+    background-color        : #ffffff;
+    width                   : 100%;
+    max-width               : 600px;
+    min-height              : 700px;
+    color                   : #333333;
+    font-family             : 'Lato', sans-serif;
+  }
 
-		table.table td {
-			background-color        :#ffffff;
-			padding                 : 0;
-		}
+  table.table td {
+    background-color        :#ffffff;
+    padding                 : 0;
+  }
 
-		table.table td.logo_top {
-			padding-left            : 500px;
-			height                  : 120px;
-		}
+  table.table td.logo_top {
+    padding-left            : 500px;
+    height                  : 120px;
+  }
 
-		table.table td.logo_top img {
-			border-width            : 0px;
-			width                   : 70px;
-			height                  : 60px;
-		}
+  table.table td.logo_top img {
+    border-width            : 0px;
+    width                   : 70px;
+    height                  : 60px;
+  }
 
-		table.email-body {
-			border-spacing          : 0px;
-			width                   : 100%;
-		}
+  table.email-body {
+    border-spacing          : 0px;
+    width                   : 100%;
+  }
 
-		table.email-body td.image_invite img {
-			margin-top              : 10px;
-			border-width            : 0px;
-			padding-top             : 15px;
-			padding-right           : 30px;
-			padding-bottom          : 15px;
-			padding-left            : 30px;
-			width                   : 90px;
-			height                  : 103px;
-		}
+  table.email-body td.image_invite img {
+    margin-top              : 10px;
+    border-width            : 0px;
+    padding-top             : 15px;
+    padding-right           : 30px;
+    padding-bottom          : 15px;
+    padding-left            : 30px;
+    width                   : 90px;
+    height                  : 103px;
+  }
 
-		table.email-body td.image_reset img {
-			margin-top              : 10px;
-			border-width            : 0px;
-			padding-top             : 15px;
-			padding-right           : 30px;
-			padding-bottom          : 15px;
-			padding-left            : 30px;
-			width                   : 100px;
-			height                  : 100px;
-		}
-		table.email-body td.image_validate img {
-			border-width            : 0px;
-			padding-top             : 15px;
-			padding-right           : 30px;
-			padding-bottom          : 15px;
-			padding-left            : 30px;
-		}
+  table.email-body td.main_image img {
+    margin-top              : 10px;
+    border-width            : 0px;
+    padding-top             : 15px;
+    padding-right           : 30px;
+    padding-bottom          : 15px;
+    padding-left            : 30px;
+    width                   : 150px;
+    height                  : 150px;
+  }
+  table.email-body td.hello_logo_image img {
+    margin-top              : 10px;
+    border-width            : 0px;
+    padding-top             : 15px;
+    padding-right           : 30px;
+    padding-bottom          : 15px;
+    padding-left            : 30px;
+    width                   : 400px;
+    height                  : 207px;
+  }
+  table.email-body td.image_validate img {
+    border-width            : 0px;
+    padding-top             : 15px;
+    padding-right           : 30px;
+    padding-bottom          : 15px;
+    padding-left            : 30px;
+  }
 
-		table.email-body td.password_text_box {
-			padding-top             : 15px;
-			padding-right           : 30px;
-			padding-bottom          : 15px;
-			padding-left            : 30px;
-			text-align              : left;
-		}
+  table.email-body td.password_text_box {
+    padding-top             : 15px;
+    padding-right           : 30px;
+    padding-bottom          : 15px;
+    padding-left            : 30px;
+    text-align              : left;
+  }
 
-		table.email-body td.password_text_box p.h1 {
-			margin                  : 0px;
-			margin-bottom           : 30px;
-			font-size               : 30px;
-			font-weight             : 100;
-			text-align              : center;
-		}
+  table.email-body td.password_text_box p.h1 {
+    margin                  : 0px;
+    margin-bottom           : 30px;
+    font-size               : 30px;
+    font-weight             : 100;
+    text-align              : center;
+  }
 
-		table.email-body td.password_text_box p.description {
-			margin                  : 0;
-			margin-right            : auto;
-			margin-bottom           : 10px;
-			margin-left             : auto;
-			max-width               : 420px;
-			color                   : #a1a8ad;
-			font-family             : 'Lato', sans-serif;
-			font-size               : 15px;
-			line-height             : 20px;
-			text-align              : center;
-		}
+  table.email-body td.password_text_box p.description {
+    margin                  : 0;
+    margin-right            : auto;
+    margin-bottom           : 10px;
+    margin-left             : auto;
+    max-width               : 420px;
+    color                   : #a1a8ad;
+    font-family             : 'Lato', sans-serif;
+    font-size               : 15px;
+    line-height             : 20px;
+    text-align              : center;
+  }
 
-		table.table td.social_media {
-			padding-top             : 0px;
-			padding-right           : 0;
-			padding-bottom          : 0;
-			padding-left            : 0;
-		}
+  table.table td.social_media {
+    padding-top             : 0px;
+    padding-right           : 0;
+    padding-bottom          : 0;
+    padding-left            : 0;
+  }
 
-		table.table td.social_media img.facebook{
-			margin-right            : 21px;
-			margin-left             : 21px;
-			border-width            : 0px;
-			width                   : 10px;
-			height                  : 20px;
-		}
+  table.table td.social_media img.facebook{
+    margin-right            : 21px;
+    margin-left             : 21px;
+    border-width            : 0px;
+    width                   : 10px;
+    height                  : 20px;
+  }
 
-		table.table td.social_media img.twitter{
-			margin-right            : 16px;
-			margin-left             : 16px;
-			border-width            : 0px;
-			width                   : 23px;
-			height                  : 18px;
-		}
+  table.table td.social_media img.twitter{
+    margin-right            : 16px;
+    margin-left             : 16px;
+    border-width            : 0px;
+    width                   : 23px;
+    height                  : 18px;
+  }
 
-		table.table td.social_media img.instagram{
-			margin-right            : 16px;
-			margin-left             : 16px;
-			border-width            : 0px;
-			width                   : 18px;
-			height                  : 18px;
-		} 
+  table.table td.social_media img.instagram{
+    margin-right            : 16px;
+    margin-left             : 16px;
+    border-width            : 0px;
+    width                   : 18px;
+    height                  : 18px;
+  } 
 
-		table.table td.footer {
-			margin-right            : auto;
-			margin-left             : auto;
-			padding-top             : 15%;
-			padding-right           : 30px;
-			padding-bottom          : 2%;
-			padding-left            : 30px;
-			text-align              : center;
-		}
+   table.table td.footer {
+     margin-right            : auto;
+     margin-left             : auto;
+     padding-top             : 15%;
+     padding-right           : 30px;
+     padding-bottom          : 2%;
+     padding-left            : 30px;
+     text-align              : center;
+   }
 
-		table.table td.footer p {
-			margin                  : 0;
-			margin-right            : auto;
-			margin-left             : auto;
-			color                   : #a1a8ad;
-			font-family             : 'Lato', sans-serif;
-			font-size               : 10px;
-			line-height             : 12px;
-			text-align              : center;
-		}
+  table.table td.footer p {
+    margin                  : 0;
+    margin-right            : auto;
+    margin-left             : auto;
+    color                   : #a1a8ad;
+    font-family             : 'Lato', sans-serif;
+    font-size               : 10px;
+    line-height             : 12px;
+    text-align              : center;
+  }
 
-		.small_text {
-			color                   : #a1a8ad;
-			font-family             : 'Lato', sans-serif;
-			font-size               : 12px;
-		}
+  .small_text {
+    color                   : #a1a8ad;
+    font-family             : 'Lato', sans-serif;
+    font-size               : 12px;
+  }
 
-		.myButton {
-			display                 : inline-block;
-			cursor                  : pointer;
-			margin-top              : 20px;
-			margin-bottom           : 20px;
-			border                  : 1px solid #003e52;
-			border-radius           : 25px;
-			background-color        : #003e52;
-			padding                 : 15px 50px;
-			width                   : 150px;
-			height                  : 20px;
-			line-height             : 20px !important;
-			color                   : #ffffff !important;
-			font-family             : 'Lato', sans-serif;
-			font-size               : 17px;
-			text-decoration         : none;
-			text-shadow             : 0px 1px 0px #003e52;
-		}
+  .very_small_link_text {
+    color                   : #a1a8ad;
+    font-family             : 'Lato', sans-serif;
+    font-size               : 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    word-wrap: break-word;
+    max-width: 400px;
+    text-align: center;
+  }
 
-		.myButton:hover {
-			background-color        : #002936;
-			color                   : #ffffff !important;
-		}
+  .myButton {
+    display                 : inline-block;
+    cursor                  : pointer;
+    margin-top              : 20px;
+    margin-bottom           : 20px;
+    border                  : 1px solid #003e52;
+    border-radius           : 25px;
+    background-color        : #003e52;
+    padding                 : 15px 50px;
+    width                   : 150px;
+    height                  : 20px;
+    line-height             : 20px !important;
+    color                   : #ffffff !important;
+    font-family             : 'Lato', sans-serif;
+    font-size               : 17px;
+    text-decoration         : none;
+    text-shadow             : 0px 1px 0px #003e52;
+  }
 
-		.myButton:active {
-			position                : relative;
-			background-color        : #003546;
-			color                   : #ffffff !important;
-			border                  : 1px solid #FFFFFF;
-		}
-	</style>
-	<link href="https://fonts.googleapis.com/css?family=Lato:100i,400" rel="stylesheet">
-	<title>Verify your email for Crownstone.</title>
+  .myButton:hover {
+    background-color        : #002936;
+    color                   : #ffffff !important;
+  }
+
+  .myButton:active {
+    position                : relative;
+    background-color        : #003546;
+    color                   : #ffffff !important;
+    border                  : 1px solid #FFFFFF;
+  }
+</style>
+<link href="https://fonts.googleapis.com/css?family=Lato:100i,400" rel="stylesheet">
+<title>Verify your email for Crownstone.</title>
 </head>
 <body>
-	<div class = "container" style="background-color: #e5e5e5; font-family: 'Lato', sans-serif !important;">
-		<div style = "display:none">Let's verify your email to finalize your account creation!</div>
-		<div class = "box" style="min-height:700px;">
-			<table class="table">
-				<tbody>
-					<!-- Padding Top -->
-					<tr style="height:30px;" />
-					<!-- Start of Email Body-->
-					<tr>
-						<td>
-							<table class="email-body">
-								<tr>
-									<td class="image_validate" align="center" style="width:100%; height:221px;">
-                      <table style="width:430px; height: 221px; border-spacing:0px; background-image: url(https://crownstone.rocks/attachments/email/crownstoneHello.png)">
-                        <tr style="height:111px">
-                          <td style="width:234px; background-color:transparent;" />
-                          <td style="font-family: 'Lato', sans-serif !important; background-color: transparent; color:#fff; font-size:50px; font-weight:100; line-height: 111px; text-align:center">
-                            <i>Hello!</i>
-                          </td>
-                        </tr>
-                        <tr />
-                      </table>
-									</td>
-								</tr>
-                <tr style="height:30px;" />
-								<tr>
-									<td class="password_text_box">
-										<p class="h1">Hi <%= newUser %>!</p>
-										<p class="description">Do we have the right email address to reach you? To confirm your email address, click the button below.</p>
-									</td>
-								</tr>
-
-								<tr>
-									<td align="center">
-										<a href="<%= verifyHref %>" class="myButton">Let's get started!</a>
-									</td>
-								</tr>
-							</table>
-						</td>
-					</tr>
-					<!-- Social Media -->
-					<tr>
-						<td class="social_media" align="center">
-							<a href="https://www.facebook.com/crownstones/" target=""><img class="facebook" alt="Facebook" src="https://crownstone.rocks/attachments/email/facebook.png"></a>
-							<a href="https://twitter.com/CrownstoneRocks" target=""><img class="twitter" alt="Twitter" src="https://crownstone.rocks/attachments/email/twitter.png"></a>
-						</td>
-					</tr>
-					<!-- Footer -->
-					<tr>
-						<td class="footer">
-							<p>If you don't know why you got this email,</p>
-							<p>please tell us straight away so we can fix this issue.</p>
-							<p>-</p>
-							<p>Email us at ask@crownstone.rocks</p>
-							<p>or call us at 010-3073955.</p>
-						</td>
-					</tr>
-          <!-- Padding Bottom -->
-          <tr style="height:50px;" />
-				</tbody>
-			</table>
-		</div>
-	</div>
+<div class = "container" style="background-color: #e5e5e5; font-family: 'Lato', sans-serif !important;">
+  <div style = "display:none">Let's verify your email to finalize your account creation!</div>
+  <div class = "box" style="min-height:700px;">
+    <table class="table">
+      <tbody>
+      <!-- Padding Top -->
+      <tr style="height:30px;" />
+      <!-- Start of Email Body-->
+<tr>
+  <td>
+    <table class="email-body">
+<!-- Header Image -->
+<tr>
+  <td class="hello_logo_image" align="center">
+    <img alt="Welcome to Crownstone!" src="https://crownstone.rocks/attachments/email/logo_hello_en.png" />
+  </td>
+</tr>
+<tr style="height:30px;" />
+<tr>
+  <td class="password_text_box">
+    <p class="h1">Hi <%= newUser %>!</p>
+    <p class="description">Do we have the right email address to reach you? To confirm your email address, click the button below.</p>
+  </td>
+</tr>
+<tr>
+  <td align="center">
+    <a href="<%= verifyHref %>" class="myButton">Let's get started!</a>
+  </td>
+</tr>
+<tr style="height:30px;" />
+<tr>
+  <td align="center">
+    <p class="small_text">If the button does not work, copy the full link below into your browser and open the page.</p>
+    <p class="very_small_link_text"><%= verifyHref %></p>
+  </td>
+</tr>
+<tr style="height:30px;" />
+</table>
+</td>
+</tr>
+<tr style="height:30px;" />
+<!-- Social Media -->
+<tr>
+  <td class="social_media" align="center">
+    <a href="https://www.facebook.com/crownstones/" target=""><img class="facebook" alt="Facebook" src="https://crownstone.rocks/attachments/email/facebook.png"></a>
+    <a href="https://twitter.com/CrownstoneRocks" target=""><img class="twitter" alt="Twitter" src="https://crownstone.rocks/attachments/email/twitter.png"></a>
+  </td>
+</tr>
+<!-- Footer -->
+<tr>
+  <td class="footer">
+    <p>If you don't know why you got this email,</p>
+    <p>please tell us straight away so we can fix this issue.</p>
+    <p>-</p>
+    <p>Email us at ask@crownstone.rocks</p>
+    <p>or call us at 010-3073955.</p>
+  </td>
+</tr>
+<!-- Padding Bottom -->
+<tr style="height:50px;" />
+</tbody>
+</table>
+</div>
+</div>
 </body>

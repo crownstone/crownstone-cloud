@@ -66,12 +66,13 @@ function generateValidation() {
     button +
     tableSpacer +
     singleLinkAlternative +
+    tableSpacer +
     emailBodyEnd +
     tableSpacer +
     social +
     bodyEnd
 
-  fs.writeFileSync('./verificationEmail.html', result)
+  fs.writeFileSync('../verificationEmail.html', result)
 }
 
 
@@ -107,10 +108,11 @@ function generateForgotPassword() {
     singleLinkAlternative +
     tableSpacer +
     emailBodyEnd +
+    tableSpacer +
     social +
     bodyEnd
 
-  fs.writeFileSync('./passwordResetEmail.html', result)
+  fs.writeFileSync('../passwordResetEmail.html', result)
 }
 
 function generateInviteNew() {
@@ -153,7 +155,7 @@ function generateInviteNew() {
     social +
     bodyEnd
 
-  fs.writeFileSync('./inviteNewUserEmail.html', result)
+  fs.writeFileSync('../inviteNewUserEmail.html', result)
 }
 
 function generateInviteExistingUser() {
@@ -200,7 +202,7 @@ function generateInviteExistingUser() {
     social +
     bodyEnd
 
-  fs.writeFileSync('./inviteExistingUserEmail.html', result)
+  fs.writeFileSync('../inviteExistingUserEmail.html', result)
 }
 
 

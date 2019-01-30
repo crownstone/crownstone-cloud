@@ -53,12 +53,11 @@ app.start = function() {
   return app.listen(port, function () {
     app.emit('started');
 
-    console.log("BASE URL", process.env.BASE_URL)
-    console.log("get URL", app.get('url').replace(/\/$/, ''))
     let baseUrl = process.env.BASE_URL || app.get('url').replace(/\/$/, '');
     if (baseUrl.indexOf("http://") === -1 && baseUrl.indexOf("https://") === -1) {
       baseUrl = 'https://' + baseUrl
     }
+
     console.log('Web server listening at: %s', baseUrl);
     app.__baseUrl = baseUrl;
     if (app.get('loopback-component-explorer')) {
