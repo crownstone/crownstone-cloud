@@ -28,7 +28,7 @@
     "description": {
       "type": "string"
     },
-    "OS": {
+    "os": {
       "type": "string"
     },
     "userAgent": {
