@@ -1891,7 +1891,7 @@ module.exports = function(model) {
 
   model.presentPeople = function(id, ignoreDeviceId, callback) {
     const sphereAccessModel = loopback.getModel("SphereAccess");
-    const locationModel     = loopback.getModel("Location");
+    const locationMapModel  = loopback.getModel("DeviceLocationMap");
     const sphereMapModel    = loopback.getModel("DeviceSphereMap");
 
     let locationMapResult = null;
@@ -1903,11 +1903,10 @@ module.exports = function(model) {
           userIds.push(users[i].userId);
           userMap[users[i].userId] = {present:false, locations: []};
         }
-        return locationModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}});
+        return locationMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}});
       })
       .then((result) => {
         locationMapResult = result;
-
         return sphereMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}})
       })
       .then((sphereMapResult) => {

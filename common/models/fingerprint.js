@@ -1,8 +1,5 @@
 "use strict";
 
-const loopback = require('loopback');
-const debug = require('debug')('loopback:dobots');
-const versionUtil = require('../../server/util/versionUtil');
 
 
 /**

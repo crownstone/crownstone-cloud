@@ -4,6 +4,7 @@ let loopback = require('loopback');
 var ObjectID = require('mongodb').ObjectID;
 
 const notificationHandler = require('../../server/modules/NotificationHandler');
+const eventHandler = require('../../server/modules/EventHandler');
 
 const debug = require('debug')('loopback:dobots');
 module.exports = function(model) {
@@ -465,15 +466,22 @@ module.exports = function(model) {
     const fingerprintModel = loopback.getModel('Fingerprint');
     // NO results yet. Search for one from a matching phone model that we made ourselves.
     let fingerprintResult = null;
-    return fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}, {ownerId: userId}]}})
-      .then((fingerprint) => {
-        fingerprintResult = fingerprint;
-        if (!fingerprint) {
-          // if we can't find an fingerprint that we made ourselves, we try those from others
-          return fingerprintModel.findOne({where: {and: [{phoneType: deviceType}, {locationId: locationId}]}})
-        }
-        throw fingerprintResult;
-      })
+
+    let base = new Promise((resolve, reject) => { resolve(null); })
+    if (deviceType) {
+      base = fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}, {ownerId: userId}]}})
+        .then((fingerprint) => {
+          fingerprintResult = fingerprint;
+          if (!fingerprint) {
+            // if we can't find an fingerprint that we made ourselves, we try those from others
+            return fingerprintModel.findOne({where: {and: [{phoneType: deviceType}, {locationId: locationId}]}})
+          }
+          throw fingerprintResult;
+        })
+    }
+
+    // the base is the initial promise. If we have a deviceType we will check for that first.
+    return base
       .then((fingerprint) => {
         fingerprintResult = fingerprint;
         if (!fingerprint) {
@@ -851,6 +859,8 @@ module.exports = function(model) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     let userId = options.accessToken.userId;
 
+    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
+
     sphereAccess.findOne({where: {sphereId: sphereId, userId: userId}})
       .then((sphere) => {
         if (!sphere) {
@@ -894,6 +904,8 @@ module.exports = function(model) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
 
+    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
+
     let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}]}
     if (sphereId === '*') {
       query =  {deviceId: deviceId}
@@ -918,6 +930,9 @@ module.exports = function(model) {
     const locationModel = loopback.getModel("Location");
 
     let userId = options.accessToken.userId;
+
+    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
+
 
     // check if we are allowed to use this sphere.
     sphereAccess.findOne({where: {sphereId: sphereId, userId: userId}})
@@ -1004,6 +1019,8 @@ module.exports = function(model) {
 
   model.exitLocation = function(deviceId, sphereId, locationId, options, callback) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
+
+    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
 
     let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: locationId}]};
     if (locationId === '*') {

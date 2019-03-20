@@ -17,8 +17,7 @@
   },
   "properties": {
     "phoneType": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "data": {
       "type":"Object",
