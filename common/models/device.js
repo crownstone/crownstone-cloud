@@ -875,7 +875,7 @@ module.exports = function(model) {
   // This is an enter Sphere
   function performEnterSphere(sphereId, deviceId, userId) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
-    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterSphere", data: {userId: userId} }, silent: true });
+    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterSphere", data: {userId: userId} }, silent: true });
 
     let datapoint = {sphereId: sphereId, deviceId: deviceId, userId: String(userId)};
     return new Promise((resolve, reject) => {
@@ -905,7 +905,7 @@ module.exports = function(model) {
   // This is an enter Location
   function performEnterLocation(sphereId, locationId, deviceId, userId) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
-    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterLocation", data: {userId: userId, locationId: locationId} }, silent: true });
+    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterLocation", data: {userId: userId, locationId: locationId} }, silent: true });
 
     return new Promise((resolve, reject) => {
       locationMapModel.create({sphereId: sphereId, deviceId: deviceId, locationId:locationId, userId: userId}, (createErr, obj) => {
@@ -969,7 +969,7 @@ module.exports = function(model) {
       query =  {deviceId: deviceId}
     }
 
-    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitSphere", data: {userId: userId} }, silent: true });
+    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitSphere", data: {userId: userId} }, silent: true });
 
     sphereMapModel.destroyAll(query)
       .then(() => {
@@ -1050,7 +1050,8 @@ module.exports = function(model) {
 
   function notifyExitLocation(sphereId, locationId, deviceId, userId) {
     // tell users to refresh
-    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitLocation", data: {userId: userId, locationId: locationId} }, silent: true });
+    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitLocation", data: {userId: userId, locationId: locationId} }, silent: true });
+
     // fallback old API
     eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
   }

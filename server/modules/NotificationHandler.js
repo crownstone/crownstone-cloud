@@ -129,7 +129,6 @@ class NotificationHandlerClass {
       data: messageData.data,
     });
 
-
     // Set up the sender with you API key
     let sender = new gcm.Sender(keys.serverApiKey);
 
