@@ -933,4 +933,52 @@ module.exports = function(model) {
       description: "Get the current location data of this user."
     }
   );
+
+
+
+  model.pendingInvites = function(id, callback) {
+    const SphereAccess = loopback.getModel('SphereAccess');
+    let roleIndex = {};
+
+    SphereAccess.find({where: {and: [{userId: id}, {invitePending: true}]}})
+      .then((sphereAccessResults) => {
+        let idArray = [];
+        for (let i = 0; i < sphereAccessResults.length; i++) {
+          idArray.push(sphereAccessResults[i].sphereId);
+          roleIndex[sphereAccessResults[i].sphereId] = sphereAccessResults[i].role;
+        }
+        let query = {where: {id: {inq: idArray}}};
+        if (filter && typeof filter === 'object' && filter.include) {
+          query.include = filter.include;
+        }
+        let sphereModel = loopback.getModel('Sphere');
+        return sphereModel.find(query)
+      })
+      .then((spheres) => {
+        let results = [];
+        for (let i = 0; i < spheres.length; i++) {
+          let entry = spheres[i];
+          entry['role'] = roleIndex[entry.id];
+          results.push(entry);
+        }
+
+        callback(null, results)
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+  model.remoteMethod(
+    'pendingInvites',
+    {
+      http: {path: '/:id/pendingInvites', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }}
+      ],
+      returns: {arg: 'Spheres', type: ['any'], root: true},
+      description: "Get your pending invites to spheres. This includes a 'role' field with the access level you are invited for."
+    }
+  );
+
 };

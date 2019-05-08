@@ -854,12 +854,86 @@ module.exports = function(model) {
   );
 
 
+  function handleSphereState(sphereId, deviceId, userId, sphereMapModelEntry) {
+    if (!sphereMapModelEntry) {
+      performEnterSphere(sphereId, deviceId, userId)
+    }
+    else {
+      postponeTimeInSphere(sphereMapModelEntry)
+    }
+  }
+
+  function handleLocationState(sphereId, locationId, deviceId, userId, locationMapModelEntry) {
+    if (!sphereMapModelEntry) {
+      performEnterLocation(sphereId, locationId, deviceId, userId)
+    }
+    else {
+      postponeTimeInLocation(locationMapModelEntry)
+    }
+  }
+
+  // This is an enter Sphere
+  function performEnterSphere(sphereId, deviceId, userId) {
+    const sphereMapModel = loopback.getModel("DeviceSphereMap");
+    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterSphere", data: {userId: userId} }, silent: true });
+
+    let datapoint = {sphereId: sphereId, deviceId: deviceId, userId: String(userId)};
+    return new Promise((resolve, reject) => {
+      sphereMapModel.create(datapoint, (createErr, obj) => {
+        if (createErr) {
+          reject(createErr);
+          return;
+        }
+        resolve();
+      });
+    })
+  }
+
+  function postponeTimeInSphere(sphereMapModelEntry) {
+    // User is already in sphere.
+    return new Promise((resolve, reject) => {
+      // already in sphere
+      sphereMapModelEntry.updatedAt = new Date().valueOf();
+      sphereMapModelEntry.save({}, (err, obj) => {
+        if (err) { reject(err); }
+        resolve();
+      });
+    })
+  }
+
+
+  // This is an enter Location
+  function performEnterLocation(sphereId, locationId, deviceId, userId) {
+    const locationMapModel = loopback.getModel("DeviceLocationMap");
+    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterLocation", data: {userId: userId, locationId: locationId} }, silent: true });
+
+    return new Promise((resolve, reject) => {
+      locationMapModel.create({sphereId: sphereId, deviceId: deviceId, locationId:locationId, userId: userId}, (createErr, obj) => {
+        if (createErr) {
+          reject(createErr);
+          return;
+        }
+        resolve();
+      })
+    })
+  }
+
+  function postponeTimeInLocation(locationMapModelEntry) {
+    // User is already in this location.
+    return new Promise((resolve, reject) => {
+      // already in sphere
+      locationMapModelEntry.updatedAt = new Date().valueOf();
+      locationMapModelEntry.save({}, (err, obj) => {
+        if (err) { reject(err); }
+        resolve();
+      });
+    })
+  }
+
   model.inSphere = function(deviceId, sphereId, options, callback) {
     const sphereAccess = loopback.getModel("SphereAccess");
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     let userId = options.accessToken.userId;
-
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
 
     sphereAccess.findOne({where: {sphereId: sphereId, userId: userId}})
       .then((sphere) => {
@@ -872,25 +946,8 @@ module.exports = function(model) {
         return sphereMapModel.findOne({where: {deviceId: deviceId}})
       })
       .then((result) => {
-        return new Promise((resolve, reject) => {
-          if (!result) {
-            let datapoint = {sphereId: sphereId, deviceId: deviceId, userId: String(userId)};
-            sphereMapModel.create(datapoint, (createErr, obj) => {
-              if (createErr) {
-                reject(createErr);
-                return;
-              }
-              resolve();
-            })
-          }
-          else {
-            result.updatedAt = new Date().valueOf();
-            result.save({}, (err, obj) => {
-              if (err) { reject(err); }
-              resolve();
-            });
-          }
-        })
+        eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
+        return handleSphereState(sphereId, deviceId, userId, result);
       })
       .then(() => {
         callback(null);
@@ -910,6 +967,8 @@ module.exports = function(model) {
     if (sphereId === '*') {
       query =  {deviceId: deviceId}
     }
+
+    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitSphere", data: {userId: userId} }, silent: true });
 
     sphereMapModel.destroyAll(query)
       .then(() => {
@@ -932,7 +991,6 @@ module.exports = function(model) {
     let userId = options.accessToken.userId;
 
     eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
-
 
     // check if we are allowed to use this sphere.
     sphereAccess.findOne({where: {sphereId: sphereId, userId: userId}})
@@ -963,50 +1021,22 @@ module.exports = function(model) {
         return sphereMapModel.findOne({where: {deviceId: deviceId}});
       })
       .then((result) => {
-        return new Promise((resolve, reject) => {
-          if (!result) {
-            sphereMapModel.create({sphereId: sphereId, deviceId: deviceId, userId: userId}, (createErr, obj) => {
-              if (createErr) {
-                reject(createErr);
-                return;
-              }
-              resolve();
-            })
-          }
-          else {
-            result.updatedAt = new Date().valueOf();
-            result.save({}, (err, obj) => {
-              if (err) { reject(err); }
-              resolve();
-            });
-          }
-        })
+        return handleSphereState(sphereId, deviceId, userId, result);
       })
       .then(() => {
         // check if we are already in this location map
         return locationMapModel.findOne({where: {and: [{deviceId: deviceId}, {sphereId: sphereId}, {locationId: locationId}]}});
       })
       .then((result) => {
-        return new Promise((resolve, reject) => {
-          if (!result) {
-            locationMapModel.create({sphereId: sphereId, deviceId: deviceId, locationId:locationId, userId: userId}, (createErr, obj) => {
-              if (createErr) {
-                reject(createErr);
-                return;
-              }
-              resolve();
-            })
-          }
-          else {
-            result.updatedAt = new Date().valueOf();
-            result.save({}, (err, obj) => {
-              if (err) { reject(err); }
-              resolve();
-            });
-          }
-        })
+        return handleLocationState(sphereId, locationId, deviceId, userId, result);
       })
       .then(() => {
+        return locationMapModel.findOne({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: {neq: locationId}}]});
+      })
+      .then((result) => {
+        if (result) {
+          notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitLocation", data: {userId: userId, locationId: result.locationId} }, silent: true });
+        }
         return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: {neq: locationId}}]});
       })
       .then(() => {
@@ -1017,10 +1047,18 @@ module.exports = function(model) {
       })
   }
 
+  function notifyExitLocation(sphereId, locationId, deviceId, userId) {
+    // tell users to refresh
+    notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitLocation", data: {userId: userId, locationId: locationId} }, silent: true });
+    // fallback old API
+    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
+  }
+
   model.exitLocation = function(deviceId, sphereId, locationId, options, callback) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
 
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
+    // tell users to refresh
+    notifyExitLocation(sphereId, locationId, deviceId, userId)
 
     let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: locationId}]};
     if (locationId === '*') {

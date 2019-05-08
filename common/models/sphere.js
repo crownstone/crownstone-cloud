@@ -1959,4 +1959,69 @@ module.exports = function(model) {
     }
   );
 
+  model.acceptInvite = function(id, options, callback) {
+    let userIdFromContext = options && options.accessToken && options.accessToken.userId || undefined;
+    SphereAccess.updateAll({sphereId: id, userId: userIdFromContext, invitePending: true}, {invitePending: false},
+      function (err, info) {
+        if (err) { callback(err);};
+
+        if (info.count == 0) {
+          callback({statusCode: 404, message: "No pending invitation found!"});
+        }
+        else {
+          // tell other people in the sphere to refresh their sphere user list.
+          notificationHandler.notifySphereUsers(id, {data: { sphereId: id, command:"sphereUsersUpdated" }, silent: true });
+          callback(null);
+        }
+      });
+  };
+
+  model.declineInvite = function(id, options, callback) {
+    let userIdFromContext = options && options.accessToken && options.accessToken.userId || undefined;
+    SphereAccess.destroyAll({sphereId: id, userId: userIdFromContext, invitePending: true},
+      function (err, info) {
+        if (err) {callback(err);}
+
+        if (info.count == 0) {
+          callback({statusCode: 404, message: "No pending invitation found!"});
+        }
+        else {
+          // tell other people in the sphere to refresh their sphere user list.
+          notificationHandler.notifySphereUsers(id, {data: { sphereId: id, command:"sphereUsersUpdated" }, silent: true });
+          callback(null);
+        }
+      })
+  };
+
+
+
+
+
+
+
+
+  model.remoteMethod(
+    'acceptInvite',
+    {
+      http: {path: '/:id/inviteAccept', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Accept an invite for this sphere."
+    }
+  );
+
+  model.remoteMethod(
+    'declineInvite',
+    {
+      http: {path: '/:id/inviteDecline', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "decline an invite for this sphere."
+    }
+  );
+
 };
