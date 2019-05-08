@@ -644,12 +644,23 @@ module.exports = function(model) {
                 debug("user is already part of the sphere");
                 let error = new Error("User is already part of the sphere");
                 error.statusCode = error.status = 200;
-                next(error);
-              } else {
+                return next(error);
+              }
+              else {
                 debug("add existing user");
                 addExistingUser(email, sphereId, access, options, next);
               }
             })
+            notificationHandler.notifyUserIds(
+              user.id, {
+                data: {
+                  command: "InvitationReceived",
+                  data:{
+                    role: access,
+                    sphereId: sphereId,
+                  }
+                }, silent: true
+              });
           }
           // tell other people in the sphere to refresh their sphere user list.
           notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"sphereUsersUpdated" }, silent: true });
@@ -1960,8 +1971,9 @@ module.exports = function(model) {
   );
 
   model.acceptInvite = function(id, options, callback) {
+    const sphereAccessModel = loopback.getModel("SphereAccess");
     let userIdFromContext = options && options.accessToken && options.accessToken.userId || undefined;
-    SphereAccess.updateAll({sphereId: id, userId: userIdFromContext, invitePending: true}, {invitePending: false},
+    sphereAccessModel.updateAll({sphereId: id, userId: userIdFromContext, invitePending: true}, {invitePending: false},
       function (err, info) {
         if (err) { callback(err);};
 
@@ -1977,8 +1989,9 @@ module.exports = function(model) {
   };
 
   model.declineInvite = function(id, options, callback) {
+    const sphereAccessModel = loopback.getModel("SphereAccess");
     let userIdFromContext = options && options.accessToken && options.accessToken.userId || undefined;
-    SphereAccess.destroyAll({sphereId: id, userId: userIdFromContext, invitePending: true},
+    sphereAccessModel.destroyAll({sphereId: id, userId: userIdFromContext, invitePending: true},
       function (err, info) {
         if (err) {callback(err);}
 
@@ -1992,13 +2005,6 @@ module.exports = function(model) {
         }
       })
   };
-
-
-
-
-
-
-
 
   model.remoteMethod(
     'acceptInvite',

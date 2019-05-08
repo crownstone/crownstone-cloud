@@ -856,19 +856,19 @@ module.exports = function(model) {
 
   function handleSphereState(sphereId, deviceId, userId, sphereMapModelEntry) {
     if (!sphereMapModelEntry) {
-      performEnterSphere(sphereId, deviceId, userId)
+      performEnterSphere(sphereId, deviceId, userId);
     }
     else {
-      postponeTimeInSphere(sphereMapModelEntry)
+      postponeTimeInSphere(sphereMapModelEntry);
     }
   }
 
   function handleLocationState(sphereId, locationId, deviceId, userId, locationMapModelEntry) {
-    if (!sphereMapModelEntry) {
-      performEnterLocation(sphereId, locationId, deviceId, userId)
+    if (!locationMapModelEntry) {
+      performEnterLocation(sphereId, locationId, deviceId, userId);
     }
     else {
-      postponeTimeInLocation(locationMapModelEntry)
+      postponeTimeInLocation(locationMapModelEntry);
     }
   }
 
@@ -960,6 +960,7 @@ module.exports = function(model) {
   model.exitSphere = function(deviceId, sphereId, options, callback) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
+    let userId = options.accessToken.userId;
 
     eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
 
@@ -1035,7 +1036,7 @@ module.exports = function(model) {
       })
       .then((result) => {
         if (result) {
-          notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitLocation", data: {userId: userId, locationId: result.locationId} }, silent: true });
+          notifyExitLocation(sphereId, result.locationId, deviceId, userId);
         }
         return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: {neq: locationId}}]});
       })
@@ -1056,6 +1057,7 @@ module.exports = function(model) {
 
   model.exitLocation = function(deviceId, sphereId, locationId, options, callback) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
+    let userId = options.accessToken.userId;
 
     // tell users to refresh
     notifyExitLocation(sphereId, locationId, deviceId, userId)

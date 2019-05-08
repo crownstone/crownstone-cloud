@@ -948,9 +948,6 @@ module.exports = function(model) {
           roleIndex[sphereAccessResults[i].sphereId] = sphereAccessResults[i].role;
         }
         let query = {where: {id: {inq: idArray}}};
-        if (filter && typeof filter === 'object' && filter.include) {
-          query.include = filter.include;
-        }
         let sphereModel = loopback.getModel('Sphere');
         return sphereModel.find(query)
       })
