@@ -668,7 +668,7 @@ module.exports = function(model) {
               }
             })
             notificationHandler.notifyUserIds(
-              user.id, {
+              [user.id], {
                 data: {
                   command: "InvitationReceived",
                   data:{

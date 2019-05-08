@@ -20,18 +20,14 @@ class NotificationHandlerClass {
   }
 
   collectSphereUsers(sphereId) {
-    let sphereModel = loopback.getModel("Sphere");
-    return sphereModel.findById(sphereId)
-      .then((sphere) => {
-        if (sphere) {
-          return new Promise((resolve, reject) => {
-            sphere.users({fields: {id:true}}, (err, userIdArray) => {
-              if (!err && userIdArray.length > 0) {
-                return resolve(userIdArray);
-              }
-            })
-          })
-        }
+    let sphereAccessModel = loopback.getModel("SphereAccess");
+    return sphereAccessModel.find({where: {and: [{sphereId: sphereId}, {invitePending: false}]},fields: "userId"})
+      .then((userIds) => {
+        let result = [];
+        userIds.forEach((userData) => {
+          result.push(String(userData.userId))
+        })
+        return result;
       })
 
   }
@@ -48,7 +44,7 @@ class NotificationHandlerClass {
     this.collectSphereUsers(sphereId)
       .then((userIdArray) => {
         if (userIdArray && Array.isArray(userIdArray)) {
-          this.notifyUsers(userIdArray, messageData);
+          this.notifyUserIds(userIdArray, messageData);
         }
       });
   }
@@ -69,6 +65,7 @@ class NotificationHandlerClass {
       loopback.getModel("App").findOne({where: {name: 'Crownstone.consumer'}})
         .then((appResult) => {
           if (appResult && appResult.pushSettings) {
+            // console.log("Sending notification", messageData)
             this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
             this._notifyIOS(appResult.pushSettings.apns,    iosTokens, iosDevTokens, messageData);
           }
@@ -76,6 +73,7 @@ class NotificationHandlerClass {
             throw "No App to Push to."
           }
         })
+        .catch((err) => { console.log("error during notify", err)})
     }
   }
 
