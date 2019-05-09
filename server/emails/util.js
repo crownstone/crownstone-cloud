@@ -32,16 +32,14 @@ let util = {
     options.lastName = user.lastName;
     options.redirect = '/verified';
     options.user = user;
-   
-    if (user.firstName === undefined && user.lastName === undefined) {
-      options.newUser = 'there';
-    } else {
-      options.newUser = user.firstName + ' ' + user.lastName;
-    }
+    options.newUser = getUserName(user);
+
     options.template = template;
 
     return options;
   },
+
+
 
   /**
    * Send a email to allow the user to reset a password.
@@ -73,7 +71,7 @@ let util = {
     let fullDeclineUrl = declineUrl + '?' + 'access_token=' + token + '&' + 'sphere_id=' + sphere.id;
     let invitedByText = '';
     if (currentUser !== null) {
-      invitedByText = 'by ' + currentUser.firstName + ' ' + currentUser.lastName + ' ';
+      invitedByText = 'by ' + getUserName(currentUser);
     }
     let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
       sphereName: sphere.name };
@@ -100,7 +98,7 @@ let util = {
     let fullDeclineUrl = declineUrl + '?' + 'sphere_id=' + sphere.id;
     let invitedByText = '';
     if (currentUser !== null) {
-      invitedByText = 'by ' + currentUser.firstName + ' ' + currentUser.lastName + ' ';
+      invitedByText = 'by ' + getUserName(currentUser);
     }
     let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
       sphereName: sphere.name };
@@ -139,7 +137,7 @@ let util = {
   sendRemovedFromSphereEmail : function(unlinkedUser, executingUser, sphere) {
     let html = 'You were removed from the Sphere <b>' + sphere.name + '</b>.';
     if (executingUser !== null) {
-      html = 'You were removed from the Sphere <b>' + sphere.name + '</b> by ' + executingUser.firstName + ' ' + executingUser.lastName + '.';
+      html = 'You were removed from the Sphere <b>' + sphere.name + '</b> by ' + getUserName(executingUser); + '.';
     }
     Email.send({
       to: unlinkedUser.email,
@@ -154,5 +152,17 @@ let util = {
   }
 
 };
+
+function getUserName(user) {
+  if (!user.firstName && !user.lastName) {
+    return "there";
+  }
+  else if (user.firstName && !user.lastName) {
+    return user.firstName;
+  }
+  else {
+    return user.firstName + ' ' + user.lastName;
+  }
+}
 
 module.exports = util;
