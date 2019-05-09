@@ -49,10 +49,27 @@ class NotificationHandlerClass {
       });
   }
 
-  notifySphereDevices(sphere, messageData) {
+  notifySphereUsersExceptUser(excludeUserId, sphereId, messageData) {
+    this.collectSphereUsers(sphereId)
+      .then((userIdArray) => {
+        if (userIdArray && Array.isArray(userIdArray)) {
+          this.notifyUserIds(userIdArray, messageData, excludeUserId);
+        }
+      });
+  }
+  notifySphereUsersExceptDevice(excludeDeviceId, sphereId, messageData) {
+    this.collectSphereUsers(sphereId)
+      .then((userIdArray) => {
+        if (userIdArray && Array.isArray(userIdArray)) {
+          this.notifyUserIds(userIdArray, messageData, null, excludeDeviceId);
+        }
+      });
+  }
+
+  notifySphereDevices(sphere, messageData, excludeDeviceId) {
     // get users
     sphere.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
-      let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users)
+      let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users, excludeDeviceId)
 
       // check if we have to do something
       this.notifyTokens(iosTokens, iosDevTokens, androidTokens, messageData);
@@ -77,24 +94,28 @@ class NotificationHandlerClass {
     }
   }
 
-  notifyUserIds(userIds, messageData) {
+  notifyUserIds(userIds, messageData, excludeUserId, excludeDeviceId) {
     let userIdArray = [];
     for (let i = 0; i < userIds.length; i++) {
+      if (userIds[i] === excludeUserId) { continue; }
+
       userIdArray.push({id:userIds[i]});
     }
-    this._notifyUsers(userIdArray, messageData);
+    this._notifyUsers(userIdArray, messageData, excludeDeviceId);
   }
 
-  notifyUsers(arrayOfUserObjects, messageData) {
+  notifyUsers(arrayOfUserObjects, messageData, excludeUserId, excludeDeviceId) {
     let userIdArray = [];
     for (let i = 0; i < arrayOfUserObjects.length; i++) {
+      if (arrayOfUserObjects[i].id === excludeUserId) { continue; }
+
       userIdArray.push({id:arrayOfUserObjects[i].id});
     }
 
-    this._notifyUsers(userIdArray, messageData);
+    this._notifyUsers(userIdArray, messageData, excludeDeviceId);
   }
 
-  _notifyUsers(userIdArray, messageData) {
+  _notifyUsers(userIdArray, messageData, excludeDeviceId) {
     if (userIdArray.length === 0) {
       return;
     }
@@ -102,7 +123,7 @@ class NotificationHandlerClass {
     let userModel = loopback.getModel('user');
     let filter = {where: {or:userIdArray}, include: {relation: 'devices', scope: {include: 'installations'}}};
     userModel.find(filter, (err, users) => {
-      let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users)
+      let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users, excludeDeviceId)
       // check if we have to do something
       this.notifyTokens(iosTokens, iosDevTokens, androidTokens, messageData);
     });
@@ -130,7 +151,7 @@ class NotificationHandlerClass {
     // Set up the sender with you API key
     let sender = new gcm.Sender(keys.serverApiKey);
 
-
+    // console.log("Send Message", message)
     // Add the registration tokens of the devices you want to send to
     sender.send(message, {registrationTokens: tokens}, function (err, response) {
       if (err) {
@@ -256,7 +277,7 @@ function getTokensFromInstallations(installations, iosUniqueTokens, iosDevUnique
   return {iosTokens, iosDevTokens, androidTokens}
 }
 
-function getTokensFromUsers(users) {
+function getTokensFromUsers(users, excludeDeviceId) {
   // get users
   let total_iosTokens = [];
   let total_iosDevTokens = [];
@@ -270,6 +291,10 @@ function getTokensFromUsers(users) {
   for (let i = 0; i < users.length; i++) {
     let devices = users[i].devices();
     for (let j = 0; j < devices.length; j++) {
+      if (devices[j].id == excludeDeviceId) {
+        continue;
+      }
+
       let installations = devices[j].installations();
       let {iosTokens, iosDevTokens, androidTokens} = getTokensFromInstallations(installations, iosUniqueTokens, iosDevUniqueTokens, androidUniqueTokens);
       total_iosTokens     = total_iosTokens.concat(iosTokens);

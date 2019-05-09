@@ -668,14 +668,7 @@ module.exports = function(model) {
               }
             })
             notificationHandler.notifyUserIds(
-              [user.id], {
-                data: {
-                  command: "InvitationReceived",
-                  data:{
-                    role: access,
-                    sphereId: sphereId,
-                  }
-                }, silent: true
+              [user.id], { data: { command: "InvitationReceived", role: access, sphereId: sphereId }, silent: true
               });
           }
           // tell other people in the sphere to refresh their sphere user list.

@@ -875,7 +875,11 @@ module.exports = function(model) {
   // This is an enter Sphere
   function performEnterSphere(sphereId, deviceId, userId) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
-    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterSphere", data: {userId: userId} }, silent: true });
+
+    // invoke legacy api
+    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
+
+    notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userEnterSphere", userId: userId }, silent: true });
 
     let datapoint = {sphereId: sphereId, deviceId: deviceId, userId: String(userId)};
     return new Promise((resolve, reject) => {
@@ -905,7 +909,11 @@ module.exports = function(model) {
   // This is an enter Location
   function performEnterLocation(sphereId, locationId, deviceId, userId) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
-    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userEnterLocation", data: {userId: userId, locationId: locationId} }, silent: true });
+
+    // invoke legacy api
+    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
+
+    notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userEnterLocation", userId: userId, locationId: locationId }, silent: true });
 
     return new Promise((resolve, reject) => {
       locationMapModel.create({sphereId: sphereId, deviceId: deviceId, locationId:locationId, userId: userId}, (createErr, obj) => {
@@ -946,7 +954,6 @@ module.exports = function(model) {
         return sphereMapModel.findOne({where: {deviceId: deviceId}})
       })
       .then((result) => {
-        eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
         return handleSphereState(sphereId, deviceId, userId, result);
       })
       .then(() => {
@@ -962,6 +969,7 @@ module.exports = function(model) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
     let userId = options.accessToken.userId;
 
+    // invoke legacy api
     eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
 
     let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}]}
@@ -969,18 +977,30 @@ module.exports = function(model) {
       query =  {deviceId: deviceId}
     }
 
-    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitSphere", data: {userId: userId} }, silent: true });
+    let initialPromise = new Promise((resolve, reject) => {resolve()})
+    let presentSphereIds = [sphereId];
+    if (sphereId === "*") {
+      initialPromise = sphereMapModel.find({where: {deviceId: deviceId}, fields:"id"})
+        .then((result) => {
+          presentSphereIds = result;
+        })
+    }
 
-    sphereMapModel.destroyAll(query)
-      .then(() => {
-        return locationMapModel.destroyAll(query)
-      })
-      .then(() => {
-        callback(null);
-      })
-      .catch((err) => {
-        callback(err)
-      })
+    initialPromise.then(() => {
+          presentSphereIds.forEach((presentSphereId) => {
+            notificationHandler.notifySphereUsersExceptDevice(deviceId, presentSphereId, {data: { sphereId: presentSphereId, command:"userExitSphere", userId: userId }, silent: true });
+          })
+          return sphereMapModel.destroyAll(query)
+        })
+        .then(() => {
+          return locationMapModel.destroyAll(query)
+        })
+        .then(() => {
+          callback(null);
+        })
+        .catch((err) => {
+          callback(err)
+        })
   }
 
   model.inLocation = function(deviceId, sphereId, locationId, options, callback) {
@@ -990,9 +1010,6 @@ module.exports = function(model) {
     const locationModel = loopback.getModel("Location");
 
     let userId = options.accessToken.userId;
-
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
-
     // check if we are allowed to use this sphere.
     sphereAccess.findOne({where: {sphereId: sphereId, userId: userId}})
       .then((sphere) => {
@@ -1032,11 +1049,11 @@ module.exports = function(model) {
         return handleLocationState(sphereId, locationId, deviceId, userId, result);
       })
       .then(() => {
-        return locationMapModel.findOne({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: {neq: locationId}}]});
+        return locationMapModel.findOne({where: {and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: {neq: locationId}}]}});
       })
       .then((result) => {
         if (result) {
-          notifyExitLocation(sphereId, result.locationId, deviceId, userId);
+          notifyExitLocation(deviceId, sphereId, result.locationId, deviceId, userId);
         }
         return locationMapModel.destroyAll({and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: {neq: locationId}}]});
       })
@@ -1048,9 +1065,9 @@ module.exports = function(model) {
       })
   }
 
-  function notifyExitLocation(sphereId, locationId, deviceId, userId) {
+  function notifyExitLocation(deviceId, sphereId, locationId, deviceId, userId) {
     // tell users to refresh
-    // notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"userExitLocation", data: {userId: userId, locationId: locationId} }, silent: true });
+    notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userExitLocation", userId: userId, locationId: locationId }, silent: true });
 
     // fallback old API
     eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
@@ -1061,7 +1078,7 @@ module.exports = function(model) {
     let userId = options.accessToken.userId;
 
     // tell users to refresh
-    notifyExitLocation(sphereId, locationId, deviceId, userId)
+    notifyExitLocation(deviceId, sphereId, locationId, deviceId, userId)
 
     let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: locationId}]};
     if (locationId === '*') {
@@ -1133,5 +1150,5 @@ module.exports = function(model) {
       description: "This device has left a Sphere. You will also automatically leave all rooms in this Sphere. " +
         "This method is stack safe, you can only leave a certain Sphere once per device. You can use * as a wildcard."
     }
-  );
+  )
 };
