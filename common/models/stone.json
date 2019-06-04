@@ -15,7 +15,8 @@
     "ChangeTracker": false,
     "Cascade": {
       "StoneLocation": "stoneId",
-      "StoneLocation": "sphereId"
+      "StoneLocation": "sphereId",
+      "StoneKeys": "stoneId"
     },
     "TimeStamps": {
       "required": false,
@@ -80,9 +81,6 @@
     "onlyOnWhenDark": {
       "type": "boolean"
     },
-    "meshNetworkId" : {
-      "type": "string"
-    },
     "hidden": {
       "type": "boolean"
     },
@@ -91,6 +89,9 @@
     },
     "switchCraft": {
       "type": "boolean"
+    },
+    "meshDeviceKey": {
+      "type": "string"
     }
   },
   "validations": [],

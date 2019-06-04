@@ -1,0 +1,42 @@
+{
+  "name": "StoneKeys",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "strict":"filter",
+    "strictObjectIDCoercion": true
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "sphereId": {
+      "type": "string",
+      "required": true
+    },
+    "stoneId": {
+      "type": "string",
+      "required": true
+    },
+    "keyType": {
+      "type": "string",
+      "required": true
+    },
+    "key": {
+      "type": "string",
+      "required": true
+    },
+    "ttl": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

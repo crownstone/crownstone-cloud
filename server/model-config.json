@@ -189,5 +189,13 @@
   "Preference": {
     "dataSource": "mongoDs",
     "public": true
+  },
+  "SphereKeys": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "StoneKeys": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

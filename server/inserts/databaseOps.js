@@ -1,55 +1,126 @@
 "use strict";
 const fs = require("fs");
 const { ask, promiseBatchPerformer } = require("./insertUtil");
+const crypto = require("crypto")
+
 
 let CHANGE_DATA = false;
 let DELETE_TIMESERIES = false;
 
 function performDatabaseOperations(app) {
+  Promise.resolve()
+    .then(() => { return insertSphereUids(app);   })
+    .then(() => { return insertLocationUids(app); })
+}
 
-  // insertLocationUids(app);
+
+function insertSphereUids(app) {
+  let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
+  let sphereCounter = 0
+  let candidates = 0;
+  console.log("----------- Starting insertSphereUids ------------");
+  let doIt = function() {
+    return sphereModel.find()
+      .then((results) => {
+        let promises = []
+        sphereCounter = results.length;
+        results.forEach((sphere) => {
+          if (!sphere.uid) {
+            candidates++;
+            if (CHANGE_DATA === true) {
+              sphere.uid = crypto.randomBytes(1)[0];
+              promises.push(sphere.save());
+            }
+          }
+
+        })
+        return Promise.all(promises)
+      })
+      .then(() => {
+        if (CHANGE_DATA !== true) {
+          console.log("Because change data is false nothing was changed. I would have added a UID to ", candidates, " out of ", sphereCounter, " Spheres.")
+        } else {
+          console.log("FINISHED")
+        }
+      })
+  }
+
+  if (CHANGE_DATA === true) {
+    return ask("Database Operations: DO YOU WANT TO ADD UIDS TO ALL SPHERES? Continue? (YES/NO)")
+      .then((answer) => {
+        if (answer === 'YES') {
+          console.log("STARTING OPERATION")
+          return doIt()
+        }
+        else {
+          return new Promise((resolve, reject) => {
+            reject("User permission denied for adding uids to spheres. Restart script and type YES to continue.")
+          });
+        }
+      })
+  }
+  else {
+    return doIt()
+  }
+
 }
 
 function insertLocationUids(app) {
-  let userModel = app.dataSources.mongoDs.getModel('user');
   let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
   let locationModel = app.dataSources.mongoDs.getModel('Location');
-  let stoneModel = app.dataSources.mongoDs.getModel('Stone');
-  let devicesModel = app.dataSources.mongoDs.getModel('Device');
-  let installationModel = app.dataSources.mongoDs.getModel('AppInstallation');
-  let appliancesModel = app.dataSources.mongoDs.getModel('Appliance');
-  let powerUsageModel = app.dataSources.mongoDs.getModel('PowerUsage');
-  let energyUsageModel = app.dataSources.mongoDs.getModel('EnergyUsage');
+
+  console.log("----------- Starting insertLocationUids ------------");
 
   let locationCounter = 0
   let sphereCounter = 0
 
   let doIt = function() {
-    sphereModel.find()
+    return sphereModel.find()
       .then((results) => {
         let promises = []
-        console.log("Found ", results.length, " spheres ")
         results.forEach((sphere) => {
-          sphereCounter++
+          let sphereNumber = sphereCounter++
           promises.push(new Promise((resolve, reject) => {
-            let sphereLocationCounter = 0
+            let sphereLocationToUpdateCounter = 0
             let sphereLocationCount = 0
             locationModel.find({where: {sphereId: sphere.id}})
               .then((locations) => {
-                sphereLocationCount = locations.length
+                let savePromises = [];
+                sphereLocationCount = locations.length;
+                let locationUids = {};
                 for (let i = 0; i < locations.length; i++) {
                   let location = locations[i];
-                  locationCounter++
-                  sphereLocationCounter++
-
-                  if (CHANGE_DATA === true) {
-                    location.uid = i + 1
-                    return location.save()
+                  if (!location.uid) {
+                    locationCounter++
+                    sphereLocationToUpdateCounter++
+                  }
+                  else {
+                    locationUids[location.uid] = true;
                   }
                 }
+
+                if (sphereLocationToUpdateCounter > 0) {
+                  for (let i = 0; i < locations.length; i++) {
+                    let location = locations[i];
+                    if (!location.uid) {
+                      if (CHANGE_DATA === true) {
+                        location.uid = getAvailableId(locationUids);
+                        savePromises.push(location.save());
+                      }
+                    }
+                  }
+                }
+                return Promise.all(savePromises)
               })
               .then(() => {
-                // console.log("Finished Sphere", sphereCounter, " location", sphereLocationCounter, "out of ", sphereLocationCount)
+                if (sphereLocationCount > 0 && sphereLocationToUpdateCounter > 0) {
+                  if (CHANGE_DATA) {
+                    console.log("LocationUID finished for Sphere", sphereNumber, ". Updating", sphereLocationToUpdateCounter, "out of", sphereLocationCount, "Locations.")
+                  }
+                  else {
+                    console.log("LocationUID finished for Sphere", sphereNumber, ". Would have done", sphereLocationToUpdateCounter, "out of", sphereLocationCount, "Locations.")
+                  }
+                }
                 resolve()
               })
               .catch((err) => {
@@ -71,11 +142,11 @@ function insertLocationUids(app) {
   }
 
   if (CHANGE_DATA === true) {
-    ask("Database Operations: DO YOU WANT TO ADD UIDS TO ALL LOCATIONS? Continue? (YES/NO)")
+    return ask("Database Operations: DO YOU WANT TO ADD UIDS TO ALL LOCATIONS? Continue? (YES/NO)")
       .then((answer) => {
         if (answer === 'YES') {
           console.log("STARTING OPERATION")
-          doIt()
+          return doIt()
         }
         else {
           return new Promise((resolve, reject) => {
@@ -85,7 +156,16 @@ function insertLocationUids(app) {
       })
   }
   else {
-    doIt()
+    return doIt()
+  }
+}
+
+function getAvailableId(map) {
+  for (let i = 1; i <= 64; i++) {
+    if (map[i] === undefined) {
+      map[i] = true;
+      return i;
+    }
   }
 }
 

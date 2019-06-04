@@ -15,11 +15,15 @@ const ToonAPI = require('../../server/integrations/toon/Toon');
 const mesh = require('../../server/middleware/mesh-access-address');
 
 const messageUtils = require('./sharedUtil/messageUtil');
+const constants = require('./sharedUtil/constants');
 const firmwareUtils = require('./sharedUtil/firmwareUtil');
+const Util = require('./sharedUtil/util');
 const app = require('../../server/server');
 
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
+
+
 
 module.exports = function(model) {
 
@@ -434,8 +438,10 @@ module.exports = function(model) {
       injectUUID(ctx.instance);
       injectEncryptionKeys(ctx.instance);
       injectMeshAccessAddress(ctx.instance);
+      injectUID(ctx.instance);
       injectOwner(ctx.instance, userId, next);
-    } else {
+    }
+    else {
       // disallow changing the owner when updating the sphere
       // so always overwrite the ownerId with the current ownerId
       if (ctx.data && ctx.currentInstance) {
@@ -452,26 +458,41 @@ module.exports = function(model) {
     }
   }
 
-  function createKey() {
-    return crypto.randomBytes(16).toString('hex');
-  }
-
+  // LEGACY
   function injectEncryptionKeys(item, next) {
-
     if (!item.adminEncryptionKey) {
-      item.adminEncryptionKey = createKey();
+      item.adminEncryptionKey = Util.createKey();
     }
     if (!item.memberEncryptionKey) {
-      item.memberEncryptionKey = createKey();
+      item.memberEncryptionKey = Util.createKey();
     }
     if (!item.guestEncryptionKey) {
-      item.guestEncryptionKey = createKey();
+      item.guestEncryptionKey = Util.createKey();
     }
   }
 
-  function injectMeshAccessAddress(item, next) {
+  // new keys go into the SphereKeys model
+  function generateEncryptionKeys(ctx) {
+    const SphereKeyModel = loopback.getModel('SphereKeys');
+    let sphereId = ctx.instance.id;
+    return SphereKeyModel.create([
+      { sphereId: sphereId, keyType: constants.KEY_TYPES.ADMIN_KEY,            key: Util.createKey(), ttl: 0 },
+      { sphereId: sphereId, keyType: constants.KEY_TYPES.MEMBER_KEY,           key: Util.createKey(), ttl: 0 },
+      { sphereId: sphereId, keyType: constants.KEY_TYPES.BASIC_KEY,            key: Util.createKey(), ttl: 0 },
+      { sphereId: sphereId, keyType: constants.KEY_TYPES.SERVICE_DATA_KEY,     key: Util.createKey(), ttl: 0 },
+      { sphereId: sphereId, keyType: constants.KEY_TYPES.MESH_APPLICATION_KEY, key: Util.createKey(), ttl: 0 },
+      { sphereId: sphereId, keyType: constants.KEY_TYPES.MESH_NETWORK_KEY,     key: Util.createKey(), ttl: 0 },
+    ]);
+  }
+
+  function injectMeshAccessAddress(item) {
     if (!item.meshAccessAddress) {
       item.meshAccessAddress = mesh.generateAccessAddress();
+    }
+  }
+  function injectUID(item) {
+    if (!item.uid) {
+      item.uid = crypto.randomBytes(1)[0]
     }
   }
 
@@ -480,7 +501,10 @@ module.exports = function(model) {
   // model.beforeRemote('upsert', injectOwner);
 
   function afterSave(ctx, next) {
-    updateOwnerAccess(ctx, next);
+    generateEncryptionKeys(ctx)
+      .then(() => {
+        updateOwnerAccess(ctx, next);
+      })
   }
 
   // model.afterRemote('create', updateOwnerAccess);
@@ -620,21 +644,16 @@ module.exports = function(model) {
     let userData = {email: email, password: tempPassword};
     User.create(userData, function(err, user) {
       if (err) return next(err);
-      firmwareUtils.insertLatestFirmwareAndBootloader(user)
-        .then(() => {
-          let ttl = DEFAULT_TTL;
-          user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
-            if (err) return next(err);
-            addSphereAccess(user, sphere, access, true, function(err) {
-              if (err) return next(err);
-              sendInvite(user, options, sphere, true, accessToken.id);
-              next();
-            });
-          })
-        })
-        .catch((err) => {
-          next(err);
-        })
+
+      let ttl = DEFAULT_TTL;
+      user.accessTokens.create({ttl: ttl}, function(err, accessToken) {
+        if (err) return next(err);
+        addSphereAccess(user, sphere, access, true, function(err) {
+          if (err) return next(err);
+          sendInvite(user, options, sphere, true, accessToken.id);
+          next();
+        });
+      })
     });
   }
 

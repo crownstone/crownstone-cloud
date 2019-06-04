@@ -183,6 +183,56 @@ function performSanitation(app) {
           console.log("Unowned appliances: ", unownedAmount, 'out of', allLocations.length, ' (',  Math.round((unownedAmount / allLocations.length)*100), '% ) -- ', toBeDeletedSphereCount, " of which are in unowned Spheres.")
         })
     })
+
+
+
+
+
+
+
+    // .then(() => {
+    //   if (CHANGE_DATA) {
+    //     let idArray = [];
+    //     Object.keys(unownedApplianceIds).forEach((id) => { idArray.push({id: id}) });
+    //     return appliancesModel.destroyAll({or: idArray})
+    //   }
+    // })
+    // .then(() => {
+    //   if (CHANGE_DATA) {
+    //     let idArray = [];
+    //     Object.keys(unownedLocationIds).forEach((id) => { idArray.push({id: id}) });
+    //     return locationModel.destroyAll({or: idArray})
+    //   }
+    // })
+    // .then(() => {
+    //   if (CHANGE_DATA) {
+    //     let idArray = [];
+    //     Object.keys(unownedStoneIds).forEach((id) => { idArray.push({id: id}) });
+    //     return stoneModel.destroyAll({or: idArray})
+    //   }
+    // })
+    // .then(() => {
+    //   if (CHANGE_DATA) {
+    //     let idArray = [];
+    //     Object.keys(unownedSphereIds).forEach((id) => { idArray.push({id: id}) });
+    //     return sphereModel.destroyAll({or: idArray})
+    //   }
+    // })
+    // .then(() => {
+    //   if (CHANGE_DATA) {
+    //     let idArray = [];
+    //     Object.keys(unownedInstallationIds).forEach((id) => { idArray.push({id: id}) });
+    //     return installationModel.destroyAll({or: idArray})
+    //   }
+    // })
+    // .then(() => {
+    //   if (CHANGE_DATA) {
+    //     let idArray = [];
+    //     Object.keys(unownedDevicesIds).forEach((id) => { idArray.push({id: id}) });
+    //     return devicesModel.destroyAll({or: idArray})
+    //   }
+    // })
+
     // .then(() => {
     //   return powerUsageModel.find()
     //     .then((results) => {

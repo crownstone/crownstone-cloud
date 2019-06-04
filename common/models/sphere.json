@@ -14,7 +14,9 @@
     "ChangeTracker": false,
     "Cascade": {
       "SphereAccess": "sphereId",
-      "Location": "sphereId"
+      "Location": "sphereId",
+      "SphereKeys": "sphereId",
+      "StoneKeys": "sphereId"
     },
     "TimeStamps": {
       "required": false,
@@ -31,6 +33,9 @@
     "name": {
       "type": "string",
       "required": true
+    },
+    "uid": {
+      "type": "number"
     },
     "uuid": {
       "type": "string",

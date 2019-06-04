@@ -34,6 +34,14 @@
       "type": "string",
       "required": true
     },
+    "dependsOnFirmwareVersion": {
+      "type": "string",
+      "required": true
+    },
+    "dependsOnBootloaderVersion": {
+      "type": "string",
+      "required": true
+    },
     "downloadUrl": {
       "type": "string",
       "required": true

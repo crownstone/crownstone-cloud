@@ -14,10 +14,10 @@ const messageUtils = {
 
   _getMessageFormat: function(message) {
     return {
-      title: 'New message found! \n\n' + message.content,
-      type:  'messageUpdated',
+      title:  'New message found! \n\n' + message.content,
+      type:   'messageUpdated',
       silent: true,
-      badge: 1,
+      badge:  1,
       data: {
         sphereId: message.sphereId,
         id: message.id,

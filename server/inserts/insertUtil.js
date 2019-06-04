@@ -1,4 +1,24 @@
 
+
+let callbackPromiseBatchPerformer = (arr, index) => {
+  return new Promise((resolve, reject) => {
+    if (index < arr.length) {
+      arr[index]()
+        .then(() => {
+          return callbackPromiseBatchPerformer(arr, index+1);
+        })
+        .then(() => {
+          resolve()
+        })
+        .catch((err) => reject(err))
+    }
+    else {
+      resolve();
+    }
+  })
+};
+
+
 let promiseBatchPerformer = (arr, index, method) => {
   return new Promise((resolve, reject) => {
     if (index < arr.length) {
@@ -31,4 +51,4 @@ function ask(question) {
   })
 }
 
-module.exports = { promiseBatchPerformer, ask };
+module.exports = { promiseBatchPerformer, ask, callbackPromiseBatchPerformer };

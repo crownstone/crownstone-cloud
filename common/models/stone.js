@@ -6,8 +6,8 @@ let crypto = require('crypto');
 const notificationHandler = require('../../server/modules/NotificationHandler');
 const eventHandler = require('../../server/modules/EventHandler');
 const debug = require('debug')('loopback:dobots');
-
-let util = require('../../server/emails/util');
+const constants = require('./sharedUtil/constants');
+const Util = require('./sharedUtil/util');
 
 module.exports = function(model) {
 
@@ -263,7 +263,7 @@ module.exports = function(model) {
     }
   }
 
-  function injectMajorMinor(item, next) {
+ function injectMajorMinor(item, next) {
     let buf = crypto.randomBytes(4);
     if (!item.major) {
       // debug("inject major");
@@ -272,6 +272,10 @@ module.exports = function(model) {
     if (!item.minor) {
       // debug("inject minor");
       item.minor = buf.readUInt16BE(2);
+    }
+
+    if (!item.minor || !item.major) {
+      injectMajorMinor(item);
     }
   }
 
@@ -339,6 +343,22 @@ module.exports = function(model) {
       })
   }
 
+  function afterSave(ctx,next) {
+    enforceUniqueness(ctx, (err) => {
+      if (err) { return next(err); }
+
+      const StoneKeyModel = loopback.getModel('StoneKeys');
+      let stoneId = ctx.instance.id;
+      let sphereId = ctx.instance.sphereId;
+      return StoneKeyModel.create({
+        sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0
+      })
+        .then(() => {
+          next();
+        })
+    })
+  }
+
   function enforceUniqueness(ctx, next) {
     // debug("ctx", ctx);
     let item = ctx.instance;
@@ -372,7 +392,7 @@ module.exports = function(model) {
 
   // populate some of the elements like uid, major, minor, if not already provided
   model.observe('before save', initStone);
-  model.observe('after save', enforceUniqueness);
+  model.observe('after save', afterSave);
 
   /************************************
    **** Energy Usage

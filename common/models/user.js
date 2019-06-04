@@ -8,7 +8,6 @@ const debug = require('debug')('loopback:dobots');
 
 const util = require('../../server/emails/util');
 const idUtil = require('./sharedUtil/idUtil');
-const firmwareUtils = require('./sharedUtil/firmwareUtil');
 
 module.exports = function(model) {
 
@@ -240,20 +239,14 @@ module.exports = function(model) {
   };
 
   model.onCreate = function(context, user, callback) {
-    firmwareUtils.insertLatestFirmwareAndBootloader(user)
-      .then(() => {
-        if (model.settings.emailVerificationRequired) {
-          model.sendVerification(user, null, function(err, response) {
-            if (err) return callback(err);
-            callback();
-          })
-        } else {
-          callback();
-        }
+    if (model.settings.emailVerificationRequired) {
+      model.sendVerification(user, null, function(err, response) {
+        if (err) return callback(err);
+        callback();
       })
-      .catch((err) => {
-        callback(err);
-      })
+    } else {
+      callback();
+    }
   };
 
 

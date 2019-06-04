@@ -49,7 +49,6 @@ function performReference(app) {
       allUsers = results;
       allUsers.forEach((user) => {
         userIds[user.id] = true;
-        // console.log(user.firstName, user.lastName, user.email);
       })
     })
     .then(() => {

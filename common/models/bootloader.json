@@ -31,6 +31,10 @@
       "type": "string",
       "required": true
     },
+    "dependsOnBootloaderVersion": {
+      "type": "string",
+      "required": true
+    },
     "downloadUrl": {
       "type": "string",
       "required": true

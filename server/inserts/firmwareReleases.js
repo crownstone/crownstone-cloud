@@ -459,41 +459,54 @@ function showBootloaders() {
   return _getAll(bootloaderModel).then((results) => { console.log(TYPES.firmware, "versions found:", results);});
 }
 
-function releaseFirmware(firmwareVersion, minimumCompatibleVersion, minimumAppVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
+function releaseFirmware(firmwareVersion, minimumCompatibleVersion, minimumAppVersion, dependsOnBootloader, dependsOnFirmware, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
   if (downloadUrl.indexOf("firmware") === -1) {
     throw new Error("Release firmware releaseURL does not contain the word firmware: this likely is a bug!");
   }
   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
+
+  let payload = {
+    version: bootloaderModel,
+    supportedHardwareVersions: hardwareVersions,
+    minimumCompatibleVersion: minimumCompatibleVersion,
+    minimumAppVersion: minimumAppVersion,
+    dependsOnBootloader: dependsOnBootloader,
+    dependsOnFirmware: dependsOnFirmware,
+    sha1hash: hash.replace(/( )/g, ""),
+    downloadUrl: downloadUrl,
+    releaseLevel: releaseLevel,
+    releaseNotes: releaseNotes,
+  };
+
   return _release(
     firmwareModel,
     TYPES.firmware,
-    firmwareVersion,
-    minimumCompatibleVersion,
-    minimumAppVersion,
-    hardwareVersions,
-    hash,
-    downloadUrl,
-    releaseLevel,
-    releaseNotes
+    payload
   );
 }
 
-function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, minimumAppVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
+function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, minimumAppVersion, dependsOnBootloader, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
   if (downloadUrl.indexOf("bootloader") === -1) {
     throw new Error("Release bootloader releaseURL does not contain the word bootloader: this likely is a bug!");
   }
   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
+
+  let payload = {
+    version: bootloaderModel,
+    supportedHardwareVersions: hardwareVersions,
+    minimumCompatibleVersion: minimumCompatibleVersion,
+    minimumAppVersion: minimumAppVersion,
+    dependsOnBootloader: dependsOnBootloader,
+    sha1hash: hash.replace(/( )/g, ""),
+    downloadUrl: downloadUrl,
+    releaseLevel: releaseLevel,
+    releaseNotes: releaseNotes,
+  };
+
   return _release(
     bootloaderModel,
     TYPES.bootloader,
-    bootloaderVersion,
-    minimumCompatibleVersion,
-    minimumAppVersion,
-    hardwareVersions,
-    hash,
-    downloadUrl,
-    releaseLevel,
-    releaseNotes
+    payload,
   );
 }
 
@@ -526,19 +539,10 @@ function _getVersion(model, version) {
     })
 }
 
-function _release(model, type, releaseVersion, minimumCompatibleVersion, minimumAppVersion, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes) {
+function _release(model, type, payload) {
   console.log("\n-- Releasing ", type, releaseVersion, "to level", releaseLevel);
   let action = () => {
-    return model.create({
-      version: releaseVersion,
-      supportedHardwareVersions: hardwareVersions,
-      minimumCompatibleVersion: minimumCompatibleVersion,
-      minimumAppVersion: minimumAppVersion,
-      sha1hash: hash.replace(/( )/g, ""),
-      downloadUrl: downloadUrl,
-      releaseLevel: releaseLevel,
-      releaseNotes: releaseNotes,
-    })
+    return model.create(payload)
       .then((result) => {
         console.log(type, "version ", releaseVersion, " added successfully!");
         console.log("Result:", result);

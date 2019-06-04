@@ -42,5 +42,11 @@
   },
   "MessageState": {
     "public": false
+  },
+  "SphereKeys": {
+    "public": false
+  },
+  "StoneKeys": {
+    "public": false
   }
 }

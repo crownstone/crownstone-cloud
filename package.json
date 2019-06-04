@@ -38,7 +38,7 @@
     "node-gcm": "1.0.2",
     "node-uuid": "*",
     "parse-domain": "^1.1.0",
-    "request": "2.79.0",
+    "request": "^2.88.0",
     "serve-favicon": "2.0.1",
     "sha1": "1.1.1",
     "strong-error-handler": "2.0.0",
