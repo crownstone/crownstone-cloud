@@ -654,6 +654,83 @@ module.exports = function(model) {
    **** Keys Methods
    ************************************/
 
+  const getSphereKeys = function(sphereId, accessMap, container) {
+    const SphereKeyModel = loopback.getModel('SphereKeys');
+    let containerIndex = container.length - 1;
+    return SphereKeyModel.find({where:{sphereId: sphereId}})
+      .then((sphereKeys) => {
+        for (let i = 0; i < sphereKeys.length; i++) {
+          let key = sphereKeys[i];
+          if (accessMap === "*" || accessMap[key.keyType] === true) {
+            container[containerIndex].sphereKeys[key.keyType] = {key: key.key, ttl: key.ttl};
+          }
+        }
+      })
+  }
+
+  const getKeysForUser = function(sphereId, role, container, stoneId) {
+    const StoneKeyModel = loopback.getModel('StoneKeys');
+    let containerIndex = container.length - 1;
+    let accessMap = {};
+    switch (role) {
+      case "admin":
+        // gets netkey, appkey, servicedatakey, adminkey, memberkey, basickey and all stone keys.
+        return getSphereKeys(sphereId, "*", container)
+          .then(() => {
+            if (stoneId) {
+              return StoneKeyModel.find({where: {and: [{sphereId: sphereId}, {stoneId: stoneId}]}});
+            }
+            return StoneKeyModel.find({where: {sphereId: sphereId}});
+          })
+          .then((stoneKeys) => {
+            for (let i = 0; i < stoneKeys.length; i++) {
+              let key = stoneKeys[i];
+              if (container[containerIndex].stoneKeys[key.stoneId] === undefined) {
+                container[containerIndex].stoneKeys[key.stoneId] = {};
+              }
+              container[containerIndex].stoneKeys[key.stoneId][key.keyType] = {key: key.key, ttl: key.ttl};
+            }
+          })
+      case "member":
+        // gets servicedatakey, memberkey, basickey.
+        accessMap[constants.KEY_TYPES.MEMBER_KEY] = true;
+        accessMap[constants.KEY_TYPES.BASIC_KEY] = true;
+        accessMap[constants.KEY_TYPES.SERVICE_DATA_KEY] = true;
+        return getSphereKeys(sphereId, accessMap, container);
+      case "guest":
+        // gets servicedatakey and basickey.
+        accessMap[constants.KEY_TYPES.SERVICE_DATA_KEY] = true;
+        accessMap[constants.KEY_TYPES.BASIC_KEY] = true;
+        return getSphereKeys(sphereId, accessMap, container);
+    }
+  }
+
+  model.getEncryptionKeysV2 = function(id, sphereId, stoneId, callback) {
+    const SphereAccess = loopback.getModel('SphereAccess');
+    let queryArray = [{userId: id}, {invitePending: {neq: true}}];
+    if (sphereId) { queryArray.push({sphereId: sphereId}) }
+
+    let result = [];
+    SphereAccess.find({where: {and: queryArray}})
+      .then((accessInSpheres) => {
+        let keyPromises = [];
+        accessInSpheres.forEach((sphereAccess) => {
+          result.push({sphereId: sphereAccess.sphereId, sphereKeys: {}, stoneKeys: {}});
+          if (sphereAccess && sphereAccess.role) {
+            keyPromises.push(getKeysForUser(sphereAccess.sphereId, sphereAccess.role, result, stoneId));
+          }
+        })
+        return Promise.all(keyPromises);
+      })
+      .then(() => {
+        callback(null, result);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+
   model.getEncryptionKeys = function(id, callback) {
     const SphereAccess = loopback.getModel('SphereAccess');
     SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, include: "sphere"}, function(err, objects) {
@@ -682,7 +759,21 @@ module.exports = function(model) {
       http: {path: '/:id/keys', verb: 'get'},
       accepts: {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       returns: {arg: 'data', type: ['object'], root: true},
-      description: "Returns encryption keys per Sphere of User"
+      description: "LEGACY: Returns encryption keys per Sphere of User"
+    }
+  );
+
+  model.remoteMethod(
+    'getEncryptionKeysV2',
+    {
+      http: {path: '/:id/keysV2', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'sphereId', type: 'any', required: false, http: { source : 'query' }},
+        {arg: 'stoneId', type: 'any', required: false, http: { source : 'query' }},
+      ],
+      returns: {arg: 'data', type: ['object'], root: true},
+      description: "Returns encryption keys available to this User"
     }
   );
 

@@ -190,7 +190,7 @@ module.exports = function(model) {
         .then((result) => {
           if (result.length > 0) {
             let location = result[0];
-            if ((location.uid + 1) > 255) {
+            if ((location.uid + 1) > 64) {
               injectUIDinGap(item, next);
             }
             else {
@@ -224,7 +224,7 @@ module.exports = function(model) {
           }
         }
 
-        if (availableUID > 0 && availableUID < 256) {
+        if (availableUID > 0 && availableUID < 65) {
           item.uid = availableUID;
           next();
         }
@@ -232,7 +232,7 @@ module.exports = function(model) {
           let err = {
             statusCode: 422,
             name: "ValidationError",
-            message: "The maximum number of Locations per Sphere, 255, has been reached. You cannot add another Location without deleting one first."
+            message: "The maximum number of Locations per Sphere, 64, has been reached. You cannot add another Location without deleting one first."
           };
           throw err;
         }
