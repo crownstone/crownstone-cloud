@@ -662,7 +662,7 @@ module.exports = function(model) {
         for (let i = 0; i < sphereKeys.length; i++) {
           let key = sphereKeys[i];
           if (accessMap === "*" || accessMap[key.keyType] === true) {
-            container[containerIndex].sphereKeys[key.keyType] = {key: key.key, ttl: key.ttl};
+            container[containerIndex].sphereKeys.push({id: key.id, keyType: key.keyType, key: key.key, ttl: key.ttl, createdAt: key.createdAt});
           }
         }
       })
@@ -686,9 +686,9 @@ module.exports = function(model) {
             for (let i = 0; i < stoneKeys.length; i++) {
               let key = stoneKeys[i];
               if (container[containerIndex].stoneKeys[key.stoneId] === undefined) {
-                container[containerIndex].stoneKeys[key.stoneId] = {};
+                container[containerIndex].stoneKeys[key.stoneId] = [];
               }
-              container[containerIndex].stoneKeys[key.stoneId][key.keyType] = {key: key.key, ttl: key.ttl};
+              container[containerIndex].stoneKeys[key.stoneId].push({id: key.id, keyType: key.keyType, key: key.key, ttl: key.ttl, createdAt: key.createdAt});
             }
           })
       case "member":
@@ -715,7 +715,7 @@ module.exports = function(model) {
       .then((accessInSpheres) => {
         let keyPromises = [];
         accessInSpheres.forEach((sphereAccess) => {
-          result.push({sphereId: sphereAccess.sphereId, sphereKeys: {}, stoneKeys: {}});
+          result.push({sphereId: sphereAccess.sphereId, sphereKeys: [], stoneKeys: {}});
           if (sphereAccess && sphereAccess.role) {
             keyPromises.push(getKeysForUser(sphereAccess.sphereId, sphereAccess.role, result, stoneId));
           }
