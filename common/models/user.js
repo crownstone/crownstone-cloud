@@ -6,6 +6,8 @@ const loopback = require('loopback');
 const app = require('../../server/server');
 const debug = require('debug')('loopback:dobots');
 
+const constants = require('./sharedUtil/constants');
+
 const util = require('../../server/emails/util');
 const idUtil = require('./sharedUtil/idUtil');
 
@@ -773,7 +775,7 @@ module.exports = function(model) {
         {arg: 'stoneId', type: 'any', required: false, http: { source : 'query' }},
       ],
       returns: {arg: 'data', type: ['object'], root: true},
-      description: "Returns encryption keys available to this User"
+      description: "Returns encryption keys available to this User. TTL is in seconds since createdAt. TTL 0 means does not expire."
     }
   );
 
