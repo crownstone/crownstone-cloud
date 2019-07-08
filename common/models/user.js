@@ -697,10 +697,12 @@ module.exports = function(model) {
         // gets servicedatakey, memberkey, basickey.
         accessMap[constants.KEY_TYPES.MEMBER_KEY] = true;
         accessMap[constants.KEY_TYPES.BASIC_KEY] = true;
+        accessMap[constants.KEY_TYPES.LOCALIZATION_KEY] = true;
         accessMap[constants.KEY_TYPES.SERVICE_DATA_KEY] = true;
         return getSphereKeys(sphereId, accessMap, container);
       case "guest":
         // gets servicedatakey and basickey.
+        accessMap[constants.KEY_TYPES.LOCALIZATION_KEY] = true;
         accessMap[constants.KEY_TYPES.SERVICE_DATA_KEY] = true;
         accessMap[constants.KEY_TYPES.BASIC_KEY] = true;
         return getSphereKeys(sphereId, accessMap, container);

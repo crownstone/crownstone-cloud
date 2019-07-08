@@ -479,6 +479,7 @@ module.exports = function(model) {
       { sphereId: sphereId, keyType: constants.KEY_TYPES.ADMIN_KEY,            key: Util.createKey(), ttl: 0 },
       { sphereId: sphereId, keyType: constants.KEY_TYPES.MEMBER_KEY,           key: Util.createKey(), ttl: 0 },
       { sphereId: sphereId, keyType: constants.KEY_TYPES.BASIC_KEY,            key: Util.createKey(), ttl: 0 },
+      { sphereId: sphereId, keyType: constants.KEY_TYPES.LOCALIZATION_KEY,     key: Util.createKey(), ttl: 0 },
       { sphereId: sphereId, keyType: constants.KEY_TYPES.SERVICE_DATA_KEY,     key: Util.createKey(), ttl: 0 },
       { sphereId: sphereId, keyType: constants.KEY_TYPES.MESH_APPLICATION_KEY, key: Util.createKey(), ttl: 0 },
       { sphereId: sphereId, keyType: constants.KEY_TYPES.MESH_NETWORK_KEY,     key: Util.createKey(), ttl: 0 },
