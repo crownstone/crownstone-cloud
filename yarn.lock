@@ -3400,7 +3400,7 @@ lodash@3.6.0:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-3.10.1.tgz#5bf45e8e49ba4189e17d482789dfd15bd140b7b6"
   integrity sha1-W/Rejkm6QYnhfUgnid/RW9FAt7Y=
 
-lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.2, lodash@^4.17.4, lodash@^4.17.5:
+lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.2, lodash@^4.17.4:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
   integrity sha512-UejweD1pDoXu+AD825lWwp4ZGtSwgnpZxb3JDViD7StjQz+Nb/6l093lx4OQ0foGWNRoc19mWy7BzL+UAK2iVg==
@@ -3428,13 +3428,13 @@ loopback-boot@2.24.0:
     strong-globalize "^2.6.2"
     toposort "^0.2.10"
 
-loopback-component-explorer@6.2.0:
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/loopback-component-explorer/-/loopback-component-explorer-6.2.0.tgz#0c1c3d671e99ed11261d4cd3b6b1dbcb600f14a5"
-  integrity sha1-DBw9Zx6Z7REmHUzTtrHby2APFKU=
+loopback-component-explorer@6.4.0:
+  version "6.4.0"
+  resolved "https://registry.yarnpkg.com/loopback-component-explorer/-/loopback-component-explorer-6.4.0.tgz#12d8ae4d8f29bd1956604ecc03ead323d4ffe8c7"
+  integrity sha512-vDRR4gqkvGOEXh5yL383xGuGxUW9xtF+NCY6/lJu1VAgupKltZxEx3Vw+L3nsGvQrlkJTSmiK3jk72qxkoBtbw==
   dependencies:
     debug "^3.1.0"
-    lodash "^4.17.5"
+    lodash "^4.17.11"
     loopback-swagger "^5.0.0"
     strong-globalize "^4.1.1"
     swagger-ui "^2.2.5"

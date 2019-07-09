@@ -1072,53 +1072,60 @@ module.exports = function(model) {
   );
 
   model.changeOwnership = function(id, email, options, callback) {
-    model.findById(id, function(err, sphere) {
-      if (err) return callback(err);
+    const UserModel = loopback.findModel('user');
+    const SphereAccess = loopback.getModel('SphereAccess');
+    let currentUserId = options && options.accessToken && options.accessToken.userId;
+    let NotAuthorizedError = new Error("Authorization Required");
+    NotAuthorizedError.status = 401;
+    if (!currentUserId) {
+      return callback(NotAuthorizedError);
+    }
 
-      const User = loopback.findModel('user');
-      User.findOne({where: {email: email}}, function(err, user) {
-        if (err) return callback(err);
-        // debug("user", user);
-        // debug("sphere", sphere);
-        let currentUserId = options && options.accessToken && options.accessToken.userId;
-        if (!currentUserId) {
-          return callback("Can not identify user by accessToken.");
+    let sphere;
+    let newOwner;
+    model.findById(id)
+      .then((sphereResult) => {
+        if (!sphereResult) { throw NotAuthorizedError; }
+        sphere = sphereResult;
+
+        // check is we are the owner.
+        if (String(sphere.ownerId) != String(currentUserId)) {
+          throw NotAuthorizedError;
         }
 
-        if (sphere.ownerId === currentUserId) {
-          const SphereAccess = loopback.findModel("SphereAccess");
-          SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-            if (err) return callback(err);
+        return UserModel.findOne({where: {email: email}})
+      })
+      .then((user) => {
+          if (!user) { throw "Invalid email address."; }
+          newOwner = user;
 
-            if (objects.length === 1) {
-              objects[0].role = "admin";
-              objects[0].save(function(err, instance) {
-                if (err) return callback(err);
-
-                sphere.ownerId = user.id;
-                sphere.save(function(err, inst) {
-                  if (err) return callback(err);
-
-                  callback(null, true);
-                });
-              });
-
-            }
-            else {
-              let error = new Error("User is not part of sphere");
-              error.name = "Membership error";
-              error.statusCode = error.status = 409;
-              return callback(error);
-            }
-          })
-        } else {
-          debug("Error: Authorization required!");
-          let error = new Error("Authorization Required");
-          error.status = 401;
-          return callback(error);
+          // check if the user is already in the sphere.
+          return SphereAccess.findOne({where: {and: [{userId: user.id}, {sphereId: id}]}});
+      })
+      .then((accessResult) => {
+        if (!accessResult) {
+          // user not in sphere yet.
+          return new Promise((resolve, reject) => {
+            addSphereAccess(
+              newOwner, sphere, 'admin', false, (err) => {
+                if (err) { return reject(err); }
+                resolve()
+              })
+          });
         }
-      });
-    });
+        else {
+          objects[0].role = "admin";
+          return objects[0].save();
+        }
+      })
+      .then(() => {
+        sphere.ownerId = newOwner.id;
+        return sphere.save();
+      })
+      .then(() => {
+        callback();
+      })
+      .catch((err) => { callback(err); })
   };
 
   model.remoteMethod(

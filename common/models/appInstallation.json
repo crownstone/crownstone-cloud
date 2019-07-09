@@ -28,12 +28,19 @@
       "type": "string",
       "required": false
     },
+    "installationToken": {
+      "type": "string",
+      "required": false
+    },
     "developmentApp": {
       "type": "boolean",
       "required": true,
       "default": false
     }
   },
+  "hidden": [
+    "installationToken"
+  ],
   "relations": {
     "device": {
       "type": "belongsTo",
