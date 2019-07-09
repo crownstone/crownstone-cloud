@@ -43,6 +43,8 @@ module.exports = function(app) {
   Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRoleInSphere(app, { admin:  true },  context, callback); });
   Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { member: true },  context, callback); });
   Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRoleInSphere(app, { guest:  true },  context, callback); }); // legacy
+  Role.registerResolver('$project:installer',  function(role, context, callback) { verifyInstallerInProject(app,  context, callback); });
+  Role.registerResolver('$project:viewer',     function(role, context, callback) { verifyViewerInProject(   app,  context, callback); });
   // Role.registerResolver('$group:basic',  function(role, context, callback) { verifyRoleInSphere(app, { basic:  true },  context, callback); });
   Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner( app, context, callback); });
 };
@@ -79,6 +81,81 @@ function verifyDeviceOwner(app, context, callback) {
       else {
         callback(null, false);
       }
+    })
+    .catch((err) => {
+      callback(err, false);
+    })
+}
+
+
+
+/**
+ * Verify if a user has access to this Project element. If the model has a sphereId, we will look in the sphereAccess to find
+ * the user permission in that sphere and match it to the accessLevel. Since an admin also has guest privileges, we allow
+ * @param app
+ * @param accessMap
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
+function verifyViewerInProject(app, context, callback) {
+  // check if user is logged in
+  let userId = context.accessToken.userId;
+
+  // do not allow anonymous users
+  if (!userId) {
+    // reject async, see explanation on top of file.
+    return process.nextTick(function() { callback(null, false); });
+  }
+
+  // check if the model has a sphereId
+  getProjectId(app, context)
+    .then((result) => {
+      if (context.modelName === "Project" && !result) { return true; }
+
+      if (!result) { throw "No Project Id"; }
+      return app.models.ProjectViewer.findOne({where:{and: [{userId: userId}, {projectId: result}]}});
+    })
+    .then((access) => {
+      if (access) { callback(null, true);  }
+      else        { callback(null, false); }
+    })
+    .catch((err) => {
+      callback(err, false);
+    })
+}
+
+
+/**
+ * Verify if a user has access to this Project element. If the model has a sphereId, we will look in the sphereAccess to find
+ * the user permission in that sphere and match it to the accessLevel. Since an admin also has guest privileges, we allow
+ * @param app
+ * @param accessMap
+ * @param context
+ * @param callback
+ * @returns {*}
+ */
+function verifyInstallerInProject(app, context, callback) {
+  // check if user is logged in
+  let userId = context.accessToken.userId;
+
+  // do not allow anonymous users
+  if (!userId) {
+    // reject async, see explanation on top of file.
+    return process.nextTick(function() { callback(null, false); });
+  }
+
+  // check if the model has a sphereId
+  getProjectId(app, context)
+    .then((result) => {
+      if (context.modelName === "Project" && !result) { return true; }
+
+      if (!result) { throw "No Project Id"; }
+      return app.models.ProjectInstaller.findOne({where:{and: [{userId: userId}, {projectId: result}]}});
+    })
+    .then((access) => {
+      if (access) { callback(null, true);  }
+      else        { callback(null, false); }
     })
     .catch((err) => {
       callback(err, false);
@@ -150,6 +227,31 @@ function getSphereId(app, context) {
         .then((result) => {
           if (result && result.sphereId !== undefined) {
             return resolve(result.sphereId);
+          }
+          else {
+            return reject({statusCode:404, message:"Could not find element with id: " + context.modelId});
+          }
+        })
+        .catch((err) => {
+          reject(err);
+        })
+    }
+  })
+}
+
+
+
+
+function getProjectId(app, context) {
+  return new Promise((resolve, reject) => {
+    if (context.modelName === 'Project') {
+      return resolve(context.modelId);
+    }
+    else {
+      app.models[context.modelName].findById(context.modelId)
+        .then((result) => {
+          if (result && result.projectId !== undefined) {
+            return resolve(result.projectId);
           }
           else {
             return reject({statusCode:404, message:"Could not find element with id: " + context.modelId});

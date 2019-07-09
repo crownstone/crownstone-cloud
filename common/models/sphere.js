@@ -432,7 +432,6 @@ module.exports = function(model) {
     // debug("ctx", ctx);
     const token = ctx.options && ctx.options.accessToken;
     const userId = token && token.userId;
-    const user = userId ? 'user#' + userId : '<anonymous>';
 
     if (ctx.isNewInstance) {
       injectUUID(ctx.instance);

@@ -1,0 +1,51 @@
+{
+  "name": "SubProject",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "strict":"filter"
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    },
+    "Util": true
+  },
+  "hidden": [
+    "sphereKeys",
+    "userEmail"
+  ],
+  "properties": {
+    "name":                              { "type": "string", "required": true },
+    "information":                       { "type": "string" },
+    "userEmail":                         { "type": "string", "required": true },
+    "sphereKeys":                        { "type": "string" },
+    "sphereId":                          { "type": "string" },
+    "status":                            { "type": "string", "default": "unstarted" },
+    "finishedDate":                      { "type": "date" },
+    "installDate":                       { "type": "date" },
+    "shortId":                           { "type": "number" },
+    "totalNumberOfCrownstones":          { "type": "number" },
+    "totalNumberOfInstalledCrownstones": { "type": "number" },
+    "totalNumberOfPreparedCrownstones":  { "type": "number", "default": 0 },
+    "numberOfSwitchcraft":               { "type": "number" },
+    "numberOfPreparedSwitchcraft":       { "type": "number", "default": 0 },
+    "numberOfInstalledSwitchcraft":      { "type": "number" },
+    "numberOfFailedCrownstones":         { "type": "number", "default": 0 }
+  },
+  "validations": [],
+  "relations": {
+    "owner": {
+      "type": "belongsTo",
+      "model": "Project",
+      "foreignKey": "projectId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -4,6 +4,7 @@
       "loopback/common/models",
       "loopback/server/models",
       "../common/models",
+      "../common/models/projects",
       "./models"
     ],
     "mixins": [
@@ -195,6 +196,22 @@
     "public": false
   },
   "StoneKeys": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "Project": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "ProjectViewer": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "ProjectInstaller": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "SubProject": {
     "dataSource": "mongoDs",
     "public": false
   }

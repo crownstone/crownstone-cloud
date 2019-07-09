@@ -1,0 +1,57 @@
+{
+  "name": "Project",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "strict":"filter"
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    },
+    "Cascade": {
+      "SubProject": "projectId",
+      "ProjectViewers": "projectId",
+      "ProjectInstallers": "projectId"
+    },
+    "Util": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "owner": {
+      "type": "belongsTo",
+      "model": "user",
+      "foreignKey": "ownerId"
+    },
+    "installers": {
+      "type": "hasMany",
+      "model": "user",
+      "foreignKey": "projectId",
+      "through": "ProjectInstaller"
+    },
+    "viewers": {
+      "type": "hasMany",
+      "model": "user",
+      "foreignKey": "projectId",
+      "through": "ProjectViewer"
+    },
+    "subProjects": {
+      "type": "hasMany",
+      "model": "SubProject",
+      "foreignKey": "projectId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
