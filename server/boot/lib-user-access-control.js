@@ -43,8 +43,9 @@ module.exports = function(app) {
   Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRoleInSphere(app, { admin:  true },  context, callback); });
   Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { member: true },  context, callback); });
   Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRoleInSphere(app, { guest:  true },  context, callback); }); // legacy
-  Role.registerResolver('$project:installer',  function(role, context, callback) { verifyInstallerInProject(app,  context, callback); });
-  Role.registerResolver('$project:viewer',     function(role, context, callback) { verifyViewerInProject(   app,  context, callback); });
+  Role.registerResolver('$project:admin',    function(role, context, callback) { verifyRoleInProject(app,{ admin:     true }, context, callback); });
+  Role.registerResolver('$project:installer',function(role, context, callback) { verifyRoleInProject(app,{ installer: true }, context, callback); });
+  Role.registerResolver('$project:viewer',   function(role, context, callback) { verifyRoleInProject(app,{ viewer:    true }, context, callback); });
   // Role.registerResolver('$group:basic',  function(role, context, callback) { verifyRoleInSphere(app, { basic:  true },  context, callback); });
   Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner( app, context, callback); });
 };
@@ -98,7 +99,7 @@ function verifyDeviceOwner(app, context, callback) {
  * @param callback
  * @returns {*}
  */
-function verifyViewerInProject(app, context, callback) {
+function verifyRoleInProject(app, accessMap, context, callback) {
   // check if user is logged in
   let userId = context.accessToken.userId;
 
@@ -114,53 +115,21 @@ function verifyViewerInProject(app, context, callback) {
       if (context.modelName === "Project" && !result) { return true; }
 
       if (!result) { throw "No Project Id"; }
-      return app.models.ProjectViewer.findOne({where:{and: [{userId: userId}, {projectId: result}]}});
+      return app.models.ProjectAccess.findOne({where:{and: [{userId: userId}, {projectId: result}]}});
     })
     .then((access) => {
-      if (access) { callback(null, true);  }
-      else        { callback(null, false); }
+      if (access && access.role && accessMap[access.role] === true) {
+        callback(null, true);
+      }
+      else {
+        callback(null, false);
+      }
     })
     .catch((err) => {
       callback(err, false);
     })
 }
 
-
-/**
- * Verify if a user has access to this Project element. If the model has a sphereId, we will look in the sphereAccess to find
- * the user permission in that sphere and match it to the accessLevel. Since an admin also has guest privileges, we allow
- * @param app
- * @param accessMap
- * @param context
- * @param callback
- * @returns {*}
- */
-function verifyInstallerInProject(app, context, callback) {
-  // check if user is logged in
-  let userId = context.accessToken.userId;
-
-  // do not allow anonymous users
-  if (!userId) {
-    // reject async, see explanation on top of file.
-    return process.nextTick(function() { callback(null, false); });
-  }
-
-  // check if the model has a sphereId
-  getProjectId(app, context)
-    .then((result) => {
-      if (context.modelName === "Project" && !result) { return true; }
-
-      if (!result) { throw "No Project Id"; }
-      return app.models.ProjectInstaller.findOne({where:{and: [{userId: userId}, {projectId: result}]}});
-    })
-    .then((access) => {
-      if (access) { callback(null, true);  }
-      else        { callback(null, false); }
-    })
-    .catch((err) => {
-      callback(err, false);
-    })
-}
 
 
 

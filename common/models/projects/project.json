@@ -21,6 +21,9 @@
     },
     "Util": true
   },
+  "hidden": [
+    "ownerId"
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -33,18 +36,6 @@
       "type": "belongsTo",
       "model": "user",
       "foreignKey": "ownerId"
-    },
-    "installers": {
-      "type": "hasMany",
-      "model": "user",
-      "foreignKey": "projectId",
-      "through": "ProjectInstaller"
-    },
-    "viewers": {
-      "type": "hasMany",
-      "model": "user",
-      "foreignKey": "projectId",
-      "through": "ProjectViewer"
     },
     "subProjects": {
       "type": "hasMany",

@@ -501,10 +501,15 @@ module.exports = function(model) {
   // model.beforeRemote('upsert', injectOwner);
 
   function afterSave(ctx, next) {
-    generateEncryptionKeys(ctx)
-      .then(() => {
-        updateOwnerAccess(ctx, next);
-      })
+    if (ctx.isNewInstance) {
+      generateEncryptionKeys(ctx)
+        .then(() => {
+          updateOwnerAccess(ctx, next);
+        })
+    }
+    else {
+      next();
+    }
   }
 
   // model.afterRemote('create', updateOwnerAccess);

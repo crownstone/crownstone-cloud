@@ -3,6 +3,11 @@
 const loopback = require('loopback');
 const app = require('../../../server/server');
 
+const accessTypes = {
+  installer: 'installer',
+  viewer: 'viewer'
+}
+
 module.exports = function(model) {
 
 
@@ -84,55 +89,45 @@ module.exports = function(model) {
 
   model.disableRemoteMethodByName('prototype.__get__owner');
   model.disableRemoteMethodByName('replaceById');
+  model.disableRemoteMethodByName('destroyById');
 
-  model.disableRemoteMethodByName('prototype.__head__viewers');
-  model.disableRemoteMethodByName('prototype.__create__viewers');
-  model.disableRemoteMethodByName('prototype.__count__viewers');
-  model.disableRemoteMethodByName('prototype.__delete__viewers');
-  model.disableRemoteMethodByName('prototype.__destroyById__viewers');
-  model.disableRemoteMethodByName('prototype.__deleteById__viewers');
-  model.disableRemoteMethodByName('prototype.__updateById__viewers');
-  model.disableRemoteMethodByName('prototype.__removeById__viewers');
-  model.disableRemoteMethodByName('prototype.__exists__viewers');
-  model.disableRemoteMethodByName('prototype.__findById__viewers');
-
-  //
-  model.disableRemoteMethodByName('prototype.__head__installers');
-  model.disableRemoteMethodByName('prototype.__create__installers');
-  model.disableRemoteMethodByName('prototype.__count__installers');
-  model.disableRemoteMethodByName('prototype.__delete__installers');
-  model.disableRemoteMethodByName('prototype.__destroyById__installers');
-  model.disableRemoteMethodByName('prototype.__deleteById__installers');
-  model.disableRemoteMethodByName('prototype.__updateById__installers');
-  model.disableRemoteMethodByName('prototype.__removeById__installers');
-  model.disableRemoteMethodByName('prototype.__exists__installers');
-  model.disableRemoteMethodByName('prototype.__findById__installers');
-  // model.disableRemoteMethodByName('prototype.__get__installers');
   //
   model.disableRemoteMethodByName('prototype.__head__subProjects');
   model.disableRemoteMethodByName('prototype.__create__subProjects');
   model.disableRemoteMethodByName('prototype.__count__subProjects');
   model.disableRemoteMethodByName('prototype.__link__subProjects');
+  // model.disableRemoteMethodByName('prototype.__findById__subProjects');
+  model.disableRemoteMethodByName('prototype.__updateById__subProjects');
   model.disableRemoteMethodByName('prototype.__unlink__subProjects');
   model.disableRemoteMethodByName('prototype.__delete__subProjects');
-  model.disableRemoteMethodByName('prototype.__deleteById__subProjects');
+  model.disableRemoteMethodByName('prototype.__destroyById__subProjects');
 
 
   model.observe('before save', injectOwner);
+  // model.observe('after save', afterSave);
+  // function afterSave(ctx, next) {
+  //   generateEncryptionKeys(ctx)
+  //     .then(() => {
+  //       updateOwnerAccess(ctx, next);
+  //     })
+  // }
 
   function injectOwner(ctx, next) {
-    console.log("X")
-
-    console.log(ctx.isNewInstance)
-    console.log(ctx.instance)
-
     const token = ctx.options && ctx.options.accessToken;
     const userId = token && token.userId;
-    if (!ctx.instance.ownerId) {
-      ctx.instance.ownerId = userId;
+
+    if (ctx.isNewInstance) {
+      if (!ctx.instance.ownerId) {
+        ctx.instance.ownerId = userId;
+      }
       next();
     }
     else {
+      // disallow changing the owner when updating the sphere
+      // so always overwrite the ownerId with the current ownerId
+      if (ctx.data && ctx.currentInstance) {
+        ctx.data.ownerId = ctx.currentInstance.ownerId;
+      }
       next();
     }
   }
@@ -194,7 +189,6 @@ module.exports = function(model) {
     })
   }
 
-
   const checkSubProjectUidUniqueness = function(projectId) {
     let SubProjectModel = loopback.getModel("SubProject");
     let uid = Math.floor((Math.random()*1e12+1e5) % 1e6);
@@ -224,24 +218,173 @@ module.exports = function(model) {
     }
   );
 
+
+  const getUsers = function(id, options, type, callback) {
+    let projectAccessModel = loopback.getModel("ProjectAccess");
+    let userModel = loopback.getModel("user");
+
+    projectAccessModel.find({where: {and: [{projectId: id}, {role: type}]}})
+      .then((result) => {
+        let userIds = [];
+        for (let i = 0; i < result.length; i++) {
+          userIds.push(result[i].userId);
+        }
+
+        return userModel.find({where: {inq: userIds}})
+      })
+      .then((users) => {
+        let userResult = [];
+        for (let i = 0; i < users.length; i++) {
+          userResult.push({id:users[i].userId, email: users[i].email});
+        }
+        return userResult;
+      })
+      .then((result) => {
+        callback(null, result);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+  const addUser = function(id, email, options, type, callback) {
+    let projectAccessModel = loopback.getModel("ProjectAccess");
+    let userModel = loopback.getModel("user");
+    let userId;
+
+    userModel.findOne({where: {email: email}})
+      .then((result) => {
+        if (!result) { throw "Invalid email address."}
+        userId = result.id;
+
+        return projectAccessModel.find({where: {and: [{projectId: id}, {userId: userId}]}})
+      })
+      .then((projectAccessResults) => {
+        if (projectAccessResults.length !== 0) {
+          throw "User already in project as " + projectAccessResults[0].role;
+        }
+        return projectAccessModel.create({projectId: id, userId: userId, role: type})
+      })
+      .then((result) => {
+        callback(null, result);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+  const removeUser = function(id, fk, options, type, callback) {
+    let projectAccessModel = loopback.getModel("ProjectAccess");
+
+    projectAccessModel.find({where: {and: [{projectId: id}, {userId: fk}]}})
+      .then((projectAccessResults) => {
+        if (projectAccessResults.length === 0    ) { throw "User not in project with that role."; }
+        if (projectAccessResults[0].role === type) { throw "User not in project with that role."; }
+
+        return projectAccessModel.destroyById(projectAccessResults[0].id);
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+
+  model.getViewers = function(id, options, callback) {
+    getUsers(id, options, accessTypes.viewer, callback);
+  }
+  model.getInstallers = function(id, options, callback) {
+    getUsers(id, options, accessTypes.installer, callback);
+  }
+  model.addViewer = function(id, email, options, callback) {
+    addUser(id, email, options, accessTypes.viewer, callback)
+  }
+  model.addInstaller = function(id, email, options, callback) {
+    addUser(id, email, options, accessTypes.installer, callback)
+  }
+  model.removeViewer = function(id, fk, options, callback) {
+    removeUser(id, fk, options, accessTypes.viewer, callback);
+  }
+  model.removeInstaller = function(id, fk, options, callback) {
+    removeUser(id, fk, options, accessTypes.installer, callback);
+  }
+
+
   model.remoteMethod(
-    'deleteSubproject',
+    'getViewers',
     {
-      http: {path: '/:id/subProject', verb: 'delete'},
+      http: {path: '/:id/viewers', verb: 'get'},
       accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'id',      type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
-      description: "Create a subproject."
+      description: "List users with viewing permissions of this project."
     }
   );
 
+  model.remoteMethod(
+    'addViewer',
+    {
+      http: {path: '/:id/viewer', verb: 'post'},
+      accepts: [
+        {arg: 'id',      type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'email',   type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Add an user with viewing permissions to the project."
+    }
+  );
 
+  model.remoteMethod(
+    'removeViewer',
+    {
+      http: {path: '/:id/viewer/:fk', verb: 'delete'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'fk', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Revoke viewing permissions from user."
+    }
+  );
 
+  model.remoteMethod(
+    'getInstallers',
+    {
+      http: {path: '/:id/installers', verb: 'get'},
+      accepts: [
+        {arg: 'id',      type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "List users with installer permissions of this project."
+    }
+  );
 
+  model.remoteMethod(
+    'addInstaller',
+    {
+      http: {path: '/:id/installer', verb: 'post'},
+      accepts: [
+        {arg: 'id',      type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'email',   type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Add an user with installer permissions to the project."
+    }
+  );
 
-
-
-
-
+  model.remoteMethod(
+    'removeInstaller',
+    {
+      http: {path: '/:id/installer/:fk', verb: 'delete'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'fk', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Revoke installer permissions from user."
+    }
+  );
 };

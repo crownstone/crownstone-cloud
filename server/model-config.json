@@ -203,11 +203,7 @@
     "dataSource": "mongoDs",
     "public": false
   },
-  "ProjectViewer": {
-    "dataSource": "mongoDs",
-    "public": false
-  },
-  "ProjectInstaller": {
+  "ProjectAccess": {
     "dataSource": "mongoDs",
     "public": false
   },

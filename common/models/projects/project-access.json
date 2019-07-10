@@ -1,5 +1,5 @@
 {
-  "name": "ProjectInstaller",
+  "name": "ProjectAccess",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,
@@ -14,6 +14,10 @@
       "required": true
     },
     "userId": {
+      "type": "string",
+      "required": true
+    },
+    "role": {
       "type": "string",
       "required": true
     }

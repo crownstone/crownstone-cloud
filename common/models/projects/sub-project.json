@@ -10,6 +10,7 @@
   },
   "mixins": {
     "DisableCommon": true,
+    "ProjectContent": true,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true
