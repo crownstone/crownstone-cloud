@@ -347,15 +347,20 @@ module.exports = function(model) {
     enforceUniqueness(ctx, (err) => {
       if (err) { return next(err); }
 
-      const StoneKeyModel = loopback.getModel('StoneKeys');
-      let stoneId = ctx.instance.id;
-      let sphereId = ctx.instance.sphereId;
-      return StoneKeyModel.create({
-        sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0
-      })
-        .then(() => {
-          next();
+      if (ctx.isNewInstance) {
+        const StoneKeyModel = loopback.getModel('StoneKeys');
+        let stoneId = ctx.instance.id;
+        let sphereId = ctx.instance.sphereId;
+        return StoneKeyModel.create({
+          sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0
         })
+          .then(() => {
+            next();
+          })
+      }
+      else {
+        next();
+      }
     })
   }
 
