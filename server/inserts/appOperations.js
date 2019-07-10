@@ -18,6 +18,16 @@ function performAppOperations(app) {
       console.log("ERROR: performAppOperations", err);
     })
 
+  // new Promise((resolve, reject) => { resolve() })
+  //   .then(() => { return getApp('Crownstone.installer') })
+  //   .then((data) => { console.log("data",JSON.stringify(data)) })
+  //   .then(() => {
+  //     console.log("performAppOperations: Done")
+  //   })
+  //   .catch((err) => {
+  //     console.log("ERROR: performAppOperations", err);
+  //   })
+
   // showAppDetails()
   // clearAppDatabase(AppModel);
 

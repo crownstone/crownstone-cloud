@@ -9,7 +9,7 @@ var ObjectID = require('mongodb').ObjectID;
 function performMigration(app) {
   Promise.resolve()
     .then(() => { return migrateKeysForExistingSpheres(app) })
-    // .then(() => { return migrateKeysForExistingStones(app) })
+    .then(() => { return migrateKeysForExistingStones(app) })
 }
 
 function migrateKeysForExistingSpheres(app) {

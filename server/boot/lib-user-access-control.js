@@ -11,6 +11,13 @@
  * @param app
  */
 
+const authorizationError = {
+  statusCode: 401,
+  name: "Error",
+  message: "Authorization Required",
+  code: "AUTHORIZATION_REQUIRED"
+};
+
 module.exports = function(app) {
   let Role = app.models.Role;
   Role.registerResolver('lib-user', function(role, context, callback) {
@@ -198,7 +205,7 @@ function getSphereId(app, context) {
             return resolve(result.sphereId);
           }
           else {
-            return reject({statusCode:404, message:"Could not find element with id: " + context.modelId});
+            return reject(authorizationError);
           }
         })
         .catch((err) => {
@@ -223,7 +230,7 @@ function getProjectId(app, context) {
             return resolve(result.projectId);
           }
           else {
-            return reject({statusCode:404, message:"Could not find element with id: " + context.modelId});
+            return reject(authorizationError);
           }
         })
         .catch((err) => {

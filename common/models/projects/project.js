@@ -4,6 +4,7 @@ const loopback = require('loopback');
 const app = require('../../../server/server');
 
 const accessTypes = {
+  admin: 'admin',
   installer: 'installer',
   viewer: 'viewer'
 }
@@ -29,7 +30,7 @@ module.exports = function(model) {
 
     //***************************
     // AUTHENTICATED:
-    //   - create new sphere
+    //   - create new Project
     //***************************
     model.settings.acls.push(
       {
@@ -52,6 +53,14 @@ module.exports = function(model) {
         "permission": "ALLOW"
       }
     );
+    model.settings.acls.push(
+      {
+        "accessType": "*",
+        "principalType": "ROLE",
+        "principalId": "$project:admin",
+        "permission": "ALLOW"
+      }
+    );
 
     //***************************
     // Viewer:
@@ -65,6 +74,22 @@ module.exports = function(model) {
         "permission": "DENY"
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$project:viewer",
+        "permission": "ALLOW",
+        "property": "__findById__subProjects"
+      }
+    );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$project:viewer",
+        "permission": "ALLOW",
+        "property": "getInstallers"
+      }
+    );
 
     //***************************
     // Installer:
@@ -75,7 +100,7 @@ module.exports = function(model) {
         "accessType": "*",
         "principalType": "ROLE",
         "principalId": "$project:installer",
-        "permission": "DENY"
+        "permission": "__findById__subProjects"
       }
     );
   }
@@ -104,13 +129,20 @@ module.exports = function(model) {
 
 
   model.observe('before save', injectOwner);
-  // model.observe('after save', afterSave);
-  // function afterSave(ctx, next) {
-  //   generateEncryptionKeys(ctx)
-  //     .then(() => {
-  //       updateOwnerAccess(ctx, next);
-  //     })
-  // }
+  model.observe('after save', afterSave);
+  function afterSave(ctx, next) {
+    if (ctx.isNewInstance) {
+      const projectAccessModel = loopback.getModel("ProjectAccess");
+      const projectId = ctx.instance.id;
+      const token = ctx.options && ctx.options.accessToken;
+      const userId = token && token.userId;
+      projectAccessModel.create({projectId: projectId, userId: userId, role: accessTypes.admin})
+        .then(() => { next(); })
+    }
+    else {
+      next();
+    }
+  }
 
   function injectOwner(ctx, next) {
     const token = ctx.options && ctx.options.accessToken;
