@@ -320,6 +320,29 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
+    .then(() => {
+      return releaseFirmware(
+        '3.0.0-RC8', // release version
+        '3.0.0-RC7', // minimum compatible version,
+        '3.0.0', // minimum App version,
+        '2.0.0-RC4',
+        '3.0.0-RC7',
+        hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
+        '6b2d95222927e927d749ac5b184650bf5157b153', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_3.0.0-RC8/bin/crownstone_3.0.0-RC8.zip',
+        BETA_RELEASE_LEVEL, // release level
+        {  // release notes
+          'en' :
+          '- Support for new batch of Crownstones.\n\n'
+          ,
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
 
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })

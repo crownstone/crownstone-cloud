@@ -30,6 +30,11 @@ const hardwareVersionExportData = {
         "10103000500", // ACR01B1E :: CROWNSTONE BUILTIN // renamed by marc
       ],
 
+      builtinOneVersions: [
+        "10103010000", // ACR01B10B
+        "10103010100", // ACR01B10C
+      ],
+
       guidestoneVersions: [
         "10104010000", // GUIDESTONE
       ],
@@ -58,6 +63,10 @@ const hardwareVersionExportData = {
 
     getAllBuiltIns() {
       return combineAll(hardwareVersionExportData.hardwareVersionElements.types.builtinVersions);
+    },
+    
+    getAllBuiltInOnes() {
+      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.builtinOneVersions);
     },
 
     getAllGuideStones() {
