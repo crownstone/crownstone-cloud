@@ -320,29 +320,29 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-    .then(() => {
-      return releaseFirmware(
-        '3.0.0-RC8', // release version
-        '3.0.0-RC7', // minimum compatible version,
-        '3.0.0', // minimum App version,
-        '2.0.0-RC4',
-        '3.0.0-RC7',
-        hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
-        '6b2d95222927e927d749ac5b184650bf5157b153', // sha1 hash to validate download
-        'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_3.0.0-RC8/bin/crownstone_3.0.0-RC8.zip',
-        BETA_RELEASE_LEVEL, // release level
-        {  // release notes
-          'en' :
-          '- Support for new batch of Crownstones.\n\n'
-          ,
-          'nl' : '',
-          'de' : '',
-          'es' : '',
-          'it' : '',
-          'fr' : ''
-        }
-      );
-    })
+    // .then(() => {
+    //   return releaseFirmware(
+    //     '3.0.0-RC8', // release version
+    //     '3.0.0-RC7', // minimum compatible version,
+    //     '3.0.0', // minimum App version,
+    //     '2.0.0-RC4',
+    //     '3.0.0-RC7',
+    //     hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
+    //     '6b2d95222927e927d749ac5b184650bf5157b153', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_3.0.0-RC8/bin/crownstone_3.0.0-RC8.zip',
+    //     BETA_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- Support for new batch of Crownstones.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
 
     // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
     // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
@@ -489,12 +489,12 @@ function releaseFirmware(firmwareVersion, minimumCompatibleVersion, minimumAppVe
   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
 
   let payload = {
-    version: bootloaderModel,
+    version: firmwareVersion,
     supportedHardwareVersions: hardwareVersions,
     minimumCompatibleVersion: minimumCompatibleVersion,
     minimumAppVersion: minimumAppVersion,
-    dependsOnBootloader: dependsOnBootloader,
-    dependsOnFirmware: dependsOnFirmware,
+    dependsOnBootloaderVersion: dependsOnBootloader,
+    dependsOnFirmwareVersion: dependsOnFirmware,
     sha1hash: hash.replace(/( )/g, ""),
     downloadUrl: downloadUrl,
     releaseLevel: releaseLevel,
@@ -515,11 +515,11 @@ function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, minimumA
   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
 
   let payload = {
-    version: bootloaderModel,
+    version: bootloaderVersion,
     supportedHardwareVersions: hardwareVersions,
     minimumCompatibleVersion: minimumCompatibleVersion,
     minimumAppVersion: minimumAppVersion,
-    dependsOnBootloader: dependsOnBootloader,
+    dependsOnBootloaderVersion: dependsOnBootloader,
     sha1hash: hash.replace(/( )/g, ""),
     downloadUrl: downloadUrl,
     releaseLevel: releaseLevel,
@@ -563,19 +563,19 @@ function _getVersion(model, version) {
 }
 
 function _release(model, type, payload) {
-  console.log("\n-- Releasing ", type, releaseVersion, "to level", releaseLevel);
+  console.log("\n-- Releasing ", type, payload.version, "to level", payload.releaseLevel);
   let action = () => {
     return model.create(payload)
       .then((result) => {
-        console.log(type, "version ", releaseVersion, " added successfully!");
+        console.log(type, "version ", payload.version, " added successfully!");
         console.log("Result:", result);
       })
       .catch((err) => {
-        console.log("Error adding", type, "version:", releaseVersion, ' :', err);
+        console.log("Error adding", type, "version:", payload.version, ' :', err);
       });
   };
   if (CHANGE_DATA === true) {
-    return ask('Are you absolutely sure you want to release ' + type + ' v: ' + releaseVersion + ' ( YES / NO )')
+    return ask('Are you absolutely sure you want to release ' + type + ' v: ' + payload.version + ' ( YES / NO )')
       .then((answer) => {
         if (answer === "YES") {
           return action();
@@ -586,7 +586,7 @@ function _release(model, type, payload) {
       })
   }
   else {
-    console.log("Not releasing", type, releaseVersion, "to", hardwareVersions, "because CHANGE_DATA = false.");
+    console.log("Not releasing", type, payload.version, "to", payload.supportedHardwareVersions, "because CHANGE_DATA = false.");
   }
 }
 
