@@ -492,7 +492,7 @@ module.exports = function(model) {
   }
   function injectUID(item) {
     if (!item.uid) {
-      item.uid = crypto.randomBytes(1)[0]
+      item.uid = crypto.randomBytes(1)[0];
     }
   }
 

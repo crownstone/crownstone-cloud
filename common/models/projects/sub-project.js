@@ -237,7 +237,7 @@ module.exports = function(model) {
       })
       .then((sphereResult) => {
         sphere = sphereResult;
-        return StoneModel.create({address: macAddress, type: crownstoneType, icon: 'c2-crownstone'});
+        return StoneModel.create({address: macAddress, type: crownstoneType, icon: 'c2-crownstone', addedBySubProject: true});
       })
       .then((stoneResult) => {
         stone = stoneResult;
@@ -286,7 +286,7 @@ module.exports = function(model) {
       })
   }
 
-  model.undoCloudSideSetup = function(subProjectId, installationToken, crownstoneId, switchcraft, options, callback) {
+  model.undoCloudSideSetup = function(subProjectId, installationToken, crownstoneUID, switchcraft, options, callback) {
     let currentUserId = options && options.accessToken && options.accessToken.userId;
     const StoneModel  = loopback.getModel("Stone");
     let subProject;
@@ -297,11 +297,16 @@ module.exports = function(model) {
       })
       .then((projectResult) => {
         subProject = projectResult;
-        return StoneModel.find({where: {and: [{id: crownstoneId}, {sphereId: subProject.sphereId}]}})
+        return StoneModel.find({where: {and: [{uid: crownstoneUID}, {sphereId: subProject.sphereId}]}})
       })
       .then((stoneResult) => {
         if (stoneResult.length !== 0) {
-          return StoneModel.destroyById(crownstoneId);
+          if (stoneResult[0].addedBySubProject) {
+            return StoneModel.destroyById(stoneResult[0].id);
+          }
+          else {
+            throw authorizationError;
+          }
         }
       })
       .then(() => {
@@ -339,12 +344,11 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id',                type: 'any', required: true,  http: { source : 'path' }},
         {arg: 'installationToken', type: 'any', required: false, http: { source : 'query' }},
-        {arg: 'crownstoneType',    type: 'any', required: true,  http: { source : 'query' }},
-        {arg: 'macAddress',        type: 'any', required: true,  http: { source : 'query' }},
+        {arg: 'crownstoneUID',     type: 'any', required: true,  http: { source : 'query' }},
         {arg: 'switchCraft',       type: 'any', required: true,  http: { source : 'query' }},
         {arg: "options",           type: "object", http: "optionsFromRequest"},
       ],
-      description: "Request data required for preparing Crownstones.",
+      description: "Undo the cloud side setup that was done by a call to performCloudSideSetupAndGetData. This will remove the Crownstone from the subProject.",
       returns: {arg: 'data', type: 'any', root: true},
     }
   );
@@ -358,14 +362,53 @@ module.exports = function(model) {
         {arg: 'areYouSure',        type: 'any', required: true, http: { source : 'path' }},
         {arg: "options",           type: "object", http: "optionsFromRequest"},
       ],
-      description: "Finalize and deliver the subproject after installation."
+      description: "Finalize and deliver the subproject after installation. Are you sure requires 'YES'"
     }
   );
 
 
   model.getInfo = function(id, options, callback) {
+    const ProjectAccessModel = loopback.getModel("ProjectAccess");
+    let currentUserId = options && options.accessToken && options.accessToken.userId;
+    let subProject;
     model.findById(id)
-      .then((result) => { callback(null, result); })
+      .then((subProjectResult) => {
+        subProject = subProjectResult
+        return ProjectAccessModel.findOne({where: {and: [{userId: currentUserId}, {projectId: subProject.projectId}]}})
+      })
+      .then((result) => {
+        if (!result) { throw authorizationError; }
+
+        let allowServiceDataKey = false;
+        if (result.role === accessTypes.admin) {
+          // get the keys for the admin.
+          allowServiceDataKey = true;
+        }
+        else if (result.role === accessTypes.installer) {
+          allowServiceDataKey = true;
+        }
+
+        let keys = JSON.parse(subProject.sphereKeys);
+        let reply = {
+          name:                              subProject.name,
+          information:                       subProject.information,
+          status:                            subProject.status,
+          finishedDate:                      subProject.finishedDate,
+          installDate:                       subProject.installDate,
+          shortId:                           subProject.shortId,
+          totalNumberOfCrownstones:          subProject.totalNumberOfCrownstones,
+          totalNumberOfInstalledCrownstones: subProject.totalNumberOfInstalledCrownstones,
+          totalNumberOfPreparedCrownstones:  subProject.totalNumberOfPreparedCrownstones,
+          numberOfSwitchcraft:               subProject.numberOfSwitchcraft,
+          numberOfPreparedSwitchcraft:       subProject.numberOfPreparedSwitchcraft,
+          numberOfInstalledSwitchcraft:      subProject.numberOfInstalledSwitchcraft,
+          numberOfFailedCrownstones:         subProject.numberOfFailedCrownstones,
+        };
+        if (allowServiceDataKey) {
+          reply.serviceDataKey = keys['SERVICE_DATA_KEY'];
+        }
+        callback(null, reply);
+      })
       .catch((err) => { callback(err); })
   }
 

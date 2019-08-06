@@ -24,6 +24,9 @@
     },
     "Util": true
   },
+  "hidden": [
+    "addedBySubProject"
+  ],
   "properties": {
     "name": {
       "type": "string"
@@ -92,6 +95,10 @@
     },
     "meshDeviceKey": {
       "type": "string"
+    },
+    "addedBySubProject": {
+      "type":"boolean",
+      "default": false
     }
   },
   "validations": [],

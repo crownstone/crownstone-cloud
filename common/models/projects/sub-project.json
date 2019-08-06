@@ -32,11 +32,11 @@
     "installDate":                       { "type": "date" },
     "shortId":                           { "type": "number" },
     "totalNumberOfCrownstones":          { "type": "number" },
-    "totalNumberOfInstalledCrownstones": { "type": "number" },
+    "totalNumberOfInstalledCrownstones": { "type": "number", "default": 0 },
     "totalNumberOfPreparedCrownstones":  { "type": "number", "default": 0 },
     "numberOfSwitchcraft":               { "type": "number" },
     "numberOfPreparedSwitchcraft":       { "type": "number", "default": 0 },
-    "numberOfInstalledSwitchcraft":      { "type": "number" },
+    "numberOfInstalledSwitchcraft":      { "type": "number", "default": 0 },
     "numberOfFailedCrownstones":         { "type": "number", "default": 0 }
   },
   "validations": [],

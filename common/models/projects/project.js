@@ -13,7 +13,6 @@ module.exports = function(model) {
 
 
   if (app.get('acl_enabled')) {
-    model.disableRemoteMethodByName('find');
 
     //***************************
     // GENERAL:
@@ -115,7 +114,10 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__get__owner');
   model.disableRemoteMethodByName('replaceById');
   model.disableRemoteMethodByName('destroyById');
+  // model.disableRemoteMethodByName('find');
 
+
+  // odd endpoints which we do not use.
   //
   model.disableRemoteMethodByName('prototype.__head__subProjects');
   model.disableRemoteMethodByName('prototype.__create__subProjects');
