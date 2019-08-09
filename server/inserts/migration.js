@@ -8,6 +8,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 function performMigration(app) {
   Promise.resolve()
+    // .then(() => { return migrateSyncKeysWithExistingSpheres(app) })
     // .then(() => { return migrateFirmwareFields(app) })
     // .then(() => { return migrateBootloaderFields(app) })
     // .then(() => { return migrateFirmwareHardwareVersions(app) })
@@ -280,6 +281,124 @@ function migrateKeysForExistingSpheres(app) {
         else {
           return new Promise((resolve, reject) => {
             reject("User permission denied for migrating keys from spheres. Restart script and type YES to continue.")
+          });
+        }
+      })
+  }
+  else {
+    return doIt();
+  }
+}
+
+
+function migrateSyncKeysWithExistingSpheres(app) {
+  console.log("------------------- Starting migrateSyncKeysWithExistingSpheres");
+
+  const sphereModel = app.dataSources.mongoDs.getModel('Sphere');
+  const SphereKeyModel =  app.dataSources.mongoDs.getModel('SphereKeys');
+
+  let sphereCounter = 0;
+
+  let doIt = function() {
+    return sphereModel.find()
+      .then((results) => {
+        let keyPromises = [];
+        sphereCounter = results.length;
+        for (let i = 0; i < results.length; i++) {
+          let sphere = results[i];
+
+          keyPromises.push(() => {
+            let adminKeyStored        = false;
+            let memberKeyStored       = false;
+            let basicKeyStored        = false;
+            let localizationKeyStored = false;
+            let serviceDataKeyStored  = false;
+            let meshAppKeyStored      = false;
+            let meshNetKeyStored      = false;
+
+            console.log("Searching keys for sphere", sphere.id, i, sphereCounter)
+            return SphereKeyModel.find({where: {sphereId: String(sphere.id)}})
+              .then((existingKeys) => {
+                let promises = [];
+                for (let i = 0; i < existingKeys.length; i++) {
+                  let key = existingKeys[i];
+                  let changeRequired = false;
+
+                  switch (key.keyType) {
+                    case constants.KEY_TYPES.ADMIN_KEY:            adminKeyStored        = true; break;
+                    case constants.KEY_TYPES.MEMBER_KEY:           memberKeyStored       = true; break;
+                    case constants.KEY_TYPES.BASIC_KEY:            basicKeyStored        = true; break;
+                    case constants.KEY_TYPES.LOCALIZATION_KEY:     localizationKeyStored = true; break;
+                    case constants.KEY_TYPES.SERVICE_DATA_KEY:     serviceDataKeyStored  = true; break;
+                    case constants.KEY_TYPES.MESH_APPLICATION_KEY: meshAppKeyStored      = true; break;
+                    case constants.KEY_TYPES.MESH_NETWORK_KEY:     meshNetKeyStored      = true; break;
+                  }
+
+                  switch (key.keyType) {
+                    case constants.KEY_TYPES.ADMIN_KEY:
+                      if (key.key !== sphere.adminEncryptionKey) {
+                        // console.log("Admin key is not the same as the old key", sphere.id)
+                        key.key = sphere.adminEncryptionKey;
+                        changeRequired = true;
+                      }
+                      break;
+                    case constants.KEY_TYPES.MEMBER_KEY:
+                      if (key.key !== sphere.memberEncryptionKey) {
+                        // console.log("Member key is not the same as the old key", sphere.id)
+                        key.key = sphere.memberEncryptionKey;
+                        changeRequired = true;
+                      }
+                      break;
+                    case constants.KEY_TYPES.BASIC_KEY:
+                      if (key.key !== sphere.guestEncryptionKey) {
+                        // console.log("Guest key is not the same as the old key", sphere.id)
+                        key.key = sphere.guestEncryptionKey;
+                        changeRequired = true;
+                      }
+                      break;
+                  }
+
+
+                  if (changeRequired) {
+                    if (CHANGE_DATA === true) {
+                      console.log("changing key")
+                      promises.push(key.save());
+                    }
+                    console.log("Would change key:", key.id)
+
+                  }
+                }
+
+                return Promise.all(promises);
+              })
+          })
+        }
+
+        return callbackPromiseBatchPerformer(keyPromises,0);
+      })
+      .then(() => {
+        if (CHANGE_DATA !== true) {
+          console.log("Because change data is false nothing was changed. I would have changed keys.")
+        } else {
+          console.log("FINISHED")
+        }
+      })
+      .catch((err) => {
+        console.log("Error during migration:", err);
+
+      })
+  }
+
+  if (CHANGE_DATA === true) {
+    return ask("Database Operations: DO YOU WANT TO SYNC KEYS BETWEEN SPHERES AND NEW KEYS Continue? (YES/NO)")
+      .then((answer) => {
+        if (answer === 'YES') {
+          console.log("STARTING OPERATION")
+          return doIt();
+        }
+        else {
+          return new Promise((resolve, reject) => {
+            reject("User permission denied for syncing keys. Restart script and type YES to continue.")
           });
         }
       })
