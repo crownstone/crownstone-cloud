@@ -8,9 +8,181 @@ var ObjectID = require('mongodb').ObjectID;
 
 function performMigration(app) {
   Promise.resolve()
-    .then(() => { return migrateKeysForExistingSpheres(app) })
+    // .then(() => { return migrateFirmwareFields(app) })
+    // .then(() => { return migrateBootloaderFields(app) })
+    // .then(() => { return migrateFirmwareHardwareVersions(app) })
+    // .then(() => { return migrateBootloaderHardwareVersions(app) })
+    // .then(() => { return migrateKeysForExistingSpheres(app) })
     // .then(() => { return migrateKeysForExistingStones(app) })
+    .then(() => { console.log("DONE!") })
 }
+
+
+
+function migrateFirmwareFields(app) {
+  const firmwareModel = app.dataSources.mongoDs.getModel('Firmware');
+
+  let doIt = function() {
+    return firmwareModel.find()
+      .then((results) => {
+        let promises = [Promise.resolve()];
+        results.forEach((result) => {
+          let changeFW = false;
+          let changeBL = false;
+          if (!result.dependsOnFirmwareVersion) {
+            result.dependsOnFirmwareVersion = '1.0.0';
+            changeFW = true;
+          }
+          if (!result.dependsOnBootloaderVersion) {
+            result.dependsOnBootloaderVersion = '1.0.0';
+            changeBL = true;
+          }
+
+          if (changeFW || changeBL) {
+            if (CHANGE_DATA !== true) {
+              console.log("Because change data is false nothing was changed. I would have changed the firmware dependence ", changeFW, " and the bootloader dependence", changeBL);
+            } else {
+              promises.push(result.save());
+            }
+          }
+
+        })
+        return Promise.all(promises);
+      })
+      .catch((err) => {
+        console.log("Error during migration:", err);
+      })
+  }
+
+  if (CHANGE_DATA === true) {
+    return ask("Database Operations: DO YOU WANT TO MIGRATE THE DEPENDENCE FORMAT OF FIRMWARE ENTRIES Continue? (YES/NO)")
+      .then((answer) => {
+        if (answer === 'YES') {
+          console.log("STARTING OPERATION")
+          return doIt();
+        }
+        else {
+          return new Promise((resolve, reject) => {
+            reject("User permission denied for updating the dependence format fo the firmware entries. Restart script and type YES to continue.")
+          });
+        }
+      })
+  }
+  else {
+    return doIt();
+  }
+}
+
+
+
+function migrateBootloaderFields(app) {
+  const bootloaderModel = app.dataSources.mongoDs.getModel('Bootloader');
+
+  let doIt = function() {
+    return bootloaderModel.find()
+      .then((results) => {
+        let promises = [Promise.resolve()]
+        results.forEach((result) => {
+          let changeBL = false;
+          console.log(result.dependsOnBootloaderVersion)
+          if (!result.dependsOnBootloaderVersion) {
+            result.dependsOnBootloaderVersion = '1.0.0';
+            changeBL = true;
+          }
+
+          if (changeBL) {
+            if (CHANGE_DATA !== true) {
+              console.log("Because change data is false nothing was changed. I would have changed the bootloader dependence", changeBL);
+            } else {
+              promises.push(result.save());
+            }
+          }
+        })
+
+        return Promise.all(promises);
+      })
+      .catch((err) => {
+        console.log("Error during migration:", err);
+      })
+  }
+
+  if (CHANGE_DATA === true) {
+    return ask("Database Operations: DO YOU WANT TO MIGRATE THE DEPENDENCE FORMAT OF BOOTLOADER ENTRIES Continue? (YES/NO)")
+      .then((answer) => {
+        if (answer === 'YES') {
+          console.log("STARTING OPERATION")
+          return doIt();
+        }
+        else {
+          return new Promise((resolve, reject) => {
+            reject("User permission denied for updating the dependence format fo the bootloader entries. Restart script and type YES to continue.")
+          });
+        }
+      })
+  }
+  else {
+    return doIt();
+  }
+}
+
+function migrateFirmwareHardwareVersions(app) {
+  console.log("------------------- Starting migrateFirmwareHardwareVersions");
+  const firmwareModel   = app.dataSources.mongoDs.getModel('Firmware');
+  return _migrateHardwareVersions(firmwareModel)
+}
+
+function migrateBootloaderHardwareVersions(app) {
+  console.log("------------------- Starting migrateBootloaderHardwareVersions");
+  const firmwareModel   = app.dataSources.mongoDs.getModel('Bootloader');
+  return _migrateHardwareVersions(firmwareModel)
+}
+
+
+function _migrateHardwareVersions(model) {
+  let doIt = function() {
+    return model.find()
+      .then((results) => {
+        results.forEach((result) => {
+          result.supportedHardwareVersions = result.supportedHardwareVersions.map((x) => { return x.substr(0,11)})
+          if (CHANGE_DATA !== true) {
+            console.log("Because change data is false nothing was changed. I would have changed the supportedHw versions to ", result.supportedHardwareVersions);
+          }
+          else {
+            result.save();
+          }
+        })
+      })
+      .catch((err) => {
+        console.log("Error during migration:", err);
+      })
+  }
+
+  if (CHANGE_DATA === true) {
+    return ask("Database Operations: DO YOU WANT TO UPDATE THE SUPPORTED HARDWARE VERSIONS OF THE FIRMWARE OR BOOTLOADER Continue? (YES/NO)")
+      .then((answer) => {
+        if (answer === 'YES') {
+          console.log("STARTING OPERATION")
+          return doIt();
+        }
+        else {
+          return new Promise((resolve, reject) => {
+            reject("User permission denied for updating the supported hardware versions of the firmware of bootloader. Restart script and type YES to continue.")
+          });
+        }
+      })
+  }
+  else {
+    return doIt();
+  }
+}
+
+
+
+
+
+
+
+
 
 function migrateKeysForExistingSpheres(app) {
   console.log("------------------- Starting migrateKeysForExistingSpheres");

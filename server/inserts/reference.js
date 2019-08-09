@@ -42,15 +42,8 @@ function performReference(app) {
   let unownedApplianceIds = {};
   let unownedInstallationIds = {};
 
-
-  // get all users;
-  userModel.find()
-    .then((results) => {
-      allUsers = results;
-      allUsers.forEach((user) => {
-        userIds[user.id] = true;
-      })
-    })
+  // get all users
+  stoneModel.find({where:{hardwareVersion: '101030100000000000000000000QFAAB0'}})
     .then(() => {
       console.log("Reference, DONE")
     })

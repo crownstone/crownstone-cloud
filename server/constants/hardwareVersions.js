@@ -9,10 +9,6 @@
  */
 const hardwareVersionExportData = {
   hardwareVersionElements : {
-    nordicChipVersions : ["QFAAB0"],
-    productionRuns : ["0000"],
-    housingIds : ["0000"],
-    reservedData : ["00000000"],
     types : {
       plugVersions: [
         "10102000100", // ACR01B2A :: CROWNSTONE PLUG
@@ -29,18 +25,15 @@ const hardwareVersionExportData = {
         "10103010000", // ACR01B1E :: CROWNSTONE BUILTIN
         "10103000500", // ACR01B1E :: CROWNSTONE BUILTIN // renamed by marc
       ],
-
-      builtinOneVersions: [
-        "10103010000", // ACR01B10B
-        "10103010100", // ACR01B10C
-      ],
-
       guidestoneVersions: [
         "10104010000", // GUIDESTONE
       ],
-
       dongleVersions: [
         "10105000000",
+      ],
+      builtinOneVersions: [
+        "10106000000", // ACR01B10B
+        "10106000100", // ACR01B10C
       ]
     }
   },
@@ -54,27 +47,27 @@ const hardwareVersionExportData = {
         allTypes = allTypes.concat(categorizedTypes[type])
       });
 
-      return combineAll(allTypes);
+      return allTypes;
     },
 
     getAllPlugs() {
-      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.plugVersions);
+      return hardwareVersionExportData.hardwareVersionElements.types.plugVersions;
     },
 
     getAllBuiltIns() {
-      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.builtinVersions);
+      return hardwareVersionExportData.hardwareVersionElements.types.builtinVersions;
     },
-    
+
     getAllBuiltInOnes() {
-      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.builtinOneVersions);
+      return hardwareVersionExportData.hardwareVersionElements.types.builtinOneVersions;
     },
 
     getAllGuideStones() {
-      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.guidestoneVersions);
+      return hardwareVersionExportData.hardwareVersionElements.types.guidestoneVersions;
     },
 
     getAllDongles() {
-      return combineAll(hardwareVersionExportData.hardwareVersionElements.types.dongleVersions);
+      return hardwareVersionExportData.hardwareVersionElements.types.dongleVersions;
     }
   }
 };

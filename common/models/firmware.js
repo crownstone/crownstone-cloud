@@ -43,6 +43,7 @@ module.exports = function(model) {
 
 
   model.getFirmware = function(version, hardwareVersion, callback) {
+    hardwareVersion = hardwareVersion.substr(0,11);
     model.findOne({where: {version: version}})
 			.then((result) => {
         // check if the hardware version is supported by this firmware
@@ -91,7 +92,6 @@ module.exports = function(model) {
 
   const getFirmware = (appVersion, options, callback, filterOptions = {}) => {
     let hwVersions = hardwareVersions.util.getAllVersions();
-
     let accessLevel = 0;
     new Promise((resolve, reject) => {
       if (options && options.accessToken && options.accessToken.userId) {
@@ -142,7 +142,7 @@ module.exports = function(model) {
           hwVersions.forEach((hwVersion) => {
             let latestVersion = '0.0.0';
             firmwareForHardwareVersions[hwVersion].forEach((entry) => {
-              if (versionUtil.isHigher(entry.version, '0.0.0')) {
+              if (versionUtil.isHigher(entry.version, latestVersion)) {
                 latestVersion = entry.version;
               }
             });
