@@ -8,7 +8,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 function performMigration(app) {
   Promise.resolve()
-    // .then(() => { return migrateSyncKeysWithExistingSpheres(app) })
+    .then(() => { return migrateSyncKeysWithExistingSpheres(app) })
     // .then(() => { return migrateFirmwareFields(app) })
     // .then(() => { return migrateBootloaderFields(app) })
     // .then(() => { return migrateFirmwareHardwareVersions(app) })
@@ -336,21 +336,21 @@ function migrateSyncKeysWithExistingSpheres(app) {
 
                   switch (key.keyType) {
                     case constants.KEY_TYPES.ADMIN_KEY:
-                      if (key.key !== sphere.adminEncryptionKey) {
+                      if (key.key !== sphere.adminEncryptionKey && sphere.adminEncryptionKey) {
                         // console.log("Admin key is not the same as the old key", sphere.id)
                         key.key = sphere.adminEncryptionKey;
                         changeRequired = true;
                       }
                       break;
                     case constants.KEY_TYPES.MEMBER_KEY:
-                      if (key.key !== sphere.memberEncryptionKey) {
+                      if (key.key !== sphere.memberEncryptionKey && sphere.memberEncryptionKey) {
                         // console.log("Member key is not the same as the old key", sphere.id)
                         key.key = sphere.memberEncryptionKey;
                         changeRequired = true;
                       }
                       break;
                     case constants.KEY_TYPES.BASIC_KEY:
-                      if (key.key !== sphere.guestEncryptionKey) {
+                      if (key.key !== sphere.guestEncryptionKey && sphere.adminEncryptionKey) {
                         // console.log("Guest key is not the same as the old key", sphere.id)
                         key.key = sphere.guestEncryptionKey;
                         changeRequired = true;
