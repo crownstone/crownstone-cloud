@@ -436,7 +436,6 @@ module.exports = function(model) {
 
     if (ctx.isNewInstance) {
       injectUUID(ctx.instance);
-      injectEncryptionKeys(ctx.instance);
       injectMeshAccessAddress(ctx.instance);
       injectUID(ctx.instance);
       injectOwner(ctx.instance, userId, next);
@@ -458,23 +457,11 @@ module.exports = function(model) {
     }
   }
 
-  // LEGACY
-  function injectEncryptionKeys(item, next) {
-    if (!item.adminEncryptionKey) {
-      item.adminEncryptionKey = Util.createKey();
-    }
-    if (!item.memberEncryptionKey) {
-      item.memberEncryptionKey = Util.createKey();
-    }
-    if (!item.guestEncryptionKey) {
-      item.guestEncryptionKey = Util.createKey();
-    }
-  }
-
   // new keys go into the SphereKeys model
   function generateEncryptionKeys(ctx) {
     const SphereKeyModel = loopback.getModel('SphereKeys');
     let sphereId = ctx.instance.id;
+
     return SphereKeyModel.create([
       { sphereId: sphereId, keyType: constants.KEY_TYPES.ADMIN_KEY,            key: Util.createKey(), ttl: 0 },
       { sphereId: sphereId, keyType: constants.KEY_TYPES.MEMBER_KEY,           key: Util.createKey(), ttl: 0 },

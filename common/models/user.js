@@ -737,24 +737,75 @@ module.exports = function(model) {
 
   model.getEncryptionKeys = function(id, callback) {
     const SphereAccess = loopback.getModel('SphereAccess');
-    SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, include: "sphere"}, function(err, objects) {
-      let keys = Array.from(objects, function(access) {
-        let sphere = { sphereId: access.sphereId, keys: {}};
-        let sphereData = access.sphere();
-        // console.log('sphereData',sphere, access);
-        switch (access.role) {
-          case "admin":
-            sphere.keys.admin  = sphereData.adminEncryptionKey;
-          case "member":
-            sphere.keys.member = sphereData.memberEncryptionKey;
-          case "guest":
-            sphere.keys.guest  = sphereData.guestEncryptionKey;
-        }
-        return sphere
-      });
+    let queryArray = [{userId: id}, {invitePending: {neq: true}}];
+    let result = [];
+    SphereAccess.find({where: {and: queryArray}})
+      .then((accessInSpheres) => {
+        let keyPromises = [];
+        accessInSpheres.forEach((sphereAccess) => {
+          result.push({sphereId: sphereAccess.sphereId, sphereKeys: [], stoneKeys: {}});
+          if (sphereAccess && sphereAccess.role) {
+            keyPromises.push(getKeysForUser(sphereAccess.sphereId, sphereAccess.role, result));
+          }
+        })
+        return Promise.all(keyPromises);
+      })
+      .then(() => {
+        let keyResult = [];
+        result.forEach((sphereData) => {
 
-      callback(null, keys);
-    });
+          let keys = {};
+          sphereData.sphereKeys.forEach((keyData) => {
+            if (keyData.ttl !== 0) { return };
+
+            switch (keyData.keyType) {
+              case constants.KEY_TYPES.ADMIN_KEY:
+                keys['admin'] = keyData.key; return;
+              case constants.KEY_TYPES.MEMBER_KEY:
+                keys['member'] = keyData.key; return;
+              case constants.KEY_TYPES.BASIC_KEY:
+                keys['guest'] = keyData.key; return;
+            }
+          })
+
+
+          keyResult.push({
+            sphereId: sphereData.sphereId,
+            keys: keys
+          })
+        })
+
+        callback(null, keyResult);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+
+
+
+
+    //
+    //
+    //
+    // const SphereAccess = loopback.getModel('SphereAccess');
+    // SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, include: "sphere"}, function(err, objects) {
+    //   let keys = Array.from(objects, function(access) {
+    //     let sphere = { sphereId: access.sphereId, keys: {}};
+    //     let sphereData = access.sphere();
+    //     // console.log('sphereData',sphere, access);
+    //     switch (access.role) {
+    //       case "admin":
+    //         sphere.keys.admin  = sphereData.adminEncryptionKey;
+    //       case "member":
+    //         sphere.keys.member = sphereData.memberEncryptionKey;
+    //       case "guest":
+    //         sphere.keys.guest  = sphereData.guestEncryptionKey;
+    //     }
+    //     return sphere
+    //   });
+    //
+    //   callback(null, keys);
+    // });
   };
 
   model.remoteMethod(
