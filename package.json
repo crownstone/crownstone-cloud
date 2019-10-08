@@ -9,7 +9,7 @@
     "pretest": "jshint ."
   },
   "dependencies": {
-    "apn": "2.1.4",
+    "apn": "git+https://github.com/node-apn/node-apn.git#3.0.0",
     "async": "*",
     "bluebird": "*",
     "body-parser": "1.16.0",

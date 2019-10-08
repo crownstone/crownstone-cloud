@@ -215,8 +215,10 @@ class NotificationHandlerClass {
     if (silent) {
       // add this for silent push
       notification.contentAvailable = true;
+      notification.pushType = "background";
     }
     else {
+      notification.pushType = "alert"
       notification.sound = "ping.aiff";       // do not add if no sound should play
       notification.body =  messageData.type;  // alert message body, do not add if no alert has to be shown.
       notification.alert = messageData.title || 'Notification Received'; // alert message, do not add if no alert has to be shown.
