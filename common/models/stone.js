@@ -233,6 +233,15 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__activityRange');
   model.disableRemoteMethodByName('prototype.__get__activityRange');
 
+  model.disableRemoteMethodByName('prototype.__count__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__create__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__findById__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__updateById__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__destroyById__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__deleteById__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__delete__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__get__stoneAbility');
+
   model.disableRemoteMethodByName('prototype.__count__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__energyUsageHistory');
@@ -244,9 +253,11 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__create__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__findById__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__get__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__destroyById__switchStateHistory');
 
-  model.disableRemoteMethodByName('prototype.__get__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__count__behaviour');
+  model.disableRemoteMethodByName('prototype.__delete__behaviour');
 
 
   function initStone(ctx, next) {
@@ -1526,6 +1537,181 @@ module.exports = function(model) {
         })
     })
   }
+
+
+  const ABILITY_TYPE = {
+    DIMIMING:       "DIMMING",
+    SWITCHCRAFT:    "SWITCHCRAFT",
+    TAP_TO_TOGGLE:  "TAP_TO_TOGGLE",
+  };
+  const ABILITY_PROPERTY_TYPE = {
+    DIMIMING:       {},
+    SWITCHCRAFT:    {},
+    TAP_TO_TOGGLE:  { RSSI_OFFSET: 'RSSI_OFFSET' },
+  };
+
+
+  /**
+   *
+   * @param stoneId     string
+   * @param data        { ABILITY_TYPE: {enabled: boolean, syncedToCrownstone: boolean, properties: [{type: ABILITY_PROPERTY_TYPE, value: any}]} }
+   * @param options
+   * @param next
+   */
+  model.setAbilities = function(stoneId, data, options, next) {
+    let abilitiesToSet = Object.keys(data);
+    for ( let i = 0; i < abilitiesToSet; i++) {
+      if (ABILITY_TYPE[abilitiesToSet[i]] === undefined) {
+        return next({statusCode: 400, message: "Invalid ability: " + abilitiesToSet[i]})
+      }
+    }
+
+    const StoneAbilities = loopback.getModel("StoneAbility");
+    const StoneAbilityProperties = loopback.getModel("StoneAbilityProperty");
+
+    const createAbility = function(type, abilityData) {
+      return StoneAbilities.create({
+        type: type,
+        enabled: abilityData.enabled,
+        syncedToCrownstone: abilityData.syncedToCrownstone,
+        stoneId: stoneId,
+        sphereId: sphereId,
+      })
+        .then((newAbility) => {
+          let propertyLength = abilityData.properties && abilityData.properties.length || 0;
+          if (propertyLength.length > 0) {
+            let availableProperties = Object.keys(abilityData.properties);
+            for (let i = 0; i < availableProperties.length; i++) {
+              let prop = availableProperties[i];
+              if (ABILITY_PROPERTY_TYPE[prop.type] !== undefined) {
+                StoneAbilityProperties.create({
+                  type: prop.type,
+                  value: prop.value,
+                  abilityId: newAbility.id,
+                  sphereId: sphereId,
+                });
+              }
+            }
+          }
+        })
+    }
+
+    const updateAbility = function(type, abilityData, existingAbility) {
+      existingAbility.type = type
+      existingAbility.enabled = abilityData.enabled
+      existingAbility.syncedToCrownstone = abilityData.syncedToCrownstone;
+      return existingAbility.save()
+        .then(() => {
+          let propertyLength = abilityData.properties && abilityData.properties.length || 0;
+
+          if (propertyLength > 0) {
+            // loop over existing ability properties to chech which to add or update.
+            let existingPropertyLength = existingAbility.properties && existingAbility.properties.length || 0;
+
+            for (let i = 0; i < propertyLength; i++) {
+              let found = false;
+              if (ABILITY_PROPERTY_TYPE[type][abilityData.properties[i].type] === undefined) {
+                continue;
+              }
+
+              for (let j = 0; j < existingPropertyLength; j++) {
+                if (abilityData.properties[i].type === existingAbility.properties[j].type) {
+                  if (abilityData.properties[i].value !== existingAbility.properties[j].value) {
+                    existingAbility.properties[i].value = abilityData.properties[i].value;
+                    existingAbility.properties[i].save();
+                  }
+                  found = true;
+                  break;
+                }
+              }
+
+              if (!found) {
+                StoneAbilityProperties.create({
+                  type: abilityData.properties[i].type,
+                  value: abilityData.properties[i].value,
+                  abilityId: existingAbility.id,
+                  sphereId: existingAbility.sphereId
+                });
+              }
+            }
+          }
+        })
+    }
+
+    let stone = null;
+    let sphereId = null;
+    model.findById(stoneId)
+      .then((stoneResult) => {
+        if (!stoneResult) { throw {statusCode: 404, message: "No stone with that ID."}}
+
+        stone = stoneResult;
+        sphereId = stone.sphereId;
+
+        return StoneAbilities.find({where:{stoneId: stoneId}})
+      })
+      .then((abilities) => {
+        if (abilities.length === 0) {
+          for (let i = 0; i < abilitiesToSet.length; i++) {
+            createAbility(abilitiesToSet[i], data[abilitiesToSet[i]]);
+          }
+        }
+        else {
+          for (let i = 0; i < abilitiesToSet.length; i++) {
+            let found = false;
+            for (let j = 0; j < abilities.length; j++) {
+              if (abilities[j].type === abilitiesToSet[i]) {
+                found = true;
+                updateAbility(abilitiesToSet[i], data[abilitiesToSet[i]], abilities[j]);
+                break;
+              }
+            }
+          }
+        }
+      })
+      .then(() => {
+        next();
+      })
+      .catch((err) => {
+        next(err);
+      })
+  }
+
+  model.getAbilities = function(stoneId, next) {
+    const StoneAbilities = loopback.getModel("StoneAbility");
+    return StoneAbilities.find({where:{stoneId: stoneId}}, {include:"properties"})
+      .then((data) => { next(null, data); })
+      .catch((err) => { next(err);        })
+  }
+
+
+
+  model.remoteMethod(
+    'setAbilities',
+    {
+      http: {path: '/:id/abilities', verb: 'put'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data', type: 'any', required: true, http: { source : 'body' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: 'Set or update the abilities of this Stone. The format of data here is: \n' +
+        '{ ABILITY_TYPE: { enabled: boolean, syncedToCrownstone: boolean, properties: [ { type: ABILITY_PROPERTY_TYPES, value: any} ] } }'
+    }
+  );
+
+  model.remoteMethod(
+    'getAbilities',
+    {
+      http: {path: '/:id/abilities', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: '[StoneAbility]', root: true},
+      description: 'Get the abilities of this Stone.'
+    }
+  );
+
 
 };
 

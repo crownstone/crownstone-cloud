@@ -1,0 +1,59 @@
+{
+  "name": "StoneBehaviour",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "strict":"filter"
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "SphereContent": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "required": true
+    },
+    "data": {
+      "type": "string",
+      "required": true
+    },
+    "idOnCrownstone": {
+      "type": "string",
+      "required": true
+    },
+    "syncedToCrownstone": {
+      "type": "boolean",
+      "required": true
+    },
+    "deleted":{
+      "type": "boolean",
+      "required": true
+    },
+    "activeDays": {
+      "Mon": { "type":"boolean", "required":true},
+      "Tue": { "type":"boolean", "required":true},
+      "Wed": { "type":"boolean", "required":true},
+      "Thu": { "type":"boolean", "required":true},
+      "Fri": { "type":"boolean", "required":true},
+      "Sat": { "type":"boolean", "required":true},
+      "Sun": { "type":"boolean", "required":true}
+    }
+  },
+  "validations": [],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

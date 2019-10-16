@@ -197,5 +197,17 @@
   "StoneKeys": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "StoneBehaviour": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "StoneAbility": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "StoneAbilityProperty": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

@@ -161,6 +161,16 @@
       "type": "hasMany",
       "model": "Diagnostic",
       "foreignKey": "stoneId"
+    },
+    "abilities": {
+      "type": "hasMany",
+      "model": "StoneAbility",
+      "foreignKey": "stoneId"
+    },
+    "behaviour": {
+      "type": "hasMany",
+      "model": "StoneBehaviour",
+      "foreignKey": "stoneId"
     }
   },
   "acls": [],

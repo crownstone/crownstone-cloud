@@ -1,0 +1,53 @@
+{
+  "name": "StoneAbility",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "strict":"filter"
+  },
+  "mixins": {
+    "DisableCommon": true,
+    "SphereContent": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "type": {
+      "type": "string",
+      "required": true
+    },
+    "enabled": {
+      "type": "boolean",
+      "required": true
+    },
+    "syncedToCrownstone": {
+      "type": "boolean",
+      "required": true,
+      "default": false
+    }
+  },
+  "validations": [],
+  "relations": {
+    "stone": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "stoneId"
+    },
+    "sphereId": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "stoneId"
+    },
+    "properties": {
+      "type": "hasMany",
+      "model": "StoneAbilityProperty",
+      "foreignKey": "abilityId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
