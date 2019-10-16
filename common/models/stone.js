@@ -233,14 +233,14 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__activityRange');
   model.disableRemoteMethodByName('prototype.__get__activityRange');
 
-  model.disableRemoteMethodByName('prototype.__count__stoneAbility');
-  model.disableRemoteMethodByName('prototype.__create__stoneAbility');
-  model.disableRemoteMethodByName('prototype.__findById__stoneAbility');
-  model.disableRemoteMethodByName('prototype.__updateById__stoneAbility');
-  model.disableRemoteMethodByName('prototype.__destroyById__stoneAbility');
-  model.disableRemoteMethodByName('prototype.__deleteById__stoneAbility');
-  model.disableRemoteMethodByName('prototype.__delete__stoneAbility');
-  model.disableRemoteMethodByName('prototype.__get__stoneAbility');
+  model.disableRemoteMethodByName('prototype.__count__abilities');
+  model.disableRemoteMethodByName('prototype.__create__abilities');
+  model.disableRemoteMethodByName('prototype.__findById__abilities');
+  model.disableRemoteMethodByName('prototype.__updateById__abilities');
+  model.disableRemoteMethodByName('prototype.__destroyById__abilities');
+  model.disableRemoteMethodByName('prototype.__deleteById__abilities');
+  model.disableRemoteMethodByName('prototype.__delete__abilities');
+  model.disableRemoteMethodByName('prototype.__get__abilities');
 
   model.disableRemoteMethodByName('prototype.__count__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
