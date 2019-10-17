@@ -1540,14 +1540,15 @@ module.exports = function(model) {
 
 
   const ABILITY_TYPE = {
-    DIMIMING:       "DIMMING",
-    SWITCHCRAFT:    "SWITCHCRAFT",
-    TAP_TO_TOGGLE:  "TAP_TO_TOGGLE",
+    dimming:      "dimming",
+    switchcraft:  "switchcraft",
+    tapToToggle:  "tapToToggle",
   };
+
   const ABILITY_PROPERTY_TYPE = {
-    DIMIMING:       {},
-    SWITCHCRAFT:    {},
-    TAP_TO_TOGGLE:  { RSSI_OFFSET: 'RSSI_OFFSET' },
+    dimming:      {},
+    switchcraft:  {},
+    tapToToggle:  { rssiOffset: 'rssiOffset' },
   };
 
 
