@@ -1676,11 +1676,14 @@ module.exports = function(model) {
       })
   }
 
-  model.getAbilities = function(stoneId, next) {
+  model.getAbilities = function(stoneId, options, next) {
     const StoneAbilities = loopback.getModel("StoneAbility");
-    return StoneAbilities.find({where:{stoneId: stoneId}}, {include:"properties"})
-      .then((data) => { next(null, data); })
-      .catch((err) => { next(err);        })
+    StoneAbilities.find({where:{stoneId: stoneId}}, {include:"properties"})
+      .then((data) => {
+        next(null, data); })
+      .catch((err) => {
+        next(err);
+      })
   }
 
 
@@ -1711,8 +1714,6 @@ module.exports = function(model) {
       description: 'Get the abilities of this Stone.'
     }
   );
-
-
 };
 
 
