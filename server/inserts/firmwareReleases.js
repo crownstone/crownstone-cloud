@@ -24,28 +24,6 @@ let TYPES = {
 
 /**
  *
- * release a firmware:
- *
- return releaseFirmware(
-   '1.5.1',                                     // release version
-   '1.3.1',                                     // minimum compatible version,
-   plugAndBuiltinVariations,                    // hardware versions
-   '9b3ad906e65553ef7c77d96f0c0105d0e4c7b9d6',  // sha1 hash to validate download
-   'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.5.1/bin/crownstone_1.5.1.zip',
-   1,                                           // release level: 0 for release to all new users
-   {                                            // release notes
-     'en' :
-     '- Added Scheduler functionality.\n' +
-     '- Added software based safety fuses.\n' +
-     '- Added time syncing between Crownstones.'
-     ,
-     'nl' : '',
-     'de' : '',
-     'es' : '',
-     'it' : '',
-     'fr' : ''
-   }
- );
  *
  * @param app
  */
@@ -72,131 +50,19 @@ function performFirmwareOperations(app) {
           })
       }
     })
-    // .then(() => { return changeFirmwareReleaseLevel('1.5.1',3); })
-    // .then(() => { return getFirmwareVersion('1.5.1') })
-    // .then(() => { return clearFirmwares(); })
-    // .then(() => { return removeFirmwareVersion('2.1.2'); })
-    // .then(() => { return removeBootloaderVersion('1.2.2'); })
-    // .then(() => { return clearBootloaders(); })
-    // .then(() => { return clearFirmwareAtUsers() })
-    // .then(() => { return clearBootloaderAtUsers() })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '1.2.2', // release version
-    //     '1.2.2', // minimum compatible version
-    //     '2.1.0', // minimum App version,
-    //     hardwareVersions.util.getAllGuideStones().concat(plugAndBuiltinVariations), // hardware versions
-    //     '45306bf3ed920dc9768a57c3df3fd16954ea5b97', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.2.2/bin/bootloader_1.2.2.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
-    //     {  // release notes
-    //       'en' : 'stability',
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '1.3.0', // release version
-    //     '1.3.0', // minimum compatible version
-    //     '2.1.0', // minimum App version,
-    //     ["101020103000000000000000000QFAAB0"], // 1B2G only, as this update only added support for 1B2G.
-    //     'b098b1df1f1a4f81be54880e4dd3486b2d46091a', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.3.0/bin/bootloader_1.3.0.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
-    //     {  // release notes
-    //       'en' : 'Crownstone USB support',
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '1.4.0', // release version
-    //     '1.2.2', // minimum compatible version
-    //     '2.1.0', // minimum App version,
-    //     hardwareVersions.util.getAllDongles(), // dongle only, as this update only adds support for dongle.
-    //     'dd511852f293f19ad5d7034bcdff7dc579424f0f', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.4.0/bin/bootloader_1.4.0.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
-    //     {  // release notes
-    //       'en' : 'Crownstone USB support',
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
     // .then(() => {
     //   return releaseFirmware(
-    //     '1.5.1', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '1.0.0',
-    //     plugAndBuiltinVariations, // hardware versions
-    //     '9b3ad906e65553ef7c77d96f0c0105d0e4c7b9d6', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.5.1/bin/crownstone_1.5.1.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level: 0 for release to all new users
-    //     {  // release notes
-    //       'en' :
-    //       '- Added Scheduler functionality.\n' +
-    //       '- Added software based safety fuses.\n' +
-    //       '- Added time syncing between Crownstones.'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '1.7.0', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '1.10.0', // minimum App version,
-    //     plugAndBuiltinVariations, // hardware versions
-    //     '6942f0c646696fa884f6aa39e8d982282759ad80', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.7.0/bin/crownstone_1.7.0.zip',
-    //     BETA_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Dimming done by trailing edge dimming (currently compatible with EU Standard 50Hz grid).\n\n' +
-    //       '- Dimmer state is stored in persistent storage, and restored on power on (currently with a delay of about 2s).\n\n' +
-    //       '- Overcurrent detection is improved to avoid getting triggered by interference.'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '1.7.1', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '1.0.0', // minimum App version,
-    //     plugAndBuiltinVariations, // hardware versions
-    //     '8b1e4b7e4510ba5d9536dc11721d8015ff6682ce', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_1.7.1/bin/crownstone_1.7.1.zip',
+    //     '3.0.2', // release version
+    //     '3.0.1', // minimum App version,
+    //     '2.0.0', // this firmware required this bootloader
+    //     '3.0.0',  // this firmware can be upgraded from this version and up.
+    //     hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
+    //     '39d90269ded869432b49a8874f579162050da6e7', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_3.0.2/bin/crownstone_3.0.2.zip',
     //     PUBLIC_RELEASE_LEVEL, // release level
     //     {  // release notes
     //       'en' :
-    //       '- More hardware safeguards added.\n\n' +
-    //       '- Dimming done by trailing edge dimming (currently compatible with EU Standard 50Hz grid).\n\n' +
-    //       '- Dimming will work with app 1.12, which will be released in January.\n\n'
+    //       '- Greatly improved the dimmer functionality.\n\n'
     //       ,
     //       'nl' : '',
     //       'de' : '',
@@ -206,160 +72,7 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '2.0.0', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '2.0.0', // minimum App version,
-    //     plugAndBuiltinVariations, // hardware versions
-    //     '0fa807f564e1fd961e897bcb5953075092bf058f', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_2.0.0/bin/crownstone_2.0.0.zip',
-    //     BETA_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Introducing "The Mesh".\n\n' +
-    //       '- Introducing Dimming functionality.\n\n' +
-    //       '- More hardware safeguards added.\n\n' +
-    //       '- Dimming done by trailing edge dimming (currently compatible with EU Standard 50Hz grid).\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '2.0.1', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '2.0.0', // minimum App version,
-    //     plugAndBuiltinVariations, // hardware versions
-    //     '77f4bd9638b756b6d3b0b64cc17a9b7f4ac2e7d8', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_2.0.1/bin/crownstone_2.0.1.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Introducing Dimming functionality.\n\n' +
-    //       '- More hardware safeguards added.\n\n' +
-    //       '- Dimming done by trailing edge dimming (currently compatible with EU Standard 50Hz grid).\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '2.1.2', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '2.1.0', // minimum App version,
-    //     plugAndBuiltinAndDongleVariations, // hardware versions
-    //     'fa5403234a7f1ffbb8dbcc9088ca5b36eb0c7b76', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_2.1.2/bin/crownstone_2.1.2.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Introducing the mesh.\n\n' +
-    //       '- Fast setup.\n\n' +
-    //       '- Improved quality of power measurement.\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '2.1.3', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '2.1.0', // minimum App version,
-    //     hardwareVersions.util.getAllGuideStones(), // hardware versions
-    //     '112ad5f0ad8c1c7d30ec74a723e271f3fb3affdc', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/guidestone_2.1.3/bin/guidestone_2.1.3.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Introducing the mesh.\n\n' +
-    //       '- Fast setup.\n\n' +
-    //       '- Improved quality of power measurement.\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '2.1.4-RC0', // release version
-    //     '1.3.1', // minimum compatible version,
-    //     '2.1.0', // minimum App version,
-    //     ["101020103000000000000000000QFAAB0"], // hardware versions
-    //     '339c1aa3355435133fa4d036a6a432e92994e1c4', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_2.1.4-RC0/bin/crownstone_2.1.4-RC0.zip',
-    //     BETA_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Support for new batch of Crownstones.\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    .then(() => {
-      return releaseFirmware(
-        '3.0.0-RC8', // release version
-        '3.0.0-RC7', // minimum compatible version,
-        '3.0.0', // minimum App version,
-        '2.0.0-RC4',
-        '3.0.0-RC7',
-        hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
-        '6b2d95222927e927d749ac5b184650bf5157b153', // sha1 hash to validate download
-        'https://github.com/crownstone/bluenet-release-candidate/raw/master/firmwares/crownstone_3.0.0-RC8/bin/crownstone_3.0.0-RC8.zip',
-        BETA_RELEASE_LEVEL, // release level
-        {  // release notes
-          'en' :
-          '- Support for new batch of Crownstones.\n\n'
-          ,
-          'nl' : '',
-          'de' : '',
-          'es' : '',
-          'it' : '',
-          'fr' : ''
-        }
-      );
-    })
 
-    // .then(() => { return releaseFirmwareToUsers('1.5.1', plugAndBuiltinVariations, {where: {email: {like: /alex/}}}); })
-    // .then(() => { return releaseBootloaderToUsers('1.2.2', plugAndBuiltinVariations); })
-    // .then(() => {return clearFirmwares(firmwareModel) })
-    // .then(() => {return clearBootloaders(bootloaderModel) })
-
-    // .then(() => {
-    //   return releaseBootloader(
-    //     bootloaderModel,
-    //     '1.2.2', // release version
-    //     '1.2.2', // minimum compatible version
-    //     plugAndBuiltinVariations, // hardware versions
-    //     '45306bf3ed920dc9768a57c3df3fd16954ea5b97', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloader_1.2.2/bin/bootloader_1.2.2.zip'
-    //   );
-    // })
-    // .then(() => { return updateReleaseRollout_legacy() })
     .then(() => { console.log("performFirmwareOperations: DONE") })
     .catch((err) => {
       console.log("performFirmwareOperations: Error", err);
@@ -482,19 +195,19 @@ function showBootloaders() {
   return _getAll(bootloaderModel).then((results) => { console.log(TYPES.firmware, "versions found:", results);});
 }
 
-function releaseFirmware(firmwareVersion, minimumCompatibleVersion, minimumAppVersion, dependsOnBootloader, dependsOnFirmware, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
+function releaseFirmware(firmwareVersion, minimumAppVersion, dependsOnBootloader, dependsOnFirmware, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
   if (downloadUrl.indexOf("firmware") === -1) {
     throw new Error("Release firmware releaseURL does not contain the word firmware: this likely is a bug!");
   }
   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
 
   let payload = {
-    version: bootloaderModel,
+    version: firmwareVersion,
     supportedHardwareVersions: hardwareVersions,
-    minimumCompatibleVersion: minimumCompatibleVersion,
+    minimumCompatibleVersion: null, // legacy
     minimumAppVersion: minimumAppVersion,
-    dependsOnBootloader: dependsOnBootloader,
-    dependsOnFirmware: dependsOnFirmware,
+    dependsOnBootloaderVersion: dependsOnBootloader,
+    dependsOnFirmwareVersion: dependsOnFirmware,
     sha1hash: hash.replace(/( )/g, ""),
     downloadUrl: downloadUrl,
     releaseLevel: releaseLevel,
@@ -508,18 +221,18 @@ function releaseFirmware(firmwareVersion, minimumCompatibleVersion, minimumAppVe
   );
 }
 
-function releaseBootloader(bootloaderVersion, minimumCompatibleVersion, minimumAppVersion, dependsOnBootloader, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
+function releaseBootloader(bootloaderVersion, minimumAppVersion, dependsOnBootloader, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
   if (downloadUrl.indexOf("bootloader") === -1) {
     throw new Error("Release bootloader releaseURL does not contain the word bootloader: this likely is a bug!");
   }
   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
 
   let payload = {
-    version: bootloaderModel,
+    version: bootloaderVersion,
     supportedHardwareVersions: hardwareVersions,
-    minimumCompatibleVersion: minimumCompatibleVersion,
+    minimumCompatibleVersion: null, // legacy
     minimumAppVersion: minimumAppVersion,
-    dependsOnBootloader: dependsOnBootloader,
+    dependsOnBootloaderVersion: dependsOnBootloader,
     sha1hash: hash.replace(/( )/g, ""),
     downloadUrl: downloadUrl,
     releaseLevel: releaseLevel,
@@ -563,19 +276,19 @@ function _getVersion(model, version) {
 }
 
 function _release(model, type, payload) {
-  console.log("\n-- Releasing ", type, releaseVersion, "to level", releaseLevel);
+  console.log("\n-- Releasing ", type, payload.version, "to level", payload.releaseLevel);
   let action = () => {
     return model.create(payload)
       .then((result) => {
-        console.log(type, "version ", releaseVersion, " added successfully!");
+        console.log(type, "version ", payload.version, " added successfully!");
         console.log("Result:", result);
       })
       .catch((err) => {
-        console.log("Error adding", type, "version:", releaseVersion, ' :', err);
+        console.log("Error adding", type, "version:", payload.version, ' :', err);
       });
   };
   if (CHANGE_DATA === true) {
-    return ask('Are you absolutely sure you want to release ' + type + ' v: ' + releaseVersion + ' ( YES / NO )')
+    return ask('Are you absolutely sure you want to release ' + type + ' v: ' + payload.version + ' ( YES / NO )')
       .then((answer) => {
         if (answer === "YES") {
           return action();
@@ -586,7 +299,7 @@ function _release(model, type, payload) {
       })
   }
   else {
-    console.log("Not releasing", type, releaseVersion, "to", hardwareVersions, "because CHANGE_DATA = false.");
+    console.log("Not releasing", type, payload.version, "to", payload.hardwareVersions, "because CHANGE_DATA = false.");
   }
 }
 
