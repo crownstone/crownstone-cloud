@@ -51,18 +51,85 @@ function performFirmwareOperations(app) {
       }
     })
     // .then(() => {
+    //   return removeFirmwareVersion('3.0.4')
+    // })
+    // .then(() => {
     //   return releaseFirmware(
-    //     '3.0.2', // release version
+    //     '3.0.4', // release version
     //     '3.0.1', // minimum App version,
     //     '2.0.0', // this firmware required this bootloader
-    //     '3.0.0',  // this firmware can be upgraded from this version and up.
-    //     hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
-    //     '39d90269ded869432b49a8874f579162050da6e7', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_3.0.2/bin/crownstone_3.0.2.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level
+    //     null,  // this firmware can be upgraded from this version and up.
+    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+    //     'b2b0f100e64adb28f3c235f107679fb83baf746c', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_3.0.4/bin/crownstone_3.0.4.zip',
+    //     BETA_RELEASE_LEVEL, // release level
     //     {  // release notes
     //       'en' :
-    //       '- Greatly improved the dimmer functionality.\n\n'
+    //       '- Instant Switching\n' +
+    //         '- Bluetooth Mesh\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+    // .then(() => {
+    //   return releaseBootloader(
+    //     '1.8.0', // release version
+    //     '3.0.1', // minimum App version,
+    //     '1.2.2', // this firmware required this bootloader
+    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+    //     '8739bbc66509cdf5163784154c9da97c979cd95a', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.8.0/bin/bootloader_1.8.0.zip',
+    //     BETA_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //       '- Migration to new firmware.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+    // .then(() => {
+    //   return releaseBootloader(
+    //     '1.9.0', // release version
+    //     '3.0.1', // minimum App version,
+    //     '1.8.0', // this firmware required this bootloader
+    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+    //     '7e579ef29ff23f065bb780e307e04975a7624328', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.9.0/bin/bootloader_1.9.0.zip',
+    //     BETA_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //         '- Migration to new firmware.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+    // .then(() => {
+    //   return releaseBootloader(
+    //     '2.0.0', // release version
+    //     '3.0.1', // minimum App version,
+    //     '1.9.0', // this firmware required this bootloader
+    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+    //     'd4cf79a913347f23a8e1376e59323945b2311bb4', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_1.9_to_2.0.0.zip',
+    //     BETA_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //         '- Secure bootloader ready for Firmware 3.0.\n\n'
     //       ,
     //       'nl' : '',
     //       'de' : '',

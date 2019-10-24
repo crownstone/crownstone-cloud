@@ -42,17 +42,27 @@ module.exports = function(model) {
 
   model.getBootloader = function(version, hardwareVersion, callback) {
     hardwareVersion = hardwareVersion.substr(0,11);
-    model.findOne({where: {version: version}})
-      .then((result) => {
-        // check if the hardware version is supported by this bootloader
-        if (result && result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
-          for (let i = 0; i < result.supportedHardwareVersions.length; i++) {
-            if (result.supportedHardwareVersions[i] === hardwareVersion) {
-              return callback(null, result);
+    model.find({where: {version: version}})
+      .then((bootloaders) => {
+        if (bootloaders.length === 0) {
+          return callback(null, []);
+        }
+        let foundBootloader = false;
+        for (let i = 0; i < bootloaders.length; i++) {
+          let bootloader = bootloaders[i];
+          // check if the hardware version is supported by this bootloader
+          if (bootloader && bootloader.supportedHardwareVersions && Array.isArray(bootloader.supportedHardwareVersions)) {
+            for (let j = 0; j < bootloader.supportedHardwareVersions.length; j++) {
+              if (bootloader.supportedHardwareVersions[j] === hardwareVersion) {
+                foundBootloader = bootloader;
+                break;
+              }
             }
           }
-          // nothing found.
-          callback(null, []);
+        }
+
+        if (foundBootloader !== null) {
+          callback(null, foundBootloader);
         }
         else {
           callback(null, []);

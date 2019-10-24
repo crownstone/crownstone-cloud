@@ -44,22 +44,32 @@ module.exports = function(model) {
 
   model.getFirmware = function(version, hardwareVersion, callback) {
     hardwareVersion = hardwareVersion.substr(0,11);
-    model.findOne({where: {version: version}})
-			.then((result) => {
-        // check if the hardware version is supported by this firmware
-        if (result && result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
-          for (let i = 0; i < result.supportedHardwareVersions.length; i++) {
-            if (result.supportedHardwareVersions[i] === hardwareVersion) {
-              return callback(null, result);
+    model.find({where: {version: version}})
+      .then((firmwares) => {
+        if (firmwares.length === 0) {
+          return callback(null, []);
+        }
+        let foundBootloader = false;
+        for (let i = 0; i < firmwares.length; i++) {
+          let firmware = firmwares[i];
+          // check if the hardware version is supported by this bootloader
+          if (firmware && firmware.supportedHardwareVersions && Array.isArray(firmware.supportedHardwareVersions)) {
+            for (let j = 0; j < firmware.supportedHardwareVersions.length; j++) {
+              if (firmware.supportedHardwareVersions[j] === hardwareVersion) {
+                foundBootloader = firmware;
+                break;
+              }
             }
           }
-          // nothing found.
-          callback(null, null);
+        }
+
+        if (foundBootloader !== null) {
+          callback(null, foundBootloader);
         }
         else {
-          callback(null, null);
+          callback(null, []);
         }
-			})
+      })
 			.catch((err) => {
         callback(err)
       })

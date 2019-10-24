@@ -34,8 +34,7 @@
       "type": "string"
     },
     "dependsOnFirmwareVersion": {
-      "type": "string",
-      "required": true
+      "type": "string"
     },
     "dependsOnBootloaderVersion": {
       "type": "string",
