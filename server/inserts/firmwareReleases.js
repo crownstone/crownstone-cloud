@@ -54,9 +54,18 @@ function performFirmwareOperations(app) {
     //   return removeFirmwareVersion('3.0.4')
     // })
     // .then(() => {
+    //   return removeBootloaderVersion('1.8.0')
+    // })
+    // .then(() => {
+    //   return removeBootloaderVersion('1.9.0')
+    // })
+    // .then(() => {
+    //   return removeBootloaderVersion('2.0.0')
+    // })
+    // .then(() => {
     //   return releaseFirmware(
     //     '3.0.4', // release version
-    //     '3.0.1', // minimum App version,
+    //     '3.0.2', // minimum App version,
     //     '2.0.0', // this firmware required this bootloader
     //     null,  // this firmware can be upgraded from this version and up.
     //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
@@ -79,7 +88,7 @@ function performFirmwareOperations(app) {
     // .then(() => {
     //   return releaseBootloader(
     //     '1.8.0', // release version
-    //     '3.0.1', // minimum App version,
+    //     '3.0.2', // minimum App version,
     //     '1.2.2', // this firmware required this bootloader
     //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
     //     '8739bbc66509cdf5163784154c9da97c979cd95a', // sha1 hash to validate download
@@ -100,7 +109,7 @@ function performFirmwareOperations(app) {
     // .then(() => {
     //   return releaseBootloader(
     //     '1.9.0', // release version
-    //     '3.0.1', // minimum App version,
+    //     '3.0.2', // minimum App version,
     //     '1.8.0', // this firmware required this bootloader
     //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
     //     '7e579ef29ff23f065bb780e307e04975a7624328', // sha1 hash to validate download
@@ -121,12 +130,33 @@ function performFirmwareOperations(app) {
     // .then(() => {
     //   return releaseBootloader(
     //     '2.0.0', // release version
-    //     '3.0.1', // minimum App version,
+    //     '3.0.2', // minimum App version,
     //     '1.9.0', // this firmware required this bootloader
     //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
     //     'd4cf79a913347f23a8e1376e59323945b2311bb4', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_1.9_to_2.0.0.zip',
     //     BETA_RELEASE_LEVEL, // release level
+    //     {  // release notes
+    //       'en' :
+    //         '- Secure bootloader ready for Firmware 3.0.\n\n'
+    //       ,
+    //       'nl' : '',
+    //       'de' : '',
+    //       'es' : '',
+    //       'it' : '',
+    //       'fr' : ''
+    //     }
+    //   );
+    // })
+    // .then(() => {
+    //   return releaseBootloader(
+    //     '2.0.0', // release version
+    //     '3.0.1', // minimum App version,
+    //     null, // this firmware required this bootloader
+    //     [hardwareVersions.util.getAllBuiltInOnes()], // hardware versions
+    //     'd496f8051551246bcabf25d575a0e2e607f03450', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_2.0.0.zip',
+    //     PUBLIC_RELEASE_LEVEL, // release level
     //     {  // release notes
     //       'en' :
     //         '- Secure bootloader ready for Firmware 3.0.\n\n'
@@ -177,90 +207,39 @@ function changeFirmwareReleaseLevel(version, level) {
     })
 }
 
-function changeBootloaderReleaseLevel(version, level) {
-  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
-  return new Promise((resolve, reject) => {
-    if (CHANGE_DATA) {
-      return ask("Change Bootloader Release Level: Change Data is enabled. Continue? (YES/NO)")
-        .then((answer) => {
-          if (answer === 'YES') {
-            resolve();
-          }
-          else {
-            reject("User permission denied for changing data during Update Release Level. Rerun script and type YES.");
-          }
-        })
-    }
-    else {
-      resolve()
-    }})
-    .then(() => {
-      return _getVersion(bootloaderModel, version);
-    })
-    .then((bootloader) => {
-      if (bootloader.length > 0) {
-        bootloader[0].releaseLevel = level;
-        return bootloader[0].save();
-      }
-      else {
-        throw "Can not find this version bootloader."
-      }
-    })
-}
-
-function getFirmwareVersion(version) {
-  let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
-  return _getVersion(firmwareModel, version);
-}
-
-function getBootloaderVersion(version) {
-  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
-  return _getVersion(bootloaderModel, version);
-}
-
-function releaseFirmwareToUsers(version, hwTypes, filter) {
-  console.log("\n-- Releasing firmware to users.");
-  return _releaseToUsers(TYPES.firmware, version, hwTypes, filter);
-}
-
-function releaseBootloaderToUsers(version, hwTypes, filter) {
-  console.log("\n-- Releasing bootloader to users.");
-  return _releaseToUsers(TYPES.bootloader, version, hwTypes, filter);
-}
-
-function clearFirmwareAtUsers() {
-  console.log("\n-- Clearing all firmwares from users.");
-  return _clearReleaseFromUsers(TYPES.firmwareField);
-}
-
-function clearBootloaderAtUsers() {
-  console.log("\n-- Clearing all bootloaders from users.");
-  return _clearReleaseFromUsers(TYPES.bootloaderField);
-}
-
-function clearFirmwares() {
-  console.log("\n-- Deleting all firmwares from the cloud.");
-  let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
-  return _removeAll(firmwareModel, TYPES.firmware);
-}
-
-function clearBootloaders() {
-  console.log("\n-- Deleting all bootloaders from the cloud.");
-  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
-  return _removeAll(bootloaderModel, TYPES.bootloader);
-}
-
-function showFirmwares() {
-  console.log("\n-- Getting a list of all firmwares in the cloud.");
-  let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
-  return _getAll(firmwareModel).then((results) => { console.log(TYPES.firmware, "versions found:", results);});
-}
-
-function showBootloaders() {
-  console.log("\n-- Getting a list of all bootloaders in the cloud.");
-  let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
-  return _getAll(bootloaderModel).then((results) => { console.log(TYPES.firmware, "versions found:", results);});
-}
+// function getFirmwareVersion(version) {
+//   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
+//   return _getVersion(firmwareModel, version);
+// }
+//
+// function getBootloaderVersion(version) {
+//   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
+//   return _getVersion(bootloaderModel, version);
+// }
+//
+// function clearFirmwares() {
+//   console.log("\n-- Deleting all firmwares from the cloud.");
+//   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
+//   return _removeAll(firmwareModel, TYPES.firmware);
+// }
+//
+// function clearBootloaders() {
+//   console.log("\n-- Deleting all bootloaders from the cloud.");
+//   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
+//   return _removeAll(bootloaderModel, TYPES.bootloader);
+// }
+//
+// function showFirmwares() {
+//   console.log("\n-- Getting a list of all firmwares in the cloud.");
+//   let firmwareModel = APP.dataSources.mongoDs.getModel(TYPES.firmware);
+//   return _getAll(firmwareModel).then((results) => { console.log(TYPES.firmware, "versions found:", results);});
+// }
+//
+// function showBootloaders() {
+//   console.log("\n-- Getting a list of all bootloaders in the cloud.");
+//   let bootloaderModel = APP.dataSources.mongoDs.getModel(TYPES.bootloader);
+//   return _getAll(bootloaderModel).then((results) => { console.log(TYPES.firmware, "versions found:", results);});
+// }
 
 function releaseFirmware(firmwareVersion, minimumAppVersion, dependsOnBootloader, dependsOnFirmware, hardwareVersions, hash, downloadUrl, releaseLevel, releaseNotes = {}) {
   if (downloadUrl.indexOf("firmware") === -1) {
