@@ -123,6 +123,7 @@ module.exports = function(model) {
       })
       .then((results) => {
         let filteredByAppVersion = [];
+        // FILTER BY APP VERSION
         if (appVersion) {
           results.forEach((result) => {
             if (versionUtil.isHigherOrEqual(appVersion, result.minimumAppVersion) || !result.minimumAppVersion) {

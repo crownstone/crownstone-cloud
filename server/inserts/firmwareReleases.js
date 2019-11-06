@@ -34,7 +34,6 @@ function performFirmwareOperations(app) {
     console.log("Test run only. \n\n");
   }
 
-
   // start with empty promise so we can put all commands in a chain (easier for commenting/uncommenting lines)
   new Promise((resolve, reject) => resolve())
     .then(() => {
@@ -153,7 +152,7 @@ function performFirmwareOperations(app) {
     //     '2.0.0', // release version
     //     '3.0.1', // minimum App version,
     //     null, // this firmware required this bootloader
-    //     [hardwareVersions.util.getAllBuiltInOnes()], // hardware versions
+    //     hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
     //     'd496f8051551246bcabf25d575a0e2e607f03450', // sha1 hash to validate download
     //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_2.0.0.zip',
     //     PUBLIC_RELEASE_LEVEL, // release level
@@ -169,7 +168,6 @@ function performFirmwareOperations(app) {
     //     }
     //   );
     // })
-
     .then(() => { console.log("performFirmwareOperations: DONE") })
     .catch((err) => {
       console.log("performFirmwareOperations: Error", err);
@@ -345,7 +343,7 @@ function _release(model, type, payload) {
       })
   }
   else {
-    console.log("Not releasing", type, payload.version, "to", payload.hardwareVersions, "because CHANGE_DATA = false.");
+    console.log("Not releasing", type, payload.version, "to", payload.supportedHardwareVersions, "because CHANGE_DATA = false.");
   }
 }
 
