@@ -167,7 +167,7 @@
       "model": "StoneAbility",
       "foreignKey": "stoneId"
     },
-    "behaviour": {
+    "behaviours": {
       "type": "hasMany",
       "model": "StoneBehaviour",
       "foreignKey": "stoneId"
