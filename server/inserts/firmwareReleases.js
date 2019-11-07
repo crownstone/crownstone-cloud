@@ -63,13 +63,13 @@ function performFirmwareOperations(app) {
     // })
     // .then(() => {
     //   return releaseFirmware(
-    //     '3.0.4', // release version
+    //     '3.0.6', // release version
     //     '3.0.2', // minimum App version,
     //     '2.0.0', // this firmware required this bootloader
     //     null,  // this firmware can be upgraded from this version and up.
     //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
-    //     'b2b0f100e64adb28f3c235f107679fb83baf746c', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_3.0.4/bin/crownstone_3.0.4.zip',
+    //     '2bb516cd914fd7661d936cc4eaf7e020ef1b634d', // sha1 hash to validate download
+    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_3.0.6/bin/crownstone_3.0.6.zip',
     //     BETA_RELEASE_LEVEL, // release level
     //     {  // release notes
     //       'en' :
