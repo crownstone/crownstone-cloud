@@ -53,6 +53,30 @@ function performFirmwareOperations(app) {
     //   return removeFirmwareVersion('3.0.4')
     // })
     // .then(() => {
+    //   return removeFirmwareVersion('2.0.1-RC0')
+    // })
+    // .then(() => {
+    //   return removeFirmwareVersion('2.0.1-RC1')
+    // })
+    // .then(() => {
+    //   return removeFirmwareVersion('2.0.1-RC2')
+    // })
+    // .then(() => {
+    //   return removeFirmwareVersion('2.1.0-RC0')
+    // })
+    // .then(() => {
+    //   return removeFirmwareVersion('2.1.0-RC1')
+    // })
+    // .then(() => {
+    //   return removeFirmwareVersion('2.1.2-RC0')
+    // })
+    // .then(() => {
+    //   return removeFirmwareVersion('2.1.4-RC0')
+    // })
+    // .then(() => {
+    //   return removeFirmwareVersion('3.0.6')
+    // })
+    // .then(() => {
     //   return removeBootloaderVersion('1.8.0')
     // })
     // .then(() => {
@@ -61,113 +85,113 @@ function performFirmwareOperations(app) {
     // .then(() => {
     //   return removeBootloaderVersion('2.0.0')
     // })
-    // .then(() => {
-    //   return releaseFirmware(
-    //     '3.0.6', // release version
-    //     '3.0.2', // minimum App version,
-    //     '2.0.0', // this firmware required this bootloader
-    //     null,  // this firmware can be upgraded from this version and up.
-    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
-    //     '2bb516cd914fd7661d936cc4eaf7e020ef1b634d', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_3.0.6/bin/crownstone_3.0.6.zip',
-    //     BETA_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Instant Switching\n' +
-    //         '- Bluetooth Mesh\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '1.8.0', // release version
-    //     '3.0.2', // minimum App version,
-    //     '1.2.2', // this firmware required this bootloader
-    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
-    //     '8739bbc66509cdf5163784154c9da97c979cd95a', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.8.0/bin/bootloader_1.8.0.zip',
-    //     BETA_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //       '- Migration to new firmware.\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '1.9.0', // release version
-    //     '3.0.2', // minimum App version,
-    //     '1.8.0', // this firmware required this bootloader
-    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
-    //     '7e579ef29ff23f065bb780e307e04975a7624328', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.9.0/bin/bootloader_1.9.0.zip',
-    //     BETA_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //         '- Migration to new firmware.\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '2.0.0', // release version
-    //     '3.0.2', // minimum App version,
-    //     '1.9.0', // this firmware required this bootloader
-    //     [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
-    //     'd4cf79a913347f23a8e1376e59323945b2311bb4', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_1.9_to_2.0.0.zip',
-    //     BETA_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //         '- Secure bootloader ready for Firmware 3.0.\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
-    // .then(() => {
-    //   return releaseBootloader(
-    //     '2.0.0', // release version
-    //     '3.0.1', // minimum App version,
-    //     null, // this firmware required this bootloader
-    //     hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
-    //     'd496f8051551246bcabf25d575a0e2e607f03450', // sha1 hash to validate download
-    //     'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_2.0.0.zip',
-    //     PUBLIC_RELEASE_LEVEL, // release level
-    //     {  // release notes
-    //       'en' :
-    //         '- Secure bootloader ready for Firmware 3.0.\n\n'
-    //       ,
-    //       'nl' : '',
-    //       'de' : '',
-    //       'es' : '',
-    //       'it' : '',
-    //       'fr' : ''
-    //     }
-    //   );
-    // })
+    .then(() => {
+      return releaseFirmware(
+        '3.0.6', // release version
+        '3.0.2', // minimum App version,
+        '2.0.0', // this firmware required this bootloader
+        null,  // this firmware can be upgraded from this version and up.
+        [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+        '2bb516cd914fd7661d936cc4eaf7e020ef1b634d', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release/raw/master/firmwares/crownstone_3.0.6/bin/crownstone_3.0.6.zip',
+        PUBLIC_RELEASE_LEVEL, // release level
+        {  // release notes
+          'en' :
+            '- Instant Switching\n' +
+            '- Bluetooth Mesh\n\n'
+          ,
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
+    .then(() => {
+      return releaseBootloader(
+        '1.8.0', // release version
+        '3.0.2', // minimum App version,
+        '1.2.2', // this firmware required this bootloader
+        [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+        '8739bbc66509cdf5163784154c9da97c979cd95a', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.8.0/bin/bootloader_1.8.0.zip',
+        PUBLIC_RELEASE_LEVEL, // release level
+        {  // release notes
+          'en' :
+          '- Migration to new firmware.\n\n'
+          ,
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
+    .then(() => {
+      return releaseBootloader(
+        '1.9.0', // release version
+        '3.0.2', // minimum App version,
+        '1.8.0', // this firmware required this bootloader
+        [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+        '7e579ef29ff23f065bb780e307e04975a7624328', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_1.9.0/bin/bootloader_1.9.0.zip',
+        PUBLIC_RELEASE_LEVEL, // release level
+        {  // release notes
+          'en' :
+            '- Migration to new firmware.\n\n'
+          ,
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
+    .then(() => {
+      return releaseBootloader(
+        '2.0.0', // release version
+        '3.0.2', // minimum App version,
+        '1.9.0', // this firmware required this bootloader
+        [...hardwareVersions.util.getAllPlugs(), ...hardwareVersions.util.getAllBuiltIns(), ...hardwareVersions.util.getAllDongles()], // hardware versions
+        'd4cf79a913347f23a8e1376e59323945b2311bb4', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_1.9_to_2.0.0.zip',
+        PUBLIC_RELEASE_LEVEL, // release level
+        {  // release notes
+          'en' :
+            '- Secure bootloader ready for Firmware 3.0.\n\n'
+          ,
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
+    .then(() => {
+      return releaseBootloader(
+        '2.0.0', // release version
+        '3.0.1', // minimum App version,
+        null, // this firmware required this bootloader
+        hardwareVersions.util.getAllBuiltInOnes(), // hardware versions
+        'd496f8051551246bcabf25d575a0e2e607f03450', // sha1 hash to validate download
+        'https://github.com/crownstone/bluenet-release/raw/master/bootloaders/bootloader_2.0.0/bin/bootloader_2.0.0.zip',
+        PUBLIC_RELEASE_LEVEL, // release level
+        {  // release notes
+          'en' :
+            '- Secure bootloader ready for Firmware 3.0.\n\n'
+          ,
+          'nl' : '',
+          'de' : '',
+          'es' : '',
+          'it' : '',
+          'fr' : ''
+        }
+      );
+    })
     .then(() => { console.log("performFirmwareOperations: DONE") })
     .catch((err) => {
       console.log("performFirmwareOperations: Error", err);
