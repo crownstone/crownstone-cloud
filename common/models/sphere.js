@@ -737,7 +737,7 @@ module.exports = function(model) {
   /**
    * Find user in list of invites and resend an email if found. When the user does not exist in the database, the
    * same message "User not found in invites" will be send, so not to leak information about who is present in the
-   * database. A 409 (conflict) error is returned. This is namely not a server-side error, but it is an error that 
+   * database. A 409 (conflict) error is returned. This is namely not a server-side error, but it is an error that
    * can be solved at the client-side.
    */
   model.resendInvite = function(id, email, options, callback) {
@@ -1926,9 +1926,12 @@ module.exports = function(model) {
     const locationMapModel  = loopback.getModel("DeviceLocationMap");
     const sphereMapModel    = loopback.getModel("DeviceSphereMap");
 
+    const PRESENCE_TIMEOUT = 20*60000; // 20 minutes;
+
     let locationMapResult = null;
     let userIds = [];
     let userMap = {};
+    let now = new Date().valueOf();
     sphereAccessModel.find({where: {and: [{sphereId: id}, {invitePending: false}]}, fields: {userId: true}})
       .then((users) => {
         for (let i = 0; i < users.length; i++) {
@@ -1943,23 +1946,29 @@ module.exports = function(model) {
       })
       .then((sphereMapResult) => {
         for (let i = 0; i < locationMapResult.length; i++) {
-          if (locationMapResult[i].deviceId === ignoreDeviceId) {
+          let locationData = locationMapResult[i];
+          if (locationData.deviceId === ignoreDeviceId) {
             continue;
           }
 
-          if (userMap[locationMapResult[i].userId] !== undefined) {
-            userMap[locationMapResult[i].userId].present = true;
-            userMap[locationMapResult[i].userId].locations.push(locationMapResult[i].locationId)
+          if (userMap[locationData.userId] !== undefined) {
+            if (now - new Date(locationData.updatedAt).valueOf() < PRESENCE_TIMEOUT) {
+              userMap[locationData.userId].present = true;
+              userMap[locationData.userId].locations.push(locationData.locationId);
+            }
           }
         }
 
         for (let i = 0; i < sphereMapResult.length; i++) {
-          if (sphereMapResult[i].deviceId === ignoreDeviceId) {
+          let sphereData = sphereMapResult[i];
+          if (sphereData.deviceId === ignoreDeviceId) {
             continue;
           }
 
-          if (userMap[sphereMapResult[i].userId] !== undefined) {
-            userMap[sphereMapResult[i].userId].present = true;
+          if (userMap[sphereData.userId] !== undefined) {
+            if (now - new Date(sphereData.updatedAt).valueOf() < PRESENCE_TIMEOUT) {
+              userMap[sphereData.userId].present = true;
+            }
           }
         }
 
