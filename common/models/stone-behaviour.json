@@ -25,7 +25,7 @@
       "required": true
     },
     "idOnCrownstone": {
-      "type": "string"
+      "type": "number"
     },
     "syncedToCrownstone": {
       "type": "boolean",
