@@ -27,6 +27,10 @@
     "idOnCrownstone": {
       "type": "number"
     },
+    "profileIndex": {
+      "type": "number",
+      "required": true
+    },
     "syncedToCrownstone": {
       "type": "boolean",
       "required": true
