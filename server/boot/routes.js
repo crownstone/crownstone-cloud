@@ -412,7 +412,6 @@ module.exports = function (app) {
 
     User.findById(req.accessToken.userId, function (err, user) {
       if (user.emailVerified) {
-        console.log("already verified!");
         res.render('response', {
           title: 'Bad Request',
           content: 'User is already successfully set up',
@@ -475,6 +474,7 @@ module.exports = function (app) {
             user.firstName = req.body.firstName;
             user.lastName = req.body.lastName;
             user.password = hashPassword(req.body.password);
+            user.accountCreationPending = false;
             user.save(function (err, user) {
               if (err) return res.sendStatus(404);
 

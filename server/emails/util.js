@@ -5,8 +5,8 @@ const Email = loopback.findModel('Email');
 let app = require('../../server/server');
 
 let util = {
-  
-  /* 
+
+  /*
    * See node_modules/loopback/common/models/user.js for options overview
    */
   getDefaultEmailOptions: function(email_to, email_subject) {
@@ -19,7 +19,7 @@ let util = {
     };
     return options;
   },
-  
+
   /*
    * See https://docs.strongloop.com/display/public/LB/Registering+users for information on registering new users.
    */
@@ -54,7 +54,7 @@ let util = {
     options.html = html;
 
     Email.send(
-      options, 
+      options,
       function(err) {
         if (err) return debug('error sending password reset email');
         debug('sending password reset email to:', email);
@@ -73,8 +73,7 @@ let util = {
     if (currentUser !== null) {
       invitedByText = 'by ' + getUserName(currentUser);
     }
-    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
-      sphereName: sphere.name };
+    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, sphereName: sphere.name };
     let renderer = loopback.template(path.resolve(__dirname, './inviteNewUserEmail.html'));
     let html = renderer(params);
     let subject = 'Welcome! You just have been invited!';
@@ -82,7 +81,7 @@ let util = {
     options.html = html;
 
     Email.send(
-      options, 
+      options,
       function(err) {
         if (err) return debug('error sending invitation email to new user');
         debug('sending invitation email to:', user.email);
@@ -100,7 +99,7 @@ let util = {
     if (currentUser !== null) {
       invitedByText = 'by ' + getUserName(currentUser);
     }
-    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
+    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl,
       sphereName: sphere.name };
     let renderer = loopback.template(path.resolve(__dirname, './inviteExistingUserEmail.html'));
     let html = renderer(params);

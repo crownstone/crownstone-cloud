@@ -21,11 +21,16 @@
     "Util": true
   },
   "hidden": [
-    "earlyAccessLevel"
+    "earlyAccessLevel",
+    "accountCreationPending"
   ],
   "properties": {
     "profilePicId": {
       "type": "string"
+    },
+    "accountCreationPending": {
+      "type": "boolean",
+      "default": false
     },
     "firstName": {
       "type": "string"

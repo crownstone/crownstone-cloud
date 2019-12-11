@@ -555,7 +555,6 @@ module.exports = function(model) {
   function sendInvite(user, options, sphere, isNew, accessTokenId) {
     let baseUrl = app.__baseUrl;
     if (isNew) {
-      console.log('Send invite to new user ' + user.email);
       let acceptUrl = baseUrl + '/profile-setup';
       let declineUrl = baseUrl + '/decline-invite-new';
 
@@ -586,7 +585,7 @@ module.exports = function(model) {
     }
   }
 
-  function addExistingUser(email, id, access, options, callback) {
+  function addExistingUser(email, id, access, options, newUser, callback) {
     const User = loopback.getModel('user');
     model.findById(id, function(err, instance) {
       if (err) {
@@ -609,7 +608,7 @@ module.exports = function(model) {
 
                 addSphereAccess(user, sphere, access, true, function(err) {
                   if (err) return callback(err);
-                  sendInvite(user, options, sphere, false);
+                  sendInvite(user, options, sphere, newUser);
                   callback();
                 });
               } else {
@@ -634,7 +633,7 @@ module.exports = function(model) {
     const User = loopback.getModel('user');
     let tempPassword = crypto.randomBytes(8).toString('base64');
     // debug("tempPassword", tempPassword);
-    let userData = {email: email, password: tempPassword};
+    let userData = {email: email, password: tempPassword, accountCreationPending: true};
     User.create(userData, function(err, user) {
       if (err) return next(err);
 
@@ -676,7 +675,12 @@ module.exports = function(model) {
               }
               else {
                 debug("add existing user");
-                addExistingUser(email, sphereId, access, options, next);
+                if (user.accountCreationPending === true) {
+                  addExistingUser(email, sphereId, access, options, true, next);
+                }
+                else {
+                  addExistingUser(email, sphereId, access, options, false, next);
+                }
               }
             })
             notificationHandler.notifyUserIds(
