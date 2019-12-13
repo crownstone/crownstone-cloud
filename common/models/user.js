@@ -970,6 +970,12 @@ module.exports = function(model) {
     let deviceResults = [];
     let deviceMap = {};
 
+
+
+    let now = new Date().valueOf();
+    const PRESENCE_TIMEOUT = 20*60000; // 20 minutes;
+    let threshold = new Date().valueOf() - PRESENCE_TIMEOUT;
+
     deviceModel.find({where: {ownerId: id}, fields: ["id","name"]})
       .then((results) => {
         if (results.length === 0) {
@@ -983,21 +989,25 @@ module.exports = function(model) {
             deviceIds.push(results[i].id);
           }
 
-          return sphereMapModel.find({where: {deviceId: {inq: deviceIds}}})
+          return sphereMapModel.find({where: {and: [{deviceId: {inq: deviceIds}}, {updatedAt: {gt: new Date(threshold)}}]}})
             .then((sphereMapResults) => {
               for ( let i = 0; i < sphereMapResults.length; i++ ) {
-                sphereIds.push(sphereMapResults[i].sphereId);
-                if (deviceMap[sphereMapResults[i].deviceId] === undefined) {
-                  deviceMap[sphereMapResults[i].deviceId] = {};
+                if (now - new Date(sphereMapResults[i].updatedAt).valueOf() < PRESENCE_TIMEOUT) {
+                  sphereIds.push(sphereMapResults[i].sphereId);
+                  if (deviceMap[sphereMapResults[i].deviceId] === undefined) {
+                    deviceMap[sphereMapResults[i].deviceId] = {};
+                  }
+                  deviceMap[sphereMapResults[i].deviceId][sphereMapResults[i].sphereId] = [];
                 }
-                deviceMap[sphereMapResults[i].deviceId][sphereMapResults[i].sphereId] = [];
               }
-              return locationMapModel.find({where: {deviceId: {inq: deviceIds}}});
+              return locationMapModel.find({where: {and: [{deviceId: {inq: deviceIds}}, {updatedAt: {gt: new Date(threshold)}}]}});
             })
             .then((locationMapResults) => {
               for (let i = 0; i < locationMapResults.length; i++) {
-                locationIds.push(locationMapResults[i].locationId);
-                deviceMap[locationMapResults[i].deviceId][locationMapResults[i].sphereId].push(locationMapResults[i].locationId);
+                if (deviceMap[locationMapResults[i].deviceId] !== undefined) {
+                  locationIds.push(locationMapResults[i].locationId);
+                  deviceMap[locationMapResults[i].deviceId][locationMapResults[i].sphereId].push(locationMapResults[i].locationId);
+                }
               }
 
               return sphereModel.find({where: {id: {inq: sphereIds}}, fields: ["id", "name"]})
@@ -1032,7 +1042,10 @@ module.exports = function(model) {
                 };
 
                 let sphereIds = Object.keys(deviceMap[deviceId]);
+                // console.log("sphereMap", sphereMap, "sphereIds", sphereIds, "deviceRes",deviceRes)
                 sphereIds.forEach((sphereId) => {
+                  if (sphereMap[sphereId] === undefined) { return; }
+
                   let sphereData = {
                     sphereId: sphereId,
                     sphereName: sphereMap[sphereId].name,

@@ -1935,18 +1935,18 @@ module.exports = function(model) {
     let locationMapResult = null;
     let userIds = [];
     let userMap = {};
-    let now = new Date().valueOf();
+    let threshold = new Date().valueOf() - PRESENCE_TIMEOUT;
     sphereAccessModel.find({where: {and: [{sphereId: id}, {invitePending: false}]}, fields: {userId: true}})
       .then((users) => {
         for (let i = 0; i < users.length; i++) {
           userIds.push(users[i].userId);
           userMap[users[i].userId] = {present:false, locations: []};
         }
-        return locationMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}});
+        return locationMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}, {updatedAt: {gt: new Date(threshold)}}]}});
       })
       .then((result) => {
         locationMapResult = result;
-        return sphereMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}})
+        return sphereMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}, {updatedAt: {gt: new Date(threshold)}}]}})
       })
       .then((sphereMapResult) => {
         for (let i = 0; i < locationMapResult.length; i++) {
@@ -1956,10 +1956,8 @@ module.exports = function(model) {
           }
 
           if (userMap[locationData.userId] !== undefined) {
-            if (now - new Date(locationData.updatedAt).valueOf() < PRESENCE_TIMEOUT) {
-              userMap[locationData.userId].present = true;
-              userMap[locationData.userId].locations.push(locationData.locationId);
-            }
+            userMap[locationData.userId].present = true;
+            userMap[locationData.userId].locations.push(locationData.locationId);
           }
         }
 
@@ -1970,9 +1968,7 @@ module.exports = function(model) {
           }
 
           if (userMap[sphereData.userId] !== undefined) {
-            if (now - new Date(sphereData.updatedAt).valueOf() < PRESENCE_TIMEOUT) {
-              userMap[sphereData.userId].present = true;
-            }
+            userMap[sphereData.userId].present = true;
           }
         }
 

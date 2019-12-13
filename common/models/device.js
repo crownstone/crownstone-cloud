@@ -87,7 +87,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__preferences');
   model.disableRemoteMethodByName('prototype.__count__preferences');
   // model.disableRemoteMethodByName('prototype.__get__preferences');
-  
+
   model.disableRemoteMethodByName('prototype.__exists__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__link__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__findById__fingerprintLinks');
@@ -987,20 +987,20 @@ module.exports = function(model) {
     }
 
     initialPromise.then(() => {
-          presentSphereIds.forEach((presentSphereId) => {
-            notificationHandler.notifySphereUsersExceptDevice(deviceId, presentSphereId, {data: { sphereId: presentSphereId, command:"userExitSphere", userId: userId }, silent: true });
-          })
-          return sphereMapModel.destroyAll(query)
+        presentSphereIds.forEach((presentSphereId) => {
+          notificationHandler.notifySphereUsersExceptDevice(deviceId, presentSphereId, {data: { sphereId: presentSphereId, command:"userExitSphere", userId: userId }, silent: true });
         })
-        .then(() => {
-          return locationMapModel.destroyAll(query)
-        })
-        .then(() => {
-          callback(null);
-        })
-        .catch((err) => {
-          callback(err)
-        })
+        return sphereMapModel.destroyAll(query)
+      })
+      .then(() => {
+        return locationMapModel.destroyAll(query)
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err)
+      })
   }
 
   model.inLocation = function(deviceId, sphereId, locationId, options, callback) {
