@@ -35,7 +35,7 @@ function performOauthClientOperations(app) {
     // .then(() => { return createClient(permissionModel, "test", ["stone_information"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
     // .then(() => { return updateClient(permissionModel, "Triggi", allScopes); })
-    // .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information','user_location','stone_information','switch_stone']); })
+    // .then(() => { createClient(permissionModel, "Google_assistant", ['user_information','user_location','stone_information','switch_stone']); })
     .then(() => { console.log("OAUTH DONE")})
     .catch((err) => { console.log("Error during performOauthClientOperations",err); })
 }
@@ -75,8 +75,6 @@ function createClient(permissionModel, clientName, scopes) {
       return new Promise((resolve, reject) => { reject("Unknown Scope:" + scopes[i])})
     }
   }
-
-
   return permissionModel.find({where:{name: clientName}})
     .then((result) => {
       if (result.length === 0) {

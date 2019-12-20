@@ -139,6 +139,8 @@ module.exports = function(model) {
 	model.disableRemoteMethodByName('prototype.__destroyById__presentPeople');
 	model.disableRemoteMethodByName('prototype.__create__presentPeople');
 	model.disableRemoteMethodByName('prototype.__delete__presentPeople');
+	model.disableRemoteMethodByName('prototype.__count__presentPeople');
+	model.disableRemoteMethodByName('prototype.__get__presentPeople');
 
   // model.disableRemoteMethodByName('prototype.__get__fingerprints');
   model.disableRemoteMethodByName('prototype.__count__fingerprints');
