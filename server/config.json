@@ -32,5 +32,6 @@
   "ToonIntegration": {
     "clientId": "clientIdHere",
     "clientSecret": "clientSecretHere"
-  }
+  },
+  "SSEToken": "sseTokenHere"
 }

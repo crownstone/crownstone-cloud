@@ -1,5 +1,7 @@
 "use strict";
 
+const SSE = require("./modules/SSEManager")
+
 const loopback    = require('loopback');
 const boot        = require('loopback-boot');
 const path        = require('path');
@@ -35,7 +37,7 @@ app.middleware('session', session({
   saveUninitialized: true
 }));
 
-
+SSE.init()
 
 app.use(express.static('public'));
 

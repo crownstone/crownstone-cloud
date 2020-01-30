@@ -4,7 +4,8 @@ let loopback = require('loopback');
 let crypto = require('crypto');
 
 const notificationHandler = require('../../server/modules/NotificationHandler');
-const eventHandler = require('../../server/modules/EventHandler');
+const WebHookHandler = require('../../server/modules/WebHookHandler');
+const EventHandler = require('../../server/modules/EventHandler');
 const debug = require('debug')('loopback:dobots');
 const constants = require('./sharedUtil/constants');
 const Util = require('./sharedUtil/util');
@@ -587,7 +588,7 @@ module.exports = function(model) {
             }
 
             if (eventName) {
-              eventHandler.notifyHooks(model, stoneId, mostRecentEntry, eventName)
+              WebHookHandler.notifyHooks(model, stoneId, mostRecentEntry, eventName)
             }
 
             stone[currentIdFieldName] = currentId;
@@ -882,6 +883,8 @@ module.exports = function(model) {
           sphereModel.findById(stone.sphereId)
             .then((sphere) => {
               if (sphere) {
+                EventHandler.command.sendStoneSwitch(stone, switchState, sphere);
+
                 notificationHandler.notifySphereDevices(sphere, {
                   type: 'setSwitchStateRemotely',
                   data:{stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchState)), command:'setSwitchStateRemotely'},

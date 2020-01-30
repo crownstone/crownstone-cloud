@@ -2,7 +2,7 @@
 
 const loopback = require('loopback');
 const fetch = require('node-fetch');
-const eventHandler = require('../modules/EventHandler');
+const WebHookHandler = require('../modules/WebHookHandler');
 /**
  * Mixin that hooks the Webhook system into existing models. It generates a list of available events based on the REST endpoints.
  *
@@ -146,7 +146,7 @@ module.exports = function (model, options) {
               if (hook.events[j] === eventName) {
                 _getModelInstanceForRequest(ctx, cleanedChangedData, false)
                   .then((result) => {
-                    eventHandler.notifySubscribers(cleanedChangedData, result, eventName, hook);
+                    WebHookHandler.notifySubscribers(cleanedChangedData, result, eventName, hook);
                   })
               }
             }

@@ -4,7 +4,7 @@ let loopback = require('loopback');
 var ObjectID = require('mongodb').ObjectID;
 
 const notificationHandler = require('../../server/modules/NotificationHandler');
-const eventHandler = require('../../server/modules/EventHandler');
+const WebHookHandler = require('../../server/modules/WebHookHandler');
 
 const debug = require('debug')('loopback:dobots');
 module.exports = function(model) {
@@ -877,7 +877,7 @@ module.exports = function(model) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
 
     // invoke legacy api
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
 
     notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userEnterSphere", userId: userId }, silent: true });
 
@@ -911,7 +911,7 @@ module.exports = function(model) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
 
     // invoke legacy api
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
 
     notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userEnterLocation", userId: userId, locationId: locationId }, silent: true });
 
@@ -970,7 +970,7 @@ module.exports = function(model) {
     let userId = options.accessToken.userId;
 
     // invoke legacy api
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
 
     let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}]}
     if (sphereId === '*') {
@@ -1070,7 +1070,7 @@ module.exports = function(model) {
     notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userExitLocation", userId: userId, locationId: locationId }, silent: true });
 
     // fallback old API
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
   }
 
   model.exitLocation = function(deviceId, sphereId, locationId, options, callback) {
