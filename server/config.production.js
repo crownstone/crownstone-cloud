@@ -5,5 +5,5 @@ module.exports = {
     clientId:     process.env.TOON_CLIENT_ID,
     clientSecret: process.env.TOON_CLIENT_SECRET
   },
-  SSEToken: proces.env.CROWNSTONE_CLOUD_SSE_TOKEN
+  SSEToken: process.env.CROWNSTONE_CLOUD_SSE_TOKEN
 };
