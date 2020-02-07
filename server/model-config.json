@@ -209,5 +209,9 @@
   "StoneAbilityProperty": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "SphereTrackingNumber": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

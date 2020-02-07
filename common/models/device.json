@@ -86,6 +86,11 @@
       "type": "hasMany",
       "model": "Preference",
       "foreignKey": "deviceId"
+    },
+    "trackingNumber": {
+      "type": "hasMany",
+      "model": "SphereTrackingNumber",
+      "polymorphic": "trackingNumber"
     }
   },
   "acls": [],

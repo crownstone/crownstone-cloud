@@ -100,6 +100,19 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__get__fingerprintLinks');
 
+  model.disableRemoteMethodByName('prototype.__exists__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__link__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__findById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__unlink__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__updateById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__deleteById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__destroyById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__create__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__delete__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__count__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__get__trackingNumber');
+
+
   model.disableRemoteMethodByName('createChangeStream');
   model.disableRemoteMethodByName('upsert');
   model.disableRemoteMethodByName('count');
@@ -1149,6 +1162,42 @@ module.exports = function(model) {
       ],
       description: "This device has left a Sphere. You will also automatically leave all rooms in this Sphere. " +
         "This method is stack safe, you can only leave a certain Sphere once per device. You can use * as a wildcard."
+    }
+  );
+
+  model.getTrackingNumberForSphere = function(deviceId, sphereId, options, callback) {
+    model.findById(deviceId, {include: {relation: 'trackingNumber',scope: { where: {sphereId: sphereId}}}, fields: {id:true}})
+      .then((res) => {
+        if (!res) { throw "NO_DEVICE_FOUND"; }
+
+        if (res.trackingNumber().length > 0) {
+          return res.trackingNumber()[0]
+        }
+        else {
+          return res.trackingNumber.create({sphereId: sphereId})
+        }
+      })
+      .then((trackingNumber) => {
+        callback(null, trackingNumber.trackingNumber);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+
+
+  model.remoteMethod(
+    'getTrackingNumberForSphere',
+    {
+      http: {path: '/:id/trackingNumber', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['SphereTrackingNumber'], root:true},
+      description: "This gets an unique tracking number for this device to use in the specified sphere."
     }
   )
 };

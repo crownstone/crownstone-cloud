@@ -1,0 +1,34 @@
+{
+  "name": "SphereTrackingNumber",
+  "replaceOnPUT": false,
+  "base": "PersistedModel",
+  "strictDelete": true,
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "strict":"filter"
+  },
+  "mixins": {
+    "SphereContent": true,
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
+  "properties": {
+    "trackingNumber": {
+      "type": "number",
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {
+    "sphere": {
+      "type": "belongsTo",
+      "model": "Sphere",
+      "foreignKey": "sphereId"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
