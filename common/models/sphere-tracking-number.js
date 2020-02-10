@@ -13,7 +13,7 @@ module.exports = function(model) {
           item['trackingNumber'] = hash(1);
         }
         else {
-          item['trackingNumber'] = hash(reverseHash(lastTrackingNumber) + 1);
+          item['trackingNumber'] = hash(reverseHash(lastTrackingNumber.trackingNumber) + 1);
         }
         next();
       })
