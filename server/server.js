@@ -37,7 +37,6 @@ app.middleware('session', session({
   saveUninitialized: true
 }));
 
-SSE.init()
 
 app.use(express.static('public'));
 
@@ -52,7 +51,7 @@ loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { i
 app.start = function() {
   // start the web server
   let port = process.env.PORT || 3000;
-  return app.listen(port, function () {
+  let server = app.listen(port, function () {
     app.emit('started');
 
     let baseUrl = process.env.BASE_URL || app.get('url').replace(/\/$/, '');
@@ -67,6 +66,9 @@ app.start = function() {
       console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
     }
   });
+  SSE.init(server);
+
+  return server;
 };
 
 

@@ -32,7 +32,7 @@ function performOauthClientOperations(app) {
   new Promise((resolve, reject) => { resolve() })
     // .then(() => { return showClientDetails(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
-    // .then(() => { return createClient(permissionModel, "test", ["stone_information"]); })
+    // .then(() => { return createClient(permissionModel, "GoogleHomeTest", ["all"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
     // .then(() => { return updateClient(permissionModel, "Triggi", allScopes); })
     // .then(() => { createClient(permissionModel, "Google_assistant", ['user_information','user_location','stone_information','switch_stone']); })
