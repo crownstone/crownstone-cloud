@@ -89,6 +89,9 @@ class SSEConnection {
         this.handleAccessTokenRequest(token, callback);
       })
     });
+
+    this.socket.on("disconnect", () => { this.destroy(); });
+
   }
 
 
