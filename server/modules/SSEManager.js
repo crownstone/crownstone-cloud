@@ -91,7 +91,6 @@ class SSEConnection {
     });
 
     this.socket.on("disconnect", () => { this.destroy(); });
-
   }
 
 

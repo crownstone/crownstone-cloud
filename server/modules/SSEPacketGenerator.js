@@ -4,7 +4,7 @@ module.exports = {
       type:"command",
       subType: "switchCrownstone",
       sphere:     { id: sphere.id, uid: sphere.uid, name: sphere.name},
-      crownstone: { id: stone.id,  uid: stone.uid,  name: sphere.name, switchState: switchState, macAddress: stone.address}
+      crownstone: { id: stone.id,  uid: stone.uid,  name: stone.name, switchState: switchState, macAddress: stone.address}
     };
   }
 };
