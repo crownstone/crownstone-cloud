@@ -971,7 +971,7 @@ module.exports = function(model) {
           error.code = "AUTHORIZATION_REQUIRED";
           throw error;
         }
-        return sphereMapModel.findOne({where: {deviceId: deviceId}})
+        return sphereMapModel.findOne({where: {sphereId: sphereId, deviceId: deviceId}})
       })
       .then((result) => {
         return handleSphereState(sphereId, deviceId, userId, result);

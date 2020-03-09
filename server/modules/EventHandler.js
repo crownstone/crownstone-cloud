@@ -34,17 +34,35 @@ class EventConstructor {
       .then((location) => {
         if (!location) { throw {code: 401, message: "Not available" }; }
 
-        return { id: sphereId, name: location.name }
+        return { id: locationId, name: location.name }
       })
   }
 
   static getUserData(userId) {
     const UserModel = loopback.getModel("user");
-    return UserModel.findById(userId, {fields: {id: true, name: true, address: true, uid: true, currentSwitchStateId: true}})
+    return UserModel.findById(userId, {fields: {id: true, firstName: true, lastName: true}})
       .then((user) => {
         if (!user) { throw {code: 401, message: "Not available" }; }
 
-        return { id: userId, name: user.name }
+        let userName = null;
+        if (!user.firstName) {
+          if (!user.lastName) {
+            userName = "Anonymous";
+          }
+          else {
+            userName = user.lastName;
+          }
+        }
+        else {
+          if (!user.lastName) {
+            userName = user.firstName;
+          }
+          else {
+            userName = user.firstName + ' ' + user.lastName;
+          }
+        }
+
+        return { id: userId, name: userName }
       })
   }
 

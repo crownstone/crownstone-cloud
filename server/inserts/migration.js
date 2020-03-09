@@ -8,7 +8,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 function performMigration(app) {
   Promise.resolve()
-    .then(() => { return migrateSyncKeysWithExistingSpheres(app) })
+    // .then(() => { return migrateTokens(app) })
     // .then(() => { return migrateFirmwareFields(app) })
     // .then(() => { return migrateBootloaderFields(app) })
     // .then(() => { return migrateFirmwareHardwareVersions(app) })
@@ -16,6 +16,82 @@ function performMigration(app) {
     // .then(() => { return migrateKeysForExistingSpheres(app) })
     // .then(() => { return migrateKeysForExistingStones(app) })
     .then(() => { console.log("DONE!") })
+}
+
+function migrateTokens(app) {
+  const tokenModel = app.dataSources.mongoDs.getModel('AccessToken');
+  const newTokenModel = app.dataSources.mongoDs.getModel('CrownstoneAccessToken');
+
+  let doIt = function() {
+    let newResults = {};
+    let toMigrate = 0;
+    let alreadyMigrated = 0;
+    let expired = 0;
+    return newTokenModel.find()
+      .then((results) => {
+        results.forEach((r) => {
+          newResults[r.id] = true;
+        })
+
+        return tokenModel.find()
+      })
+      .then((results) => {
+        let migratedData = [];
+        let now = new Date().valueOf();
+
+        results.forEach((r) => {
+          if (now - (new Date(r.created).valueOf() + 1000*r.ttl) <= 0) {
+            if (newResults[r.id] === true) {
+              alreadyMigrated += 1;
+            }
+            else {
+              migratedData.push({
+                id: r.id,
+                ttl: r.ttl,
+                created: r.created,
+                userId: r.userId,
+                principalType:"user"
+              })
+              toMigrate += 1;
+            }
+          }
+          else {
+            expired += 1;
+          }
+        })
+
+        if (CHANGE_DATA !== true) {
+          console.log("Because change data is false nothing was changed. I would have migrated", toMigrate, "tokens, ignored", expired, " and skipped", alreadyMigrated, "tokens");
+        } else {
+          return newTokenModel.create(migratedData);
+        }
+      })
+      .then(() => {
+        console.log("I have migrated", toMigrate, "tokens, ignored", expired, " and skipped", alreadyMigrated, "tokens.");
+      })
+      .catch((err) => {
+        console.log("Error during migration:", err);
+      })
+  }
+
+  // if (CHANGE_DATA === true) {
+  //   return ask("Database Operations: DO YOU WANT TO MIGRATE THE DEPENDENCE FORMAT OF FIRMWARE ENTRIES Continue? (YES/NO)")
+  //     .then((answer) => {
+  //       if (answer === 'YES') {
+  //         console.log("STARTING OPERATION")
+  //         return doIt();
+  //       }
+  //       else {
+  //         return new Promise((resolve, reject) => {
+  //           reject("User permission denied for updating the dependence format fo the firmware entries. Restart script and type YES to continue.")
+  //         });
+  //       }
+  //     })
+  // }
+  // else {
+  //   return doIt();
+  // }
+  return doIt()
 }
 
 
