@@ -1,7 +1,7 @@
 // "use strict";
 
 let loopback = require('loopback');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 
 module.exports = function(model) {
 

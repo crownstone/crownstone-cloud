@@ -4,7 +4,7 @@ const loopback = require('loopback');
 const uuid = require('node-uuid');
 const crypto = require('crypto');
 
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 
 const config = require('../../server/config.json');
 const emailUtil = require('../../server/emails/util');

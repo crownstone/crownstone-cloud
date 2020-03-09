@@ -1,7 +1,7 @@
 "use strict";
 
 const loopback = require('loopback');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 const versionUtil = require('../../server/util/versionUtil');
 
 let hardwareVersions = require("../../server/constants/hardwareVersions");

@@ -2,7 +2,7 @@
 
 let loopback = require('loopback');
 const messageUtils = require('./sharedUtil/messageUtil');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 
 module.exports = function(model) {
 

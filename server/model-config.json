@@ -23,6 +23,10 @@
     "dataSource": "userDs",
     "public": false
   },
+  "CrownstoneAccessToken": {
+    "dataSource": "userDs",
+    "public": false
+  },
   "ACL": {
     "dataSource": "db",
     "public": false
@@ -213,5 +217,9 @@
   "SphereTrackingNumber": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "Hub": {
+    "dataSource": "userDs",
+    "public": true
   }
 }

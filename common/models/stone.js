@@ -6,7 +6,7 @@ let crypto = require('crypto');
 const notificationHandler = require('../../server/modules/NotificationHandler');
 const WebHookHandler = require('../../server/modules/WebHookHandler');
 const EventHandler = require('../../server/modules/EventHandler');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 const constants = require('./sharedUtil/constants');
 const Util = require('./sharedUtil/util');
 

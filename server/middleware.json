@@ -1,7 +1,11 @@
 {
   "initial:before": {
     "loopback#favicon": {},
-    "loopback#token": {}
+    "loopback#token": {
+      "params": {
+        "model": "CrownstoneAccessToken"
+      }
+    }
   },
   "initial": {
     "compression": {
@@ -19,6 +23,11 @@
     }
   },
   "auth": {
+    "loopback#token": {
+      "params": {
+        "model": "CrownstoneAccessToken"
+      }
+    },
     "loopback-component-oauth2#authenticate": {
       "paths": [
         "/api"

@@ -4,7 +4,7 @@ const config = require('../../server/config');
 const path = require('path');
 const loopback = require('loopback');
 const app = require('../../server/server');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 
 const constants = require('./sharedUtil/constants');
 

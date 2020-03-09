@@ -110,6 +110,11 @@
       "model": "Message",
       "foreignKey": "sphereId"
     },
+    "hubs": {
+      "type": "hasMany",
+      "model": "Hub",
+      "foreignKey": "sphereId"
+    },
     "geoLocation": {
       "type":"hasOne",
       "model": "geoLocation",

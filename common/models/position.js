@@ -2,7 +2,7 @@
 
 let loopback = require('loopback');
 var ObjectID = require('mongodb').ObjectID;
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 module.exports = function(model) {
 
   let app = require('../../server/server');

@@ -1,5 +1,6 @@
-const SSEPacketGenerator = require('./SSEPacketGenerator')
-const SSEManager         = require('./SSEManager')
+const SSEPacketGenerator = require('./SSEPacketGenerator');
+const SSEManager         = require('./SSEManager');
+const loopback           = require('loopback');
 
 class EventHandlerClass {
 
@@ -12,47 +13,135 @@ class EventHandlerClass {
 
 class EventConstructor {
 
-  _getStoneData(stoneId) {
-
+  static getStoneData(stoneId) {
+    // const StoneModel = loopback.getModel("Stone");
+    // return StoneModel.findById(stoneId, {fields: {id: true, name: true, address: true, uid: true, currentSwitchStateId: true}})
   }
 
-  _getSphereData(sphereId) {
+  static getSphereData(sphereId) {
+    const SphereModel = loopback.getModel("Sphere");
+    return SphereModel.findById(sphereId, {fields: {name: true, uid: true}})
+      .then((sphere) => {
+        if (!sphere) { throw {code: 401, message: "Not available" }; }
 
+        return { id: sphereId, name: sphere.name, uid: sphere.uid }
+      })
   }
 
-  _getLocationData(locationId) {
+  static getLocationData(locationId) {
+    const LocationModel = loopback.getModel("Location");
+    return LocationModel.findById(locationId, {fields: {name: true}})
+      .then((location) => {
+        if (!location) { throw {code: 401, message: "Not available" }; }
 
+        return { id: sphereId, name: location.name }
+      })
   }
 
-  _getUserData(userId) {
+  static getUserData(userId) {
+    const UserModel = loopback.getModel("user");
+    return UserModel.findById(userId, {fields: {id: true, name: true, address: true, uid: true, currentSwitchStateId: true}})
+      .then((user) => {
+        if (!user) { throw {code: 401, message: "Not available" }; }
 
+        return { id: userId, name: user.name }
+      })
+  }
+
+  static getData(options) {
+    let result = {};
+    let promises = [];
+
+    if (options.userId) {
+      promises.push(EventConstructor.getUserData(options.userId).then((userData) => { result["user"] = userData; }));
+    }
+    if (options.stoneId) {
+      promises.push(EventConstructor.getStoneData(options.stoneId).then((stoneData) => { result["stone"] = stoneData; }));
+    }
+    if (options.sphereId) {
+      promises.push(EventConstructor.getSphereData(options.sphereId).then((sphereData) => { result["sphere"] = sphereData; }));
+    }
+    if (options.locationId) {
+      promises.push(EventConstructor.getLocationData(options.locationId).then((locationData) => { result["location"] = locationData; }));
+    }
+
+    return Promise.all(promises)
+      .then(() => {
+        return result;
+      })
+      .catch((err) => {
+        /** do not handle error here, it is up to the handler **/
+        throw err;
+      })
   }
 }
 
 
-class PresenceEventHandler extends EventConstructor {
+class PresenceEventHandler {
 
   sendEnterSphere(user, sphere) {
-
+    let packet = SSEPacketGenerator.generateEnterSphereEvent(user, sphere);
+    SSEManager.emit(packet)
   }
+
   sendExitSphere(user, sphere) {
-
+    let packet = SSEPacketGenerator.generateExitSphereEvent(user, sphere);
+    SSEManager.emit(packet)
   }
-  sendExitLocation(user, sphere, location) {
 
-  }
   sendEnterLocation(user, sphere, location) {
+    let packet = SSEPacketGenerator.generateEnterLocationEvent(user, sphere, location);
+    SSEManager.emit(packet)
+  }
 
+  sendExitLocation(user, sphere, location) {
+    let packet = SSEPacketGenerator.generateExitLocationEvent(user, sphere, location);
+    SSEManager.emit(packet)
+  }
+
+
+
+
+  sendEnterSphereFromId(userId, sphereId) {
+    EventConstructor.getData({userId, sphereId})
+      .then((data) => {
+        this.sendEnterSphere(data.user, data.sphere);
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
+  }
+
+  sendExitSphereFromId(userId, sphereId) {
+    EventConstructor.getData({userId, sphereId})
+      .then((data) => {
+        this.sendExitSphere(data.user, data.sphere);
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
+  }
+
+  sendEnterLocationFromId(userId, sphereId, locationId) {
+    EventConstructor.getData({userId, sphereId, locationId})
+      .then((data) => {
+        this.sendEnterLocation(data.user, data.sphere, data.location);
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
+  }
+
+  sendExitLocationFromId(userId, sphereId, locationId) {
+    EventConstructor.getData({userId, sphereId, locationId})
+      .then((data) => {
+        this.sendExitLocation(data.user, data.sphere, data.location);
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
   }
 }
 
-class CommandEventHandler extends EventConstructor {
+class CommandEventHandler {
   sendStoneMultiSwitch(sphere, multiswitchPackets) {
 
   }
 
   sendStoneSwitch(stone, switchState, sphere) {
-    let packet = SSEPacketGenerator.generateSwitchCronwstoneEvent(stone, sphere, switchState);
+    let packet = SSEPacketGenerator.generateSwitchCrownstoneEvent(stone, sphere, switchState);
     SSEManager.emit(packet);
   }
 }

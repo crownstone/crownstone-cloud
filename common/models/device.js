@@ -5,8 +5,9 @@ var ObjectID = require('mongodb').ObjectID;
 
 const notificationHandler = require('../../server/modules/NotificationHandler');
 const WebHookHandler = require('../../server/modules/WebHookHandler');
+const EventHandler = require('../../server/modules/EventHandler');
 
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 module.exports = function(model) {
 
   let app = require('../../server/server');
@@ -889,6 +890,9 @@ module.exports = function(model) {
   function performEnterSphere(sphereId, deviceId, userId) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
 
+    // send SSE
+    EventHandler.presence.sendEnterSphereFromId(userId, sphereId);
+
     // invoke legacy api
     WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
 
@@ -922,6 +926,9 @@ module.exports = function(model) {
   // This is an enter Location
   function performEnterLocation(sphereId, locationId, deviceId, userId) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
+
+    // send SSE
+    EventHandler.presence.sendEnterLocationFromId(userId, sphereId, locationId);
 
     // invoke legacy api
     WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
@@ -981,6 +988,9 @@ module.exports = function(model) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
     let userId = options.accessToken.userId;
+
+    // send SSE
+    EventHandler.presence.sendExitSphereFromId(userId, sphereId);
 
     // invoke legacy api
     WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
@@ -1079,6 +1089,9 @@ module.exports = function(model) {
   }
 
   function notifyExitLocation(deviceId, sphereId, locationId, deviceId, userId) {
+    // send SSE
+    EventHandler.presence.sendExitLocationFromId(userId, sphereId, locationId);
+
     // tell users to refresh
     notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userExitLocation", userId: userId, locationId: locationId }, silent: true });
 

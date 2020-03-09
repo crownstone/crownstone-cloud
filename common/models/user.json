@@ -97,6 +97,17 @@
       "type": "hasMany",
       "model": "Message",
       "foreignKey": "ownerId"
+    },
+    "accessTokens": {
+      "type": "hasMany",
+      "model": "CrownstoneAccessToken",
+      "polymorphic": {
+        "foreignKey": "userId",
+        "discriminator": "principalType"
+      },
+      "options": {
+        "disableInclude": true
+      }
     }
   },
   "acls": [

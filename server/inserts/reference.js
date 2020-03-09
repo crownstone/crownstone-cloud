@@ -9,6 +9,7 @@ function performReference(app) {
 
   let userModel = app.dataSources.mongoDs.getModel('user');
   let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
+  let sphereAccessModel = app.dataSources.mongoDs.getModel('SphereAccess');
   let locationModel = app.dataSources.mongoDs.getModel('Location');
   let stoneModel = app.dataSources.mongoDs.getModel('Stone');
   let devicesModel = app.dataSources.mongoDs.getModel('Device');
@@ -42,15 +43,31 @@ function performReference(app) {
   let unownedApplianceIds = {};
   let unownedInstallationIds = {};
 
-  // get all users
-  stoneModel.find({where:{hardwareVersion: '101030100000000000000000000QFAAB0'}})
-    .then(() => {
-      console.log("Reference, DONE")
-    })
-    .catch((err) => {
-      console.log("Error during reference:", err);
 
-    })
+  // get all users
+  // stoneModel.find({fields:{sphereId:true}})
+  //   .then((stones) => {
+  //     stones.forEach((stone) => {
+  //       requiredSphereIds[stone.sphereId] = true;
+  //     })
+  //
+  //     let sphereIds = Object.keys(requiredSphereIds);
+  //     return sphereAccessModel.find({where:{sphereId:{inq: sphereIds}, invitePending:false, role:{inq:["admin","member"]}}, fields:{userId: true}})
+  //   })
+  //   .then((access) => {
+  //     access.forEach((userData) => {
+  //       requiredSphereIds[userData.userId] = true;
+  //     })
+  //     return userModel.find({where:{id:{inq:Object.keys(requiredSphereIds)}}, fields:{email:true}})
+  //   })
+  //   .then((users) => {
+  //     users.forEach((user) => {
+  //       console.log(user.email)
+  //     })
+  //   })
+  //   .catch((err) => {
+  //     console.log("Error during reference:", err);
+  //   })
 
 }
 

@@ -225,7 +225,6 @@ class NotificationHandlerClass {
     }
 
     // Send the notification to the API with send, which returns a promise.
-    // console.log("sending this notificaiton", notification)
     apnProvider.send(notification, tokens)
       .then((result) => {
         // console.log("IOS PUSH RESULT", JSON.stringify(result, undefined,2));

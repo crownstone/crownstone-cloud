@@ -7,7 +7,7 @@ const loopback = require('loopback');
 const uuid = require('node-uuid');
 const crypto = require('crypto');
 
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 
 const config = require('../../server/config.json');
 const emailUtil = require('../../server/emails/util');
@@ -263,6 +263,27 @@ module.exports = function(model) {
         "property": "declineInvite"
       }
     );
+    //***************************
+    // HUB:
+    //   - cannot create new hub
+    //***************************
+    let endpointsNotAllowedForHub = [
+      "createHub",
+      "addAdmin",
+      "addMember",
+      "addGuest",
+      "__unlink__users",
+    ]
+    endpointsNotAllowedForHub.forEach((endPoint) => {
+      model.settings.acls.push(
+        {
+          "principalType": "ROLE",
+          "principalId": "$group:hub",
+          "permission": "DENY",
+          "property": endPoint
+        }
+      );
+    })
   }
 
 
@@ -284,6 +305,14 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__link__users');
   model.disableRemoteMethodByName('prototype.__count__users');
   model.disableRemoteMethodByName('prototype.__get__users');
+
+  model.disableRemoteMethodByName('prototype.__create__hubs');
+  model.disableRemoteMethodByName('prototype.__delete__hubs');
+  model.disableRemoteMethodByName('prototype.__destroyById__hubs');
+  model.disableRemoteMethodByName('prototype.__deleteById__hubs');
+  model.disableRemoteMethodByName('prototype.__updateById__hubs');
+  model.disableRemoteMethodByName('prototype.__findById__hubs');
+  model.disableRemoteMethodByName('prototype.__count__hubs');
 
   // model.disableRemoteMethodByName('prototype.__updateById__Toons');
   model.disableRemoteMethodByName('prototype.__destroyById__Toons');
@@ -2057,6 +2086,95 @@ module.exports = function(model) {
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       description: "decline an invite for this sphere."
+    }
+  );
+
+  model.createHub = function(id, token, name, options, callback) {
+    const hubModel = loopback.getModel("Hub");
+    // TODO: check token length, at least 128 characters
+    hubModel.create({
+      sphereId: id,
+      token: token,
+      name: name
+    })
+      .then(()     => { callback(null); })
+      .catch((err) => { callback(err);  })
+  };
+
+
+  model.remoteMethod(
+    'createHub',
+    {
+      http: {path: '/:id/hub', verb: 'post'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'token', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'name',  type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Add a hub to this sphere."
+    }
+  );
+
+  let CACHED_IP = null;
+
+  model.beforeRemote('setHubLocalIP', function(context, user, next) {
+    let ip = context.req.headers['x-forwarded-for'] || context.req.ip || context.req.connection.remoteAddress;
+    if (ip.substr(0, 7) == "::ffff:") {
+      ip = ip.substr(7)
+    }
+    CACHED_IP = ip || null;
+    next()
+  });
+
+
+  model.setHubLocalIP = function(id, token, localIpAddress, options, callback) {
+    let externalIp = CACHED_IP;
+    CACHED_IP = null;
+    if (!externalIp) {
+      return callback("No External IP obtained...");
+    }
+    const hubModel = loopback.getModel("Hub");
+    hubModel.findOne({where:{token: token, sphereId: id}})
+      .then((result) => {
+        if (!result) { throw "No hub found."}
+
+        result.localIPAddress = localIpAddress;
+        result.externalIPAddress = externalIp;
+
+        return result.save();
+      })
+      .then(() => {
+        callback();
+      })
+      .catch((err) => { callback(err); })
+  }
+
+  model.remoteMethod(
+    'setHubLocalIP',
+    {
+      http: {path: '/:id/hubIpAddress', verb: 'put'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'token', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'localIpAddress',  type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Tell the sphere the local Ip address of the hub."
+    }
+  );
+
+
+  model.remoteMethod(
+    'getHubAddresses',
+    {
+      http: {path: '/:id/hubIpAddresses', verb: 'get'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['object'], root: true},
+      description: "Get the local ip address of the hubs in this sphere."
     }
   );
 
