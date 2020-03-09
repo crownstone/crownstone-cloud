@@ -109,7 +109,7 @@ class SSEConnection {
 
 
   _isValidAccessToken(token) {
-    const AccessTokens = loopback.getModel('AccessToken');
+    const AccessTokens = loopback.getModel('CrownstoneAccessToken');
     const SphereAccess = loopback.getModel('SphereAccess');
     return new Promise((resolve, reject) => {
       let resultTokenData = {
