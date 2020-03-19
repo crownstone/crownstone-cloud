@@ -3,6 +3,7 @@
 let loopback = require('loopback');
 const idUtil = require('./sharedUtil/idUtil');
 const debug = require('debug')('loopback:crownstone');
+const EventHandler = require('../../server/modules/EventHandler');
 
 module.exports = function(model) {
 
@@ -166,6 +167,18 @@ module.exports = function(model) {
 
 
   model.observe('before save', initLocation);
+  model.observe('after save', afterSave);
+
+  function afterSave(ctx,next) {
+    let location = ctx.instance;
+    if (ctx.isNewInstance) {
+      EventHandler.dataChange.sendLocationCreatedEventBySphereId(location.sphereId, location);
+    }
+    else {
+      EventHandler.dataChange.sendLocationUpdatedEventBySphereId(location.sphereId, location);
+    }
+    next();
+  }
 
   function initLocation(ctx, next) {
     debug("initLocation");
@@ -260,8 +273,18 @@ module.exports = function(model) {
 
 	// if the sphere is deleted, delete also all files stored for this sphere
 	model.observe('before delete', function(context, next) {
-		model.deleteImage(context.where.id, {}, function() {
-			next();
+	  let locationId = context.where.id;
+		model.deleteImage(locationId, {}, function() {
+		  model.findById(locationId)
+        .then((location) => {
+          if (location) {
+            return EventHandler.dataChange.sendLocationDeletedEventBySphereId(location.sphereId, location);
+          }
+        })
+        .then(() => {
+          next()
+        })
+        .catch((err) => { next();})
 		});
 	});
 

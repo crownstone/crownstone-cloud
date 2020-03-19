@@ -2,6 +2,7 @@ let sha1 = require('sha1');
 let request = require('request');
 let bodyParser = require('body-parser');
 const notificationHandler = require("../modules/NotificationHandler");
+const EventHandler = require("../modules/EventHandler");
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function (app) {
@@ -324,6 +325,8 @@ module.exports = function (app) {
             });
           }
           else {
+            EventHandler.dataChange.sendSphereUserCreatedEventById(req.query.sphere_id, token.userId);
+
             // tell other people in the sphere to refresh their sphere user list.
             notificationHandler.notifySphereUsers(req.query.sphere_id, {data: { sphereId: req.query.sphere_id, command:"sphereUsersUpdated" }, silent: true });
             res.render('response', {

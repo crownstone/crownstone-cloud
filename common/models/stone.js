@@ -367,10 +367,12 @@ module.exports = function(model) {
           sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0
         })
           .then(() => {
+            EventHandler.dataChange.sendStoneCreatedEventBySphereId(ctx.instance.sphereId, ctx.instance);
             next();
           })
       }
       else {
+        EventHandler.dataChange.sendStoneUpdatedEventBySphereId(ctx.instance.sphereId, ctx.instance);
         next();
       }
     })
@@ -410,6 +412,22 @@ module.exports = function(model) {
   // populate some of the elements like uid, major, minor, if not already provided
   model.observe('before save', initStone);
   model.observe('after save', afterSave);
+
+  model.observe('before delete', function(ctx, next) {
+    let stoneId = ctx.where.id;
+    model.findById(stoneId)
+      .then((stone) => {
+        if (stone) {
+          return EventHandler.dataChange.sendStoneDeletedEventBySphereId(stone.sphereId, stone);
+        }
+      })
+      .then(() => {
+        next();
+      })
+      .catch((err) => {
+        next();
+      })
+  });
 
   /************************************
    **** Energy Usage

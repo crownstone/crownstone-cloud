@@ -23,7 +23,7 @@ const app = require('../../server/server');
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
 
-
+const EventHandler = require('../../server/modules/EventHandler');
 
 module.exports = function(model) {
 
@@ -359,6 +359,8 @@ module.exports = function(model) {
         return next(error);
       }
       else {
+        EventHandler.dataChange.sendSphereUserDeletedEvent(sphere, user);
+
         // we collect the users because we need the userIds of all users in the sphere, including the one whos is about to be deleted.
         // this promise takes care of a race condition where the user is deleted before we get his id.
         notificationHandler.collectSphereUsers(String(sphere.id))
@@ -436,6 +438,7 @@ module.exports = function(model) {
           error.statusCode = error.status = 409;
           return next(error);
         }
+        EventHandler.dataChange.sendSphereDeletedEvent(sphere);
       }
       next();
     });
@@ -521,10 +524,12 @@ module.exports = function(model) {
     if (ctx.isNewInstance) {
       generateEncryptionKeys(ctx)
         .then(() => {
+          EventHandler.dataChange.sendSphereCreatedEvent(ctx.instance);
           updateOwnerAccess(ctx, next);
         })
     }
     else {
+      EventHandler.dataChange.sendSphereUpdatedEvent(ctx.instance);
       next();
     }
   }
@@ -598,7 +603,6 @@ module.exports = function(model) {
         })
     }
     else {
-      console.log('Send invite to existing user ' + user.email);
       let acceptUrl = baseUrl + '/accept-invite';
       let declineUrl = baseUrl + '/decline-invite';
 
@@ -1213,6 +1217,8 @@ module.exports = function(model) {
         if (err) return callback(err);
 
         if (success) {
+          EventHandler.dataChange.sendSphereUserUpdatedEventById(id, user.id);
+
           const SphereAccess = loopback.findModel("SphereAccess");
           SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
             if (err) return callback(err);

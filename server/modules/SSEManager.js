@@ -39,16 +39,16 @@ class SSEManagerClass {
     this.io = new IOServer(server, { pintInterval: 4000, pingTimeout: 2000, transports:["websocket"], cookie:false })
     this.io.on('connect', (socket) => {
       let uid = getShortUUID()
-      this.connections[uid] = new SSEConnection(socket, () => { delete this.connections[uid]; })
+      this.connections[uid] = new SSEConnection(socket, () => { delete this.connections[uid]; });
     });
   }
 
   emit(data) {
-    this.io.sockets.in(EVENT_ROOM_NAME).emit(protocolTopics.event, data)
+    this.io.sockets.in(EVENT_ROOM_NAME).emit(protocolTopics.event, data);
   }
 }
 
-const SSEManager = new SSEManagerClass()
+const SSEManager = new SSEManagerClass();
 module.exports = SSEManager;
 
 
