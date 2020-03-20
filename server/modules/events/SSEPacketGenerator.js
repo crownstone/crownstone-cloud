@@ -88,20 +88,20 @@ module.exports = {
   },
   generateSphereUserInvitedEvent(sphere, user) {
     return {
-      type:        "dataChange",
+      type:        "invitationChange",
       subType:     "users",
       operation:   "invited",
       sphere:      { id: sphere.id, name: sphere.name, uid: sphere.uid},
-      changedItem: { email: user.email },
+      email:       user.email,
     };
   },
   generateSphereUserInvitationRevokedEvent(sphere, user) {
     return {
-      type:        "dataChange",
+      type:        "invitationChange",
       subType:     "users",
       operation:   "invitationRevoked",
       sphere:      { id: sphere.id, name: sphere.name, uid: sphere.uid},
-      changedItem: { email: user.email },
+      email:       user.email,
     };
   },
   generateSphereUserUpdatedEvent(sphere, user) {
