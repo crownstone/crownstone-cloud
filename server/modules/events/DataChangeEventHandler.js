@@ -1,4 +1,6 @@
 const EventConstructor   = require('./EventConstructor');
+const SSEPacketGenerator = require('./SSEPacketGenerator');
+const SSEManager         = require('../SSEManager');
 
 
 class DataChangeEventHandler {
