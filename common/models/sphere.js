@@ -719,9 +719,11 @@ module.exports = function(model) {
             notificationHandler.notifyUserIds(
               [user.id], { data: { command: "InvitationReceived", role: access, sphereId: sphereId }, silent: true
               });
+
           }
           // tell other people in the sphere to refresh their sphere user list.
           notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"sphereUsersUpdated" }, silent: true });
+          EventHandler.dataChange.sendSphereUserInvitedEventById(sphereId, email);
         });
       }
       else {
@@ -867,6 +869,7 @@ module.exports = function(model) {
           }
 
           SphereAccess.deleteById(access.id, callback);
+          EventHandler.dataChange.sendSphereUserInvitationRevokedEventById(id, email);
         }
       );
     });

@@ -86,6 +86,24 @@ module.exports = {
       changedItem: { id: user.id,   name: user.name},
     };
   },
+  generateSphereUserInvitedEvent(sphere, user) {
+    return {
+      type:        "dataChange",
+      subType:     "users",
+      operation:   "invited",
+      sphere:      { id: sphere.id, name: sphere.name, uid: sphere.uid},
+      changedItem: { email: user.email },
+    };
+  },
+  generateSphereUserInvitationRevokedEvent(sphere, user) {
+    return {
+      type:        "dataChange",
+      subType:     "users",
+      operation:   "invitationRevoked",
+      sphere:      { id: sphere.id, name: sphere.name, uid: sphere.uid},
+      changedItem: { email: user.email },
+    };
+  },
   generateSphereUserUpdatedEvent(sphere, user) {
     return {
       type:        "dataChange",

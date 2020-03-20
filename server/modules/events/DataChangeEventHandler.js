@@ -33,6 +33,32 @@ class DataChangeEventHandler {
     SSEManager.emit(packet)
   }
 
+  // ----- USERS INVITED ----- //
+  sendSphereUserInvitedEventById(sphereId, email) {
+    return EventConstructor.getData({sphereId})
+      .then((data) => {
+        this.sendSphereUserInvitedEvent(data.sphere,{email: email});
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
+  }
+  sendSphereUserInvitedEvent(sphere, user) {
+    let packet = SSEPacketGenerator.generateSphereUserInvitedEvent(sphere, user);
+    SSEManager.emit(packet)
+  }
+
+  // ----- USERS INVITE REVOKED ----- //
+  sendSphereUserInvitationRevokedEventById(sphereId, email) {
+    return EventConstructor.getData({sphereId})
+      .then((data) => {
+        this.sendSphereUserInvitationRevokedEvent(data.sphere, {email: email});
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
+  }
+  sendSphereUserInvitationRevokedEvent(sphere, user) {
+    let packet = SSEPacketGenerator.generateSphereUserInvitationRevokedEvent(sphere, user);
+    SSEManager.emit(packet)
+  }
+
 
   // ----- USERS UPDATE ----- //
   sendSphereUserUpdatedEventById(sphereId, userId) {
