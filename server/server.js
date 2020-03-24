@@ -41,7 +41,8 @@ app.middleware('session', session({
 app.use(express.static('public'));
 
 // configure body parser
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({extended: true, limit:'512kb'}));
+app.use(bodyParser.json({limit:'512kb'}));
 
 app.use(compression());
 
