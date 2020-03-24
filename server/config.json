@@ -14,7 +14,7 @@
     },
     "urlencoded": {
       "extended": true,
-      "limit": "128kb"
+      "limit": "256kb"
     },
     "cors": false,
     "types":{
