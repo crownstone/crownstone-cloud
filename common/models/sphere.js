@@ -306,6 +306,16 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__users');
   model.disableRemoteMethodByName('prototype.__get__users');
 
+  // model.disableRemoteMethodByName('prototype.__create__scenes');
+  model.disableRemoteMethodByName('prototype.__delete__scenes');
+  // model.disableRemoteMethodByName('prototype.__destroyById__scenes');
+  // model.disableRemoteMethodByName('prototype.__deleteById__scenes');
+  model.disableRemoteMethodByName('prototype.__updateById__scenes');
+  model.disableRemoteMethodByName('prototype.__findById__scenes');
+  model.disableRemoteMethodByName('prototype.__link__scenes');
+  model.disableRemoteMethodByName('prototype.__count__scenes');
+  model.disableRemoteMethodByName('prototype.__get__scenes');
+
   model.disableRemoteMethodByName('prototype.__create__hubs');
   model.disableRemoteMethodByName('prototype.__delete__hubs');
   model.disableRemoteMethodByName('prototype.__destroyById__hubs');

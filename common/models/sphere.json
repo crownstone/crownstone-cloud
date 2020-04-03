@@ -115,6 +115,11 @@
       "model": "Hub",
       "foreignKey": "sphereId"
     },
+    "scenes": {
+      "type": "hasMany",
+      "model": "Scene",
+      "foreignKey": "sphereId"
+    },
     "geoLocation": {
       "type":"hasOne",
       "model": "geoLocation",

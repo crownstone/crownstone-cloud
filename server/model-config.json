@@ -221,5 +221,9 @@
   "Hub": {
     "dataSource": "userDs",
     "public": true
+  },
+  "Scene": {
+    "dataSource": "mongoDs",
+    "public": true
   }
 }
