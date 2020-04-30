@@ -225,5 +225,9 @@
   "Scene": {
     "dataSource": "mongoDs",
     "public": true
+  },
+  "SortedList": {
+    "dataSource": "mongoDs",
+    "public": true
   }
 }

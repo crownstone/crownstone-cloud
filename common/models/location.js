@@ -271,7 +271,7 @@ module.exports = function(model) {
 	 **** Cascade
 	 ************************************/
 
-	// if the sphere is deleted, delete also all files stored for this sphere
+	// if the location is deleted, delete also all files stored for this sphere
 	model.observe('before delete', function(context, next) {
 	  let locationId = context.where.id;
 		model.deleteImage(locationId, {}, function() {

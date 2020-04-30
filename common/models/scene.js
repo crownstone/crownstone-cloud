@@ -18,10 +18,7 @@ module.exports = function(model) {
 		//***************************
 		// MEMBER:
 		//   - everything except:
-		//   	- delete stone(s)
-		//   	- remove stone(s)
 		//   	- delete scene
-    //    - delete messages
 		//***************************
 		model.settings.acls.push(
 			{
@@ -29,31 +26,6 @@ module.exports = function(model) {
 				"principalType": "ROLE",
 				"principalId": "$group:member",
 				"permission": "ALLOW"
-			}
-		);
-
-		model.settings.acls.push(
-			{
-				"principalType": "ROLE",
-				"principalId": "$group:member",
-				"permission": "DENY",
-				"property": "__destroyById__stones"
-			}
-		);
-		model.settings.acls.push(
-			{
-				"principalType": "ROLE",
-				"principalId": "$group:member",
-				"permission": "DENY",
-				"property": "__unlink__stones"
-			}
-		);
-		model.settings.acls.push(
-			{
-				"principalType": "ROLE",
-				"principalId": "$group:member",
-				"permission": "DENY",
-				"property": "__delete__stones"
 			}
 		);
 		model.settings.acls.push(
@@ -64,22 +36,6 @@ module.exports = function(model) {
 				"property": "deleteById"
 			}
 		);
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:member",
-        "permission": "DENY",
-        "property": "__destroyById__messages"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:member",
-        "permission": "DENY",
-        "property": "__delete__messages"
-      }
-    );
 
 		//***************************
 		// GUEST:
@@ -92,14 +48,6 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:guest",
         "permission": "ALLOW"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:guest",
-        "permission": "ALLOW",
-        "property": "__create__messages"
       }
     );
 		// model.settings.acls.push(
@@ -123,10 +71,37 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__get__owner');
 
 
+  /************************************
+   **** Cascade
+   ************************************/
+
+  // if the location is deleted, delete also all files stored for this sphere
+  model.observe('before delete', function(context, next) {
+    let sceneId = context.where.id;
+    model.deleteImage(sceneId, {}, function() {
+      next()
+    });
+  });
+
+  // if the location is deleted, delete also all files stored for this sphere
+  model.observe('before save', function(context, next) {
+    if (ctx.isNewInstance === false) {
+      let instance = ctx.currentInstance;
+      let changeData = ctx.data;
+      if (changeData.stockPicture && instance.customPictureId) {
+        // the user set a stock picture but we have a custom picture. We will delete the custom picture.
+        model.deleteImage(instance.id, {}, next);
+        return;
+      }
+      next()
+    }
+  });
 
 	/************************************
 	 **** Image Methods
 	 ************************************/
+
+
 
 	model.uploadImage = function(id, req, options, next) {
 		debug("uploadImage");
@@ -140,6 +115,7 @@ module.exports = function(model) {
 
 				// and set the id as profilePicId
         scene.customPictureId = file._id;
+        scene.stockPicture = null;
         scene.save();
 
 				next(null, file);
@@ -160,7 +136,6 @@ module.exports = function(model) {
 			else {
 				upload(scene, req, options);
 			}
-
 		});
 	};
 
@@ -252,4 +227,5 @@ module.exports = function(model) {
 			description: "Delete custom image of the scene"
 		}
 	);
+
 };

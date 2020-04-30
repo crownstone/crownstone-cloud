@@ -236,11 +236,6 @@ class NotificationHandlerClass {
         // console.log("ERROR DURING PUSH!", err)
       })
   }
-
-  _notifyEndpoints() {
-    // todo: add notification endpoints model slaved to sphere
-  }
-
 }
 
 
