@@ -379,7 +379,6 @@ module.exports = function(model) {
       .then((device) => {
         if (!device) { throw "Unknown device" }
         myDevice = device;
-
         // Do I have a linked fingerprint for this location?
         return fingerprintLinkerModel.findOne({where : {and: [{deviceId: deviceId}, {locationId: locationId}]}})
       })
@@ -416,10 +415,10 @@ module.exports = function(model) {
               else {
                 // this fingerprint has been made by the current user.
                 if (String(fingerprint.ownerId) == String(userId)) {
-                  if (fingerprint.phoneType === myDevice.phoneType) {
+                  if (fingerprint.phoneType === myDevice.deviceType) {
                     // this is my fingerprint. Update it.
                     fingerprint.data = fingerprintData;
-                    return fingerprint.save()
+                    return fingerprint.save();
                   }
                   else {
                     // the existing link was from another phone that this user owned
