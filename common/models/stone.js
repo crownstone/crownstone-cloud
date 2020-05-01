@@ -1412,14 +1412,14 @@ module.exports = function(model) {
           for (let i = 0; i < installations.length; i++) {
             if (installations[i].appVersion) {
               if (versionUtil.isHigherOrEqual(installations[i].appVersion, "4.1.0")) {
-                getAbilities();
-                return;
+                return getAbilities();
               }
               else {
-                next(null, []);
+                return next(null, []);
               }
             }
           }
+          return next(null, []);
         }
         else {
           getAbilities();
