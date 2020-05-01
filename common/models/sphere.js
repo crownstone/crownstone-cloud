@@ -2216,7 +2216,11 @@ module.exports = function(model) {
       if (err) return next(err);
       if (model.checkForNullError(sphere, callback, "id: " + id)) return;
 
-      if (filter && filter.include && Array.isArray(filter.include) && filter.include.indexOf("abilities") !== -1) {
+      if (filter && filter.include && (Array.isArray(filter.include) && filter.include.indexOf("abilities") !== -1 || filter.include === "abilities")) {
+        if (filter.include === "abilities") {
+          filter.include = ["abilities"];
+        }
+
         let abilitiesBlocked = false;
         Util.deviceIsMinimalVersion(options, "4.1.0")
           .then((allowAbilities) => {
@@ -2242,8 +2246,8 @@ module.exports = function(model) {
                 }
                 return callback(null, result);
               }
-              callback(null, ownedStones)
             }
+            callback(null, ownedStones)
           })
           .catch((err) => {
             callback(err);
@@ -2253,6 +2257,9 @@ module.exports = function(model) {
         sphere.ownedStones(filter)
           .then((result) => {
             callback(null, result);
+          })
+          .catch((err) => {
+            callback(err);
           })
       }
     })

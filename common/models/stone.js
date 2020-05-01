@@ -1394,7 +1394,7 @@ module.exports = function(model) {
     const StoneAbilities = loopback.getModel("StoneAbility");
 
     // hack to only allow the newest app access to the abilities. Will be removed later on.
-    Util.deviceIsMinimalVersion(options, "5.0.0")
+    Util.deviceIsMinimalVersion(options, "4.1.0")
       .then((result) => {
         if (result) {
           return StoneAbilities.find({where: {stoneId: stoneId}}, {include: "properties"})
