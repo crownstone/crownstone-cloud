@@ -112,7 +112,7 @@
   },
   "Appliance": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "AppInstallation": {
     "dataSource": "mongoDs",

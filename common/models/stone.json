@@ -38,10 +38,6 @@
     "type": {
       "type": "string"
     },
-    "dimmingEnabled": {
-      "type": "boolean",
-      "default": false
-    },
     "deviceType": {
       "type": "string"
     },
@@ -57,15 +53,6 @@
     "icon": {
       "type": "string"
     },
-    "json": {
-      "type": "string"
-    },
-    "touchToToggle": {
-      "type": "boolean"
-    },
-    "tapToToggle": {
-      "type": "boolean"
-    },
     "lastSeenAt": {
       "type": "date"
     },
@@ -78,20 +65,11 @@
     "hardwareVersion": {
       "type": "string"
     },
-    "onlyOnWhenDark": {
-      "type": "boolean"
-    },
     "hidden": {
       "type": "boolean"
     },
     "locked": {
       "type": "boolean"
-    },
-    "switchCraft": {
-      "type": "boolean"
-    },
-    "meshDeviceKey": {
-      "type": "string"
     }
   },
   "validations": [],
@@ -132,29 +110,9 @@
       "model": "EnergyUsage",
       "foreignKey": "stoneId"
     },
-    "appliance": {
-      "type": "belongsTo",
-      "model": "Appliance",
-      "foreignKey": "applianceId"
-    },
-    "schedules": {
-      "type": "hasMany",
-      "model": "Schedule",
-      "foreignKey": "stoneId"
-    },
     "switchStateHistory": {
       "type": "hasMany",
       "model": "SwitchState",
-      "foreignKey": "stoneId"
-    },
-    "activityLog": {
-      "type": "hasMany",
-      "model": "ActivityLog",
-      "foreignKey": "stoneId"
-    },
-    "activityRange": {
-      "type": "hasMany",
-      "model": "ActivityRange",
       "foreignKey": "stoneId"
     },
     "diagnostics": {

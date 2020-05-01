@@ -20,6 +20,9 @@
       "type":"string",
       "required": true
     },
+    "appVersion": {
+      "type": "string"
+    },
     "deviceType": {
       "type": "string",
       "required": true
