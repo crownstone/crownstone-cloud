@@ -345,6 +345,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__Toons');
 
   model.disableRemoteMethodByName('prototype.__delete__ownedLocations');
+  model.disableRemoteMethodByName('prototype.__get__ownedStones');
   model.disableRemoteMethodByName('prototype.__delete__ownedStones');
   model.disableRemoteMethodByName('prototype.__delete__ownedAppliances');
   model.disableRemoteMethodByName('prototype.__delete__messages');
@@ -2208,4 +2209,67 @@ module.exports = function(model) {
     }
   );
 
+
+
+  model.getOwnedStones = function(id, filter, options, callback) {
+    model.findById(id, function(err, sphere) {
+      if (err) return next(err);
+      if (model.checkForNullError(sphere, callback, "id: " + id)) return;
+
+      if (filter && filter.include && Array.isArray(filter.include) && filter.include.indexOf("abilities") !== -1) {
+        let abilitiesBlocked = false;
+        Util.deviceIsMinimalVersion(options, "4.1.0")
+          .then((allowAbilities) => {
+            abilitiesBlocked = !allowAbilities;
+            if (allowAbilities === false) {
+              if (filter.include.length === 1) {
+                filter = {};
+              }
+              else {
+                let positionOfAbilityFilter = filter.include.indexOf("abilities");
+                filter.include.splice(positionOfAbilityFilter, 1);
+              }
+            }
+
+            return sphere.ownedStones(filter)
+          })
+          .then((ownedStones) => {
+            if (abilitiesBlocked) {
+              let result = [];
+              if (ownedStones.length > 0) {
+                for (let i = 0; i < ownedStones.length; i++) {
+                  result.push({...ownedStones[i].__data, abilities:[]})
+                }
+                return callback(null, result);
+              }
+              callback(null, ownedStones)
+            }
+          })
+          .catch((err) => {
+            callback(err);
+          })
+      }
+      else {
+        sphere.ownedStones(filter)
+          .then((result) => {
+            callback(null, result);
+          })
+      }
+    })
+
+  }
+
+  model.remoteMethod(
+    'getOwnedStones',
+    {
+      http: {path: '/:id/ownedStones', verb: 'get'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'filter',    type: 'any', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['Stone'], root: true},
+      description: "Queries ownedStones of Sphere."
+    }
+  );
 };

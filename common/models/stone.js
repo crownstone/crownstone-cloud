@@ -1391,45 +1391,23 @@ module.exports = function(model) {
   }
 
   model.getAbilities = function(stoneId, options, next) {
-    let userId = options.accessToken.userId;
-    // hack to only allow the newest app access to the abilities. Will be removed later on.
-    const DeviceModel = loopback.getModel("Device");
     const StoneAbilities = loopback.getModel("StoneAbility");
 
-    let getAbilities = () => {
-      StoneAbilities.find({where: {stoneId: stoneId}}, {include: "properties"})
-        .then((data) => {
-          next(null, data); })
-        .catch((err) => {
-          next(err);
-        })
-    }
-
-    DeviceModel.findOne({where: {ownerId: userId}, include: "installations", order: "updatedAt DESC", limit: "1"})
-      .then((device) => {
-        if (device) {
-          let installations = device.installations();
-          for (let i = 0; i < installations.length; i++) {
-            if (installations[i].appVersion) {
-              if (versionUtil.isHigherOrEqual(installations[i].appVersion, "4.1.0")) {
-                return getAbilities();
-              }
-              else {
-                return next(null, []);
-              }
-            }
-          }
-          return next(null, []);
+    // hack to only allow the newest app access to the abilities. Will be removed later on.
+    Util.deviceIsMinimalVersion(options, "5.0.0")
+      .then((result) => {
+        if (result) {
+          return StoneAbilities.find({where: {stoneId: stoneId}}, {include: "properties"})
+            .then((data) => { next(null, data); })
         }
         else {
-          getAbilities();
+          next(null,[]);
         }
       })
-
-
-
+      .catch((err) => {
+        next(err);
+      })
   }
-
 
 
   model.remoteMethod(
