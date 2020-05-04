@@ -1312,16 +1312,16 @@ module.exports = function(model) {
 
     const updateAbility = function(type, abilityData, existingAbility) {
       existingAbility.type = type
-      existingAbility.enabled = abilityData.enabled
+      existingAbility.enabled = abilityData.enabled;
       existingAbility.syncedToCrownstone = abilityData.syncedToCrownstone;
+      let existingProperties = existingAbility.properties();
+      let existingPropertyLength = existingProperties.length || 0;
       return existingAbility.save()
         .then(() => {
           let propertyLength = abilityData.properties && abilityData.properties.length || 0;
 
           if (propertyLength > 0) {
             // loop over existing ability properties to chech which to add or update.
-            let existingPropertyLength = existingAbility.properties && existingAbility.properties.length || 0;
-
             for (let i = 0; i < propertyLength; i++) {
               let found = false;
               if (ABILITY_PROPERTY_TYPE[type][abilityData.properties[i].type] === undefined) {
@@ -1329,10 +1329,10 @@ module.exports = function(model) {
               }
 
               for (let j = 0; j < existingPropertyLength; j++) {
-                if (abilityData.properties && abilityData.properties[i].type === existingAbility.properties[j].type) {
-                  if (abilityData.properties[i].value !== existingAbility.properties[j].value) {
-                    existingAbility.properties[i].value = abilityData.properties[i].value;
-                    existingAbility.properties[i].save();
+                if (abilityData.properties && abilityData.properties[i].type === existingProperties[j].type) {
+                  if (abilityData.properties[i].value !== existingProperties[j].value) {
+                    existingProperties[i].value = abilityData.properties[i].value;
+                    existingProperties[i].save();
                   }
                   found = true;
                   break;
@@ -1361,7 +1361,7 @@ module.exports = function(model) {
         stone = stoneResult;
         sphereId = stone.sphereId;
 
-        return StoneAbilities.find({where:{stoneId: stoneId}})
+        return StoneAbilities.find({where:{stoneId: stoneId}, include: ["properties"]})
       })
       .then((abilities) => {
         if (abilities.length === 0) {
