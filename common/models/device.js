@@ -574,7 +574,6 @@ module.exports = function(model) {
           }
         })
     };
-
     // check if we already have linker entries for the provided ids
     model.findById(deviceId)
       .then((device) => {
@@ -610,7 +609,6 @@ module.exports = function(model) {
             })
           )
         }
-
         return Promise.all(promises);
       })
       .then(() => {

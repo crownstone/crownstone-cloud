@@ -10,10 +10,29 @@ module.exports = function(model) {
 	let app = require('../../server/server');
 	if (app.get('acl_enabled')) {
 
+    model.settings.acls.push(
+      {
+        "accessType": "READ",
+        "principalType": "ROLE",
+        "principalId": "$authenticated",
+        "permission": "ALLOW",
+        "property": "find"
+      }
+    );
+
 		//***************************
 		// GENERAL, ADMIN and OWNER
 		//  see sphere-content.js
 		//***************************
+
+    model.settings.acls.push(
+      {
+        "accessType": "EXECUTE",
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "ALLOW"
+      }
+    );
 
 		//***************************
 		// MEMBER:
@@ -40,7 +59,6 @@ module.exports = function(model) {
 		//***************************
 		// GUEST:
 		//   - read
-    //   - send message
 		//***************************
 		model.settings.acls.push(
       {
@@ -50,14 +68,6 @@ module.exports = function(model) {
         "permission": "ALLOW"
       }
     );
-		// model.settings.acls.push(
-		// 	{
-		// 		"principalType": "ROLE",
-		// 		"principalId": "$group:guest",
-		// 		"permission": "ALLOW",
-		// 		"property": "__updateById__stones"
-		// 	}
-		// );
 	}
 
 
