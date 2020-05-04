@@ -95,6 +95,9 @@ module.exports = function(model) {
       }
       next()
     }
+    else {
+      next();
+    }
   });
 
 	/************************************

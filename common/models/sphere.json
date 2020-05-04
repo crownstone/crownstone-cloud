@@ -89,11 +89,6 @@
       "model": "Stone",
       "foreignKey": "sphereId"
     },
-    "ownedAppliances": {
-      "type": "hasMany",
-      "model": "Appliance",
-      "foreignKey": "sphereId"
-    },
     "events": {
       "type": "hasMany",
       "model": "Change",
