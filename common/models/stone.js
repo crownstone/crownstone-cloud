@@ -1329,7 +1329,7 @@ module.exports = function(model) {
               }
 
               for (let j = 0; j < existingPropertyLength; j++) {
-                if (abilityData.properties[i].type === existingAbility.properties[j].type) {
+                if (abilityData.properties && abilityData.properties[i].type === existingAbility.properties[j].type) {
                   if (abilityData.properties[i].value !== existingAbility.properties[j].value) {
                     existingAbility.properties[i].value = abilityData.properties[i].value;
                     existingAbility.properties[i].save();

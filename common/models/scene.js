@@ -84,7 +84,7 @@ module.exports = function(model) {
   });
 
   // if the location is deleted, delete also all files stored for this sphere
-  model.observe('before save', function(context, next) {
+  model.observe('before save', function(ctx, next) {
     if (ctx.isNewInstance === false) {
       let instance = ctx.currentInstance;
       let changeData = ctx.data;
