@@ -1516,28 +1516,30 @@ module.exports = function(model) {
     }
   );
 
-  model.deleteAllAppliances = function(id, callback) {
-    debug("deleteAllAppliances");
-    model.findById(id, {include: "ownedAppliances"}, function(err, sphere) {
+
+  model.deleteAllScenes = function(id, callback) {
+    debug("deleteAllScenes");
+    model.findById(id, {include: "scenes"}, function(err, sphere) {
       if (err) return callback(err);
       if (model.checkForNullError(sphere, callback, "id: " + id)) return;
 
-      sphere.ownedAppliances.destroyAll(function(err) {
+      sphere.scenes.destroyAll(function(err) {
         callback(err);
       });
     })
   };
 
   model.remoteMethod(
-    'deleteAllAppliances',
+    'deleteAllScenes',
     {
-      http: {path: '/:id/deleteAllAppliances', verb: 'delete'},
+      http: {path: '/:id/deleteAllScenes', verb: 'delete'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
-      description: "Delete all appliances of Sphere"
+      description: "Delete all scenes of Sphere"
     }
   );
+
 
   model.deleteAllMessages = function(id, callback) {
     debug("deleteAllMessages");
