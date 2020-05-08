@@ -98,6 +98,18 @@ class DataChangeEventHandler {
   }
 
   // ----- STONES UPDATE ----- //
+  sendStoneSwitchOccurredBySphereId(sphereId, stone, switchState) {
+    return EventConstructor.getData({sphereId})
+      .then((data) => {
+        this.sendStoneSwitchOccurredEvent(data.sphere, stone, switchState);
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
+  }
+  sendStoneSwitchOccurredEvent(sphere, stone, switchState) {
+    let packet = SSEPacketGenerator.generateSwitchStateUpdatedEvent(stone, sphere, switchState);
+    SSEManager.emit(packet)
+  }
+
   sendStoneUpdatedEventBySphereId(sphereId, stone) {
     return EventConstructor.getData({sphereId})
       .then((data) => {

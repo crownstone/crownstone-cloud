@@ -355,7 +355,7 @@ module.exports = function(model) {
       })
   }
 
-  function afterSave(ctx,next) {
+  function afterSave(ctx, next) {
     enforceUniqueness(ctx, (err) => {
       if (err) { return next(err); }
 
@@ -372,6 +372,10 @@ module.exports = function(model) {
           })
       }
       else {
+        if (ctx && ctx.options && ctx.options.blockUpdateEvent === true) {
+          return next();
+        }
+
         EventHandler.dataChange.sendStoneUpdatedEventBySphereId(ctx.instance.sphereId, ctx.instance);
         next();
       }
@@ -1193,7 +1197,9 @@ module.exports = function(model) {
 
       if (switchStateInstance) {
         stone.currentSwitchStateId = switchStateInstance.id;
-        stone.save(function(err, stoneInstance) {
+        stone.save({blockUpdateEvent:true}, function(err, stoneInstance) {
+          EventHandler.dataChange.sendStoneSwitchOccurredBySphereId(stoneInstance.sphereId, stoneInstance, switchState.switchState);
+
           if (next) {
             if (err) return next(err);
             next(null, switchStateInstance);
