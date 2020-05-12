@@ -11,7 +11,7 @@ module.exports = {
   generateSwitchStateUpdatedEvent(stone,sphere,switchState) {
     return {
       type:       "switchStateUpdate",
-      subtype:    "stone",
+      subType:    "stone",
       sphere:     { id: sphere.id, uid: sphere.uid, name: sphere.name},
       crownstone: { id: stone.id,  uid: stone.uid,  name: stone.name, switchState: switchState, macAddress: stone.address}
     };
