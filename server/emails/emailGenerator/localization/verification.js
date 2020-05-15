@@ -13,12 +13,12 @@ module.exports = {
   },
   nl_nl: {
     subject:                 "Welkom bij Crownstone!",
-    title:                   "Verifiëer je email adres.",
-    preview:                 "Verifiëer je email adres om je account te activeren!",
+    title:                   "Verifiëer je e-mailadres.",
+    preview:                 "Verifiëer je e-mailadres om je account te activeren!",
     headerText:              "Hoi <%= newUser %>!",
     headerDescription:       "Hebben we het juiste e-mailadres om je te bereiken? Klik op de onderstaande knop om je e-mailadres te bevestigen.",
     secondHeaderDescription: '',
     buttonLabel:             "Laten we beginnen!",
     explanation:             "Als de knop niet werkt, kopiëer de link in de browser en open de pagina.",
   }
-}
+};

@@ -57,6 +57,10 @@
       "type": "boolean",
       "default": true
     },
+    "language": {
+      "type": "string",
+      "default": "en_us"
+    },
     "earlyAccessLevel": {
       "type": "number",
       "default": 0,
