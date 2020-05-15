@@ -231,9 +231,9 @@ module.exports = function(model) {
    * "Email already exists".
    *
    */
-  model.sendVerification = function(user, tokenGenerator, callback) {
+  model.sendVerification = function(user, tokenGenerator, language, callback) {
     console.log("New account. Send email to verify user.");
-    let options = util.getVerificationEmailOptions(user);
+    let options = util.getVerificationEmailOptions(user, language);
     options.generateVerificationToken = tokenGenerator;
     options.verifyHref = app.__baseUrl + '/api/users/confirm?uid=' + user.id + '&redirect=/verified';
     debug("sending verification");
@@ -242,7 +242,11 @@ module.exports = function(model) {
 
   model.onCreate = function(context, user, callback) {
     if (model.settings.emailVerificationRequired) {
-      model.sendVerification(user, null, function(err, response) {
+      let language = "en_us";
+      if (context && context.args && context.args.data && context.args.data.language && context.args.data.language == "nl_nl") {
+        language = "nl_nl"
+      }
+      model.sendVerification(user, null, language, function(err, response) {
         if (err) return callback(err);
         callback();
       })
@@ -278,10 +282,11 @@ module.exports = function(model) {
         if (user.verificationToken) {
           model.sendVerification(user,
             function(user, tokenProvider) { tokenProvider(null, user.verificationToken); },
+            "en_us",
             function(err, response) { callback(err); }
           );
         } else {
-          model.sendVerification(user, null, function(err, response) { callback(err); });
+          model.sendVerification(user, null, "en_us",function(err, response) { callback(err); });
         }
       }
       else {

@@ -1,6 +1,10 @@
 'use strict';
 
+const DEFAULT_LANGUAGE = "en_us";
+
 const fs = require("fs");
+const socialLocalization = require('./localization/social');
+const verificationLocalization = require('./localization/verification');
 
 // read CSS
 let header                = null;
@@ -20,7 +24,7 @@ let social                = null;
 
 let tableSpacer = '<tr style="height:30px;" />\n'
 
-function getFreshComponents() {
+function getFreshComponents(language = DEFAULT_LANGUAGE) {
   header                = fs.readFileSync('./elements/header.html', "utf8");
   css                   = fs.readFileSync('./elements/css.html', "utf8");
   bodyStart             = fs.readFileSync('./elements/bodyStart.html', "utf8");
@@ -35,24 +39,29 @@ function getFreshComponents() {
   social                = fs.readFileSync('./elements/social.html', "utf8");
   emailBodyEnd          = fs.readFileSync('./elements/emailMainBodyEnd.html', "utf8");
   bodyEnd               = fs.readFileSync('./elements/closer.html', "utf8");
+
+  social = social.replace("__p1_dontKnow__"    , socialLocalization[language].dontKnow)
+  social = social.replace("__p2_pleaseTellUs__", socialLocalization[language].pleaseTellUs)
+  social = social.replace("__p3_email__"       , socialLocalization[language].email)
+  social = social.replace("__p4_call__"        , socialLocalization[language].call)
 }
 
 
 
 
-function generateValidation() {
-  getFreshComponents();
-  bodyStart = bodyStart.replace("__title__", "Verify your email for Crownstone.")
-  bodyStart = bodyStart.replace("__preview__", "Let's verify your email to finalize your account creation!")
+function generateVerification(language = DEFAULT_LANGUAGE, filenameExtension = "") {
+  getFreshComponents(language);
+  bodyStart = bodyStart.replace("__title__",                               verificationLocalization[language]["title"]);
+  bodyStart = bodyStart.replace("__preview__",                             verificationLocalization[language]["preview"]);
 
-  headerText = headerText.replace("__headerText__", "Hi <%= newUser %>!")
-  headerText = headerText.replace("__headerDescription__", "Do we have the right email address to reach you? To confirm your email address, click the button below.")
-  headerText = headerText.replace("__secondHeaderDescription__","")
+  headerText = headerText.replace("__headerText__",                        verificationLocalization[language]["headerText"]);
+  headerText = headerText.replace("__headerDescription__",                 verificationLocalization[language]["headerDescription"]);
+  headerText = headerText.replace("__secondHeaderDescription__",verificationLocalization[language]["secondHeaderDescription"]);
 
   button = button.replace("__link__", "<%= verifyHref %>")
-  button = button.replace("__buttonLabel__", "Let's get started!")
+  button = button.replace("__buttonLabel__",                               verificationLocalization[language]["buttonLabel"]);
 
-  singleLinkAlternative = singleLinkAlternative.replace("__explanation__", "If the button does not work, copy the full link below into your browser and open the page.")
+  singleLinkAlternative = singleLinkAlternative.replace("__explanation__", verificationLocalization[language]["explanation"]);
   singleLinkAlternative = singleLinkAlternative.replace("__link__", "<%= verifyHref %>")
 
   let result = "" +
@@ -72,7 +81,7 @@ function generateValidation() {
     social +
     bodyEnd
 
-  fs.writeFileSync('../verificationEmail.html', result)
+  fs.writeFileSync('../verificationEmail' + filenameExtension + '.html', result)
 }
 
 
@@ -121,7 +130,7 @@ function generateInviteNew() {
   bodyStart = bodyStart.replace("__preview__", "You've been invited!")
 
   headerText = headerText.replace("__headerText__", "Welcome to Crownstone!")
-  headerText = headerText.replace("__headerDescription__", "You just have been invited <%= invitedByText %>to join a Crownstone sphere with the name <%= sphereName %>!")
+  headerText = headerText.replace("__headerDescription__", "You just have been invited <%= invitedByText %> to join a Crownstone sphere with the name <%= sphereName %>!")
   headerText = headerText.replace("__secondHeaderDescription__", '<p class="description">Get started by creating a account for yourself by clicking the button below. This invitation will expire after 7 days.</p>')
 
   let button2 = button;
@@ -167,7 +176,7 @@ function generateInviteExistingUser() {
   headerImage = headerImage.replace("__image__", "https://crownstone.rocks/attachments/email/invite.png")
 
   headerText = headerText.replace("__headerText__", "Your invitation awaits!")
-  headerText = headerText.replace("__headerDescription__", "You just have been invited <%= invitedByText %>to join a Crownstone sphere with the name <%= sphereName %>!")
+  headerText = headerText.replace("__headerDescription__", "You just have been invited <%= invitedByText %> to join a Crownstone sphere with the name <%= sphereName %>!")
   headerText = headerText.replace("__secondHeaderDescription__", '<p class="description">By clicking the button below you can link your existing account to their sphere. This invitation will expire after 7 days.</p>')
 
   let button2 = button;
@@ -206,7 +215,8 @@ function generateInviteExistingUser() {
 }
 
 
-generateValidation()
+generateVerification()
+generateVerification("nl_nl","_nl_nl")
 generateForgotPassword()
 generateInviteNew()
 generateInviteExistingUser()

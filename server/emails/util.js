@@ -2,7 +2,9 @@ let loopback = require('loopback');
 let path = require('path');
 const debug = require('debug')('loopback:dobots');
 const Email = loopback.findModel('Email');
-let app = require('../../server/server');
+const app = require('../../server/server');
+const verificationLocalization = require("./emailGenerator/localization/verification")
+
 
 let util = {
 
@@ -23,10 +25,14 @@ let util = {
   /*
    * See https://docs.strongloop.com/display/public/LB/Registering+users for information on registering new users.
    */
-  getVerificationEmailOptions: function(user) {
-    let template = path.resolve(__dirname, './verificationEmail.html');
+  getVerificationEmailOptions: function(user, language = "en_us") {
+    let templatePath = './verificationEmail.html'
+    if (language !== "en_us") {
+      templatePath = './verificationEmail_' + language + '.html'
+    }
+    let template = path.resolve(__dirname, templatePath);
 
-    let subject = 'Welcome to Crownstone!';
+    let subject = verificationLocalization[language].subject;
     let options = this.getDefaultEmailOptions(user.email, subject);
     options.firstName = user.firstName;
     options.lastName = user.lastName;
