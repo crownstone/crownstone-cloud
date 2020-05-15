@@ -243,7 +243,7 @@ module.exports = function(model) {
   model.onCreate = function(context, user, callback) {
     if (model.settings.emailVerificationRequired) {
       let language = "en_us";
-      if (context && context.args && context.args.data && context.args.data.language && context.args.data.language == "nl_nl") {
+      if (context && context.req && context.req.body && context.req.body.language && context.req.body.language == "nl_nl") {
         language = "nl_nl"
       }
       model.sendVerification(user, null, language, function(err, response) {
