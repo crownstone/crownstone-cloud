@@ -1,6 +1,6 @@
+const htmlPrepare = require("./util")['htmlPrepare']
 
-
-module.exports = {
+module.exports = htmlPrepare({
   en_us: {
     subject:                 "Welcome to Crownstone!",
     title:                   "Verify your email for Crownstone.",
@@ -21,4 +21,4 @@ module.exports = {
     buttonLabel:             "Laten we beginnen!",
     explanation:             "Als de knop niet werkt, kopiëer de link in de browser en open de pagina.",
   }
-};
+});
