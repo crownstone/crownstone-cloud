@@ -418,8 +418,11 @@ module.exports = function(model) {
   model.observe('after save', afterSave);
 
   model.observe('before delete', function(ctx, next) {
-    let stoneId = ctx.where.id;
-    model.findById(stoneId)
+    Promise.resolve()
+      .then(() => {
+        let stoneId = ctx.where.and[0].id;
+        return model.findById(stoneId);
+      })
       .then((stone) => {
         if (stone) {
           return EventHandler.dataChange.sendStoneDeletedEventBySphereId(stone.sphereId, stone);
