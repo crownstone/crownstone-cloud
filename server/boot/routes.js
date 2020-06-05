@@ -3,6 +3,7 @@ let request = require('request');
 let bodyParser = require('body-parser');
 const notificationHandler = require("../modules/NotificationHandler");
 const EventHandler = require("../modules/EventHandler");
+const SSEManager = require("../modules/SSEManager");
 const debug = require('debug')('loopback:dobots');
 
 module.exports = function (app) {
@@ -555,5 +556,18 @@ module.exports = function (app) {
       });
 
   });
+
+  app.get('/debug', function(req, res) {
+    let validationToken = process.env.DEBUG_TOKEN || "debug"
+    if (req.query.token === validationToken) {
+      let debugInformation = {
+        amountOfSSEconnections: Object.keys(SSEManager.connections).length,
+      };
+      res.end(JSON.stringify(debugInformation))
+    }
+    else {
+      res.end("Invalid token.")
+    }
+  })
 
 };
