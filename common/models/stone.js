@@ -1184,14 +1184,22 @@ module.exports = function(model) {
   model.setCurrentSwitchState = function(stoneId, switchState, next) {
     debug("setCurrentPowerUsage");
 
-    model.findById(stoneId, {include: "currentSwitchState"}, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+    model.findById(stoneId, {include: "currentSwitchState"})
+      .then((stone) => {
+        if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      if (switchState !== stone.currentSwitchState().switchState) {
-        model._setCurrentSwitchState(stone, {switchState: switchState}, next);
-      }
-    })
+        let currentSwitchState = stone.currentSwitchState()
+
+        if (currentSwitchState === null || switchState !== currentSwitchState.switchState) {
+          model._setCurrentSwitchState(stone, {switchState: switchState}, next);
+        }
+        else {
+          next(null);
+        }
+      })
+      .catch((err) => {
+        return next(err)
+      })
   };
 
   model._setCurrentSwitchState = function(stone, switchState, next) {
