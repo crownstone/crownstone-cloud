@@ -1189,7 +1189,6 @@ module.exports = function(model) {
         if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
         let currentSwitchState = stone.currentSwitchState()
-
         if (currentSwitchState === null || switchState !== currentSwitchState.switchState) {
           model._setCurrentSwitchState(stone, {switchState: switchState}, next);
         }
@@ -1276,7 +1275,7 @@ module.exports = function(model) {
   };
 
   const ABILITY_PROPERTY_TYPE = {
-    dimming:      {},
+    dimming:      { softOnSpeed: 'softOnSpeed' },
     switchcraft:  {},
     tapToToggle:  { rssiOffset: 'rssiOffset' },
   };

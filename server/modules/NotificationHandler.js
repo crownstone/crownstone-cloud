@@ -287,7 +287,7 @@ function getTokensFromUsers(users, excludeDeviceId) {
   for (let i = 0; i < users.length; i++) {
     let devices = users[i].devices();
     for (let j = 0; j < devices.length; j++) {
-      if (devices[j].id == excludeDeviceId) {
+      if (String(devices[j].id) == excludeDeviceId) {
         continue;
       }
 
