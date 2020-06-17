@@ -11,7 +11,7 @@ module.exports = {
   },
 
   unauthorizedError: function() {
-    new Error("Authorization Required");
+    let error = new Error("Authorization Required");
     error.statusCode = error.status = 401;
     error.code = "AUTHORIZATION_REQUIRED";
     return error;
