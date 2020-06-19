@@ -1286,13 +1286,13 @@ module.exports = function(model) {
    * @param stoneId     string
    * @param data        { ABILITY_TYPE: {enabled: boolean, syncedToCrownstone: boolean, properties: [{type: ABILITY_PROPERTY_TYPE, value: any}]} }
    * @param options
-   * @param next
+   * @param callback
    */
-  model.setAbilities = function(stoneId, data, options, next) {
+  model.setAbilities = function(stoneId, data, options, callback) {
     let abilitiesToSet = Object.keys(data);
     for ( let i = 0; i < abilitiesToSet; i++) {
       if (ABILITY_TYPE[abilitiesToSet[i]] === undefined) {
-        return next({statusCode: 400, message: "Invalid ability: " + abilitiesToSet[i]})
+        return callback({statusCode: 400, message: "Invalid ability: " + abilitiesToSet[i]})
       }
     }
 
@@ -1380,9 +1380,10 @@ module.exports = function(model) {
         return StoneAbilities.find({where:{stoneId: stoneId}, include: ["properties"]})
       })
       .then((abilities) => {
+        let promises = [];
         if (abilities.length === 0) {
           for (let i = 0; i < abilitiesToSet.length; i++) {
-            createAbility(abilitiesToSet[i], data[abilitiesToSet[i]]);
+            promises.push(createAbility(abilitiesToSet[i], data[abilitiesToSet[i]]));
           }
         }
         else {
@@ -1391,18 +1392,19 @@ module.exports = function(model) {
             for (let j = 0; j < abilities.length; j++) {
               if (abilities[j].type === abilitiesToSet[i]) {
                 found = true;
-                updateAbility(abilitiesToSet[i], data[abilitiesToSet[i]], abilities[j]);
+                promises.push(updateAbility(abilitiesToSet[i], data[abilitiesToSet[i]], abilities[j]));
                 break;
               }
             }
           }
         }
+        return Promise.all(promises);
       })
       .then(() => {
-        next();
+        callback();
       })
       .catch((err) => {
-        next(err);
+        callback(err);
       })
   }
 

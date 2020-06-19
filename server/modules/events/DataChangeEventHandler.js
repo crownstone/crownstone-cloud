@@ -136,6 +136,16 @@ class DataChangeEventHandler {
   }
 
 
+  // ----------- ABILITY CHANGE ------------- //
+  sendAbilityChangeEventByIds(sphereId, stoneId, ability) {
+    return EventConstructor.getData({sphereId, stoneId})
+      .then((data) => {
+        let packet = SSEPacketGenerator.generateAbilityChangeEvent(data.sphere, data.stone, ability);
+        SSEManager.emit(packet)
+      })
+      .catch((err) => { console.log(err)/** ignore error, simply do not generate event. **/ })
+  }
+
 
 
   // LOCATIONS //
