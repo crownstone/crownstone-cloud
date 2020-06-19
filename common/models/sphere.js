@@ -2215,8 +2215,21 @@ module.exports = function(model) {
 
   model.getOwnedStones = function(id, filter, options, callback) {
     model.findById(id, function(err, sphere) {
-      if (err) return next(err);
+      if (err) return callback(err);
       if (model.checkForNullError(sphere, callback, "id: " + id)) return;
+
+      if (typeof filter === 'string') {
+        try {
+          filter = JSON.parse(filter);
+        }
+        catch (err) {
+          return callback({
+            statusCode: 400,
+            name: "Error",
+            message: err.message
+          })
+        }
+      }
 
       if (filter && filter.include && (Array.isArray(filter.include) && filter.include.indexOf("abilities") !== -1 || filter.include === "abilities")) {
         if (filter.include === "abilities") {
