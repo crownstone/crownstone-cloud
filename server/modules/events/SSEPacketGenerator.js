@@ -206,5 +206,5 @@ function userData( user )         { return nameIdSet(user); }
 function nameIdSet( item )        { return { id: String(item.id), name: item.name}; }
 function abilityData( ability )   { return { type: ability.type, enabled: ability.enabled, syncedToCrownstone: ability.syncedToCrownstone }; }
 function crownstoneData( stone, switchState )  {
-  return { id: String(stone.id),  uid: stone.uid,  name: stone.name, switchState: switchState || null, macAddress: stone.address };
+  return { id: String(stone.id),  uid: stone.uid,  name: stone.name, switchState: switchState === undefined ? null : switchState, macAddress: stone.address };
 }
