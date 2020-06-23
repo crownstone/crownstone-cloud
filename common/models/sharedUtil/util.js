@@ -10,6 +10,11 @@ module.exports = {
     return crypto.randomBytes(16).toString('hex');
   },
 
+
+  createToken: function() {
+    return crypto.randomBytes(32).toString('hex');
+  },
+
   unauthorizedError: function() {
     let error = new Error("Authorization Required");
     error.statusCode = error.status = 401;

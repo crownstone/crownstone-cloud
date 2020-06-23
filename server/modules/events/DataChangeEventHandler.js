@@ -79,6 +79,17 @@ class DataChangeEventHandler {
     SSEManager.emit(packet)
   }
 
+  sendSphereTokensUpdatedById(sphereId) {
+    return EventConstructor.getData({sphereId})
+      .then((data) => {
+        this.sendSphereTokensUpdated(data.sphere);
+      })
+      .catch((err) => { /** ignore error, simply do not generate event. **/ })
+  }
+  sendSphereTokensUpdated(sphere) {
+    let packet = SSEPacketGenerator.generateSphereTokensUpdatedEvent(sphere);
+    SSEManager.emit(packet)
+  }
 
 
 

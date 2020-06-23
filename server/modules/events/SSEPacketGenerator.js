@@ -130,6 +130,14 @@ module.exports = {
       changedItem: nameIdSet(user),
     };
   },
+  generateSphereTokensUpdatedEvent(sphere) {
+    return {
+      type:        "sphereTokensChanged",
+      subType:     "sphereAuthorizationTokens",
+      operation:   "update",
+      sphere:      sphereData(sphere),
+    };
+  },
 
   // STONES //
   generateStoneCreatedEvent(sphere, stone) {

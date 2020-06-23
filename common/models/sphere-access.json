@@ -21,6 +21,10 @@
       "type": "string",
       "required": false
     },
+    "sphereAuthorizationToken": {
+      "type": "string",
+      "required": false
+    },
     "invitePending": {
       "type": "boolean"
     }

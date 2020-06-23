@@ -724,7 +724,12 @@ module.exports = function(model) {
       .then((accessInSpheres) => {
         let keyPromises = [];
         accessInSpheres.forEach((sphereAccess) => {
-          result.push({sphereId: sphereAccess.sphereId, sphereKeys: [], stoneKeys: {}});
+          result.push({
+            sphereId: sphereAccess.sphereId,
+            sphereAuthorizationToken: sphereAccess.sphereAuthorizationToken,
+            sphereKeys: [],
+            stoneKeys: {}
+          });
           if (sphereAccess && sphereAccess.role) {
             keyPromises.push(getKeysForUser(sphereAccess.sphereId, sphereAccess.role, result, stoneId));
           }

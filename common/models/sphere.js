@@ -219,6 +219,14 @@ module.exports = function(model) {
         "property": "__deleteById__messages"
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "DENY",
+        "property": 'getTokenData'
+      }
+    );
     //***************************
     // GUEST:
     //   - read
@@ -263,6 +271,15 @@ module.exports = function(model) {
         "property": "declineInvite"
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "DENY",
+        "property": 'getTokenData'
+      }
+    );
+
     //***************************
     // HUB:
     //   - cannot create new hub
@@ -284,6 +301,15 @@ module.exports = function(model) {
         }
       );
     })
+
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:hub",
+        "permission": "ALLOW",
+        "property": 'getTokenData'
+      }
+    );
   }
 
 
@@ -382,7 +408,7 @@ module.exports = function(model) {
       }
       else {
         EventHandler.dataChange.sendSphereUserDeletedEvent(sphere, user);
-
+        cycleSphereAuthorizationTokens(sphere.id).catch();
         // we collect the users because we need the userIds of all users in the sphere, including the one whos is about to be deleted.
         // this promise takes care of a race condition where the user is deleted before we get his id.
         notificationHandler.collectSphereUsers(String(sphere.id))
@@ -597,7 +623,8 @@ module.exports = function(model) {
         sphereId: sphere.id,
         userId: user.id,
         role: access,
-        invitePending: invite
+        invitePending: invite,
+        sphereAuthorizationToken: Util.createToken()
       },
       function(err, access) {
         callback(err);
@@ -1232,7 +1259,6 @@ module.exports = function(model) {
   );
 
   model.changeRole = function(id, email, role, callback) {
-
     const User = loopback.findModel('user');
     User.findOne({where: {email: email}}, function(err, user) {
       if (err) return callback(err);
@@ -1243,6 +1269,7 @@ module.exports = function(model) {
 
         if (success) {
           EventHandler.dataChange.sendSphereUserUpdatedEventById(id, user.id);
+          cycleSphereAuthorizationTokens(id).catch();
 
           const SphereAccess = loopback.findModel("SphereAccess");
           SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
@@ -1268,8 +1295,6 @@ module.exports = function(model) {
           return callback(error);
         }
       });
-
-
     });
 
     // model.findById(id, {include: {relation: "users", scope: {where: {email: email}}}}, function(err, user) {
@@ -1283,6 +1308,24 @@ module.exports = function(model) {
     // 	})
     // });
   };
+
+  function cycleSphereAuthorizationTokens(sphereId) {
+    const SphereAccess = loopback.findModel("SphereAccess");
+    return SphereAccess.find({where: {sphereId: sphereId}})
+      .then((results) => {
+        let promises = [];
+        results.forEach((result) => {
+          result.sphereAuthorizationToken = Util.createToken();
+          promises.push(result.save());
+        })
+
+        return Promise.all(promises);
+      })
+      .then(() => {
+        EventHandler.dataChange.sendSphereTokensUpdatedById(sphereId);
+      })
+  }
+
 
   model.remoteMethod(
     'changeRole',
@@ -2124,12 +2167,17 @@ module.exports = function(model) {
 
   model.createHub = function(id, token, name, options, callback) {
     const hubModel = loopback.getModel("Hub");
-    // TODO: check token length, at least 128 characters
-    hubModel.create({
-      sphereId: id,
-      token: token,
-      name: name
-    })
+
+    // ensure all users have an authentication token.
+    cycleSphereAuthorizationTokens(id)
+      .then(() => {
+        // TODO: check token length, at least 128 characters
+        return hubModel.create({
+          sphereId: id,
+          token: token,
+          name: name
+        })
+      })
       .then(()     => { callback(null); })
       .catch((err) => { callback(err);  })
   };
@@ -2292,6 +2340,51 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: ['Stone'], root: true},
       description: "Queries ownedStones of Sphere."
+    }
+  );
+
+
+  model.getTokenData = function(id, options, callback) {
+    let data = {}
+    const SphereAccess = loopback.findModel("SphereAccess");
+    let accessData = null;
+    SphereAccess.find({where: {sphereId: id}})
+      .then((results) => {
+        accessData = results;
+        let missingTokens = false;
+        for (let i = 0; i < accessData.length; i++) {
+          if (!accessData[i].sphereAuthorizationToken) {
+            missingTokens = true;
+            break;
+          }
+        }
+
+        if (missingTokens) {
+          return cycleSphereAuthorizationTokens(id);
+        }
+      })
+      .then(() => {
+        for (let i = 0; i < accessData.length; i++) {
+          data[String(accessData[i].userId)] = accessData[i].sphereAuthorizationToken;
+        }
+
+        callback(null,data);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+  model.remoteMethod(
+    'getTokenData',
+    {
+      http: {path: '/:id/tokenData', verb: 'get'},
+      accepts: [
+        {arg: 'id',        type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options",   type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: "object", root: true},
+      description: "Get token data used by hubs."
     }
   );
 };

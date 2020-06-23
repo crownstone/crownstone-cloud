@@ -38,6 +38,26 @@ module.exports = function(model) {
     });
   }
 
+  model.disableRemoteMethodByName('prototype.__get__accessTokens');
+  model.disableRemoteMethodByName('prototype.__count__accessTokens');
+  model.disableRemoteMethodByName('prototype.__exists__accessTokens');
+  model.disableRemoteMethodByName('prototype.__link__accessTokens');
+  model.disableRemoteMethodByName('prototype.__unlink__accessTokens');
+  model.disableRemoteMethodByName('prototype.__findById__accessTokens');
+  model.disableRemoteMethodByName('prototype.__updateById__accessTokens');
+  model.disableRemoteMethodByName('prototype.__unlink__accessTokens');
+  model.disableRemoteMethodByName('prototype.__deleteById__accessTokens');
+  model.disableRemoteMethodByName('prototype.__destroyById__accessTokens');
+  model.disableRemoteMethodByName('prototype.__create__accessTokens');
+  model.disableRemoteMethodByName('prototype.__delete__accessTokens');
+
+  model.disableRemoteMethodByName('prototype.__get__owner');
+  model.disableRemoteMethodByName('replaceById');
+  model.disableRemoteMethodByName('updateAll');
+  model.disableRemoteMethodByName('upsert');
+  model.disableRemoteMethodByName('create');
+  model.disableRemoteMethodByName('createChangeStream');
+
   model.validatesUniquenessOf('token', {scopedTo: ['sphereId'], message: 'a hub with this token was already added!'});
 
   model.login = function(id, token, callback) {
