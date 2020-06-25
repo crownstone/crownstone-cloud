@@ -284,30 +284,27 @@ module.exports = function(model) {
     // HUB:
     //   - cannot create new hub
     //***************************
-    let endpointsNotAllowedForHub = [
-      "createHub",
-      "addAdmin",
-      "addMember",
-      "addGuest",
-      "__unlink__users",
+    let endpointsAllowedForHub = [
+      "getTokenData",
+      "users",
+      "getOwnedStones",
     ]
-    endpointsNotAllowedForHub.forEach((endPoint) => {
+    endpointsAllowedForHub.forEach((endPoint) => {
       model.settings.acls.push(
         {
           "principalType": "ROLE",
           "principalId": "$group:hub",
-          "permission": "DENY",
+          "permission": "ALLOW",
           "property": endPoint
         }
       );
     })
-
     model.settings.acls.push(
       {
+        "accessType": "READ",
         "principalType": "ROLE",
-        "principalId": "$group:hub",
-        "permission": "ALLOW",
-        "property": 'getTokenData'
+        "principalId": "$group:guest",
+        "permission": "ALLOW"
       }
     );
   }

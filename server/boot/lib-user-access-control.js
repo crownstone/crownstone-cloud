@@ -172,7 +172,12 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
         if (!hub) { throw "No Hub" }
 
         if (sphereId == hub.sphereId) {
-          callback(null, true);
+          if (accessMap.hub === true) {
+            callback(null, true);
+          }
+          else {
+            callback(null, false);
+          }
         }
         else {
           callback(null, false);
