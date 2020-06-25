@@ -303,7 +303,7 @@ module.exports = function(model) {
       {
         "accessType": "READ",
         "principalType": "ROLE",
-        "principalId": "$group:guest",
+        "principalId": "$group:hub",
         "permission": "ALLOW"
       }
     );
@@ -2163,19 +2163,33 @@ module.exports = function(model) {
   );
 
   model.createHub = function(id, token, name, options, callback) {
+    const SphereAccess = loopback.getModel("SphereAccess");
     const hubModel = loopback.getModel("Hub");
+    let newHub = null;
 
+    if (token.length !== 128) {
+      return callback("Length of token must be 128 characters.")
+    }
     // ensure all users have an authentication token.
     cycleSphereAuthorizationTokens(id)
       .then(() => {
-        // TODO: check token length, at least 128 characters
         return hubModel.create({
           sphereId: id,
           token: token,
           name: name
         })
       })
-      .then(()     => { callback(null); })
+      .then((newHubData) => {
+        let newHub = newHubData;
+        return SphereAccess.create({
+          sphereId: id,
+          userId: newHub.id,
+          role:"hub",
+          invitePending:'false',
+          sphereAuthorizationToken: Util.createToken()
+        })
+      })
+      .then(()     => { callback(null, newHub); })
       .catch((err) => { callback(err);  })
   };
 
@@ -2190,6 +2204,7 @@ module.exports = function(model) {
         {arg: 'name',  type: 'string', required: true, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
+      returns: {arg: 'data', type: ['Hub'], root: true},
       description: "Add a hub to this sphere."
     }
   );
@@ -2345,7 +2360,7 @@ module.exports = function(model) {
     let data = {}
     const SphereAccess = loopback.findModel("SphereAccess");
     let accessData = null;
-    SphereAccess.find({where: {sphereId: id}})
+    SphereAccess.find({where: {sphereId: id, invitePending: {neq: true}}})
       .then((results) => {
         accessData = results;
         let missingTokens = false;

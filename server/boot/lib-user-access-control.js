@@ -19,7 +19,7 @@ module.exports = function(app) {
   Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRoleInSphere(app, { admin:  true },  context, callback); });
   Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { member: true },  context, callback); });
   Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRoleInSphere(app, { guest:  true },  context, callback); }); // legacy
-  Role.registerResolver('$group:hub',    function(role, context, callback) { verifyRoleInSphere(app, { hub:  true },    context, callback); });
+  Role.registerResolver('$group:hub',    function(role, context, callback) { verifyRoleInSphere(app, { hub:    true },  context, callback); });
   // Role.registerResolver('$group:basic',  function(role, context, callback) { verifyRoleInSphere(app, { basic:  true },  context, callback); });
   Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner( app, context, callback); });
 };
@@ -173,7 +173,12 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
 
         if (sphereId == hub.sphereId) {
           if (accessMap.hub === true) {
-            callback(null, true);
+            // check if this hub has access. A user might have changed the hubId...
+            return app.models.SphereAccess.findOne({where:{and: [{userId: userId}, {sphereId: sphereId}, {role:'hub'}]}})
+              .then((access) => {
+                if (access) { callback(null, true);  }
+                else        { callback(null, false); }
+              })
           }
           else {
             callback(null, false);
