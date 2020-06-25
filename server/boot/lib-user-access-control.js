@@ -13,8 +13,8 @@
 
 module.exports = function(app) {
   let Role = app.models.Role;
-  Role.registerResolver('lib-user', isLibUser);
-  Role.registerResolver('$owner', isUserOwner);
+  Role.registerResolver('lib-user', function(role, context, callback) { isLibUser(app, role, context, callback); });
+  Role.registerResolver('$owner', function(role, context, callback) { isUserOwner(app, role, context, callback); });
 
   Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRoleInSphere(app, { admin:  true },  context, callback); });
   Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { member: true },  context, callback); });
@@ -24,7 +24,7 @@ module.exports = function(app) {
   Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner( app, context, callback); });
 };
 
-function isUserOwner(role, context, callback) {
+function isUserOwner(app, role, context, callback) {
   let userId        = context.accessToken.userId;
   let principalType = context.accessToken.principalType;
 
@@ -58,7 +58,7 @@ function isUserOwner(role, context, callback) {
 
 }
 
-function isLibUser(role, context, callback) {
+function isLibUser(app, role, context, callback) {
   function reject() {
     process.nextTick(function() {
       callback(null, false);
