@@ -981,8 +981,6 @@ module.exports = function(model) {
     let deviceMap = {};
 
 
-
-    let now = new Date().valueOf();
     const PRESENCE_TIMEOUT = 20*60000; // 20 minutes;
     let threshold = new Date().valueOf() - PRESENCE_TIMEOUT;
 
@@ -1060,14 +1058,14 @@ module.exports = function(model) {
                   let sphereData = {
                     sphereId: sphereId,
                     sphereName: sphereMap[sphereId].name,
-                    inLocations: {}
+                    inLocation: {}
                   }
 
                   deviceMap[deviceId][sphereId].forEach((locationId) => {
                     sphereData.inLocation = {
                       locationId: locationId,
                       locationName: locationMap[locationId].name
-                    }
+                    };
                   })
 
                   data.inSpheres.push(sphereData);
