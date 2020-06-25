@@ -1290,7 +1290,7 @@ module.exports = function(model) {
    */
   model.setAbilities = function(stoneId, data, options, callback) {
     let abilitiesToSet = Object.keys(data);
-    for ( let i = 0; i < abilitiesToSet; i++) {
+    for ( let i = 0; i < abilitiesToSet.length; i++) {
       if (ABILITY_TYPE[abilitiesToSet[i]] === undefined) {
         return callback({statusCode: 400, message: "Invalid ability: " + abilitiesToSet[i]})
       }
@@ -1368,9 +1368,10 @@ module.exports = function(model) {
         })
     }
 
+
     let stone = null;
     let sphereId = null;
-    model.findById(stoneId)
+    model.findById(stoneId, {fields:{sphereId:1}})
       .then((stoneResult) => {
         if (!stoneResult) { throw {statusCode: 404, message: "No stone with that ID."}}
 
