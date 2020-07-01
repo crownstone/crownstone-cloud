@@ -16,6 +16,10 @@ const MongoStore = require('connect-mongo')(session);
 let datasources  = require('./datasources.' + (process.env.NODE_ENV || 'local'));
 let config       = require('./config.' + (process.env.NODE_ENV || 'local'));
 
+if (!process.env.NODE_ENV) {
+  Error.stackTraceLimit = 100;
+}
+
 let store;
 if (datasources.userDs && datasources.userDs.url) {
   store = new MongoStore({url: datasources.userDs.url, mongoOptions: {collection: 'OAuthSessions'}});

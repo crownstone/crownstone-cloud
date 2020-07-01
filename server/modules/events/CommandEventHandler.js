@@ -4,8 +4,9 @@ const SSEManager         = require('../SSEManager');
 
 
 class CommandEventHandler {
-  sendStoneMultiSwitch(sphere, multiswitchPackets) {
-
+  sendStoneMultiSwitch(sphere, stones, switchStateMap) {
+    let packet = SSEPacketGenerator.generateMultiSwitchCrownstoneEvent(sphere, stones, switchStateMap);
+    SSEManager.emit(packet);
   }
 
   sendStoneSwitch(stone, switchState, sphere) {

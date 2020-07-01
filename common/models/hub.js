@@ -24,6 +24,13 @@ module.exports = function(model) {
     });
 
     model.settings.acls.push({
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW",
+      "property": "setHubLocalIP"
+    });
+
+    model.settings.acls.push({
       "accessType": "*",
       "principalType": "ROLE",
       "principalId": "$group:admin",
@@ -99,4 +106,60 @@ module.exports = function(model) {
       description: "Add a hub to this sphere."
     }
   );
+
+  model.setHubLocalIP = function(localIpAddress, options, callback) {
+    let externalIp = CACHED_IP;
+    CACHED_IP = null;
+
+    if (!externalIp) {
+      return callback("No External IP obtained...");
+    }
+
+    if (options && options.accessToken && options.accessToken.principalType === 'Hub') {
+      let hubId = options.accessToken.userId;
+      const hubModel = loopback.getModel("Hub");
+      hubModel.findById(hubId)
+        .then((result) => {
+          if (!result) { throw "No hub found."}
+
+          result.localIPAddress = localIpAddress;
+          result.externalIPAddress = externalIp;
+
+          return result.save();
+        })
+        .then(() => {
+          callback();
+        })
+        .catch((err) => { callback(err); })
+    }
+    else {
+      callback(util.unauthorizedError());
+    }
+  }
+
+  let CACHED_IP = null;
+
+  model.beforeRemote('setHubLocalIP', function(context, user, next) {
+    let ip = context.req.headers['x-forwarded-for'] || context.req.ip || context.req.connection.remoteAddress;
+
+    if (ip.substr(0, 7) == "::ffff:") {
+      ip = ip.substr(7)
+    }
+    CACHED_IP = ip || null;
+    next()
+  });
+
+  model.remoteMethod(
+    'setHubLocalIP',
+    {
+      http: {path: '/localIP', verb: 'put'},
+      accepts: [
+        {arg: 'localIpAddress',  type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Set the local IP address of the hub."
+    }
+  );
+
+
 }

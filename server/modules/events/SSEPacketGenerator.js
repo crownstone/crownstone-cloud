@@ -7,6 +7,21 @@ module.exports = {
       crownstone: crownstoneData(stone, switchState)
     };
   },
+  generateMultiSwitchCrownstoneEvent(sphere, stones, switchStateMap) {
+    let stoneData = [];
+    for (let i = 0; i < stones.length; i++) {
+      let csData = crownstoneData(stones[i], switchStateMap[stones[i].id].switchState)
+      csData.type = switchStateMap[stones[i].id].type;
+      stoneData.push(csData);
+    }
+
+    return {
+      type:        "command",
+      subType:     "multiSwitch",
+      sphere:      sphereData(sphere),
+      switchData:  stoneData
+    };
+  },
 
   generateSwitchStateUpdatedEvent(stone,sphere,switchState) {
     return {

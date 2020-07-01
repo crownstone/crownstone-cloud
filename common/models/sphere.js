@@ -2209,10 +2209,12 @@ module.exports = function(model) {
     }
   );
 
+
   let CACHED_IP = null;
 
-  model.beforeRemote('setHubLocalIP', function(context, user, next) {
+  model.beforeRemote('getHubAddresses', function(context, user, next) {
     let ip = context.req.headers['x-forwarded-for'] || context.req.ip || context.req.connection.remoteAddress;
+
     if (ip.substr(0, 7) == "::ffff:") {
       ip = ip.substr(7)
     }
@@ -2220,43 +2222,28 @@ module.exports = function(model) {
     next()
   });
 
-
-  model.setHubLocalIP = function(id, token, localIpAddress, options, callback) {
-    let externalIp = CACHED_IP;
+  model.getHubAddresses = function(id, options, callback) {
+    let externalIp = CACHED_IP || null;
     CACHED_IP = null;
     if (!externalIp) {
       return callback("No External IP obtained...");
     }
-    const hubModel = loopback.getModel("Hub");
-    hubModel.findOne({where:{token: token, sphereId: id}})
-      .then((result) => {
-        if (!result) { throw "No hub found."}
 
-        result.localIPAddress = localIpAddress;
-        result.externalIPAddress = externalIp;
-
-        return result.save();
+    const SphereAccess = loopback.findModel("SphereAccess");
+    const Hubs = loopback.findModel("Hub");
+    SphereAccess.find({where: {sphereId: id, role:"hub", invitePending: {neq: true}}})
+      .then((hubs) => {
+        let ids = []
+        hubs.forEach((hub) => { ids.push(hub.userId); });
+        return Hubs.find({where: {id:{inq:ids}, sphereId: id, externalIPAddress: externalIp}, fields: {id:1, localIPAddress: 1, name: 1}})
       })
-      .then(() => {
-        callback();
+      .then((hubs) => {
+        callback(null, hubs)
       })
-      .catch((err) => { callback(err); })
+      .catch((err) => {
+        callback(err)
+      })
   }
-
-  model.remoteMethod(
-    'setHubLocalIP',
-    {
-      http: {path: '/:id/hubIpAddress', verb: 'put'},
-      accepts: [
-        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'token', type: 'string', required: true, http: { source : 'query' }},
-        {arg: 'localIpAddress',  type: 'string', required: true, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      description: "Tell the sphere the local Ip address of the hub."
-    }
-  );
-
 
   model.remoteMethod(
     'getHubAddresses',
@@ -2270,7 +2257,6 @@ module.exports = function(model) {
       description: "Get the local ip address of the hubs in this sphere."
     }
   );
-
 
 
   model.getOwnedStones = function(id, filter, options, callback) {
@@ -2399,4 +2385,95 @@ module.exports = function(model) {
       description: "Get token data used by hubs."
     }
   );
+
+
+
+  model.multiswitch = function(id, packets, options, callback) {
+    if (process.env.NODE_ENV) {
+      return callback("Not implemented yet");
+    }
+
+    if (Array.isArray(packets) === false) {
+      return callback("switchPackets should be an array of SwitchPackets:" + SwitchDataDefinition);
+    }
+
+    let uids = [];
+    let uidSwitchPacketMap = {};
+    for (let i = 0; i < packets.length; i++) {
+      let packet = packets[i];
+      if (packet && packet.type && packet.type !== 'DIMMING' && packet.type !== "TURN_ON" && packet.type !== "TURN_OFF") {
+        return callback("Type of a switch packet can only be 'DIMMING', 'TURN_ON' or 'TURN_OFF'");
+      }
+
+      if (packet && !packet.type) {
+        return callback("SwitchPackets have a type: it can only be 'DIMMING', 'TURN_ON' or 'TURN_OFF'");
+      }
+
+      if (packet && (!packet.crownstoneId || packet.crownstoneId > 255 || packet.crownstoneId < 1)) {
+        return callback("SwitchPackets have a crownstoneId, this is the uid of the Crownstone. (1-255)");
+      }
+
+      if (packet && packet.type === "DIMMING" && (packet.switchState === undefined || packet.switchState < 0 || packet.switchState > 1 || (packet.switchState > 0 && packet.switchState < 1))) {
+        return callback("SwitchPackets with type DIMMING require a switchState between 0 and 100:" + SwitchDataDefinition);
+      }
+
+      uids.push(packet.crownstoneId);
+      uidSwitchPacketMap[packet.crownstoneId] = packet;
+    }
+
+    let Stones = loopback.findModel("Stone");
+    let sphere = null;
+    model.findById(id)
+      .then((sphereResult) => {
+        if (!sphereResult) { throw util.unauthorizedError(); }
+        sphere = sphereResult
+        return Stones.find({where: {sphereId: id, uid: {inq: uids}}})
+      })
+      .then((stones) => {
+        // check if we got all the required Crownstones
+        let resultUids = {};
+        let switchPacketMap = {};
+        for (let i = 0; i < stones.length; i++) {
+          resultUids[stones[i].uid] = true;
+          switchPacketMap[stones[i].id] = uidSwitchPacketMap[stones[i].uid];
+
+        }
+        for (let i = 0; i < uids.length; i++) {
+          if (resultUids[uids[i]] ===  undefined) {
+            throw ("Invalid uid:" + uids[i])
+          }
+        }
+
+        EventHandler.command.sendStoneMultiSwitch(sphere, stones, switchPacketMap);
+
+        notificationHandler.notifySphereDevices(sphere, {
+          type: 'multiswitch',
+          data: {sphereId: id, switchPackets: packets, command:'multiSwitch'},
+          silentAndroid: true,
+          silentIOS: true
+        });
+
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+
+  model.remoteMethod(
+    'multiswitch',
+    {
+      http: {path: '/:id/switchCrownstones', verb: 'post'},
+      accepts: [
+        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'switchPackets', type: '[SwitchPacket]',  required:true, http: {source:'body'}},
+        {arg: "options",       type: "object", http: "optionsFromRequest"},
+      ],
+      description: "Switch multiple Crownstones at the same time."
+    }
+  );
 };
+
+
+let SwitchDataDefinition = '{ type: "DIMMING", crownstoneId: number, switchState: number }'
