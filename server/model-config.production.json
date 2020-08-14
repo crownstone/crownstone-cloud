@@ -57,8 +57,5 @@
   },
   "StoneAbilityProperty": {
     "public": false
-  },
-  "Hub": {
-    "public": false
   }
 }
