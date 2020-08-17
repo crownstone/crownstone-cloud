@@ -40,6 +40,10 @@
               {
                 "methods": "get",
                 "path": "/api/users/me"
+              },
+              {
+                "methods": "get",
+                "path": "/api/users/userId"
               }
             ],
             "user_id": [
