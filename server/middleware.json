@@ -80,6 +80,10 @@
               {
                 "methods": "put",
                 "path": "/api/Stones/:id/setSwitchStateRemotely"
+              },
+              {
+                "methods": "get",
+                "path": "/api/Stones/:id/currentSwitchState"
               }
             ],
             "sphere_information": [
