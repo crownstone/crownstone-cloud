@@ -887,20 +887,22 @@ module.exports = function(model) {
   );
 
 
-  model.getAllAccessibleCrownstones = function(options, next) {
+  model.getAllAccessibleCrownstones = function(filter, options, next) {
     if (options && options.accessToken) {
       let userId = options.accessToken.userId;
       // get get all sphereIds the user has access to.
       const sphereAccess = loopback.getModel("SphereAccess");
+
       sphereAccess.find({where: {userId: userId}, fields:{sphereId: true}})
         .then((results) => {
           let possibleIds = [];
           for (let i = 0; i < results.length; i++) {
             possibleIds.push(results[i].sphereId);
           }
-          let filter = {sphereId: {inq: possibleIds}};
+          let stoneFilter = {sphereId: {inq: possibleIds}};
+          let include = filter && filter.include || {}
 
-          return model.find({where: filter})
+          return model.find({where: stoneFilter, include: include})
         })
         .then((results) => {
           next(null, results);
@@ -916,6 +918,7 @@ module.exports = function(model) {
     {
       http: {path: '/all/', verb: 'GET'},
       accepts: [
+        {arg: 'filter', type: 'any', required: false, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: '[Stone]', root: true},
