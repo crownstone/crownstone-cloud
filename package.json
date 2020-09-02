@@ -24,7 +24,7 @@
     "form-data": "2.1.2",
     "kerberos": "0.0.23",
     "lodash": "*",
-    "loopback": "3.21.0",
+    "loopback": "^3.27.0",
     "loopback-boot": "2.24.0",
     "loopback-component-explorer": "6.2.0",
     "loopback-component-oauth2": "git://github.com/crownstone/loopback-component-oauth2#62aa998222a9e7373dd4b69f3648321fbe55210a",

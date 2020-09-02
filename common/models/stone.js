@@ -200,15 +200,6 @@ module.exports = function(model) {
 
   model.disableRemoteMethodByName('prototype.__count__schedules');
 
-  model.disableRemoteMethodByName('prototype.__count__diagnostics');
-  model.disableRemoteMethodByName('prototype.__create__diagnostics');
-  model.disableRemoteMethodByName('prototype.__findById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__destroyById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__deleteById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__delete__diagnostics');
-  model.disableRemoteMethodByName('prototype.__updateById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__get__diagnostics');
-
   model.disableRemoteMethodByName('prototype.__count__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__powerUsageHistory');
@@ -242,6 +233,8 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__deleteById__abilities');
   model.disableRemoteMethodByName('prototype.__delete__abilities');
   model.disableRemoteMethodByName('prototype.__get__abilities');
+
+  model.disableRemoteMethodByName('prototype.__get__currentSwitchState');
 
   model.disableRemoteMethodByName('prototype.__count__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
@@ -777,17 +770,6 @@ module.exports = function(model) {
       });
     })
   };
-  model.deleteAllDiagnosticHistory = function(id, callback) {
-    debug("deleteAllDiagnosticHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.diagnostics.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
 
   model.remoteMethod(
     'deleteAllEnergyUsageHistory',
@@ -815,17 +797,6 @@ module.exports = function(model) {
     'deleteAllSwitchStateHistory',
     {
       http: {path: '/:id/deleteAllSwitchStateHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all switch state history of this Stone"
-    }
-  );
-
-  model.remoteMethod(
-    'deleteAllDiagnosticHistory',
-    {
-      http: {path: '/:id/deleteAllDiagnosticHistory', verb: 'delete'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
@@ -926,7 +897,7 @@ module.exports = function(model) {
     }
   );
 
-  const getHistory = function (historyField, stoneId, from, to, limit, skip, ascending, next) {
+  const getHistory = function (historyField, stoneId, from, to, limit, skip, ascending, next, transform = false) {
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
@@ -939,7 +910,13 @@ module.exports = function(model) {
 
       stone[historyField]({where: {timestamp: {between: [from, to]}}, limit: limit, skip: skip, order: ascending ? 'timestamp ASC' : 'timestamp DESC' })
         .then((result) => {
-          next(null, result);
+          if (transform === false) {
+            next(null, result);
+          }
+          else {
+            transform(result);
+            next(null, result);
+          }
         })
         .catch((err) => {
           next(err);
@@ -958,9 +935,38 @@ module.exports = function(model) {
   model.getSwitchStateHistory = function(stoneId, from, to, limit, skip, ascending, next) {
     getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next);
   };
-  model.getDiagnosticsHistory = function(stoneId, from, to, limit, skip, ascending, next) {
-    getHistory('diagnostics', stoneId, from, to, limit, skip, ascending, next);
+
+  model.getSwitchStateHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next, function(results) {
+      for (let i = 0; i < results.length; i++) {
+        if (results[i].switchState > 1) {
+          results[i].switchState = 0.01*results[i].switchState;
+        }
+      }
+    });
   };
+  model.getSwitchStateHistoryV2 = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next);
+  };
+
+  model.remoteMethod(
+    'getSwitchStateHistoryV2',
+    {
+      http: {path: '/:id/switchStateHistoryV2/', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+      ],
+      returns: {arg: 'data', type: '[SwitchState]', root: true},
+      description: 'Get an array of the known switch states of the specified Crownstone.' +
+        '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+        '\nTime is filtered like this: (from <= timestamp <= to).'
+    }
+  );
 
   model.remoteMethod(
     'getSwitchStateHistory',
@@ -1014,25 +1020,6 @@ module.exports = function(model) {
       ],
       returns: {arg: 'data', type: '[PowerUsage]', root: true},
       description: 'Get an array of collected power measurement samples from the specified Crownstone.' +
-      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'getDiagnosticsHistory',
-    {
-      http: {path: '/:id/diagnosticsHistory/', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
-        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
-        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
-      ],
-      returns: {arg: 'data', type: '[Diagnostic]', root: true},
-      description: 'Get an array of the gathered statistics of the specified Crownstone.' +
       '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
       '\nTime is filtered like this: (from <= timestamp <= to).'
     }
@@ -1206,6 +1193,10 @@ module.exports = function(model) {
 
   model._setCurrentSwitchState = function(stone, switchState, next) {
     debug("_setCurrentSwitchState");
+    if (switchState.switchState > 0 && switchState.switchState <= 1) {
+      switchState.switchState = Math.round(100*switchState.switchState);
+    }
+
     stone.switchStateHistory.create(switchState, function(err, switchStateInstance) {
       if (err) return next(err);
 
@@ -1233,42 +1224,81 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
       ],
-      description: 'Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
+      description: 'LEGACY: Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
       '\n\nPossible values are between 0 and 1. 0 is off, 1 is on, between is dimming.'
     }
   );
 
-
-  model.setDiagnostics = function(stoneId, diagnosticData, next) {
-    debug("setDiagnostics");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      diagnosticData.stoneId = stoneId;
-      diagnosticData.sphereId = stone.sphereId;
-
-      stone.diagnostics.create(diagnosticData, function(err, instance) {
-        if (err) return next(err);
-        next(null, instance);
-      });
-    })
-  };
-
   model.remoteMethod(
-    'setDiagnostics',
+    'setCurrentSwitchState',
     {
-      http: {path: '/:id/diagnostics', verb: 'post'},
+      http: {path: '/:id/currentSwitchStateV2', verb: 'post'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'data', type: 'Diagnostic', required: true, http: { source : 'body' }},
+        {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
       ],
-      returns: {arg: 'data', type: 'Diagnostic', root: true},
-      description: 'Store diagnostic information about this Crownstone'
+      description: 'Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
+        '\n\nThe value is the percentage the Crownstone is on, which ranges from 0 to 100.'
     }
   );
 
+  function getCurrentSwitchState(stoneId, switchState, next, v2 = false) {
+    debug("getCurrentSwitchState");
+
+    model.findById(stoneId, {include: "currentSwitchState"})
+      .then((stone) => {
+        if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+
+        let currentSwitchState = stone.currentSwitchState()
+        if (currentSwitchState) {
+          if (v2 && currentSwitchState.switchState > 1) {
+            currentSwitchState.switchState = currentSwitchState.switchState * 0.01;
+          }
+          return next(currentSwitchState);
+        }
+        else {
+          next(null);
+        }
+      })
+      .catch((err) => {
+        return next(err)
+      })
+  };
+
+  model.getCurrentSwitchState = function(stoneId, switchState, next) {
+    getCurrentSwitchState(stoneId, switchState, next, false);
+  };
+
+  model.getCurrentSwitchStateV2 = function(stoneId, switchState, next) {
+    getCurrentSwitchState(stoneId, switchState, next, true);
+  };
+
+  model.remoteMethod(
+    'getCurrentSwitchState',
+    {
+      http: {path: '/:id/currentSwitchState', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+      ],
+      description: 'LEGACY: Retreive the last reported switch state of the Crownstone.' +
+        '\n\nPossible values are between 0 and 1. 0 is off, 1 is on, between is dimming.',
+      returns: {arg: 'data', type: 'SwitchState', root: true},
+    }
+  );
+
+  model.remoteMethod(
+    'getCurrentSwitchStateV2',
+    {
+      http: {path: '/:id/currentSwitchStateV2', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+
+      ],
+      description: 'Retreive the last reported switch state of the Crownstone.' +
+        '\n\nThe value is the percentage the Crownstone is on, which ranges from 0 to 100.',
+      returns: {arg: 'data', type: 'SwitchState', root: true},
+    }
+  );
 
 
   const ABILITY_TYPE = {
@@ -1458,8 +1488,60 @@ module.exports = function(model) {
       description: 'Get the abilities of this Stone.'
     }
   );
+
+  model.setSwitchStateV2 = function(id, switchData, options, callback) {
+    if (switchData && switchData.type && switchData.type !== 'PERCENTAGE' && switchData.type !== "TURN_ON" && switchData.type !== "TURN_OFF") {
+      return callback("Type of SwitchData can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
+    }
+
+    if (switchData && !switchData.type) {
+      return callback("SwitchData have a type: it can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
+    }
+
+    if (switchData && switchData.type === "PERCENTAGE" && (switchData.percentage === undefined || (switchData.percentage > 0 && switchData.percentage <=1) || switchData.percentage < 0 || switchData.percentage > 100)) {
+      return callback("SwitchData with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
+    }
+
+    if (switchData && switchData.type === "PERCENTAGE" && (switchData.percentage > 0 && switchData.percentage < 10)) {
+      return callback("Dimming below 10% is not allowed.");
+    }
+
+    model.findById(id)
+      .then((stoneResult) => {
+        if (!stoneResult) { throw util.unauthorizedError(); }
+
+        let ssePacket = EventHandler.command.sendStoneMultiSwitchBySphereId(stoneResult.sphereId, [stoneResult], {stoneId:switchData});
+        notificationHandler.notifySphereDevices(sphere, {
+          type: 'multiSwitch',
+          data: {event: ssePacket, command:'multiSwitch'},
+          silentAndroid: true,
+          silentIOS: true
+        });
+
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+
+  model.remoteMethod(
+    'setSwitchStateV2',
+    {
+      http: {path: '/:id/switch', verb: 'post'},
+      accepts: [
+        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'switchData',    type: '[SwitchData]',  required:true, http: {source:'body'}},
+        {arg: "options",       type: "object", http: "optionsFromRequest"},
+      ],
+      description: "BETA: Switch Crownstone. Dimming below 10% is not allowed."
+    }
+  );
 };
 
+
+let SwitchDataDefinition = "{ type: 'PERCENTAGE' | 'TURN_ON' | 'TURN_OFF', percentage?: number }"
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

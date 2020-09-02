@@ -30,7 +30,7 @@ function performOauthClientOperations(app) {
 
   // empty promise so all clients that are added are in matching then statements
   new Promise((resolve, reject) => { resolve() })
-    // .then(() => { return showClientDetails(permissionModel, "Alexa_Amazon"); })
+    .then(() => { return showClientDetails(permissionModel, "Google_assistant"); })
     // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return createClient(permissionModel, "GoogleHomeTest", ["all"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
@@ -100,18 +100,18 @@ function createClient(permissionModel, clientName, scopes) {
 
 function showClientDetails(permissionModel, clientName) {
   permissionModel.find({where:{name: clientName}})
-    .then((result) => {
-      if (result.length === 1) {
+    .then((results) => {
+      if (results.length === 1) {
         console.log("Client ", clientName, " found in database!");
-        console.log(clientName, "has access to the following scopes:", result.scopes);
-        console.log("Store the clientID: ", result.id, " and");
-        console.log("the clientSecret: ", result.clientSecret, " somewhere secure.");
+        console.log(clientName, "has access to the following scopes:", results[0].scopes);
+        console.log("Store the clientID: ", results[0].id, " and");
+        console.log("the clientSecret: ", results[0].clientSecret, " somewhere secure.");
       }
-      else if (result.length === 0) {
+      else if (results.length === 0) {
         console.log("Client ", clientName, " not found!");
       }
       else {
-        console.log("WARN -- There are multiple entries with this name:", result);
+        console.log("WARN -- There are multiple entries with this name:", results);
       }
     })
     .catch((err) => { console.log("Error during client lookup", err); })

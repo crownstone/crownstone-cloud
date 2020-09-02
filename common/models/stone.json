@@ -115,11 +115,6 @@
       "model": "SwitchState",
       "foreignKey": "stoneId"
     },
-    "diagnostics": {
-      "type": "hasMany",
-      "model": "Diagnostic",
-      "foreignKey": "stoneId"
-    },
     "abilities": {
       "type": "hasMany",
       "model": "StoneAbility",

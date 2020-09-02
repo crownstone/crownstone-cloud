@@ -162,10 +162,6 @@
     "dataSource": "mongoDs",
     "public": false
   },
-  "Diagnostic": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
   "Fingerprint": {
     "dataSource": "mongoDs",
     "public": false

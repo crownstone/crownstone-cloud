@@ -2756,10 +2756,12 @@ isarray@2.0.1:
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-2.0.1.tgz#a37d94ed9cda2d59865c9f76fe596ee1f338741e"
   integrity sha1-o32U7ZzaLVmGXJ92/llu4fM4dB4=
 
-isemail@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/isemail/-/isemail-2.2.1.tgz#0353d3d9a62951080c262c2aa0a42b8ea8e9e2a6"
-  integrity sha1-A1PT2aYpUQgMJiwqoKQrjqjp4qY=
+isemail@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/isemail/-/isemail-3.2.0.tgz#59310a021931a9fb06bbb51e155ce0b3f236832c"
+  integrity sha512-zKqkK+O+dGqevc93KNsbZ/TqTUFd46MwWjYOoMrjIMZ51eU7DtQG3Wmd9SQQT7i7RVnuTPEiYEWHU3MSbxC1Tg==
+  dependencies:
+    punycode "2.x.x"
 
 isexe@^2.0.0:
   version "2.0.0"
@@ -3734,10 +3736,10 @@ loopback-datasource-juggler@^3.0.0:
     traverse "^0.6.6"
     uuid "^3.0.1"
 
-loopback-datasource-juggler@^3.18.0:
-  version "3.23.0"
-  resolved "https://registry.yarnpkg.com/loopback-datasource-juggler/-/loopback-datasource-juggler-3.23.0.tgz#16e41e771fe8f926cda2e87bdb303d83e42ee362"
-  integrity sha512-bVFlSSThPBdfTwsWRSW7xtk3UKKdAHY4pUnBnOaPAvshZc6gxAJEiiErOvCHaOEP4WDg8p5o13wdIN1qi4b9VQ==
+loopback-datasource-juggler@^3.28.0:
+  version "3.35.0"
+  resolved "https://registry.yarnpkg.com/loopback-datasource-juggler/-/loopback-datasource-juggler-3.35.0.tgz#769b22ed412e234d74a66a034c1dc5c488070d19"
+  integrity sha512-Z4lxBxhNHJTro4M4tZgOrpi9/tmHyMsmquuKIFsgKJwQ3R7Zb6rMoaQ+VZoxmyFW+xLexVEM/tShOQbRjb8HVQ==
   dependencies:
     async "^2.6.0"
     bluebird "^3.1.1"
@@ -3803,10 +3805,10 @@ loopback-swagger@^5.0.0:
     lodash "^4.17.2"
     strong-globalize "^4.1.1"
 
-loopback@3.21.0:
-  version "3.21.0"
-  resolved "https://registry.yarnpkg.com/loopback/-/loopback-3.21.0.tgz#963cf53ad6a88bcd5e38789d3a05adbfed3442ba"
-  integrity sha512-JJWEptpdNZ04CP6UdGNVUJl3hWrfwoSi3xUuw/uI9tUtN1rz4cFu84mkwrwMYZLmF3MgCDHpGSGwFRS6talD6A==
+loopback@^3.27.0:
+  version "3.27.0"
+  resolved "https://registry.yarnpkg.com/loopback/-/loopback-3.27.0.tgz#16384a274a88e9f9073e94c08c5770779ee0a87e"
+  integrity sha512-Y8pL1jyIZQf5QfkKZrQaOKdK88GEgBP5JZxfWSgm/k5tF+jbVZxHfqKr+3HUicSDX4HcRS1Fx1vLcPawDqKqaA==
   dependencies:
     async "^2.0.1"
     bcryptjs "^2.1.0"
@@ -3818,9 +3820,9 @@ loopback@3.21.0:
     ejs "^2.3.1"
     express "^4.14.0"
     inflection "^1.6.0"
-    isemail "^2.2.1"
+    isemail "^3.2.0"
     loopback-connector-remote "^3.0.0"
-    loopback-datasource-juggler "^3.18.0"
+    loopback-datasource-juggler "^3.28.0"
     loopback-filters "^1.0.0"
     loopback-phase "^3.0.0"
     nodemailer "^4.0.1"
@@ -3831,7 +3833,7 @@ loopback@3.21.0:
     strong-globalize "^4.1.1"
     strong-remoting "^3.11.0"
     uid2 "0.0.3"
-    underscore.string "^3.0.3"
+    underscore.string "^3.3.5"
 
 loose-envify@^1.0.0:
   version "1.4.0"
@@ -4887,15 +4889,15 @@ psl@^1.1.24:
   resolved "https://registry.yarnpkg.com/psl/-/psl-1.1.29.tgz#60f580d360170bb722a797cc704411e6da850c67"
   integrity sha512-AeUmQ0oLN02flVHXWh9sSJF7mcdFq0ppid/JkErufc3hGIV/AMa8Fo9VgDo/cT2jFdOWoFvHp90qqBH54W+gjQ==
 
+punycode@2.x.x, punycode@^2.1.0:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
+  integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
+
 punycode@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
   integrity sha1-wNWmOycYgArY4esPpSachN1BhF4=
-
-punycode@^2.1.0:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
-  integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
 q@^1.4.1:
   version "1.5.0"
@@ -6190,10 +6192,10 @@ uid2@*, uid2@0.0.3, uid2@^0.0.3:
   resolved "https://registry.yarnpkg.com/uid2/-/uid2-0.0.3.tgz#483126e11774df2f71b8b639dcd799c376162b82"
   integrity sha1-SDEm4Rd03y9xuLY53NeZw3YWK4I=
 
-underscore.string@^3.0.3:
-  version "3.3.4"
-  resolved "https://registry.yarnpkg.com/underscore.string/-/underscore.string-3.3.4.tgz#2c2a3f9f83e64762fdc45e6ceac65142864213db"
-  integrity sha1-LCo/n4PmR2L9xF5s6sZRQoZCE9s=
+underscore.string@^3.3.5:
+  version "3.3.5"
+  resolved "https://registry.yarnpkg.com/underscore.string/-/underscore.string-3.3.5.tgz#fc2ad255b8bd309e239cbc5816fd23a9b7ea4023"
+  integrity sha512-g+dpmgn+XBneLmXXo+sGlW5xQEt4ErkS3mgeN2GFbremYeMBSJKr9Wf2KJplQVaiPY/f7FN6atosWYNm9ovrYg==
   dependencies:
     sprintf-js "^1.0.3"
     util-deprecate "^1.0.2"

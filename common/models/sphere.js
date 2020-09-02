@@ -2389,36 +2389,36 @@ module.exports = function(model) {
 
 
   model.multiswitch = function(id, packets, options, callback) {
-    if (process.env.NODE_ENV) {
-      return callback("Not implemented yet");
-    }
-
     if (Array.isArray(packets) === false) {
       return callback("switchPackets should be an array of SwitchPackets:" + SwitchDataDefinition);
     }
 
-    let uids = [];
-    let uidSwitchPacketMap = {};
+    let stoneIds = [];
+    let idSwitchPacketMap = {};
     for (let i = 0; i < packets.length; i++) {
       let packet = packets[i];
-      if (packet && packet.type && packet.type !== 'DIMMING' && packet.type !== "TURN_ON" && packet.type !== "TURN_OFF") {
-        return callback("Type of a switch packet can only be 'DIMMING', 'TURN_ON' or 'TURN_OFF'");
+      if (packet && packet.type && packet.type !== 'PERCENTAGE' && packet.type !== "TURN_ON" && packet.type !== "TURN_OFF") {
+        return callback("Type of a switch packet can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
       }
 
       if (packet && !packet.type) {
-        return callback("SwitchPackets have a type: it can only be 'DIMMING', 'TURN_ON' or 'TURN_OFF'");
+        return callback("SwitchPackets have a type: it can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
       }
 
-      if (packet && (!packet.crownstoneId || packet.crownstoneId > 255 || packet.crownstoneId < 1)) {
-        return callback("SwitchPackets have a crownstoneId, this is the uid of the Crownstone. (1-255)");
+      if (packet && !packet.stoneId) {
+        return callback("SwitchPackets have a stoneId, this is the id of the Crownstone.");
       }
 
-      if (packet && packet.type === "DIMMING" && (packet.switchState === undefined || packet.switchState < 0 || packet.switchState > 1 || (packet.switchState > 0 && packet.switchState < 1))) {
-        return callback("SwitchPackets with type DIMMING require a switchState between 0 and 100:" + SwitchDataDefinition);
+      if (packet && packet.type === "PERCENTAGE" && (packet.percentage === undefined ||  (packet.percentage > 0 && packet.percentage <=1) || packet.percentage < 0 || packet.percentage > 100)) {
+        return callback("SwitchPackets with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
       }
 
-      uids.push(packet.crownstoneId);
-      uidSwitchPacketMap[packet.crownstoneId] = packet;
+      if (packet && packet.type === "PERCENTAGE" && (packet.percentage > 0 && packet.percentage < 10)) {
+        return callback("Dimming below 10% is not allowed.");
+      }
+
+      stoneIds.push(packet.stoneId);
+      idSwitchPacketMap[packet.stoneId] = packet;
     }
 
     let Stones = loopback.findModel("Stone");
@@ -2426,8 +2426,8 @@ module.exports = function(model) {
     model.findById(id)
       .then((sphereResult) => {
         if (!sphereResult) { throw util.unauthorizedError(); }
-        sphere = sphereResult
-        return Stones.find({where: {sphereId: id, uid: {inq: uids}}})
+        sphere = sphereResult;
+        return Stones.find({where: {sphereId: id, id: {inq: stoneIds}}});
       })
       .then((stones) => {
         // check if we got all the required Crownstones
@@ -2435,20 +2435,19 @@ module.exports = function(model) {
         let switchPacketMap = {};
         for (let i = 0; i < stones.length; i++) {
           resultUids[stones[i].uid] = true;
-          switchPacketMap[stones[i].id] = uidSwitchPacketMap[stones[i].uid];
+          switchPacketMap[stones[i].id] = idSwitchPacketMap[stones[i].uid];
 
         }
-        for (let i = 0; i < uids.length; i++) {
-          if (resultUids[uids[i]] ===  undefined) {
-            throw ("Invalid uid:" + uids[i])
+        for (let i = 0; i < stoneIds.length; i++) {
+          if (resultUids[stoneIds[i]] === undefined) {
+            throw ("Invalid uid:" + stoneIds[i]);
           }
         }
 
-        EventHandler.command.sendStoneMultiSwitch(sphere, stones, switchPacketMap);
-
+        let ssePacket = EventHandler.command.sendStoneMultiSwitch(sphere, stones, switchPacketMap);
         notificationHandler.notifySphereDevices(sphere, {
-          type: 'multiswitch',
-          data: {sphereId: id, switchPackets: packets, command:'multiSwitch'},
+          type: 'multiSwitch',
+          data: {event: ssePacket, command:'multiSwitch'},
           silentAndroid: true,
           silentIOS: true
         });
@@ -2470,10 +2469,10 @@ module.exports = function(model) {
         {arg: 'switchPackets', type: '[SwitchPacket]',  required:true, http: {source:'body'}},
         {arg: "options",       type: "object", http: "optionsFromRequest"},
       ],
-      description: "Switch multiple Crownstones at the same time."
+      description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
     }
   );
 };
 
 
-let SwitchDataDefinition = '{ type: "DIMMING", crownstoneId: number, switchState: number }'
+let SwitchDataDefinition = "{ type: 'PERCENTAGE' | 'TURN_ON' | 'TURN_OFF', stoneId: string, percentage?: number }"
