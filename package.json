@@ -10,14 +10,11 @@
   },
   "dependencies": {
     "apn": "git+https://github.com/node-apn/node-apn.git#3.0.0",
-    "async": "*",
-    "bluebird": "*",
     "uid2": "*",
     "body-parser": "1.16.0",
     "compression": "1.0.3",
     "connect-mongo": "^1.3.2",
     "cors": "2.5.2",
-    "cron": "^1.3.0",
     "debug": "*",
     "errorhandler": "1.1.1",
     "express-session": "1.15.6",
@@ -33,7 +30,6 @@
     "loopback-connector-sendgrid": "1.2.3",
     "mongodb": "3.1.1",
     "luxon":"^1.3.3",
-    "minimatch": "3.0.2",
     "node-fetch": "^1.7.1",
     "node-gcm": "1.0.2",
     "node-uuid": "*",
@@ -42,8 +38,7 @@
     "serve-favicon": "2.0.1",
     "sha1": "1.1.1",
     "strong-error-handler": "2.0.0",
-    "socket.io": "^2.3.0",
-    "util": "*"
+    "socket.io": "^2.3.0"
   },
   "devDependencies": {
     "jshint": "2.5.6",

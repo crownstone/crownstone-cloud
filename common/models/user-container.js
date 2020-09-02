@@ -1,12 +1,6 @@
 "use strict";
 
 const debug = require('debug')('loopback:crownstone');
-const createPromiseCallback = require('loopback-datasource-juggler/lib/utils').createPromiseCallback;
-const _defaults = require('lodash').defaults;
-const _get = require('lodash').get;
-const Promise = require("bluebird");
-let loopback = require('loopback');
-const mongodb = require('mongodb');
 const idUtil = require('./sharedUtil/idUtil');
 
 module.exports = function(model) {
