@@ -1506,30 +1506,46 @@ module.exports = function(model) {
       return callback("Dimming below 10% is not allowed.");
     }
 
-
+    let stone = null;
+    let sphereModel = loopback.getModel("Sphere");
     model.findById(id)
       .then((stoneResult) => {
         if (!stoneResult) { throw util.unauthorizedError(); }
+        stone = stoneResult;
 
-        let switchStateLegacy = 0;
-        switch (switchData.type) {
-          case "PERCENTAGE":
-            switchStateLegacy = 0.01*switchData.percentage; break;
-          case "TURN_ON":
-            switchStateLegacy = 1; break;
-          case "TURN_OFF":
-            switchStateLegacy = 0; break;
+        return sphereModel.findById(stone.sphereId)
+      })
+      .then((sphere) => {
+        if (sphere) {
+          let switchStateLegacy = 0;
+          switch (switchData.type) {
+            case "PERCENTAGE":
+              switchStateLegacy = 0.01 * switchData.percentage;
+              break;
+            case "TURN_ON":
+              switchStateLegacy = 1;
+              break;
+            case "TURN_OFF":
+              switchStateLegacy = 0;
+              break;
+          }
+
+          let ssePacket = EventHandler.command.sendStoneMultiSwitchBySphereId(stone.sphereId, [stone], {stoneId: switchData});
+
+          notificationHandler.notifySphereDevices(sphere, {
+            type: 'setSwitchStateRemotely',
+            data: {
+              event: ssePacket,
+              command: 'setSwitchStateRemotely',
+              stoneId: id,
+              sphereId: stone.sphereId,
+              switchState: Math.max(0, Math.min(1, switchStateLegacy))
+            },
+            silentAndroid: true,
+            silentIOS: true
+          });
         }
-
-        let ssePacket = EventHandler.command.sendStoneMultiSwitchBySphereId(stoneResult.sphereId, [stoneResult], {stoneId:switchData});
-        notificationHandler.notifySphereDevices(sphere, {
-          type: 'setSwitchStateRemotely',
-          data: {event: ssePacket, command:'setSwitchStateRemotely', stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchStateLegacy))},
-          silentAndroid: true,
-          silentIOS: true
-        });
-
-        callback(null);
+          callback(null);
       })
       .catch((err) => {
         callback(err);
