@@ -26,11 +26,14 @@
       "required": false
     }
   },
-  "hidden": [
-    "deviceId"
-  ],
   "validations": [],
-  "relations": {},
+  "relations": {
+    "device": {
+      "type": "belongsTo",
+      "model": "Device",
+      "foreignKey": ""
+    }
+  },
   "acls": [],
   "methods": {}
 }
