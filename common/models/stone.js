@@ -1506,14 +1506,25 @@ module.exports = function(model) {
       return callback("Dimming below 10% is not allowed.");
     }
 
+
     model.findById(id)
       .then((stoneResult) => {
         if (!stoneResult) { throw util.unauthorizedError(); }
 
+        let switchStateLegacy = 0;
+        switch (switchData.type) {
+          case "PERCENTAGE":
+            switchStateLegacy = 0.01*switchData.percentage; break;
+          case "TURN_ON":
+            switchStateLegacy = 1; break;
+          case "TURN_OFF":
+            switchStateLegacy = 0; break;
+        }
+
         let ssePacket = EventHandler.command.sendStoneMultiSwitchBySphereId(stoneResult.sphereId, [stoneResult], {stoneId:switchData});
         notificationHandler.notifySphereDevices(sphere, {
-          type: 'multiSwitch',
-          data: {event: ssePacket, command:'multiSwitch'},
+          type: 'setSwitchStateRemotely',
+          data: {event: ssePacket, command:'setSwitchStateRemotely', stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchStateLegacy))},
           silentAndroid: true,
           silentIOS: true
         });
