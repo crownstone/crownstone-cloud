@@ -1532,7 +1532,7 @@ module.exports = function(model) {
       http: {path: '/:id/switch', verb: 'post'},
       accepts: [
         {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'switchData',    type: '[SwitchData]',  required:true, http: {source:'body'}},
+        {arg: 'switchData',    type: 'SwitchData',  required:true, http: {source:'body'}},
         {arg: "options",       type: "object", http: "optionsFromRequest"},
       ],
       description: "BETA: Switch Crownstone. Dimming below 10% is not allowed."
