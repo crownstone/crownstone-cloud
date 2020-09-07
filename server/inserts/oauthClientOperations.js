@@ -30,7 +30,8 @@ function performOauthClientOperations(app) {
 
   // empty promise so all clients that are added are in matching then statements
   new Promise((resolve, reject) => { resolve() })
-    .then(() => { return showClientDetails(permissionModel, "Google_assistant"); })
+    // .then(() => { return showClientDetails(permissionModel, "Google_assistant"); })
+    // .then(() => { return updateClientName(permissionModel, "Google_assistant","Google"); })
     // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return createClient(permissionModel, "GoogleHomeTest", ["all"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
@@ -51,6 +52,20 @@ function updateClient(permissionModel, clientName, scopes) {
       console.log("Error: Not just one result found:", results);
     })
 }
+
+
+function updateClientName(permissionModel, clientName, newName) {
+  return permissionModel.find({where:{name: clientName}})
+    .then((results) => {
+      if (results.length === 1) {
+        let user = results[0];
+        user.name = newName;
+        return user.save()
+      }
+      console.log("Error: Not just one result found:", results);
+    })
+}
+
 
 function clearClientDatabase(permissionModel) {
   return permissionModel.destroyAll()

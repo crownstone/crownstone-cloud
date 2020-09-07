@@ -110,8 +110,8 @@ oauth2.oAuth2Provider(
 if (!process.env.NODE_ENV || process.env.NODE_ENV === 'local') {
   // Uncomment these lines to view/add/remove/modify the OAUTH2 clients
   // IMPORTANT: these users are shared between dev and release cloud!
-  // let performOauthClientOperations = require("./inserts/oauthClientOperations");
-  // performOauthClientOperations(app);
+  let performOauthClientOperations = require("./inserts/oauthClientOperations");
+  performOauthClientOperations(app);
 
   // // Uncomment these lines to view/add/remove/modify the registered Apps
   // let performAppOperations = require("./inserts/appOperations");
