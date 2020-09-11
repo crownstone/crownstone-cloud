@@ -225,5 +225,9 @@
   "SortedList": {
     "dataSource": "mongoDs",
     "public": true
+  },
+  "SphereFeature": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }

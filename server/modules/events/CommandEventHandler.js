@@ -23,10 +23,4 @@ class CommandEventHandler {
   }
 }
 
-
-
-
-
-
-
 module.exports = CommandEventHandler;

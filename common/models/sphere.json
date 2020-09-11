@@ -120,6 +120,11 @@
       "model": "SortedList",
       "foreignKey": "sphereId"
     },
+    "features": {
+      "type": "hasMany",
+      "model": "SphereFeature",
+      "foreignKey": "sphereId"
+    },
     "geoLocation": {
       "type":"hasOne",
       "model": "geoLocation",

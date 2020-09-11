@@ -329,6 +329,15 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__users');
   model.disableRemoteMethodByName('prototype.__get__users');
 
+  model.disableRemoteMethodByName('prototype.__create__features');
+  model.disableRemoteMethodByName('prototype.__delete__features');
+  model.disableRemoteMethodByName('prototype.__destroyById__features');
+  model.disableRemoteMethodByName('prototype.__deleteById__features');
+  model.disableRemoteMethodByName('prototype.__updateById__features');
+  model.disableRemoteMethodByName('prototype.__link__features');
+  model.disableRemoteMethodByName('prototype.__count__features');
+  model.disableRemoteMethodByName('prototype.__get__features');
+
   // model.disableRemoteMethodByName('prototype.__create__scenes');
   model.disableRemoteMethodByName('prototype.__delete__scenes');
   // model.disableRemoteMethodByName('prototype.__destroyById__scenes');
@@ -2431,15 +2440,15 @@ module.exports = function(model) {
       })
       .then((stones) => {
         // check if we got all the required Crownstones
-        let resultUids = {};
+        let resultIds = {};
         let switchPacketMap = {};
         for (let i = 0; i < stones.length; i++) {
-          resultUids[stones[i].uid] = true;
+          resultIds[stones[i].id] = true;
           switchPacketMap[stones[i].id] = idSwitchPacketMap[stones[i].uid];
 
         }
         for (let i = 0; i < stoneIds.length; i++) {
-          if (resultUids[stoneIds[i]] === undefined) {
+          if (resultIds[stoneIds[i]] === undefined) {
             throw ("Invalid uid:" + stoneIds[i]);
           }
         }
