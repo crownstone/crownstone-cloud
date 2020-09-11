@@ -356,9 +356,10 @@ module.exports = function(model) {
         const StoneKeyModel = loopback.getModel('StoneKeys');
         let stoneId = ctx.instance.id;
         let sphereId = ctx.instance.sphereId;
-        return StoneKeyModel.create({
-          sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0
-        })
+        return StoneKeyModel.create([
+          {sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0},
+          {sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.DEVICE_UART_KEY, key: Util.createKey(), ttl: 0}
+          ])
           .then(() => {
             EventHandler.dataChange.sendStoneCreatedEventBySphereId(ctx.instance.sphereId, ctx.instance);
             next();
