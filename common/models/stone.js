@@ -1363,6 +1363,7 @@ module.exports = function(model) {
       existingAbility.type = type
       existingAbility.enabled = abilityData.enabled;
       existingAbility.syncedToCrownstone = abilityData.syncedToCrownstone;
+      existingAbility.updatedAt = abilityData.updatedAt;
       let existingProperties = existingAbility.properties();
       let existingPropertyLength = existingProperties.length || 0;
       return existingAbility.save()
