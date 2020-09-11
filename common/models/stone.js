@@ -1426,9 +1426,14 @@ module.exports = function(model) {
             let found = false;
             for (let j = 0; j < abilities.length; j++) {
               if (abilities[j].type === abilitiesToSet[i]) {
-                found = true;
-                promises.push(updateAbility(abilitiesToSet[i], data[abilitiesToSet[i]], abilities[j]));
-                break;
+                if (found == true) {
+                  // THIS IS A DUPLICATE!
+                  StoneAbilities.destroyById(abilities[j].id);
+                }
+                else {
+                  found = true;
+                  promises.push(updateAbility(abilitiesToSet[i], data[abilitiesToSet[i]], abilities[j]));
+                }
               }
             }
           }
