@@ -2444,7 +2444,7 @@ module.exports = function(model) {
         let switchPacketMap = {};
         for (let i = 0; i < stones.length; i++) {
           resultIds[stones[i].id] = true;
-          switchPacketMap[stones[i].id] = idSwitchPacketMap[stones[i].uid];
+          switchPacketMap[stones[i].id] = idSwitchPacketMap[stones[i].id];
 
         }
         for (let i = 0; i < stoneIds.length; i++) {
