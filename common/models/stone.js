@@ -1243,35 +1243,35 @@ module.exports = function(model) {
     }
   );
 
-  function getCurrentSwitchState(stoneId, switchState, next, v2 = false) {
+  function getCurrentSwitchState(stoneId, next, v2 = false) {
     debug("getCurrentSwitchState");
-
-    model.findById(stoneId, {include: "currentSwitchState"})
+    model.findById(stoneId, { include: "currentSwitchState" })
       .then((stone) => {
-        if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+        if (!stone) { return Util.unauthorizedError(); }
+        let currentSwitchState = stone.currentSwitchState();
 
-        let currentSwitchState = stone.currentSwitchState()
         if (currentSwitchState) {
-          if (v2 && currentSwitchState.switchState > 1) {
+          if (v2 === false && currentSwitchState.switchState > 1) {
             currentSwitchState.switchState = currentSwitchState.switchState * 0.01;
           }
-          return next(currentSwitchState);
+
+          return next(null, currentSwitchState);
         }
         else {
           next(null);
         }
       })
       .catch((err) => {
-        return next(err)
+        return next(err);
       })
   };
 
-  model.getCurrentSwitchState = function(stoneId, switchState, next) {
-    getCurrentSwitchState(stoneId, switchState, next, false);
+  model.getCurrentSwitchState = function(stoneId, next) {
+    getCurrentSwitchState(stoneId, next, false);
   };
 
-  model.getCurrentSwitchStateV2 = function(stoneId, switchState, next) {
-    getCurrentSwitchState(stoneId, switchState, next, true);
+  model.getCurrentSwitchStateV2 = function(stoneId, next) {
+    getCurrentSwitchState(stoneId, next, true);
   };
 
   model.remoteMethod(
