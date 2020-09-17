@@ -323,7 +323,7 @@ module.exports = function(model) {
       "getTokenData",
       "users",
       "getOwnedStones",
-      "processMeasurements"
+      "processEnergyMeasurements"
     ]
     endpointsAllowedForHub.forEach((endPoint) => {
       model.settings.acls.push(
@@ -2481,7 +2481,6 @@ module.exports = function(model) {
         for (let i = 0; i < stones.length; i++) {
           resultIds[stones[i].id] = true;
           switchPacketMap[stones[i].id] = idSwitchPacketMap[stones[i].id];
-
         }
         for (let i = 0; i < stoneIds.length; i++) {
           if (resultIds[stoneIds[i]] === undefined) {
@@ -2536,32 +2535,29 @@ module.exports = function(model) {
 
   model.processEnergyMeasurements = function(id, data, options, next) {
     let Stones = loopback.findModel("Stone");
+    let EnergyUsage = loopback.findModel("EnergyUsage");
     let ids = Object.keys(data);
     Stones.find({where:{id: {inq: ids}, sphereId: id}})
       .then((result) => {
-        let promiseArray = [];
+        let energyData = [];
         for (let i = 0; i < result.length; i++) {
           let stone = result[i];
           let stoneId = stone.id;
-          let energyData = [];
           for (let j = 0; j < data[stoneId].length; j++) {
             let t = data[stoneId][j].t;
             let e = data[stoneId][j].energy;
             if (t !== undefined && e !== undefined) {
-              energyData.push({timestamp: new Date(t), energy: e })
+              energyData = [{timestamp: new Date(t), energy: e, stoneId: stoneId, sphereId: id }]
             }
           }
-          if (energyData.length > 0) {
-            promiseArray.push(stone.energy.create(energyData));
-          }
         }
-
-        return Promise.all(promiseArray);
+        return EnergyUsage.create(energyData)
       })
       .then(() => {
         next(null)
       })
       .catch((e) => {
+        console.log("Something went wrong", e)
         next(e)
       })
   }
