@@ -171,7 +171,7 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
       .then((hub) => {
         if (!hub) { throw "No Hub" }
 
-        if (sphereId == hub.sphereId) {
+        if (String(sphereId) == String(hub.sphereId)) {
           if (accessMap.hub === true) {
             // check if this hub has access. A user might have changed the hubId...
             return app.models.SphereAccess.findOne({where:{and: [{userId: userId}, {sphereId: sphereId}, {role:'hub'}]}})
