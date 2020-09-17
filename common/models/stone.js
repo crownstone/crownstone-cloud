@@ -141,7 +141,7 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:guest",
         "permission": "ALLOW",
-        "property": "activityLogBatch"
+        "property": "energyUsageBatch"
       }
     );
     model.settings.acls.push(
@@ -207,23 +207,15 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__deleteById__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__powerUsageHistory');
 
-  model.disableRemoteMethodByName('prototype.__count__activityLog');
-  model.disableRemoteMethodByName('prototype.__create__activityLog');
-  model.disableRemoteMethodByName('prototype.__findById__activityLog');
-  model.disableRemoteMethodByName('prototype.__updateById__activityLog');
-  model.disableRemoteMethodByName('prototype.__destroyById__activityLog');
-  model.disableRemoteMethodByName('prototype.__deleteById__activityLog');
-  model.disableRemoteMethodByName('prototype.__delete__activityLog');
-  model.disableRemoteMethodByName('prototype.__get__activityLog');
 
-  model.disableRemoteMethodByName('prototype.__count__activityRange');
-  model.disableRemoteMethodByName('prototype.__create__activityRange');
-  model.disableRemoteMethodByName('prototype.__findById__activityRange');
-  model.disableRemoteMethodByName('prototype.__updateById__activityRange');
-  model.disableRemoteMethodByName('prototype.__destroyById__activityRange');
-  model.disableRemoteMethodByName('prototype.__deleteById__activityRange');
-  model.disableRemoteMethodByName('prototype.__delete__activityRange');
-  model.disableRemoteMethodByName('prototype.__get__activityRange');
+  model.disableRemoteMethodByName('prototype.__count__energyUsage');
+  model.disableRemoteMethodByName('prototype.__create__energyUsage');
+  model.disableRemoteMethodByName('prototype.__findById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__updateById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__destroyById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__deleteById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__delete__energyUsage');
+  model.disableRemoteMethodByName('prototype.__get__energyUsage');
 
   model.disableRemoteMethodByName('prototype.__count__abilities');
   model.disableRemoteMethodByName('prototype.__create__abilities');
@@ -433,114 +425,114 @@ module.exports = function(model) {
   /************************************
    **** Energy Usage
    ************************************/
-
-  model._setCurrentEnergyUsage = function(stone, energyUsage, next) {
-
-    debug("_setCurrentEnergyUsage");
-
-    // debug("stone:", stone);
-    // debug("energyUsage:", energyUsage);
-    energyUsage.sphereId = stone.sphereId;
-    stone.energyUsageHistory.create(energyUsage, function(err, energyUsageInstance) {
-      if (err) return next(err);
-
-      if (energyUsageInstance) {
-        stone.currentEnergyUsageId = energyUsageInstance.id;
-        stone.save(function(err, stoneInstance) {
-          if (next) {
-            if (err) return next(err);
-            next(null, energyUsageInstance);
-          }
-        })
-      } else {
-        return next(new Error("failed to create energyUsage"));
-      }
-    });
-
-  };
-
-  model.setCurrentEnergyUsage = function(energyUsage, stoneId, next) {
-    debug("setCurrentEnergyUsage");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      model._setCurrentEnergyUsage(stone, energyUsage, next);
-    })
-
-  };
-
-  model.remoteMethod(
-    'setCurrentEnergyUsage',
-    {
-      http: {path: '/:id/currentEnergyUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: 'EnergyUsage', required: true, 'http': {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: 'EnergyUsage', root: true},
-      description: "Add current energy usage of the stone"
-    }
-  );
+  //
+  // model._setCurrentEnergyUsage = function(stone, energyUsage, next) {
+  //
+  //   debug("_setCurrentEnergyUsage");
+  //
+  //   // debug("stone:", stone);
+  //   // debug("energyUsage:", energyUsage);
+  //   energyUsage.sphereId = stone.sphereId;
+  //   stone.energyUsageHistory.create(energyUsage, function(err, energyUsageInstance) {
+  //     if (err) return next(err);
+  //
+  //     if (energyUsageInstance) {
+  //       stone.currentEnergyUsageId = energyUsageInstance.id;
+  //       stone.save(function(err, stoneInstance) {
+  //         if (next) {
+  //           if (err) return next(err);
+  //           next(null, energyUsageInstance);
+  //         }
+  //       })
+  //     } else {
+  //       return next(new Error("failed to create energyUsage"));
+  //     }
+  //   });
+  //
+  // };
+  //
+  // model.setCurrentEnergyUsage = function(energyUsage, stoneId, next) {
+  //   debug("setCurrentEnergyUsage");
+  //
+  //   model.findById(stoneId, function(err, stone) {
+  //     if (err) return next(err);
+  //     if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+  //
+  //     model._setCurrentEnergyUsage(stone, energyUsage, next);
+  //   })
+  //
+  // };
+  //
+  // model.remoteMethod(
+  //   'setCurrentEnergyUsage',
+  //   {
+  //     http: {path: '/:id/currentEnergyUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: 'EnergyUsage', required: true, 'http': {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: 'EnergyUsage', root: true},
+  //     description: "Add current energy usage of the stone"
+  //   }
+  // );
 
   /************************************
    **** Power Usage
    ************************************/
 
-  model._setCurrentPowerUsage = function(stone, powerUsage, next) {
+  // model._setCurrentPowerUsage = function(stone, powerUsage, next) {
+  //
+  //   debug("_setCurrentPowerUsage");
+  //
+  //   // debug("stone:", stone);
+  //   // debug("powerUsage:", powerUsage);
+  //
+  //   powerUsage.sphereId = stone.sphereId;
+  //
+  //   stone.powerUsageHistory.create(powerUsage, function(err, powerUsageInstance) {
+  //     if (err) return next(err);
+  //
+  //     if (powerUsageInstance) {
+  //       stone.currentPowerUsageId = powerUsageInstance.id;
+  //
+  //       stone.save(function(err, stoneInstance) {
+  //         if (next) {
+  //           if (err) return next(err);
+  //           next(null, powerUsageInstance);
+  //         }
+  //       })
+  //     } else {
+  //       return next(new Error("failed to create powerUsage"));
+  //     }
+  //   });
+  //
+  // };
 
-    debug("_setCurrentPowerUsage");
-
-    // debug("stone:", stone);
-    // debug("powerUsage:", powerUsage);
-
-    powerUsage.sphereId = stone.sphereId;
-
-    stone.powerUsageHistory.create(powerUsage, function(err, powerUsageInstance) {
-      if (err) return next(err);
-
-      if (powerUsageInstance) {
-        stone.currentPowerUsageId = powerUsageInstance.id;
-
-        stone.save(function(err, stoneInstance) {
-          if (next) {
-            if (err) return next(err);
-            next(null, powerUsageInstance);
-          }
-        })
-      } else {
-        return next(new Error("failed to create powerUsage"));
-      }
-    });
-
-  };
-
-  model.setCurrentPowerUsage = function(powerUsage, stoneId, next) {
-    debug("setCurrentPowerUsage");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      model._setCurrentPowerUsage(stone, powerUsage, next);
-    })
-
-  };
-
-  model.remoteMethod(
-    'setCurrentPowerUsage',
-    {
-      http: {path: '/:id/currentPowerUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: 'PowerUsage', required: true, http: {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: 'PowerUsage', root: true},
-      description: "Add current power usage of the stone"
-    }
-  );
-
+  // model.setCurrentPowerUsage = function(powerUsage, stoneId, next) {
+  //   debug("setCurrentPowerUsage");
+  //
+  //   model.findById(stoneId, function(err, stone) {
+  //     if (err) return next(err);
+  //     if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+  //
+  //     model._setCurrentPowerUsage(stone, powerUsage, next);
+  //   })
+  //
+  // };
+  //
+  // model.remoteMethod(
+  //   'setCurrentPowerUsage',
+  //   {
+  //     http: {path: '/:id/currentPowerUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: 'PowerUsage', required: true, http: {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: 'PowerUsage', root: true},
+  //     description: "Add current power usage of the stone"
+  //   }
+  // );
+  //
 
   const batchSetHistory = function (fieldName, dataArray, stoneId, next) {
     let historyFieldName = fieldName + "History";
@@ -643,39 +635,39 @@ module.exports = function(model) {
     });
   };
 
-  model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
-    batchSetHistory('powerUsage', powerUsageArray, stoneId, next);
-  };
-
-  model.setBatchEnergyUsage = function(energyUsageArray, stoneId, next) {
-    batchSetHistory('energyUsage', energyUsageArray, stoneId, next);
-  };
-
-  model.remoteMethod(
-    'setBatchEnergyUsage',
-    {
-      http: {path: '/:id/batchEnergyUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: ['EnergyUsage'], required: true, http: {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: ['EnergyUsage'], root: true},
-      description: "Add array of energy usage measurements to the stone."
-    }
-  );
-
-  model.remoteMethod(
-    'setBatchPowerUsage',
-    {
-      http: {path: '/:id/batchPowerUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: ['PowerUsage'], required: true, http: {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: ['PowerUsage'], root: true},
-      description: "Add an array of power usage measurements to the stone."
-    }
-  );
+  // model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
+  //   batchSetHistory('powerUsage', powerUsageArray, stoneId, next);
+  // };
+  //
+  // model.setBatchEnergyUsage = function(energyUsageArray, stoneId, next) {
+  //   batchSetHistory('energyUsage', energyUsageArray, stoneId, next);
+  // };
+  //
+  // model.remoteMethod(
+  //   'setBatchEnergyUsage',
+  //   {
+  //     http: {path: '/:id/batchEnergyUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: ['EnergyUsage'], required: true, http: {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: ['EnergyUsage'], root: true},
+  //     description: "Add array of energy usage measurements to the stone."
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'setBatchPowerUsage',
+  //   {
+  //     http: {path: '/:id/batchPowerUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: ['PowerUsage'], required: true, http: {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: ['PowerUsage'], root: true},
+  //     description: "Add an array of power usage measurements to the stone."
+  //   }
+  // );
 
 
   /************************************
@@ -729,81 +721,81 @@ module.exports = function(model) {
   //   }
   // );
 
-  model.deleteAllEnergyUsageHistory = function(id, callback) {
-    debug("deleteAllEnergyUsageHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.energyUsageHistory.destroyAll(function(err) {
-        stone.currentEnergyUsageId = undefined;
-        stone.save();
-        callback(err);
-      });
-    })
-  };
-
-
-  model.deleteAllPowerUsageHistory = function(id, callback) {
-    debug("deleteAllPowerUsageHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.powerUsageHistory.destroyAll(function(err) {
-        stone.currentPowerUsageId = undefined;
-        stone.save();
-        callback(err);
-      });
-    })
-  };
-
-  model.deleteAllSwitchStateHistory = function(id, callback) {
-    debug("deleteAllPowerUsageHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.switchStateHistory.destroyAll(function(err) {
-        stone.currentSwitchStateId = undefined;
-        stone.save();
-        callback(err);
-      });
-    })
-  };
-
-  model.remoteMethod(
-    'deleteAllEnergyUsageHistory',
-    {
-      http: {path: '/:id/deleteAllEnergyUsageHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all energy usage history of this Stone"
-    }
-  );
-
-  model.remoteMethod(
-    'deleteAllPowerUsageHistory',
-    {
-      http: {path: '/:id/deleteAllPowerUsageHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all power usage history of this Stone"
-    }
-  );
-
-  model.remoteMethod(
-    'deleteAllSwitchStateHistory',
-    {
-      http: {path: '/:id/deleteAllSwitchStateHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all switch state history of this Stone"
-    }
-  );
+  // model.deleteAllEnergyUsageHistory = function(id, callback) {
+  //   debug("deleteAllEnergyUsageHistory");
+  //   model.findById(id, function(err, stone) {
+  //     if (err) return callback(err);
+  //     if (model.checkForNullError(stone, callback, "id: " + id)) return;
+  //
+  //     stone.energyUsageHistory.destroyAll(function(err) {
+  //       stone.currentEnergyUsageId = undefined;
+  //       stone.save();
+  //       callback(err);
+  //     });
+  //   })
+  // };
+  //
+  //
+  // model.deleteAllPowerUsageHistory = function(id, callback) {
+  //   debug("deleteAllPowerUsageHistory");
+  //   model.findById(id, function(err, stone) {
+  //     if (err) return callback(err);
+  //     if (model.checkForNullError(stone, callback, "id: " + id)) return;
+  //
+  //     stone.powerUsageHistory.destroyAll(function(err) {
+  //       stone.currentPowerUsageId = undefined;
+  //       stone.save();
+  //       callback(err);
+  //     });
+  //   })
+  // };
+  //
+  // model.deleteAllSwitchStateHistory = function(id, callback) {
+  //   debug("deleteAllPowerUsageHistory");
+  //   model.findById(id, function(err, stone) {
+  //     if (err) return callback(err);
+  //     if (model.checkForNullError(stone, callback, "id: " + id)) return;
+  //
+  //     stone.switchStateHistory.destroyAll(function(err) {
+  //       stone.currentSwitchStateId = undefined;
+  //       stone.save();
+  //       callback(err);
+  //     });
+  //   })
+  // };
+  //
+  // model.remoteMethod(
+  //   'deleteAllEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/deleteAllEnergyUsageHistory', verb: 'delete'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //     ],
+  //     description: "Delete all energy usage history of this Stone"
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'deleteAllPowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/deleteAllPowerUsageHistory', verb: 'delete'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //     ],
+  //     description: "Delete all power usage history of this Stone"
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'deleteAllSwitchStateHistory',
+  //   {
+  //     http: {path: '/:id/deleteAllSwitchStateHistory', verb: 'delete'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //     ],
+  //     description: "Delete all switch state history of this Stone"
+  //   }
+  // );
 
 
 
@@ -925,13 +917,13 @@ module.exports = function(model) {
     })
   };
 
-  model.getPowerUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
-    getHistory('powerUsageHistory', stoneId, from, to, limit, skip, ascending, next);
-  };
-
-  model.getEnergyUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
-    getHistory('energyUsageHistory', stoneId, from, to, limit, skip, ascending, next);
-  };
+  // model.getPowerUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+  //   getHistory('powerUsageHistory', stoneId, from, to, limit, skip, ascending, next);
+  // };
+  //
+  // model.getEnergyUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+  //   getHistory('energyUsageHistory', stoneId, from, to, limit, skip, ascending, next);
+  // };
 
   model.getSwitchStateHistory = function(stoneId, from, to, limit, skip, ascending, next) {
     getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next);
@@ -988,43 +980,43 @@ module.exports = function(model) {
     }
   );
 
-  model.remoteMethod(
-    'getEnergyUsageHistory',
-    {
-      http: {path: '/:id/energyUsageHistory/', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
-        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
-        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
-      ],
-      returns: {arg: 'data', type: '[EnergyUsage]', root: true},
-      description: 'Get an array of collected energy usage samples from the specified Crownstone.' +
-      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'getPowerUsageHistory',
-    {
-      http: {path: '/:id/powerUsageHistory/', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
-        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
-        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
-      ],
-      returns: {arg: 'data', type: '[PowerUsage]', root: true},
-      description: 'Get an array of collected power measurement samples from the specified Crownstone.' +
-      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
+  // model.remoteMethod(
+  //   'getEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/energyUsageHistory/', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+  //       {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+  //       {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'data', type: '[EnergyUsage]', root: true},
+  //     description: 'Get an array of collected energy usage samples from the specified Crownstone.' +
+  //     '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+  //     '\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'getPowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/powerUsageHistory/', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+  //       {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+  //       {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'data', type: '[PowerUsage]', root: true},
+  //     description: 'Get an array of collected power measurement samples from the specified Crownstone.' +
+  //     '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+  //     '\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
 
   const countHistory = function(historyField, stoneId, from, to, next) {
     model.findById(stoneId, function(err, stone) {
@@ -1043,59 +1035,59 @@ module.exports = function(model) {
     })
   };
 
-  model.countPowerUsageHistory = function(stoneId, from, to, next) {
-    countHistory('powerUsageHistory', stoneId, from, to, next);
-  };
-
-  model.countEnergyUsageHistory = function(stoneId, from, to, next) {
-    countHistory('energyUsageHistory', stoneId, from, to, next);
-  };
+  // model.countPowerUsageHistory = function(stoneId, from, to, next) {
+  //   countHistory('powerUsageHistory', stoneId, from, to, next);
+  // };
+  //
+  // model.countEnergyUsageHistory = function(stoneId, from, to, next) {
+  //   countHistory('energyUsageHistory', stoneId, from, to, next);
+  // };
 
   model.countSwitchStateHistory = function(stoneId, from, to, next) {
     countHistory('switchStateHistory', stoneId, from, to, next);
   };
 
-  model.remoteMethod(
-    'countEnergyUsageHistory',
-    {
-      http: {path: '/:id/energyUsageHistory/count', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'countPowerUsageHistory',
-    {
-      http: {path: '/:id/powerUsageHistory/count', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'countSwitchStateHistory',
-    {
-      http: {path: '/:id/switchStateHistory/count', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
+  // model.remoteMethod(
+  //   'countEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/energyUsageHistory/count', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'countPowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/powerUsageHistory/count', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'countSwitchStateHistory',
+  //   {
+  //     http: {path: '/:id/switchStateHistory/count', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
 
   const deleteHistory = function (historyField, stoneId, from, to, next) {
     model.findById(stoneId, function(err, stone) {
@@ -1115,46 +1107,46 @@ module.exports = function(model) {
     })
   };
 
-  model.deletePowerUsageHistory = function(stoneId, from, to, next) {
-    deleteHistory('powerUsageHistory', stoneId, from, to, next);
-  };
-
-  model.deleteEnergyUsageHistory = function(stoneId, from, to, next) {
-    deleteHistory('energyUsageHistory', stoneId, from, to, next);
-  };
+  // model.deletePowerUsageHistory = function(stoneId, from, to, next) {
+  //   deleteHistory('powerUsageHistory', stoneId, from, to, next);
+  // };
+  //
+  // model.deleteEnergyUsageHistory = function(stoneId, from, to, next) {
+  //   deleteHistory('energyUsageHistory', stoneId, from, to, next);
+  // };
 
   model.deleteSwitchStateHistory = function(stoneId, from, to, next) {
     deleteHistory('switchStateHistory', stoneId, from, to, next);
   };
 
-
-  model.remoteMethod(
-    'deleteEnergyUsageHistory',
-    {
-      http: {path: '/:id/energyUsageHistory', verb: 'DELETE'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
-    }
-  );
-
-  model.remoteMethod(
-    'deletePowerUsageHistory',
-    {
-      http: {path: '/:id/powerUsageHistory', verb: 'DELETE'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
-    }
-  );
+  //
+  // model.remoteMethod(
+  //   'deleteEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/energyUsageHistory', verb: 'DELETE'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'deletePowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/powerUsageHistory', verb: 'DELETE'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
+  //   }
+  // );
 
 
   model.remoteMethod(
@@ -1253,6 +1245,9 @@ module.exports = function(model) {
         if (currentSwitchState) {
           if (v2 === false && currentSwitchState.switchState > 1) {
             currentSwitchState.switchState = currentSwitchState.switchState * 0.01;
+          }
+          else if (v2 === true && currentSwitchState.switchState > 0 && currentSwitchState.switchState <= 1) {
+            currentSwitchState.switchState = currentSwitchState.switchState * 100;
           }
 
           return next(null, currentSwitchState);

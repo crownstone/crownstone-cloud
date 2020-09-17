@@ -85,30 +85,15 @@
       "foreignKey": "stoneId",
       "through": "StoneLocation"
     },
-    "currentPowerUsage": {
-      "type": "belongsTo",
-      "model": "PowerUsage",
-      "foreignKey": "currentPowerUsageId"
-    },
-    "powerUsageHistory": {
+    "energyUsage": {
       "type": "hasMany",
-      "model": "PowerUsage",
-      "foreignKey": "stoneId"
-    },
-    "currentEnergyUsage": {
-      "type": "belongsTo",
       "model": "EnergyUsage",
-      "foreignKey": "currentEnergyUsageId"
+      "foreignKey": "stoneId"
     },
     "currentSwitchState": {
       "type": "belongsTo",
       "model": "SwitchState",
       "foreignKey": "currentSwitchStateId"
-    },
-    "energyUsageHistory": {
-      "type": "hasMany",
-      "model": "EnergyUsage",
-      "foreignKey": "stoneId"
     },
     "switchStateHistory": {
       "type": "hasMany",

@@ -70,6 +70,15 @@ module.exports = function(model) {
       }
     );
 
+    // model.settings.acls.push(
+    //   {
+    //     "principalType": "ROLE",
+    //     "principalId": "$owner",
+    //     "permission": "DENY",
+    //     "property": 'processMeasurements'
+    //   }
+    // );
+
     //***************************
     // ADMIN:
     //   - everything
@@ -82,6 +91,16 @@ module.exports = function(model) {
         "permission": "ALLOW"
       }
     );
+
+    // model.settings.acls.push(
+    //   {
+    //     "principalType": "ROLE",
+    //     "principalId": "$group:admin",
+    //     "permission": "DENY",
+    //     "property": 'processMeasurements'
+    //   }
+    // );
+
     // model.settings.acls.push(
     // 	{
     // 		"principalType": "ROLE",
@@ -227,6 +246,14 @@ module.exports = function(model) {
         "property": 'getTokenData'
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "DENY",
+        "property": 'processMeasurements'
+      }
+    );
     //***************************
     // GUEST:
     //   - read
@@ -279,6 +306,14 @@ module.exports = function(model) {
         "property": 'getTokenData'
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "DENY",
+        "property": 'processMeasurements'
+      }
+    );
 
     //***************************
     // HUB:
@@ -288,6 +323,7 @@ module.exports = function(model) {
       "getTokenData",
       "users",
       "getOwnedStones",
+      "processMeasurements"
     ]
     endpointsAllowedForHub.forEach((endPoint) => {
       model.settings.acls.push(
@@ -2372,7 +2408,7 @@ module.exports = function(model) {
       })
       .then(() => {
         for (let i = 0; i < accessData.length; i++) {
-          data[String(accessData[i].userId)] = accessData[i].sphereAuthorizationToken;
+          data[String(accessData[i].userId)] = { role: accessData[i].role, token: accessData[i].sphereAuthorizationToken };
         }
 
         callback(null,data);
@@ -2481,6 +2517,55 @@ module.exports = function(model) {
       description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
     }
   );
+
+
+
+  model.remoteMethod(
+    'processEnergyMeasurements',
+    {
+      http: {path: '/:id/energyMeasurements', verb: 'post'},
+      accepts: [
+        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data',          type: 'any',  required:true, http: { source:  'body' }},
+        {arg: "options",       type: "object", http: "optionsFromRequest"},
+      ],
+      description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
+    }
+  );
+
+
+  model.processEnergyMeasurements = function(id, data, options, next) {
+    let Stones = loopback.findModel("Stone");
+    let ids = Object.keys(data);
+    Stones.find({where:{id: {inq: ids}, sphereId: id}})
+      .then((result) => {
+        let promiseArray = [];
+        for (let i = 0; i < result.length; i++) {
+          let stone = result[i];
+          let stoneId = stone.id;
+          let energyData = [];
+          for (let j = 0; j < data[stoneId].length; j++) {
+            let t = data[stoneId][j].t;
+            let e = data[stoneId][j].energy;
+            if (t !== undefined && e !== undefined) {
+              energyData.push({timestamp: new Date(t), energy: e })
+            }
+          }
+          if (energyData.length > 0) {
+            promiseArray.push(stone.energy.create(energyData));
+          }
+        }
+
+        return Promise.all(promiseArray);
+      })
+      .then(() => {
+        next(null)
+      })
+      .catch((e) => {
+        next(e)
+      })
+  }
+
 };
 
 

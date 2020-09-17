@@ -16,29 +16,15 @@
   "properties": {
     "timestamp": {
       "type": "date",
-      "default": "$now"
+      "required": true
     },
     "energy": {
       "type": "number",
       "required": true
-    },
-    "duration": {
-      "type": "number",
-      "required": true
     }
   },
-  "hidden": [
-    "id",
-    "stoneId",
-    "sphereId"
-  ],
   "validations": [],
   "relations": {
-    "appliance": {
-      "type": "belongsTo",
-      "model": "Appliance",
-      "foreignKey": "applianceId"
-    },
     "stone": {
       "type": "belongsTo",
       "model": "Stone",
