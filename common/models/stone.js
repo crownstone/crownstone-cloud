@@ -168,6 +168,34 @@ module.exports = function(model) {
         "property": "notifyOnRecovery"
       }
     );
+
+
+    //***************************
+    // HUB:
+    //   - cannot create new hub
+    //***************************
+    let endpointsAllowedForHub = [
+      "getCurrentSwitchStateV2",
+      "setCurrentSwitchState"
+    ]
+    endpointsAllowedForHub.forEach((endPoint) => {
+      model.settings.acls.push(
+        {
+          "principalType": "ROLE",
+          "principalId": "$group:hub",
+          "permission": "ALLOW",
+          "property": endPoint
+        }
+      );
+    })
+    model.settings.acls.push(
+      {
+        "accessType": "READ",
+        "principalType": "ROLE",
+        "principalId": "$group:hub",
+        "permission": "ALLOW"
+      }
+    );
   }
 
 
