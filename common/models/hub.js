@@ -117,7 +117,7 @@ module.exports = function(model) {
 
     if (options && options.accessToken && options.accessToken.principalType === 'Hub') {
       let tokenHubId = options.accessToken.userId;
-      if (hubId !== tokenHubId) { return callback(util.unauthorizedError()); }
+      if (String(hubId) != String(tokenHubId)) { return callback(util.unauthorizedError()); }
       const hubModel = loopback.getModel("Hub");
       hubModel.findById(hubId)
         .then((result) => {
