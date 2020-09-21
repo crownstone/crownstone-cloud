@@ -154,7 +154,7 @@ module.exports = function(model) {
   model.remoteMethod(
     'setHubLocalIP',
     {
-      http: {path: '/localIP', verb: 'put'},
+      http: {path: '/:id/localIP', verb: 'put'},
       accepts: [
         {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
         {arg: 'localIpAddress',  type: 'string', required: true, http: { source : 'query' }},
