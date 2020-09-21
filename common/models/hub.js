@@ -107,7 +107,7 @@ module.exports = function(model) {
     }
   );
 
-  model.setHubLocalIP = function(localIpAddress, options, callback) {
+  model.setHubLocalIP = function(hubId, localIpAddress, options, callback) {
     let externalIp = CACHED_IP;
     CACHED_IP = null;
 
@@ -116,7 +116,8 @@ module.exports = function(model) {
     }
 
     if (options && options.accessToken && options.accessToken.principalType === 'Hub') {
-      let hubId = options.accessToken.userId;
+      let tokenHubId = options.accessToken.userId;
+      if (hubId !== tokenHubId) { return callback(util.unauthorizedError()); }
       const hubModel = loopback.getModel("Hub");
       hubModel.findById(hubId)
         .then((result) => {
@@ -124,6 +125,7 @@ module.exports = function(model) {
 
           result.localIPAddress = localIpAddress;
           result.externalIPAddress = externalIp;
+          result.lastSeen = new Date();
 
           return result.save();
         })
@@ -154,6 +156,7 @@ module.exports = function(model) {
     {
       http: {path: '/localIP', verb: 'put'},
       accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
         {arg: 'localIpAddress',  type: 'string', required: true, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],

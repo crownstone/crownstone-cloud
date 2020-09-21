@@ -39,6 +39,9 @@
     },
     "externalIPAddress": {
       "type": "string"
+    },
+    "lastSeen": {
+      "type": "date"
     }
   },
   "validations": [],
