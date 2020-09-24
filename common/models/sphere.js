@@ -2225,7 +2225,7 @@ module.exports = function(model) {
         })
       })
       .then((newHubData) => {
-        let newHub = newHubData;
+        newHub = newHubData;
         return SphereAccess.create({
           sphereId: id,
           userId: newHub.id,

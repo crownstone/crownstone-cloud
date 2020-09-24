@@ -135,7 +135,7 @@ module.exports = function (model, options) {
     _getModelInstanceForRequest(ctx, changedData, true)
       .then((parentInstance) => {
         // we will remove the OPTIONS field since this can contain user sensitive information.
-        let cleanedChangedData = clean(changedData);
+        let cleanedChangedData = changedData && clean(changedData) || changedData;
         if (parentInstance && parentInstance.hooks && parentInstance.hooks.length > 0) {
           let hooks = parentInstance.hooks();
           // todo: OPTIMIZE
