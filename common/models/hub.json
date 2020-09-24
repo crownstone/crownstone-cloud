@@ -42,6 +42,9 @@
     },
     "lastSeen": {
       "type": "date"
+    },
+    "state": {
+      "type": "string"
     }
   },
   "validations": [],
