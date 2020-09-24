@@ -2547,7 +2547,7 @@ module.exports = function(model) {
             let t = data[stoneId][j].t;
             let e = data[stoneId][j].energy;
             if (t !== undefined && e !== undefined) {
-              energyData = [{timestamp: new Date(t), energy: e, stoneId: stoneId, sphereId: id }]
+              energyData.push({timestamp: new Date(t), energy: e, stoneId: stoneId, sphereId: id });
             }
           }
         }
