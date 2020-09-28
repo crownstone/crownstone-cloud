@@ -5,6 +5,7 @@ const notificationHandler = require("../modules/NotificationHandler");
 const EventHandler = require("../modules/EventHandler");
 const SSEManager = require("../modules/SSEManager");
 const debug = require('debug')('loopback:dobots');
+const path = require("path");
 
 module.exports = function (app) {
   let User = app.models.user;
@@ -568,6 +569,9 @@ module.exports = function (app) {
     else {
       res.end("Invalid token.")
     }
+  })
+  app.get('/generateHubToken', function(req, res) {
+    res.sendFile(path.join(__dirname, '../../public/generateHubToken.html'))
   })
 
 };

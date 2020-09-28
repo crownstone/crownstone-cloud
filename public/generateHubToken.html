@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>New Hub Token</title>
+</head>
+<body>
+This token has been generated on your local browser:
+<br /><br />
+<div id="token"></div>
+<script>
+  let tokenDiv = document.getElementById("token");
+
+  function generateToken() {
+    let str = '';
+    let randomData = window.crypto.getRandomValues(new Uint8Array(64));
+    randomData.forEach((r) => {
+      let num = Number(r).toString(16);
+      if (num.length == 1) {
+        num = '0'+num;
+      }
+      str += num;
+    })
+    return str;
+  }
+
+  tokenDiv.innerHTML = generateToken();
+</script>
+</body>
+</html>
