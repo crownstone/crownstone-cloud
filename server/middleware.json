@@ -78,12 +78,24 @@
             ],
             "switch_stone": [
               {
+                "methods": "get",
+                "path": "/api/Stones/:id/currentSwitchState"
+              },
+              {
+                "methods": "get",
+                "path": "/api/Stones/:id/currentSwitchStateV2"
+              },
+              {
                 "methods": "put",
                 "path": "/api/Stones/:id/setSwitchStateRemotely"
               },
               {
-                "methods": "get",
-                "path": "/api/Stones/:id/currentSwitchState"
+                "methods": "post",
+                "path": "/api/Stones/:id/switch"
+              },
+              {
+                "methods": "post",
+                "path": "/api/Spheres/:id/switchCrownstones"
               }
             ],
             "sphere_information": [
