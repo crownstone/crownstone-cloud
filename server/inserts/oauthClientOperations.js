@@ -30,12 +30,12 @@ function performOauthClientOperations(app) {
 
   // empty promise so all clients that are added are in matching then statements
   new Promise((resolve, reject) => { resolve() })
-    // .then(() => { return showClientDetails(permissionModel, "Google_assistant"); })
+    .then(() => { return showClientDetails(permissionModel, "Google"); })
     // .then(() => { return updateClientName(permissionModel, "Google_assistant","Google"); })
     // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
     // .then(() => { return createClient(permissionModel, "GoogleHomeTest", ["all"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
-    // .then(() => { return updateClient(permissionModel, "Triggi", allScopes); })
+    // .then(() => { return updateClient(permissionModel, "Google", ["user_id", "stone_information", "switch_stone"]); })
     // .then(() => { createClient(permissionModel, "Google_assistant", ['user_information','user_location','stone_information','switch_stone']); })
     .then(() => { console.log("OAUTH DONE")})
     .catch((err) => { console.log("Error during performOauthClientOperations",err); })
