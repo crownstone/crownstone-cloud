@@ -61,9 +61,11 @@
 
       var permissionList = document.getElementById('permissionList');
       for (var i = 0; i < permissionArray.length; i++) {
-        var listElement = document.createElement('li');
-        listElement.innerHTML = permissionMap[permissionArray[i]];
-        permissionList.appendChild(listElement);
+        if (permissionMap[permissionArray[i]]) {
+          var listElement = document.createElement('li');
+          listElement.innerHTML = permissionMap[permissionArray[i]];
+          permissionList.appendChild(listElement);
+        }
       }
 
       document.getElementById("username").innerHTML = username;
