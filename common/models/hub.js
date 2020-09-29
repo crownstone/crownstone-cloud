@@ -24,13 +24,6 @@ module.exports = function(model) {
     });
 
     model.settings.acls.push({
-      "principalType": "ROLE",
-      "principalId": "$everyone",
-      "permission": "ALLOW",
-      "property": "setHubLocalIP"
-    });
-
-    model.settings.acls.push({
       "accessType": "*",
       "principalType": "ROLE",
       "principalId": "$group:admin",
@@ -160,6 +153,29 @@ module.exports = function(model) {
         {arg: 'localIpAddress',  type: 'string', required: true, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
+      description: "Set the local IP address of the hub."
+    }
+  );
+
+  model.getHubToken = function(id, options, next) {
+    model.findById(id)
+      .then((result) => {
+        if (result) {
+          next(null, result.token);
+        }
+      })
+      .catch((err) => { next(err) })
+  }
+
+  model.remoteMethod(
+    'getHubToken',
+    {
+      http: {path: '/:id/token', verb: 'get'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'token', type: 'string', root: true},
       description: "Set the local IP address of the hub."
     }
   );
