@@ -1519,7 +1519,7 @@ module.exports = function(model) {
     }
   );
 
-  model.setSwitchStateV2 = function(id, switchData, options, callback) {
+  model.setSwitchStateV2 = function(stoneId, switchData, options, callback) {
     if (switchData && switchData.type && switchData.type !== 'PERCENTAGE' && switchData.type !== "TURN_ON" && switchData.type !== "TURN_OFF") {
       return callback("Type of SwitchData can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
     }
@@ -1537,45 +1537,47 @@ module.exports = function(model) {
     }
 
     let stone = null;
+    let sphere = null;
+    let switchStateLegacy = 0;
     let sphereModel = loopback.getModel("Sphere");
-    model.findById(id)
+    model.findById(stoneId)
       .then((stoneResult) => {
         if (!stoneResult) { throw util.unauthorizedError(); }
         stone = stoneResult;
 
         return sphereModel.findById(stone.sphereId)
       })
-      .then((sphere) => {
-        if (sphere) {
-          let switchStateLegacy = 0;
-          switch (switchData.type) {
-            case "PERCENTAGE":
-              switchStateLegacy = 0.01 * switchData.percentage;
-              break;
-            case "TURN_ON":
-              switchStateLegacy = 1;
-              break;
-            case "TURN_OFF":
-              switchStateLegacy = 0;
-              break;
-          }
-
-          let ssePacket = EventHandler.command.sendStoneMultiSwitchBySphereId(stone.sphereId, [stone], {stoneId: switchData});
-
-          notificationHandler.notifySphereDevices(sphere, {
-            type: 'setSwitchStateRemotely',
-            data: {
-              event: ssePacket,
-              command: 'setSwitchStateRemotely',
-              stoneId: id,
-              sphereId: stone.sphereId,
-              switchState: Math.max(0, Math.min(1, switchStateLegacy))
-            },
-            silentAndroid: true,
-            silentIOS: true
-          });
+      .then((sphereResult) => {
+        if (!sphereResult) { throw "Invalid sphere." }
+        sphere = sphereResult;
+        switch (switchData.type) {
+          case "PERCENTAGE":
+            switchStateLegacy = 0.01 * switchData.percentage;
+            break;
+          case "TURN_ON":
+            switchStateLegacy = 1;
+            break;
+          case "TURN_OFF":
+            switchStateLegacy = 0;
+            break;
         }
-          callback(null);
+        return EventHandler.command.sendStoneMultiSwitchBySphereId(stone.sphereId, [stone], {[stoneId]: switchData});
+      })
+      .then((ssePacket) => {
+        notificationHandler.notifySphereDevices(sphere, {
+          type: 'setSwitchStateRemotely',
+          data: {
+            event: ssePacket,
+            command: 'setSwitchStateRemotely',
+            stoneId: stoneId,
+            sphereId: stone.sphereId,
+            switchState: Math.max(0, Math.min(1, switchStateLegacy))
+          },
+          silentAndroid: true,
+          silentIOS: true
+        });
+
+        callback(null);
       })
       .catch((err) => {
         callback(err);

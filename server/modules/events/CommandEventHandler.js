@@ -7,7 +7,7 @@ class CommandEventHandler {
   sendStoneMultiSwitchBySphereId(sphereId, stones, switchStateMap) {
     return EventConstructor.getData({sphereId})
       .then((data) => {
-        this.sendStoneMultiSwitch(data.sphere,stones, switchStateMap);
+        return this.sendStoneMultiSwitch(data.sphere, stones, switchStateMap);
       })
       .catch((err) => { /** ignore error, simply do not generate event. **/ })
   }
