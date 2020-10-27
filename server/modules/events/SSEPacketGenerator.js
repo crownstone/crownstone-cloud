@@ -2,8 +2,11 @@ module.exports = {
   generateMultiSwitchCrownstoneEvent(sphere, stones, switchStateMap) {
     let stoneData = [];
     for (let i = 0; i < stones.length; i++) {
-      let csData = crownstoneData(stones[i], switchStateMap[stones[i].id].percentage)
-      csData.type = switchStateMap[stones[i].id].type;
+      let csData = crownstoneSwitchCommand(
+        stones[i],
+        switchStateMap[stones[i].id].type,
+        switchStateMap[stones[i].id].percentage
+      );
       stoneData.push(csData);
     }
 
@@ -226,4 +229,19 @@ function crownstoneData( stone )  {
 
 function crownstoneSwitchState( stone, percentage )  {
   return { id: String(stone.id),  uid: stone.uid,  name: stone.name, macAddress: stone.address, percentage: percentage };
+}
+
+
+function crownstoneSwitchCommand( stone, type, percentage )  {
+  let base = {
+    id: String(stone.id),
+    uid: stone.uid,
+    name: stone.name,
+    macAddress: stone.address,
+    type: type
+  };
+  if (type === "PERCENTAGE") {
+    base.percentage = percentage;
+  }
+  return base;
 }
