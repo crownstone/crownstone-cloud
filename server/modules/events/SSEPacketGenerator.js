@@ -1,13 +1,4 @@
 module.exports = {
-  generateSwitchCrownstoneEvent(stone,sphere,switchState) {
-    return {
-      type:       "command",
-      subType:    "switchCrownstone",
-      sphere:     sphereData(sphere),
-      crownstone: crownstoneData(stone, switchState)
-    };
-  },
-
   generateMultiSwitchCrownstoneEvent(sphere, stones, switchStateMap) {
     let stoneData = [];
     for (let i = 0; i < stones.length; i++) {
@@ -24,15 +15,14 @@ module.exports = {
     };
   },
 
-  generateSwitchStateUpdatedEvent(stone,sphere,switchState) {
+  generateSwitchStateUpdatedEvent(stone,sphere,percentage) {
     return {
       type:       "switchStateUpdate",
       subType:    "stone",
       sphere:     sphereData(sphere),
-      crownstone: crownstoneData(stone, switchState)
+      crownstone: crownstoneSwitchState(stone, percentage)
     };
   },
-
 
   generateEnterSphereEvent(user, sphere) {
     return {
@@ -229,6 +219,11 @@ function locationData( location ) { return nameIdSet(location); }
 function userData( user )         { return nameIdSet(user); }
 function nameIdSet( item )        { return { id: String(item.id), name: item.name}; }
 function abilityData( ability )   { return { type: ability.type, enabled: ability.enabled, syncedToCrownstone: ability.syncedToCrownstone }; }
-function crownstoneData( stone, switchState )  {
-  return { id: String(stone.id),  uid: stone.uid,  name: stone.name, switchState: switchState === undefined ? null : switchState, macAddress: stone.address };
+
+function crownstoneData( stone )  {
+  return { id: String(stone.id),  uid: stone.uid,  name: stone.name, macAddress: stone.address };
+}
+
+function crownstoneSwitchState( stone, percentage )  {
+  return { id: String(stone.id),  uid: stone.uid,  name: stone.name, macAddress: stone.address, percentage: percentage };
 }
