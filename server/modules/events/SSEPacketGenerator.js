@@ -228,7 +228,7 @@ function crownstoneData( stone )  {
 }
 
 function crownstoneSwitchState( stone, percentage )  {
-  return { id: String(stone.id),  uid: stone.uid,  name: stone.name, macAddress: stone.address, percentage: percentage };
+  return { id: String(stone.id),  uid: stone.uid,  name: stone.name, macAddress: stone.address, percentage: percentage, switchState: percentage };
 }
 
 
