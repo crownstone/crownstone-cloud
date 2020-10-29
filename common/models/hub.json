@@ -27,8 +27,7 @@
       "required": true
     },
     "name": {
-      "type": "string",
-      "default": true
+      "type": "string"
     },
     "sphereId": {
       "type": "string",
