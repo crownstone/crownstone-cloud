@@ -2078,7 +2078,6 @@ module.exports = function(model) {
     const sphereMapModel    = loopback.getModel("DeviceSphereMap");
 
     const PRESENCE_TIMEOUT = 20*60000; // 20 minutes;
-
     let locationMapResult = null;
     let userIds = [];
     let userMap = {};
@@ -2098,7 +2097,7 @@ module.exports = function(model) {
       .then((sphereMapResult) => {
         for (let i = 0; i < locationMapResult.length; i++) {
           let locationData = locationMapResult[i];
-          if (locationData.deviceId === ignoreDeviceId) {
+          if (String(locationData.deviceId) === ignoreDeviceId) {
             continue;
           }
 

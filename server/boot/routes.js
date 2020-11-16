@@ -573,5 +573,4 @@ module.exports = function (app) {
   app.get('/generateHubToken', function(req, res) {
     res.sendFile(path.join(__dirname, '../../public/generateHubToken.html'))
   })
-
 };

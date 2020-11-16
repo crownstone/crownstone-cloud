@@ -38,9 +38,6 @@
     "lastName": {
       "type": "string"
     },
-    "json": {
-      "type": "string"
-    },
     "new": {
       "type": "boolean",
       "default": true

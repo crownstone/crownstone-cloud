@@ -134,10 +134,6 @@
     "dataSource": "mongoDs",
     "public": true
   },
-  "Schedule": {
-    "dataSource": "mongoDs",
-    "public": false
-  },
   "Message": {
     "dataSource": "mongoDs",
     "public": true

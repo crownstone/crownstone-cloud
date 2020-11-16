@@ -36,7 +36,7 @@ class SSEManagerClass {
   }
 
   init(server) {
-    this.io = new IOServer(server, { pintInterval: 4000, pingTimeout: 2000, transports:["websocket"], cookie:false })
+    this.io = IOServer(server, { pingInterval: 4000, pingTimeout: 2000, transports:["websocket"], cookie:false })
     this.io.on('connect', (socket) => {
       let uid = getShortUUID()
       this.connections[uid] = new SSEConnection(socket, () => { delete this.connections[uid]; });

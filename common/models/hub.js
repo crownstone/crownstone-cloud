@@ -176,7 +176,7 @@ module.exports = function(model) {
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'token', type: 'string', root: true},
-      description: "Set the local IP address of the hub."
+      description: "Obtain the token this hub uses to login"
     }
   );
 
