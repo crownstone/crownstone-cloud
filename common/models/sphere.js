@@ -2109,7 +2109,7 @@ module.exports = function(model) {
 
         for (let i = 0; i < sphereMapResult.length; i++) {
           let sphereData = sphereMapResult[i];
-          if (sphereData.deviceId === ignoreDeviceId) {
+          if (String(sphereData.deviceId) === ignoreDeviceId) {
             continue;
           }
 
