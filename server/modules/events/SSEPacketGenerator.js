@@ -190,7 +190,7 @@ module.exports = {
   generateLocationCreatedEvent(sphere, location) {
     return {
       type:        "dataChange",
-      subType:     "location",
+      subType:     "locations",
       operation:   "create",
       sphere:      sphereData(sphere),
       changedItem: nameIdSet(location),
@@ -199,7 +199,7 @@ module.exports = {
   generateLocationUpdatedEvent(sphere, location) {
     return {
       type:        "dataChange",
-      subType:     "location",
+      subType:     "locations",
       operation:   "update",
       sphere:      sphereData(sphere),
       changedItem: nameIdSet(location),
@@ -208,7 +208,7 @@ module.exports = {
   generateLocationDeletedEvent(sphere, location) {
     return {
       type:        "dataChange",
-      subType:     "location",
+      subType:     "locations",
       operation:   "delete",
       sphere:      sphereData(sphere),
       changedItem: nameIdSet(location),
