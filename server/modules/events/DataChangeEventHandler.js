@@ -189,10 +189,10 @@ class DataChangeEventHandler {
   }
 
   // ----- LOCATIONS DELETE ----- //
-  sendLocationDeletedEventBySphereId(sphereId, stone) {
+  sendLocationDeletedEventBySphereId(sphereId, location) {
     return EventConstructor.getData({sphereId})
       .then((data) => {
-        this.sendLocationDeletedEvent(data.sphere, stone);
+        this.sendLocationDeletedEvent(data.sphere, location);
       })
       .catch((err) => { /** ignore error, simply do not generate event. **/ })
   }
