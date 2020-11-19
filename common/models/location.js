@@ -273,7 +273,11 @@ module.exports = function(model) {
 
 	// if the location is deleted, delete also all files stored for this sphere
 	model.observe('before delete', function(context, next) {
-	  let locationId = context.where.and[0].id;
+	  let locationId = context.where.id;
+	  let and = context.where.and;
+	  if (and && Array.isArray(and) && and.length > 0 && and[0] && and[0].id) {
+	    locationId = and[0].id;
+    }
 		model.deleteImage(locationId, {}, function(err) {
 		  model.findById(locationId)
         .then((location) => {
