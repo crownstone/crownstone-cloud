@@ -2,6 +2,7 @@ let loopback = require('loopback');
 const idUtil = require('./sharedUtil/idUtil');
 const debug = require('debug')('loopback:crownstone');
 const util = require('./sharedUtil/util')
+const constants = require('./sharedUtil/constants')
 
 const uid = require("uid2")
 
@@ -180,5 +181,42 @@ module.exports = function(model) {
     }
   );
 
+  model.getUartKey = function(id, macAddress, options, next) {
+    let Stone = loopback.getModel("Stone")
+    let StoneKeys = loopback.getModel("StoneKeys")
+    let sphereId;
+    model.findById(id)
+      .then((result) => {
+        if (!result) { throw "Not Available" }
+
+        sphereId = result.sphereId;
+        return Stone.find({where:{sphereId: sphereId, address: macAddress}})
+      })
+      .then((stones) => {
+        if (stones.length === 0) { throw util.customError(404, "STONE_NOT_FOUND", "Key not available"); }
+
+        let stoneId = stones[0].id;
+        return StoneKeys.find({where:{stoneId: stoneId, sphereId, keyType: constants.KEY_TYPES.DEVICE_UART_KEY}})
+      })
+      .then((keyResult) => {
+        if (keyResult.length === 0) { throw util.customError(404, "KEY_NOT_FOUND", "Key not available") }
+        next(null, keyResult[0].key);
+      })
+      .catch((err) => { next(err) })
+  }
+
+  model.remoteMethod(
+    'getUartKey',
+    {
+      http: {path: '/:id/uartKey', verb: 'get'},
+      accepts: [
+        {arg: 'id',         type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'macAddress', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'uartKey', type: 'string', root: true},
+      description: "Obtain the uartKey to talk to the Crownstone module"
+    }
+  );
 
 }

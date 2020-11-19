@@ -22,6 +22,13 @@ module.exports = {
     return error;
   },
 
+  customError: function(status, code, message) {
+    let error = new Error(message);
+    error.statusCode = error.status = status;
+    error.code = code;
+    return error;
+  },
+
 
   deviceIsMinimalVersion: function(options, version) {
     let userId = options.accessToken.userId;
