@@ -182,8 +182,8 @@ module.exports = function(model) {
   );
 
   model.getUartKey = function(id, macAddress, options, next) {
-    let Stone = loopback.getModel("Stone")
-    let StoneKeys = loopback.getModel("StoneKeys")
+    let Stone = loopback.getModel("Stone");
+    let StoneKeys = loopback.getModel("StoneKeys");
     let sphereId;
     model.findById(id)
       .then((result) => {

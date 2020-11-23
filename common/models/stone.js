@@ -431,26 +431,23 @@ module.exports = function(model) {
   model.observe('before save', initStone);
   model.observe('after save', afterSave);
 
-  model.observe('before delete', function(ctx, next) {
+  model.observe('before delete', function(context, next) {
     let stoneId = context.where.id;
     let and = context.where.and;
     if (and && Array.isArray(and) && and.length > 0 && and[0] && and[0].id) {
       stoneId = and[0].id;
     }
-    Promise.resolve()
-      .then(() => {
-        return model.findById(stoneId);
-      })
+    model.findById(stoneId)
       .then((stone) => {
         if (stone) {
           return EventHandler.dataChange.sendStoneDeletedEventBySphereId(stone.sphereId, stone);
         }
       })
       .then(() => {
-        next();
+        next()
       })
       .catch((err) => {
-        next();
+        next(err);
       })
   });
 
