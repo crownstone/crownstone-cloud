@@ -182,7 +182,7 @@ module.exports = function(model) {
   );
 
   model.getUartKey = function(id, macAddress, options, next) {
-    let Stone = loopback.getModel("Stone");
+    let Stone     = loopback.getModel("Stone");
     let StoneKeys = loopback.getModel("StoneKeys");
     let sphereId;
     model.findById(id)
@@ -190,7 +190,7 @@ module.exports = function(model) {
         if (!result) { throw "Not Available" }
 
         sphereId = result.sphereId;
-        return Stone.find({where:{sphereId: sphereId, address: macAddress}})
+        return Stone.find({where:{sphereId: sphereId, address: {inq: [macAddress.toLowerCase(), macAddress.toUpperCase()]}}})
       })
       .then((stones) => {
         if (stones.length === 0) { throw util.customError(404, "STONE_NOT_FOUND", "Key not available"); }
