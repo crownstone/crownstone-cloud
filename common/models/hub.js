@@ -59,7 +59,52 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('create');
   model.disableRemoteMethodByName('createChangeStream');
 
-  model.validatesUniquenessOf('token', {scopedTo: ['sphereId'], message: 'a hub with this token was already added!'});
+  model.observe('after save', afterSave);
+
+  function afterSave(ctx, next) {
+    if (ctx.isNewInstance) {
+      enforceUniqueness(ctx, (err) => {
+        if (err) {
+          return next(err);
+        }
+        next()
+      })
+    }
+    else {
+      next();
+    }
+  }
+
+  function enforceUniqueness(ctx, next) {
+    // debug("ctx", ctx);
+    let item = ctx.instance;
+    if (item) {
+      // double check if the address is indeed unique in this sphere.
+      model.find({where: {and: [{sphereId: item.sphereId}, {token: item.token}]}, order: "createdAt ASC"})
+        .then((results) => {
+          if (results.length > 1) {
+            // delete all but the first one
+            for (let i = 1; i < results.length; i++) {
+              model.destroyById(results[i].id).catch((err) => {});
+            }
+            let err = {
+              "statusCode": 422,
+              "name": "ValidationError",
+              "message": "The `Hub` instance is not valid. Details: `token` a hub with this address was already added! (value: \"string\")."
+            };
+            return next(err);
+          }
+          else {
+            next();
+          }
+        })
+        .catch((err) => {
+          next(err);
+        })
+    } else {
+      next();
+    }
+  }
 
   model.login = function(id, token, callback) {
     const CrownstoneAccessToken = loopback.getModel("CrownstoneAccessToken");

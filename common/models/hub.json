@@ -30,8 +30,10 @@
       "type": "string"
     },
     "sphereId": {
-      "type": "string",
-      "default": true
+      "type": "string"
+    },
+    "linkedStoneId": {
+      "type": "string"
     },
     "localIPAddress": {
       "type": "string"
@@ -64,7 +66,7 @@
         "disableInclude": true
       }
     },
-    "linkedStoneId": {
+    "linkedStone": {
       "type": "belongsTo",
       "model": "Stone",
       "foreignKey": "linkedStoneId"
