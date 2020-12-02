@@ -181,19 +181,25 @@ module.exports = function(model) {
     }
   );
 
-  model.getUartKey = function(id, macAddress, options, next) {
+  model.getUartKey = function(id, options, next) {
     let Stone     = loopback.getModel("Stone");
     let StoneKeys = loopback.getModel("StoneKeys");
     let sphereId;
+    let linkedStoneId;
     model.findById(id)
       .then((result) => {
         if (!result) { throw "Not Available" }
 
+        linkedStoneId = result.linkedStoneId;
         sphereId = result.sphereId;
-        return Stone.find({where:{sphereId: sphereId, address: {inq: [macAddress.toLowerCase(), macAddress.toUpperCase()]}}})
+
+        if (!linkedStoneId) {
+          throw "No linked stone"
+        }
+        return Stone.find({where:{sphereId: sphereId, id: linkedStoneId}})
       })
       .then((stones) => {
-        if (stones.length === 0) { throw util.customError(404, "STONE_NOT_FOUND", "Key not available"); }
+        if (stones.length === 0) { throw util.customError(404, "STONE_NOT_FOUND", "Stone not available"); }
 
         let stoneId = stones[0].id;
         return StoneKeys.find({where:{stoneId: stoneId, sphereId, keyType: constants.KEY_TYPES.DEVICE_UART_KEY}})
@@ -210,12 +216,11 @@ module.exports = function(model) {
     {
       http: {path: '/:id/uartKey', verb: 'get'},
       accepts: [
-        {arg: 'id',         type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'macAddress', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'id',      type: 'any', required: true, http: { source : 'path' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'uartKey', type: 'string', root: true},
-      description: "Obtain the uartKey to talk to the Crownstone module"
+      description: "Obtain the uartKey to talk to the linked Crownstone module"
     }
   );
 

@@ -63,6 +63,11 @@
       "options": {
         "disableInclude": true
       }
+    },
+    "linkedStoneId": {
+      "type": "belongsTo",
+      "model": "Stone",
+      "foreignKey": "linkedStoneId"
     }
   },
   "acls": [
