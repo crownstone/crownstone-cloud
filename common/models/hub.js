@@ -52,6 +52,10 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__create__accessTokens');
   model.disableRemoteMethodByName('prototype.__delete__accessTokens');
 
+  model.disableRemoteMethodByName('prototype.__get__location');
+  model.disableRemoteMethodByName('prototype.__get__linkedStone');
+  model.disableRemoteMethodByName('prototype.__get__sphere');
+
   model.disableRemoteMethodByName('prototype.__get__owner');
   model.disableRemoteMethodByName('replaceById');
   model.disableRemoteMethodByName('updateAll');

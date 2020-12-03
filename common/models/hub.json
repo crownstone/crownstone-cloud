@@ -35,6 +35,9 @@
     "linkedStoneId": {
       "type": "string"
     },
+    "locationId": {
+      "type": "string"
+    },
     "localIPAddress": {
       "type": "string"
     },
@@ -70,6 +73,11 @@
       "type": "belongsTo",
       "model": "Stone",
       "foreignKey": "linkedStoneId"
+    },
+    "location": {
+      "type": "belongsTo",
+      "model": "Location",
+      "foreignKey": "locationId"
     }
   },
   "acls": [
