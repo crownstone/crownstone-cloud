@@ -601,6 +601,25 @@ module.exports = function (app) {
   })
 
 
+  app.get('/ip', function(req, res) {
+    res.end(JSON.stringify({
+      'x-forwarded-for': req.headers['x-forwarded-for'],
+      'X-Client-IP': req.headers['X-Client-IP'],
+      'CF-Connecting-IP': req.headers['CF-Connecting-IP'],
+      'Fastly-Client-Ip': req.headers['Fastly-Client-Ip'],
+      'True-Client-Ip': req.headers['True-Client-Ip'],
+      'X-Real-IP': req.headers['X-Real-IP'],
+      'X-Cluster-Client-IP': req.headers['X-Cluster-Client-IP'],
+      'X-Forwarded': req.headers['X-Forwarded'],
+      'Forwarded': req.headers['Forwarded'],
+      'req.connection.remoteAddress':req.connection.remoteAddress,
+      'req.socket.remoteAddress':req.socket.remoteAddress,
+      'req.connection.socket.remoteAddress':req.connection.socket.remoteAddress,
+      'req.info.remoteAddress':req.info.remoteAddress,
+    }, null, 2))
+  })
+
+
   app.get('/generateHubToken', function(req, res) {
     res.sendFile(path.join(__dirname, '../../public/generateHubToken.html'))
   })
