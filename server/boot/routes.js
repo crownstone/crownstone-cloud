@@ -580,7 +580,12 @@ module.exports = function (app) {
     }
 
     console.log(req.headers['x-forwarded-for'], req.ip, req.connection.remoteAddress)
-    res.end(ip)
+    res.end(JSON.stringify({
+      reqHeader: req.headers['x-forwarded-for'] || "nothing",
+      reqIp:req.ip,
+      reqRemote: req.connection.remoteAddress,
+      resolved: ip,
+    }, undefined, 2))
   })
 
 
