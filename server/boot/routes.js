@@ -8,6 +8,7 @@ const debug = require('debug')('loopback:dobots');
 const path = require("path");
 
 module.exports = function (app) {
+  let Hub = app.models.Hub;
   let User = app.models.user;
   let Sphere = app.models.Sphere;
   let SphereAccess = app.models.SphereAccess;
@@ -578,14 +579,25 @@ module.exports = function (app) {
     if (ip.substr(0, 7) == "::ffff:") {
       ip = ip.substr(7)
     }
-
-    console.log(req.headers['x-forwarded-for'], req.ip, req.connection.remoteAddress)
-    res.end(JSON.stringify({
-      reqHeader: req.headers['x-forwarded-for'] || "nothing",
-      reqIp:req.ip,
-      reqRemote: req.connection.remoteAddress,
-      resolved: ip,
-    }, undefined, 2))
+    let ipArray = ip.split(',');
+    Hub.find({where:{externalIPAddress:{like:ipArray[0]}}})
+      .then((hubs) => {
+        let result = [];
+        hubs.forEach((hub) => {
+          result.push({name: hub.name, ip: hub.localIPAddress })
+        })
+        res.end(JSON.stringify(result));
+      })
+      .catch((err) => {
+        console.error("Something went wrong while getting hubs", err);
+        res.status(500);
+        res.end(JSON.stringify({
+          "error": {
+            "statusCode": 500,
+            "message": "Something went wrong."
+          }
+        }))
+      })
   })
 
 
