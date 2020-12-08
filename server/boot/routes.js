@@ -570,6 +570,20 @@ module.exports = function (app) {
       res.end("Invalid token.")
     }
   })
+
+
+  app.get('/hubs', function(req, res) {
+    let ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+
+    if (ip.substr(0, 7) == "::ffff:") {
+      ip = ip.substr(7)
+    }
+
+    console.log(req.headers['x-forwarded-for'], req.ip, req.connection.remoteAddress)
+    res.end(ip)
+  })
+
+
   app.get('/generateHubToken', function(req, res) {
     res.sendFile(path.join(__dirname, '../../public/generateHubToken.html'))
   })
