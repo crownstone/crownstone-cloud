@@ -41,6 +41,12 @@
     "localIPAddress": {
       "type": "string"
     },
+    "httpsPort": {
+      "type": "number"
+    },
+    "httpPort": {
+      "type": "number"
+    },
     "externalIPAddress": {
       "type": "string"
     },

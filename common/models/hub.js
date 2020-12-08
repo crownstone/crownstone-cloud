@@ -150,7 +150,7 @@ module.exports = function(model) {
     }
   );
 
-  model.setHubLocalIP = function(hubId, localIpAddress, options, callback) {
+  model.setHubLocalIP = function(hubId, localIpAddress, httpPort, httpsPort, options, callback) {
     let externalIp = CACHED_IP;
     CACHED_IP = null;
 
@@ -166,6 +166,8 @@ module.exports = function(model) {
         .then((result) => {
           if (!result) { throw "No hub found."}
 
+          result.httpPort  = httpPort  || result.httpPort;
+          result.httpsPort = httpsPort || result.httpsPort;
           result.localIPAddress = localIpAddress;
           result.externalIPAddress = externalIp;
           result.lastSeen = new Date();
@@ -201,6 +203,8 @@ module.exports = function(model) {
       accepts: [
         {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
         {arg: 'localIpAddress',  type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'httpPort',  type: 'string', required: false, http: { source : 'query' }},
+        {arg: 'httpsPort', type: 'string', required: false, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       description: "Set the local IP address of the hub."
