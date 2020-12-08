@@ -56,7 +56,7 @@ loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { i
 app.start = function() {
   // start the web server
   let port = process.env.PORT || 3000;
-  let server = app.listen(port, function () {
+  let server = app.listen(port, '0.0.0.0', function () {
     app.emit('started');
 
     let baseUrl = process.env.BASE_URL || app.get('url').replace(/\/$/, '');
