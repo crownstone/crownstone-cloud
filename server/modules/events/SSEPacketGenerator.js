@@ -1,3 +1,4 @@
+const SphereIndexCache = require("../SphereIndexCache")
 module.exports = {
   generateMultiSwitchCrownstoneEvent(sphere, stones, switchStateMap) {
     let stoneData = [];
@@ -11,10 +12,11 @@ module.exports = {
     }
 
     return {
-      type:        "command",
-      subType:     "multiSwitch",
-      sphere:      sphereData(sphere),
-      switchData:  stoneData
+      type:         "command",
+      subType:      "multiSwitch",
+      sphere:       sphereData(sphere),
+      switchData:   stoneData,
+      sequenceTime: SphereIndexCache.getLatest(sphere.id),
     };
   },
 

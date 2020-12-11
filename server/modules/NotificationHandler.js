@@ -1,7 +1,7 @@
 const gcm = require('node-gcm');
 const apn = require('apn');
 let loopback = require('loopback');
-
+const SphereIndexCache = require("../../server/modules/SphereIndexCache")
 /**
  *  This class will handle the sending of notifications. API:
  *
@@ -18,6 +18,8 @@ class NotificationHandlerClass {
   constructor() {
     // TODO: possibly start the apn connection and the gcm sender?
   }
+
+
 
   collectSphereUsers(sphereId) {
     let sphereAccessModel = loopback.getModel("SphereAccess");
@@ -68,6 +70,9 @@ class NotificationHandlerClass {
 
   notifySphereDevices(sphere, messageData, excludeDeviceId) {
     // get users
+    if (!messageData.data) { messageData.data = {}; }
+    messageData.data = { ...messageData.data, sequenceTime: SphereIndexCache.getLatest(sphere.id) };
+
     sphere.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
       let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users, excludeDeviceId)
 
@@ -83,8 +88,6 @@ class NotificationHandlerClass {
         .then((appResult) => {
           if (appResult && appResult.pushSettings) {
             // console.log("Sending notification", messageData)
-            if (!messageData.data) { messageData.data = {}; }
-            messageData.data = { ...messageData.data, __timestamp: Date.now() };
 
             this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
             this._notifyIOS(appResult.pushSettings.apns,    iosTokens, iosDevTokens, messageData);

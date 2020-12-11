@@ -10,6 +10,7 @@ const EventHandler = require('../../server/modules/EventHandler');
 const debug = require('debug')('loopback:crownstone');
 const constants = require('./sharedUtil/constants');
 const Util = require('./sharedUtil/util');
+const SphereIndexCache = require("../../server/modules/SphereIndexCache")
 
 module.exports = function(model) {
 
@@ -859,6 +860,7 @@ module.exports = function(model) {
             switchData['percentage'] = Math.round(100*correctedLegacyState);
             break;
         }
+        SphereIndexCache.bump(sphere.id);
         let ssePacket = EventHandler.command.sendStoneMultiSwitch(sphere, [stone], {[stoneId]: switchData});
         notificationHandler.notifySphereDevices(sphere, {
           type: 'setSwitchStateRemotely',
@@ -1577,6 +1579,7 @@ module.exports = function(model) {
             switchStateLegacy = 0;
             break;
         }
+        SphereIndexCache.bump(sphere.id);
         let ssePacket = EventHandler.command.sendStoneMultiSwitch(sphere, [stone], {[stoneId]: switchData});
         notificationHandler.notifySphereDevices(sphere, {
           type: 'setSwitchStateRemotely',

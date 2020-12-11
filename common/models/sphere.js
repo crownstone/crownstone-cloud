@@ -24,6 +24,7 @@ let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
 
 const EventHandler = require('../../server/modules/EventHandler');
+const SphereIndexCache = require("../../server/modules/SphereIndexCache")
 
 module.exports = function(model) {
 
@@ -2486,7 +2487,7 @@ module.exports = function(model) {
             throw ("Invalid uid:" + stoneIds[i]);
           }
         }
-
+        SphereIndexCache.bump(sphere.id);
         let ssePacket = EventHandler.command.sendStoneMultiSwitch(sphere, stones, switchPacketMap);
         notificationHandler.notifySphereDevices(sphere, {
           type: 'multiSwitch',
