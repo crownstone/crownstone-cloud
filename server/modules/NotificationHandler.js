@@ -83,6 +83,9 @@ class NotificationHandlerClass {
         .then((appResult) => {
           if (appResult && appResult.pushSettings) {
             // console.log("Sending notification", messageData)
+            if (!messageData.data) { messageData.data = {}; }
+            messageData.data = { ...messageData.data, __timestamp: Date.now() };
+
             this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
             this._notifyIOS(appResult.pushSettings.apns,    iosTokens, iosDevTokens, messageData);
           }
