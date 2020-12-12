@@ -25,4 +25,4 @@ class SphereIndexCacheClass {
 
 const SphereIndexCache = new SphereIndexCacheClass();
 
-module.exports = SphereIndexCacheClass;
+module.exports = SphereIndexCache;
