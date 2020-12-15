@@ -164,7 +164,7 @@ module.exports = function(model) {
       const hubModel = loopback.getModel("Hub");
       hubModel.findById(hubId)
         .then((result) => {
-          if (!result) { throw "No hub found."}
+          if (!result) { throw util.unauthorizedError() }
 
           result.httpPort  = httpPort  || result.httpPort;
           result.httpsPort = httpsPort || result.httpsPort;

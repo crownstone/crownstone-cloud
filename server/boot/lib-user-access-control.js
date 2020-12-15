@@ -1,5 +1,7 @@
 "use strict";
 
+const util = require("../../common/models/sharedUtil/util")
+
 /**
  * A note about process.nextTick()
     In the code here, we wrap some callback invocations in process.nextTick(()=> cb(...)), but not others. Why?
@@ -169,7 +171,7 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
         else { throw "No Sphere Id"; }
       })
       .then((hub) => {
-        if (!hub) { throw "No Hub" }
+        if (!hub) { throw util.unauthorizedError() }
 
         if (String(sphereId) == String(hub.sphereId)) {
           if (accessMap.hub === true) {
