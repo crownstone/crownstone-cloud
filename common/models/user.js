@@ -8,7 +8,8 @@ const debug = require('debug')('loopback:crownstone');
 
 const constants = require('./sharedUtil/constants');
 
-const util = require('../../server/emails/util');
+const Util = require('./sharedUtil/util');
+const emailUtil = require('../../server/emails/util');
 const idUtil = require('./sharedUtil/idUtil');
 
 module.exports = function(model) {
@@ -233,7 +234,7 @@ module.exports = function(model) {
    */
   model.sendVerification = function(user, tokenGenerator, language, callback) {
     console.log("New account. Send email to verify user.");
-    let options = util.getVerificationEmailOptions(user, language);
+    let options = emailUtil.getVerificationEmailOptions(user, language);
     options.generateVerificationToken = tokenGenerator;
     options.verifyHref = app.__baseUrl + '/api/users/confirm?uid=' + user.id + '&redirect=/verified';
     debug("sending verification");
@@ -269,7 +270,7 @@ module.exports = function(model) {
     let baseUrl = app.__baseUrl;
     let url = baseUrl + '/reset-password';
     let token = info.accessToken.id;
-    util.sendResetPasswordRequest(url, token, email);
+    emailUtil.sendResetPasswordRequest(url, token, email);
   });
 
   model.resendVerification = function(email, callback) {
@@ -688,6 +689,23 @@ module.exports = function(model) {
               return StoneKeyModel.find({where: {and: [{sphereId: sphereId}, {stoneId: stoneId}]}});
             }
             return StoneKeyModel.find({where: {sphereId: sphereId}});
+          })
+          .then((stoneKeys) => {
+            // This is a self-repair mechanism. If a user requests a specific stone's key, we ensure there is a uart key.
+            let hasUartKey = false;
+            for (let i = 0; i < stoneKeys.length; i++) {
+              let key = stoneKeys[i];
+              if (key.keyType === constants.KEY_TYPES.DEVICE_UART_KEY) {
+                hasUartKey = true;
+              }
+            }
+            if (stoneId && hasUartKey === false) {
+              return StoneKeyModel.create([{sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.DEVICE_UART_KEY, key: Util.createKey(), ttl: 0}])
+                .then(() => { return StoneKeyModel.find({where: {and: [{sphereId: sphereId}, {stoneId: stoneId}]}}); })
+            }
+            else {
+              return stoneKeys
+            }
           })
           .then((stoneKeys) => {
             for (let i = 0; i < stoneKeys.length; i++) {
