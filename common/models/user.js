@@ -696,7 +696,7 @@ module.exports = function(model) {
             for (let i = 0; i < stoneKeys.length; i++) {
               let key = stoneKeys[i];
               if (key.keyType === constants.KEY_TYPES.DEVICE_UART_KEY) {
-                hasUartKey = true;
+                hasUartKey = true; break;
               }
             }
             if (stoneId && hasUartKey === false) {
