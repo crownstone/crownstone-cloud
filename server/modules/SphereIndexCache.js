@@ -18,7 +18,7 @@ class SphereIndexCacheClass {
     if (this.spheres[sphereId] === undefined) {
       this.spheres[sphereId] = {counter:0, timestamp: Date.now()}
     }
-    return this.spheres[sphereId];
+    return {...this.spheres[sphereId]};
   }
 
 }
