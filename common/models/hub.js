@@ -65,6 +65,38 @@ module.exports = function(model) {
 
   model.observe('after save', afterSave);
 
+
+  model.observe('before delete', function(ctx, next) {
+    let query = ctx && ctx.where && ctx.where.and;
+    let id = null;
+    for (let condition of query) {
+      if (condition.id !== undefined) {
+        id = condition.id;
+        break;
+      }
+    }
+
+    if (id) {
+      const SphereAccess = loopback.getModel('SphereAccess');
+      SphereAccess.find({userId: id})
+        .then((results) => {
+          if (results.length === 1) {
+            return SphereAccess.deleteById(results[0].id)
+          }
+        })
+        .then(() => {
+          next();
+        })
+        .catch((err) => {
+          next();
+        })
+    }
+    else {
+      next();
+    }
+  });
+
+
   function afterSave(ctx, next) {
     if (ctx.isNewInstance) {
       enforceUniqueness(ctx, (err) => {

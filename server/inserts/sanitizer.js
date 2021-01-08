@@ -9,6 +9,7 @@ let CHANGE_DATA = false;
 function performSanitation(app) {
   console.log("Starting Sanitation test run");
 
+  let hubModel = app.dataSources.mongoDs.getModel('user');
   let userModel = app.dataSources.mongoDs.getModel('user');
   let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
   let locationModel = app.dataSources.mongoDs.getModel('Location');
@@ -21,6 +22,7 @@ function performSanitation(app) {
   let powerUsageModel = app.dataSources.mongoDs.getModel('PowerUsage');
   let energyUsageModel = app.dataSources.mongoDs.getModel('EnergyUsage');
 
+  let allHubs = [];
   let allUsers = [];
   let allDevices = [];
   let allSpheres = [];
@@ -31,6 +33,7 @@ function performSanitation(app) {
   let allPowerUsages = [];
   let allEnergyUsages = [];
 
+  let hubIds = {};
   let userIds = {};
   let allSphereIds = {};
   let allStoneIds = {};
@@ -65,7 +68,16 @@ function performSanitation(app) {
     })
    */
   // get all users;
-  userModel.find()
+  hubModel.find()
+    .then((hubs) => {
+      allHubs = hubs;
+      allHubs.forEach((hub) => {
+        hubIds[hub.id] = true;
+      })
+    })
+    .then(() => {
+      return userModel.find()
+    })
     .then((results) => {
       allUsers = results;
       allUsers.forEach((user) => {

@@ -450,8 +450,6 @@ module.exports = function(model) {
         return next(error);
       }
       else {
-        EventHandler.dataChange.sendSphereUserDeletedEvent(sphere, user);
-        cycleSphereAuthorizationTokens(sphere.id).catch();
         // we collect the users because we need the userIds of all users in the sphere, including the one whos is about to be deleted.
         // this promise takes care of a race condition where the user is deleted before we get his id.
         notificationHandler.collectSphereUsers(String(sphere.id))
@@ -467,6 +465,10 @@ module.exports = function(model) {
             // tell other people in the sphere to refresh their sphere user list.
             notificationHandler.notifyUsers( users, payload );
             next();
+
+            // update the sphere auth tokens and send the SSE event AFTER the deletion
+            EventHandler.dataChange.sendSphereUserDeletedEvent(sphere, user);
+            cycleSphereAuthorizationTokens(sphere.id).catch();
           })
           .catch((err) => {
             // ignoring errors, notifcations are optional.
@@ -1302,6 +1304,12 @@ module.exports = function(model) {
   );
 
   model.changeRole = function(id, email, role, callback) {
+    let suppliedRole = role && role.toLowerCase() || null;
+    let allowedRoles = ['admin','member','guest'];
+    if (allowedRoles.indexOf(suppliedRole) === -1) {
+      return callback(Util.customError(400, "INVALID_ARGUMENT", "You can only set the following roles: admin, member, guest. You provided: " + role + "."))
+    }
+
     const User = loopback.findModel('user');
     User.findOne({where: {email: email}}, function(err, user) {
       if (err) return callback(err);
@@ -1311,9 +1319,6 @@ module.exports = function(model) {
         if (err) return callback(err);
 
         if (success) {
-          EventHandler.dataChange.sendSphereUserUpdatedEventById(id, user.id);
-          cycleSphereAuthorizationTokens(id).catch();
-
           const SphereAccess = loopback.findModel("SphereAccess");
           SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
             if (err) return callback(err);
@@ -1323,6 +1328,9 @@ module.exports = function(model) {
               objects[0].save(function(err, instance) {
                 if (err) return callback(err);
                 callback();
+
+                EventHandler.dataChange.sendSphereUserUpdatedEventById(id, user.id);
+                cycleSphereAuthorizationTokens(id).catch();
               });
             } else {
               let error = new Error("User is not part of sphere");
