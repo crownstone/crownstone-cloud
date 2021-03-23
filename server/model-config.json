@@ -24,6 +24,10 @@
     "dataSource": "userDs",
     "public": false
   },
+  "CrownstoneAccessToken": {
+    "dataSource": "userDs",
+    "public": false
+  },
   "ACL": {
     "dataSource": "db",
     "public": false
@@ -109,7 +113,7 @@
   },
   "Appliance": {
     "dataSource": "mongoDs",
-    "public": true
+    "public": false
   },
   "AppInstallation": {
     "dataSource": "mongoDs",
@@ -130,10 +134,6 @@
   "Bootloader": {
     "dataSource": "mongoDs",
     "public": true
-  },
-  "Schedule": {
-    "dataSource": "mongoDs",
-    "public": false
   },
   "Message": {
     "dataSource": "mongoDs",
@@ -158,10 +158,6 @@
   "GeoLocation": {
     "dataSource": "mongoDs",
     "public": false
-  },
-  "Diagnostic": {
-    "dataSource": "mongoDs",
-    "public": true
   },
   "Fingerprint": {
     "dataSource": "mongoDs",
@@ -199,6 +195,38 @@
     "dataSource": "mongoDs",
     "public": false
   },
+  "StoneBehaviour": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "StoneAbility": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "StoneAbilityProperty": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "SphereTrackingNumber": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "Hub": {
+    "dataSource": "userDs",
+    "public": true
+  },
+  "Scene": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "SortedList": {
+    "dataSource": "mongoDs",
+    "public": true
+  },
+  "SphereFeature": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
   "Project": {
     "dataSource": "mongoDs",
     "public": false
@@ -210,5 +238,5 @@
   "SubProject": {
     "dataSource": "mongoDs",
     "public": false
-  }
+  },
 }

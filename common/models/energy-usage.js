@@ -15,6 +15,5 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('replaceById');                // disable PUT	    api/model/:id  and  api/model/:id/replace
   model.disableRemoteMethodByName('prototype.patchAttributes');  // disable PATCH	  api/model/:id
   model.disableRemoteMethodByName('prototype.__get__owner');
-  model.disableRemoteMethodByName('prototype.__get__appliance');
   model.disableRemoteMethodByName('prototype.__get__stone');
 };

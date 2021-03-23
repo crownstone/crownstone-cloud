@@ -2,9 +2,13 @@ let sha1 = require('sha1');
 let request = require('request');
 let bodyParser = require('body-parser');
 const notificationHandler = require("../modules/NotificationHandler");
+const EventHandler = require("../modules/EventHandler");
+const SSEManager = require("../modules/SSEManager");
 const debug = require('debug')('loopback:dobots');
+const path = require("path");
 
 module.exports = function (app) {
+  let Hub = app.models.Hub;
   let User = app.models.user;
   let Sphere = app.models.Sphere;
   let SphereAccess = app.models.SphereAccess;
@@ -324,6 +328,8 @@ module.exports = function (app) {
             });
           }
           else {
+            EventHandler.dataChange.sendSphereUserCreatedEventById(req.query.sphere_id, token.userId);
+
             // tell other people in the sphere to refresh their sphere user list.
             notificationHandler.notifySphereUsers(req.query.sphere_id, {data: { sphereId: req.query.sphere_id, command:"sphereUsersUpdated" }, silent: true });
             res.render('response', {
@@ -412,7 +418,6 @@ module.exports = function (app) {
 
     User.findById(req.accessToken.userId, function (err, user) {
       if (user.emailVerified) {
-        console.log("already verified!");
         res.render('response', {
           title: 'Bad Request',
           content: 'User is already successfully set up',
@@ -475,6 +480,7 @@ module.exports = function (app) {
             user.firstName = req.body.firstName;
             user.lastName = req.body.lastName;
             user.password = hashPassword(req.body.password);
+            user.accountCreationPending = false;
             user.save(function (err, user) {
               if (err) return res.sendStatus(404);
 
@@ -553,4 +559,49 @@ module.exports = function (app) {
 
   });
 
+  app.get('/debug', function(req, res) {
+    let validationToken = process.env.DEBUG_TOKEN || "debug"
+    if (req.query.token === validationToken) {
+      let debugInformation = {
+        amountOfSSEconnections: Object.keys(SSEManager.connections).length,
+      };
+      res.end(JSON.stringify(debugInformation))
+    }
+    else {
+      res.end("Invalid token.")
+    }
+  })
+
+
+  app.get('/hubs', function(req, res) {
+    let ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+
+    if (ip.substr(0, 7) == "::ffff:") {
+      ip = ip.substr(7)
+    }
+    let ipArray = ip.split(',');
+    Hub.find({where:{externalIPAddress:{like:ipArray[0]}}})
+      .then((hubs) => {
+        let result = [];
+        hubs.forEach((hub) => {
+          result.push({name: hub.name, ip: hub.localIPAddress })
+        })
+        res.end(JSON.stringify(result));
+      })
+      .catch((err) => {
+        console.error("Something went wrong while getting hubs", err);
+        res.status(500);
+        res.end(JSON.stringify({
+          "error": {
+            "statusCode": 500,
+            "message": "Something went wrong."
+          }
+        }))
+      })
+  })
+
+
+  app.get('/generateHubToken', function(req, res) {
+    res.sendFile(path.join(__dirname, '../../public/generateHubToken.html'))
+  })
 };

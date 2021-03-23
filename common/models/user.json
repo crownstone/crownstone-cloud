@@ -21,19 +21,21 @@
     "Util": true
   },
   "hidden": [
-    "earlyAccessLevel"
+    "earlyAccessLevel",
+    "accountCreationPending"
   ],
   "properties": {
     "profilePicId": {
       "type": "string"
     },
+    "accountCreationPending": {
+      "type": "boolean",
+      "default": false
+    },
     "firstName": {
       "type": "string"
     },
     "lastName": {
-      "type": "string"
-    },
-    "json": {
       "type": "string"
     },
     "new": {
@@ -51,6 +53,10 @@
     "uploadDeviceDetails": {
       "type": "boolean",
       "default": true
+    },
+    "language": {
+      "type": "string",
+      "default": "en_us"
     },
     "earlyAccessLevel": {
       "type": "number",
@@ -92,6 +98,17 @@
       "type": "hasMany",
       "model": "Message",
       "foreignKey": "ownerId"
+    },
+    "accessTokens": {
+      "type": "hasMany",
+      "model": "CrownstoneAccessToken",
+      "polymorphic": {
+        "foreignKey": "userId",
+        "discriminator": "principalType"
+      },
+      "options": {
+        "disableInclude": true
+      }
     }
   },
   "acls": [

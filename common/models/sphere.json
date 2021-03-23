@@ -89,11 +89,6 @@
       "model": "Stone",
       "foreignKey": "sphereId"
     },
-    "ownedAppliances": {
-      "type": "hasMany",
-      "model": "Appliance",
-      "foreignKey": "sphereId"
-    },
     "events": {
       "type": "hasMany",
       "model": "Change",
@@ -108,6 +103,26 @@
     "messages": {
       "type": "hasMany",
       "model": "Message",
+      "foreignKey": "sphereId"
+    },
+    "hubs": {
+      "type": "hasMany",
+      "model": "Hub",
+      "foreignKey": "sphereId"
+    },
+    "scenes": {
+      "type": "hasMany",
+      "model": "Scene",
+      "foreignKey": "sphereId"
+    },
+    "sortedLists": {
+      "type": "hasMany",
+      "model": "SortedList",
+      "foreignKey": "sphereId"
+    },
+    "features": {
+      "type": "hasMany",
+      "model": "SphereFeature",
       "foreignKey": "sphereId"
     },
     "geoLocation": {

@@ -1,5 +1,7 @@
 "use strict";
 
+const SSE = require("./modules/SSEManager")
+
 const loopback    = require('loopback');
 const boot        = require('loopback-boot');
 const path        = require('path');
@@ -13,6 +15,10 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 let datasources  = require('./datasources.' + (process.env.NODE_ENV || 'local'));
 let config       = require('./config.' + (process.env.NODE_ENV || 'local'));
+
+if (!process.env.NODE_ENV) {
+  Error.stackTraceLimit = 100;
+}
 
 let store;
 if (datasources.userDs && datasources.userDs.url) {
@@ -36,11 +42,11 @@ app.middleware('session', session({
 }));
 
 
-
 app.use(express.static('public'));
 
 // configure body parser
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({extended: true, limit:'512kb'}));
+app.use(bodyParser.json({limit:'512kb'}));
 
 app.use(compression());
 
@@ -50,7 +56,7 @@ loopback.TransientModel = loopback.modelBuilder.define('TransientModel', {}, { i
 app.start = function() {
   // start the web server
   let port = process.env.PORT || 3000;
-  return app.listen(port, function () {
+  let server = app.listen(port, function () {
     app.emit('started');
 
     let baseUrl = process.env.BASE_URL || app.get('url').replace(/\/$/, '');
@@ -65,6 +71,9 @@ app.start = function() {
       console.log('Browse your REST API at %s%s', baseUrl, explorerPath);
     }
   });
+  SSE.init(server);
+
+  return server;
 };
 
 

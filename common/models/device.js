@@ -1,12 +1,13 @@
 // "use strict";
 
 let loopback = require('loopback');
-var ObjectID = require('mongodb').ObjectID;
+const ObjectID = require('mongodb').ObjectID;
 
 const notificationHandler = require('../../server/modules/NotificationHandler');
-const eventHandler = require('../../server/modules/EventHandler');
+const WebHookHandler = require('../../server/modules/WebHookHandler');
+const EventHandler = require('../../server/modules/EventHandler');
 
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 module.exports = function(model) {
 
   let app = require('../../server/server');
@@ -87,7 +88,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__preferences');
   model.disableRemoteMethodByName('prototype.__count__preferences');
   // model.disableRemoteMethodByName('prototype.__get__preferences');
-  
+
   model.disableRemoteMethodByName('prototype.__exists__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__link__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__findById__fingerprintLinks');
@@ -99,6 +100,19 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__delete__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__count__fingerprintLinks');
   model.disableRemoteMethodByName('prototype.__get__fingerprintLinks');
+
+  model.disableRemoteMethodByName('prototype.__exists__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__link__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__findById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__unlink__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__updateById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__deleteById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__destroyById__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__create__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__delete__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__count__trackingNumber');
+  model.disableRemoteMethodByName('prototype.__get__trackingNumber');
+
 
   model.disableRemoteMethodByName('createChangeStream');
   model.disableRemoteMethodByName('upsert');
@@ -343,13 +357,16 @@ module.exports = function(model) {
       })
     };
 
-    let createAndUpdateLinkerEntry = function(linkedEntry, locationId, sphereId) {
+    let createNewFingerprintAndUpdateLinkerEntry = function(linkedEntry, locationId, sphereId) {
       return createNewFingerprint(locationId, sphereId)
         .then((fingerprintResult) => {
           newFingerprint = fingerprintResult;
           // fingerprint created. Create an entry in the linked list.
           linkedEntry.fingerprintId = fingerprintResult.id;
           return linkedEntry.save()
+        })
+        .then(() => {
+          return newFingerprint;
         })
     };
 
@@ -362,9 +379,11 @@ module.exports = function(model) {
       .then((device) => {
         if (!device) { throw "Unknown device" }
         myDevice = device;
+        // Do I have a linked fingerprint for this location?
         return fingerprintLinkerModel.findOne({where : {and: [{deviceId: deviceId}, {locationId: locationId}]}})
       })
       .then((result) => {
+        // No linked fingerprint for this location yet!
         if (result === null) {
           // Create new fingerprint instance
           return createNewFingerprint(myLocation.id, myLocation.sphereId)
@@ -379,35 +398,43 @@ module.exports = function(model) {
               })
             })
             .then(() => {
-              return newFingerprint
+              return newFingerprint;
             })
         }
         else {
+          // we already have a linked fingerprint for this location from this deviceId
           linkedFingerprintEntry = result;
+
+          // let's get the corresponding fingerprint.
           return fingerprintModel.findById(result.fingerprintId)
             .then((fingerprint) => {
               if (!fingerprint) {
                 // the expected fingerprint does not exist (anymore)
-                return createAndUpdateLinkerEntry(linkedFingerprintEntry, myLocation.id, myLocation.sphereId);
+                return createNewFingerprintAndUpdateLinkerEntry(linkedFingerprintEntry, myLocation.id, myLocation.sphereId);
               }
               else {
+                // this fingerprint has been made by the current user.
                 if (String(fingerprint.ownerId) == String(userId)) {
-                  newFingerprint = fingerprint;
-                  // this is my fingerprint. Update it.
-                  fingerprint.data = fingerprintData;
-                  newFingerprint = fingerprint;
-                  return fingerprint.save()
+                  if (fingerprint.phoneType === myDevice.deviceType) {
+                    // this is my fingerprint. Update it.
+                    fingerprint.data = fingerprintData;
+                    return fingerprint.save();
+                  }
+                  else {
+                    // the existing link was from another phone that this user owned
+                    // each phone type will have it's own fingerprint.
+                    return createNewFingerprintAndUpdateLinkerEntry(linkedFingerprintEntry, myLocation.id, myLocation.sphereId);
+                  }
                 }
                 else {
                   // create new fingerprint entry and link to that.
-                  return createAndUpdateLinkerEntry(linkedFingerprintEntry, myLocation.id, myLocation.sphereId);
+                  return createNewFingerprintAndUpdateLinkerEntry(linkedFingerprintEntry, myLocation.id, myLocation.sphereId);
                 }
               }
             })
         }
       })
       .then((result) => {
-        // console.log("Created Fingerprint", newFingerprint);
         callback(null, result);
       })
       .catch((err) => {
@@ -438,7 +465,6 @@ module.exports = function(model) {
  let _getFingerprints = function(filterquery, callback) {
    const fingerprintLinkerModel = loopback.getModel('FingerprintLinker');
    const fingerprintModel = loopback.getModel('Fingerprint');
-
    fingerprintLinkerModel.find(filterquery)
      .then((result) => {
        let idArray = [];
@@ -452,29 +478,27 @@ module.exports = function(model) {
        return [];
      })
      .then((result) => {
-       // console.log("Created Fingerprint", newFingerprint);
        callback(null, result);
      })
      .catch((err) => {
        // console.log("ERR createFingerprint", err);
        callback(err);
      });
- }
+ };
 
 
   let _getMatchingFingerprint = function(deviceType, locationId, userId) {
     const fingerprintModel = loopback.getModel('Fingerprint');
     // NO results yet. Search for one from a matching phone model that we made ourselves.
     let fingerprintResult = null;
-
-    let base = new Promise((resolve, reject) => { resolve(null); })
+    let base = new Promise((resolve, reject) => { resolve(null); });
     if (deviceType) {
-      base = fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}, {ownerId: userId}]}})
+      base = fingerprintModel.findOne({where : {and: [{phoneType: deviceType}, {locationId: locationId}, {ownerId: userId}]}, order: 'updatedAt DESC'})
         .then((fingerprint) => {
           fingerprintResult = fingerprint;
           if (!fingerprint) {
             // if we can't find an fingerprint that we made ourselves, we try those from others
-            return fingerprintModel.findOne({where: {and: [{phoneType: deviceType}, {locationId: locationId}]}})
+            return fingerprintModel.findOne({where: {and: [{phoneType: deviceType}, {locationId: locationId}]}, order: 'updatedAt DESC'})
           }
           throw fingerprintResult;
         })
@@ -486,15 +510,15 @@ module.exports = function(model) {
         fingerprintResult = fingerprint;
         if (!fingerprint) {
           // if we cant find any fingerprint with this phone type, broaded the search and get ANY fingerprint that we made ourselves
-          return fingerprintModel.findOne({where : {and: [{locationId: locationId}, {ownerId: userId}]}})
+          return fingerprintModel.findOne({where : {and: [{locationId: locationId}, {ownerId: userId}]}, order: 'updatedAt DESC'})
         }
         throw fingerprintResult;
       })
       .then((fingerprint) => {
         fingerprintResult = fingerprint;
         if (!fingerprint) {
-          // if we cant find any fingerprint with this phone type, broaded the search and get ANY fingerprint that we made ourselves
-          return fingerprintModel.findOne({where : {locationId: locationId}})
+          // if we cant find any fingerprint we made ourselves, we'll take any fingerprint from this location made by anyone.
+          return fingerprintModel.findOne({where : {locationId: locationId}, order: 'updatedAt DESC'})
         }
         throw fingerprintResult;
       })
@@ -549,12 +573,11 @@ module.exports = function(model) {
             resultingFingerPrints.push(fingerprint);
           }
         })
-    }
-
+    };
     // check if we already have linker entries for the provided ids
     model.findById(deviceId)
       .then((device) => {
-        if (!device) { throw "Unknown device" }
+        if (!device) { throw "Unknown device"; }
         myDevice = device;
         return fingerprintLinkerModel.find({where : {and: [{deviceId: deviceId}, {locationId: {inq: locationIds}}]}})
       })
@@ -586,7 +609,6 @@ module.exports = function(model) {
             })
           )
         }
-
         return Promise.all(promises);
       })
       .then(() => {
@@ -682,7 +704,7 @@ module.exports = function(model) {
         callback(null);
       })
       .catch((err) => { callback(err); })
-  }
+  };
 
   model.getUpdateTimeForFingerprints = function(deviceId, fingerprintIds, options, callback) {
     if (!Array.isArray(fingerprintIds) || fingerprintIds.length == 0) {
@@ -696,7 +718,7 @@ module.exports = function(model) {
         callback(null, fingerprints);
       })
       .catch((err) => { callback(err); })
-  }
+  };
 
 
   model.remoteMethod(
@@ -824,7 +846,7 @@ module.exports = function(model) {
           data:{type:'testNotification', payload:payload},
           silentAndroid: true,
           silentIOS: true
-        }
+        };
 
         notificationHandler.notifyDevice(device, message)
 
@@ -838,7 +860,7 @@ module.exports = function(model) {
         callback(err);
       });
 
-  }
+  };
 
   model.remoteMethod(
     'testNotification',
@@ -876,8 +898,11 @@ module.exports = function(model) {
   function performEnterSphere(sphereId, deviceId, userId) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
 
+    // send SSE
+    EventHandler.presence.sendEnterSphereFromId(userId, sphereId);
+
     // invoke legacy api
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: sphereId}, "remoteSetCurrentSphere");
 
     notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userEnterSphere", userId: userId }, silent: true });
 
@@ -910,8 +935,11 @@ module.exports = function(model) {
   function performEnterLocation(sphereId, locationId, deviceId, userId) {
     const locationMapModel = loopback.getModel("DeviceLocationMap");
 
+    // send SSE
+    EventHandler.presence.sendEnterLocationFromId(userId, sphereId, locationId);
+
     // invoke legacy api
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: locationId}, "remoteSetCurrentLocation");
 
     notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userEnterLocation", userId: userId, locationId: locationId }, silent: true });
 
@@ -951,7 +979,7 @@ module.exports = function(model) {
           error.code = "AUTHORIZATION_REQUIRED";
           throw error;
         }
-        return sphereMapModel.findOne({where: {deviceId: deviceId}})
+        return sphereMapModel.findOne({where: {sphereId: sphereId, deviceId: deviceId}})
       })
       .then((result) => {
         return handleSphereState(sphereId, deviceId, userId, result);
@@ -962,22 +990,25 @@ module.exports = function(model) {
       .catch((err) => {
         callback(err);
       })
-  }
+  };
 
   model.exitSphere = function(deviceId, sphereId, options, callback) {
     const sphereMapModel = loopback.getModel("DeviceSphereMap");
     const locationMapModel = loopback.getModel("DeviceLocationMap");
     let userId = options.accessToken.userId;
 
-    // invoke legacy api
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
+    // send SSE
+    EventHandler.presence.sendExitSphereFromId(userId, sphereId);
 
-    let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}]}
+    // invoke legacy api
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentSphere");
+
+    let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}]};
     if (sphereId === '*') {
       query =  {deviceId: deviceId}
     }
 
-    let initialPromise = new Promise((resolve, reject) => {resolve()})
+    let initialPromise = new Promise((resolve, reject) => {resolve()});
     let presentSphereIds = [sphereId];
     if (sphereId === "*") {
       initialPromise = sphereMapModel.find({where: {deviceId: deviceId}, fields:"id"})
@@ -987,21 +1018,21 @@ module.exports = function(model) {
     }
 
     initialPromise.then(() => {
-          presentSphereIds.forEach((presentSphereId) => {
-            notificationHandler.notifySphereUsersExceptDevice(deviceId, presentSphereId, {data: { sphereId: presentSphereId, command:"userExitSphere", userId: userId }, silent: true });
-          })
-          return sphereMapModel.destroyAll(query)
-        })
-        .then(() => {
-          return locationMapModel.destroyAll(query)
-        })
-        .then(() => {
-          callback(null);
-        })
-        .catch((err) => {
-          callback(err)
-        })
-  }
+        presentSphereIds.forEach((presentSphereId) => {
+          notificationHandler.notifySphereUsersExceptDevice(deviceId, presentSphereId, {data: { sphereId: presentSphereId, command:"userExitSphere", userId: userId }, silent: true });
+        });
+        return sphereMapModel.destroyAll(query)
+      })
+      .then(() => {
+        return locationMapModel.destroyAll(query)
+      })
+      .then(() => {
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err)
+      })
+  };
 
   model.inLocation = function(deviceId, sphereId, locationId, options, callback) {
     const sphereAccess = loopback.getModel("SphereAccess");
@@ -1063,14 +1094,17 @@ module.exports = function(model) {
       .catch((err) => {
         callback(err);
       })
-  }
+  };
 
   function notifyExitLocation(deviceId, sphereId, locationId, deviceId, userId) {
+    // send SSE
+    EventHandler.presence.sendExitLocationFromId(userId, sphereId, locationId);
+
     // tell users to refresh
     notificationHandler.notifySphereUsersExceptDevice(deviceId, sphereId, {data: { sphereId: sphereId, command:"userExitLocation", userId: userId, locationId: locationId }, silent: true });
 
     // fallback old API
-    eventHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
+    WebHookHandler.notifyHooks(model, deviceId, {id:deviceId, fk: null}, "remoteSetCurrentLocation");
   }
 
   model.exitLocation = function(deviceId, sphereId, locationId, options, callback) {
@@ -1078,7 +1112,7 @@ module.exports = function(model) {
     let userId = options.accessToken.userId;
 
     // tell users to refresh
-    notifyExitLocation(deviceId, sphereId, locationId, deviceId, userId)
+    notifyExitLocation(deviceId, sphereId, locationId, deviceId, userId);
 
     let query = {and: [{sphereId: sphereId}, {deviceId: deviceId}, {locationId: locationId}]};
     if (locationId === '*') {
@@ -1092,7 +1126,7 @@ module.exports = function(model) {
       .catch((err) => {
         callback(err)
       })
-  }
+  };
 
 
 
@@ -1149,6 +1183,42 @@ module.exports = function(model) {
       ],
       description: "This device has left a Sphere. You will also automatically leave all rooms in this Sphere. " +
         "This method is stack safe, you can only leave a certain Sphere once per device. You can use * as a wildcard."
+    }
+  );
+
+  model.getTrackingNumberForSphere = function(deviceId, sphereId, options, callback) {
+    model.findById(deviceId, {include: {relation: 'trackingNumber',scope: { where: {sphereId: sphereId}}}, fields: {id:true}})
+      .then((res) => {
+        if (!res) { throw "NO_DEVICE_FOUND"; }
+
+        if (res.trackingNumber().length > 0) {
+          return res.trackingNumber()[0]
+        }
+        else {
+          return res.trackingNumber.create({sphereId: sphereId})
+        }
+      })
+      .then((trackingNumber) => {
+        callback(null, trackingNumber.trackingNumber);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+
+
+  model.remoteMethod(
+    'getTrackingNumberForSphere',
+    {
+      http: {path: '/:id/trackingNumber', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'sphereId', type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['SphereTrackingNumber'], root:true},
+      description: "This gets an unique tracking number for this device to use in the specified sphere."
     }
   )
 };

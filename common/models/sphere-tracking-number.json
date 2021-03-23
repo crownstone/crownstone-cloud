@@ -1,5 +1,5 @@
 {
-  "name": "Diagnostic",
+  "name": "SphereTrackingNumber",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,
@@ -9,38 +9,24 @@
     "strict":"filter"
   },
   "mixins": {
-    "DisableAll": true,
     "SphereContent": true,
-    "Util": true
-  },
-  "properties": {
-    "timestamp": {
-      "type": "date",
-      "default": "$now"
-    },
-    "type": {
-      "type": "string",
-      "required": true
-    },
-    "value": {
-      "type": "number",
-      "required": true
-    },
-    "information": {
-      "type": "string"
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
     }
   },
-  "hidden": [
-    "id",
-    "stoneId",
-    "sphereId"
-  ],
+  "properties": {
+    "trackingNumber": {
+      "type": "number",
+      "required": true
+    }
+  },
   "validations": [],
   "relations": {
-    "stone": {
+    "sphere": {
       "type": "belongsTo",
-      "model": "Stone",
-      "foreignKey": "stoneId"
+      "model": "Sphere",
+      "foreignKey": "sphereId"
     }
   },
   "acls": [],

@@ -1,7 +1,11 @@
 {
   "initial:before": {
     "loopback#favicon": {},
-    "loopback#token": {}
+    "loopback#token": {
+      "params": {
+        "model": "CrownstoneAccessToken"
+      }
+    }
   },
   "initial": {
     "compression": {
@@ -19,6 +23,11 @@
     }
   },
   "auth": {
+    "loopback#token": {
+      "params": {
+        "model": "CrownstoneAccessToken"
+      }
+    },
     "loopback-component-oauth2#authenticate": {
       "paths": [
         "/api"
@@ -31,6 +40,10 @@
               {
                 "methods": "get",
                 "path": "/api/users/me"
+              },
+              {
+                "methods": "get",
+                "path": "/api/users/userId"
               }
             ],
             "user_id": [
@@ -65,8 +78,24 @@
             ],
             "switch_stone": [
               {
+                "methods": "get",
+                "path": "/api/Stones/:id/currentSwitchState"
+              },
+              {
+                "methods": "get",
+                "path": "/api/Stones/:id/currentSwitchStateV2"
+              },
+              {
                 "methods": "put",
                 "path": "/api/Stones/:id/setSwitchStateRemotely"
+              },
+              {
+                "methods": "post",
+                "path": "/api/Stones/:id/switch"
+              },
+              {
+                "methods": "post",
+                "path": "/api/Spheres/:id/switchCrownstones"
               }
             ],
             "sphere_information": [

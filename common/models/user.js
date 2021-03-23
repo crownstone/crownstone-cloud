@@ -4,11 +4,12 @@ const config = require('../../server/config');
 const path = require('path');
 const loopback = require('loopback');
 const app = require('../../server/server');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 
 const constants = require('./sharedUtil/constants');
 
-const util = require('../../server/emails/util');
+const Util = require('./sharedUtil/util');
+const emailUtil = require('../../server/emails/util');
 const idUtil = require('./sharedUtil/idUtil');
 
 module.exports = function(model) {
@@ -231,9 +232,9 @@ module.exports = function(model) {
    * "Email already exists".
    *
    */
-  model.sendVerification = function(user, tokenGenerator, callback) {
+  model.sendVerification = function(user, tokenGenerator, language, callback) {
     console.log("New account. Send email to verify user.");
-    let options = util.getVerificationEmailOptions(user);
+    let options = emailUtil.getVerificationEmailOptions(user, language);
     options.generateVerificationToken = tokenGenerator;
     options.verifyHref = app.__baseUrl + '/api/users/confirm?uid=' + user.id + '&redirect=/verified';
     debug("sending verification");
@@ -242,7 +243,11 @@ module.exports = function(model) {
 
   model.onCreate = function(context, user, callback) {
     if (model.settings.emailVerificationRequired) {
-      model.sendVerification(user, null, function(err, response) {
+      let language = "en_us";
+      if (context && context.req && context.req.body && context.req.body.language && context.req.body.language == "nl_nl") {
+        language = "nl_nl"
+      }
+      model.sendVerification(user, null, language, function(err, response) {
         if (err) return callback(err);
         callback();
       })
@@ -265,7 +270,7 @@ module.exports = function(model) {
     let baseUrl = app.__baseUrl;
     let url = baseUrl + '/reset-password';
     let token = info.accessToken.id;
-    util.sendResetPasswordRequest(url, token, email);
+    emailUtil.sendResetPasswordRequest(url, token, email);
   });
 
   model.resendVerification = function(email, callback) {
@@ -278,10 +283,11 @@ module.exports = function(model) {
         if (user.verificationToken) {
           model.sendVerification(user,
             function(user, tokenProvider) { tokenProvider(null, user.verificationToken); },
+            "en_us",
             function(err, response) { callback(err); }
           );
         } else {
-          model.sendVerification(user, null, function(err, response) { callback(err); });
+          model.sendVerification(user, null, "en_us",function(err, response) { callback(err); });
         }
       }
       else {
@@ -685,6 +691,23 @@ module.exports = function(model) {
             return StoneKeyModel.find({where: {sphereId: sphereId}});
           })
           .then((stoneKeys) => {
+            // This is a self-repair mechanism. If a user requests a specific stone's key, we ensure there is a uart key.
+            let hasUartKey = false;
+            for (let i = 0; i < stoneKeys.length; i++) {
+              let key = stoneKeys[i];
+              if (key.keyType === constants.KEY_TYPES.DEVICE_UART_KEY) {
+                hasUartKey = true; break;
+              }
+            }
+            if (stoneId && hasUartKey === false) {
+              return StoneKeyModel.create([{sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.DEVICE_UART_KEY, key: Util.createKey(), ttl: 0}])
+                .then(() => { return StoneKeyModel.find({where: {and: [{sphereId: sphereId}, {stoneId: stoneId}]}}); })
+            }
+            else {
+              return stoneKeys
+            }
+          })
+          .then((stoneKeys) => {
             for (let i = 0; i < stoneKeys.length; i++) {
               let key = stoneKeys[i];
               if (container[containerIndex].stoneKeys[key.stoneId] === undefined) {
@@ -719,7 +742,12 @@ module.exports = function(model) {
       .then((accessInSpheres) => {
         let keyPromises = [];
         accessInSpheres.forEach((sphereAccess) => {
-          result.push({sphereId: sphereAccess.sphereId, sphereKeys: [], stoneKeys: {}});
+          result.push({
+            sphereId: sphereAccess.sphereId,
+            sphereAuthorizationToken: sphereAccess.sphereAuthorizationToken,
+            sphereKeys: [],
+            stoneKeys: {}
+          });
           if (sphereAccess && sphereAccess.role) {
             keyPromises.push(getKeysForUser(sphereAccess.sphereId, sphereAccess.role, result, stoneId));
           }
@@ -737,24 +765,75 @@ module.exports = function(model) {
 
   model.getEncryptionKeys = function(id, callback) {
     const SphereAccess = loopback.getModel('SphereAccess');
-    SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, include: "sphere"}, function(err, objects) {
-      let keys = Array.from(objects, function(access) {
-        let sphere = { sphereId: access.sphereId, keys: {}};
-        let sphereData = access.sphere();
-        // console.log('sphereData',sphere, access);
-        switch (access.role) {
-          case "admin":
-            sphere.keys.admin  = sphereData.adminEncryptionKey;
-          case "member":
-            sphere.keys.member = sphereData.memberEncryptionKey;
-          case "guest":
-            sphere.keys.guest  = sphereData.guestEncryptionKey;
-        }
-        return sphere
-      });
+    let queryArray = [{userId: id}, {invitePending: {neq: true}}];
+    let result = [];
+    SphereAccess.find({where: {and: queryArray}})
+      .then((accessInSpheres) => {
+        let keyPromises = [];
+        accessInSpheres.forEach((sphereAccess) => {
+          result.push({sphereId: sphereAccess.sphereId, sphereKeys: [], stoneKeys: {}});
+          if (sphereAccess && sphereAccess.role) {
+            keyPromises.push(getKeysForUser(sphereAccess.sphereId, sphereAccess.role, result));
+          }
+        })
+        return Promise.all(keyPromises);
+      })
+      .then(() => {
+        let keyResult = [];
+        result.forEach((sphereData) => {
 
-      callback(null, keys);
-    });
+          let keys = {};
+          sphereData.sphereKeys.forEach((keyData) => {
+            if (keyData.ttl !== 0) { return };
+
+            switch (keyData.keyType) {
+              case constants.KEY_TYPES.ADMIN_KEY:
+                keys['admin'] = keyData.key; return;
+              case constants.KEY_TYPES.MEMBER_KEY:
+                keys['member'] = keyData.key; return;
+              case constants.KEY_TYPES.BASIC_KEY:
+                keys['guest'] = keyData.key; return;
+            }
+          })
+
+
+          keyResult.push({
+            sphereId: sphereData.sphereId,
+            keys: keys
+          })
+        })
+
+        callback(null, keyResult);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+
+
+
+
+    //
+    //
+    //
+    // const SphereAccess = loopback.getModel('SphereAccess');
+    // SphereAccess.find({where: {and: [{userId: id}, {invitePending: {neq: true}}]}, include: "sphere"}, function(err, objects) {
+    //   let keys = Array.from(objects, function(access) {
+    //     let sphere = { sphereId: access.sphereId, keys: {}};
+    //     let sphereData = access.sphere();
+    //     // console.log('sphereData',sphere, access);
+    //     switch (access.role) {
+    //       case "admin":
+    //         sphere.keys.admin  = sphereData.adminEncryptionKey;
+    //       case "member":
+    //         sphere.keys.member = sphereData.memberEncryptionKey;
+    //       case "guest":
+    //         sphere.keys.guest  = sphereData.guestEncryptionKey;
+    //     }
+    //     return sphere
+    //   });
+    //
+    //   callback(null, keys);
+    // });
   };
 
   model.remoteMethod(
@@ -919,6 +998,10 @@ module.exports = function(model) {
     let deviceResults = [];
     let deviceMap = {};
 
+
+    const PRESENCE_TIMEOUT = 20*60000; // 20 minutes;
+    let threshold = new Date().valueOf() - PRESENCE_TIMEOUT;
+
     deviceModel.find({where: {ownerId: id}, fields: ["id","name"]})
       .then((results) => {
         if (results.length === 0) {
@@ -932,7 +1015,7 @@ module.exports = function(model) {
             deviceIds.push(results[i].id);
           }
 
-          return sphereMapModel.find({where: {deviceId: {inq: deviceIds}}})
+          return sphereMapModel.find({where: {and: [{deviceId: {inq: deviceIds}}, {updatedAt: {gt: new Date(threshold)}}]}})
             .then((sphereMapResults) => {
               for ( let i = 0; i < sphereMapResults.length; i++ ) {
                 sphereIds.push(sphereMapResults[i].sphereId);
@@ -941,12 +1024,17 @@ module.exports = function(model) {
                 }
                 deviceMap[sphereMapResults[i].deviceId][sphereMapResults[i].sphereId] = [];
               }
-              return locationMapModel.find({where: {deviceId: {inq: deviceIds}}});
+              return locationMapModel.find({where: {and: [{deviceId: {inq: deviceIds}}, {updatedAt: {gt: new Date(threshold)}}]}});
             })
             .then((locationMapResults) => {
               for (let i = 0; i < locationMapResults.length; i++) {
-                locationIds.push(locationMapResults[i].locationId);
-                deviceMap[locationMapResults[i].deviceId][locationMapResults[i].sphereId].push(locationMapResults[i].locationId);
+                if (deviceMap[locationMapResults[i].deviceId] !== undefined) {
+                  locationIds.push(locationMapResults[i].locationId);
+                  if (deviceMap[locationMapResults[i].deviceId][locationMapResults[i].sphereId] === undefined) {
+                    deviceMap[locationMapResults[i].deviceId][locationMapResults[i].sphereId] = []
+                  }
+                  deviceMap[locationMapResults[i].deviceId][locationMapResults[i].sphereId].push(locationMapResults[i].locationId);
+                }
               }
 
               return sphereModel.find({where: {id: {inq: sphereIds}}, fields: ["id", "name"]})
@@ -981,18 +1069,21 @@ module.exports = function(model) {
                 };
 
                 let sphereIds = Object.keys(deviceMap[deviceId]);
+                // console.log("sphereMap", sphereMap, "sphereIds", sphereIds, "deviceRes",deviceRes)
                 sphereIds.forEach((sphereId) => {
+                  if (sphereMap[sphereId] === undefined) { return; }
+
                   let sphereData = {
                     sphereId: sphereId,
                     sphereName: sphereMap[sphereId].name,
-                    inLocations: {}
+                    inLocation: {}
                   }
 
                   deviceMap[deviceId][sphereId].forEach((locationId) => {
                     sphereData.inLocation = {
                       locationId: locationId,
                       locationName: locationMap[locationId].name
-                    }
+                    };
                   })
 
                   data.inSpheres.push(sphereData);
@@ -1067,3 +1158,4 @@ module.exports = function(model) {
   );
 
 };
+

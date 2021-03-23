@@ -2,11 +2,13 @@ let loopback = require('loopback');
 let path = require('path');
 const debug = require('debug')('loopback:dobots');
 const Email = loopback.findModel('Email');
-let app = require('../../server/server');
+const app = require('../../server/server');
+const verificationLocalization = require("./emailGenerator/localization/verification")
+
 
 let util = {
-  
-  /* 
+
+  /*
    * See node_modules/loopback/common/models/user.js for options overview
    */
   getDefaultEmailOptions: function(email_to, email_subject) {
@@ -19,14 +21,18 @@ let util = {
     };
     return options;
   },
-  
+
   /*
    * See https://docs.strongloop.com/display/public/LB/Registering+users for information on registering new users.
    */
-  getVerificationEmailOptions: function(user) {
-    let template = path.resolve(__dirname, './verificationEmail.html');
+  getVerificationEmailOptions: function(user, language = "en_us") {
+    let templatePath = './verificationEmail.html'
+    if (language !== "en_us") {
+      templatePath = './verificationEmail_' + language + '.html'
+    }
+    let template = path.resolve(__dirname, templatePath);
 
-    let subject = 'Welcome to Crownstone!';
+    let subject = verificationLocalization[language].subject;
     let options = this.getDefaultEmailOptions(user.email, subject);
     options.firstName = user.firstName;
     options.lastName = user.lastName;
@@ -54,7 +60,7 @@ let util = {
     options.html = html;
 
     Email.send(
-      options, 
+      options,
       function(err) {
         if (err) return debug('error sending password reset email');
         debug('sending password reset email to:', email);
@@ -73,8 +79,7 @@ let util = {
     if (currentUser !== null) {
       invitedByText = 'by ' + getUserName(currentUser);
     }
-    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
-      sphereName: sphere.name };
+    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, sphereName: sphere.name };
     let renderer = loopback.template(path.resolve(__dirname, './inviteNewUserEmail.html'));
     let html = renderer(params);
     let subject = 'Welcome! You just have been invited!';
@@ -82,7 +87,7 @@ let util = {
     options.html = html;
 
     Email.send(
-      options, 
+      options,
       function(err) {
         if (err) return debug('error sending invitation email to new user');
         debug('sending invitation email to:', user.email);
@@ -100,7 +105,7 @@ let util = {
     if (currentUser !== null) {
       invitedByText = 'by ' + getUserName(currentUser);
     }
-    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl, 
+    let params = {invitedByText: invitedByText, acceptUrl: fullAcceptUrl, declineUrl: fullDeclineUrl,
       sphereName: sphere.name };
     let renderer = loopback.template(path.resolve(__dirname, './inviteExistingUserEmail.html'));
     let html = renderer(params);

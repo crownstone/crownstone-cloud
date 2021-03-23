@@ -30,12 +30,13 @@ function performOauthClientOperations(app) {
 
   // empty promise so all clients that are added are in matching then statements
   new Promise((resolve, reject) => { resolve() })
+    // .then(() => { return showClientDetails(permissionModel, "Google"); })
+    // .then(() => { return updateClientName(permissionModel, "Google_assistant","Google"); })
     // .then(() => { return showClientDetails(permissionModel, "Alexa_Amazon"); })
-    // .then(() => { return deleteClientsWithName(permissionModel, "Alexa_Amazon"); })
-    // .then(() => { return createClient(permissionModel, "test", ["stone_information"]); })
+    // .then(() => { return createClient(permissionModel, "GoogleHomeTest", ["all"]); })
     // .then(() => { return createClient(permissionModel, "test", allScopes); })
-    // .then(() => { return updateClient(permissionModel, "Triggi", allScopes); })
-    // .then(() => { createClient(permissionModel, "Alexa_Amazon", ['user_information','user_location','stone_information','switch_stone']); })
+    // .then(() => { return updateClient(permissionModel, "Google", ["user_id", "stone_information", "switch_stone"]); })
+    // .then(() => { createClient(permissionModel, "Google_assistant", ['user_information','user_location','stone_information','switch_stone']); })
     .then(() => { console.log("OAUTH DONE")})
     .catch((err) => { console.log("Error during performOauthClientOperations",err); })
 }
@@ -51,6 +52,20 @@ function updateClient(permissionModel, clientName, scopes) {
       console.log("Error: Not just one result found:", results);
     })
 }
+
+
+function updateClientName(permissionModel, clientName, newName) {
+  return permissionModel.find({where:{name: clientName}})
+    .then((results) => {
+      if (results.length === 1) {
+        let user = results[0];
+        user.name = newName;
+        return user.save()
+      }
+      console.log("Error: Not just one result found:", results);
+    })
+}
+
 
 function clearClientDatabase(permissionModel) {
   return permissionModel.destroyAll()
@@ -75,8 +90,6 @@ function createClient(permissionModel, clientName, scopes) {
       return new Promise((resolve, reject) => { reject("Unknown Scope:" + scopes[i])})
     }
   }
-
-
   return permissionModel.find({where:{name: clientName}})
     .then((result) => {
       if (result.length === 0) {
@@ -102,18 +115,18 @@ function createClient(permissionModel, clientName, scopes) {
 
 function showClientDetails(permissionModel, clientName) {
   permissionModel.find({where:{name: clientName}})
-    .then((result) => {
-      if (result.length === 1) {
+    .then((results) => {
+      if (results.length === 1) {
         console.log("Client ", clientName, " found in database!");
-        console.log(clientName, "has access to the following scopes:", result.scopes);
-        console.log("Store the clientID: ", result.id, " and");
-        console.log("the clientSecret: ", result.clientSecret, " somewhere secure.");
+        console.log(clientName, "has access to the following scopes:", results[0].scopes);
+        console.log("Store the clientID: ", results[0].id, " and");
+        console.log("the clientSecret: ", results[0].clientSecret, " somewhere secure.");
       }
-      else if (result.length === 0) {
+      else if (results.length === 0) {
         console.log("Client ", clientName, " not found!");
       }
       else {
-        console.log("WARN -- There are multiple entries with this name:", result);
+        console.log("WARN -- There are multiple entries with this name:", results);
       }
     })
     .catch((err) => { console.log("Error during client lookup", err); })

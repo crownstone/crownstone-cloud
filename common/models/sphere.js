@@ -7,7 +7,7 @@ const loopback = require('loopback');
 const uuid = require('node-uuid');
 const crypto = require('crypto');
 
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 
 const config = require('../../server/config.json');
 const emailUtil = require('../../server/emails/util');
@@ -23,7 +23,8 @@ const app = require('../../server/server');
 let DEFAULT_TTL = 1209600; // 2 weeks in seconds
 let DEFAULT_MAX_TTL = 31556926; // 1 year in seconds
 
-
+const EventHandler = require('../../server/modules/EventHandler');
+const SphereIndexCache = require("../../server/modules/SphereIndexCache")
 
 module.exports = function(model) {
 
@@ -70,6 +71,15 @@ module.exports = function(model) {
       }
     );
 
+    // model.settings.acls.push(
+    //   {
+    //     "principalType": "ROLE",
+    //     "principalId": "$owner",
+    //     "permission": "DENY",
+    //     "property": 'processMeasurements'
+    //   }
+    // );
+
     //***************************
     // ADMIN:
     //   - everything
@@ -82,6 +92,16 @@ module.exports = function(model) {
         "permission": "ALLOW"
       }
     );
+
+    // model.settings.acls.push(
+    //   {
+    //     "principalType": "ROLE",
+    //     "principalId": "$group:admin",
+    //     "permission": "DENY",
+    //     "property": 'processMeasurements'
+    //   }
+    // );
+
     // model.settings.acls.push(
     // 	{
     // 		"principalType": "ROLE",
@@ -219,6 +239,22 @@ module.exports = function(model) {
         "property": "__deleteById__messages"
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "DENY",
+        "property": 'getTokenData'
+      }
+    );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:member",
+        "permission": "DENY",
+        "property": 'processMeasurements'
+      }
+    );
     //***************************
     // GUEST:
     //   - read
@@ -263,6 +299,51 @@ module.exports = function(model) {
         "property": "declineInvite"
       }
     );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "DENY",
+        "property": 'getTokenData'
+      }
+    );
+    model.settings.acls.push(
+      {
+        "principalType": "ROLE",
+        "principalId": "$group:guest",
+        "permission": "DENY",
+        "property": 'processMeasurements'
+      }
+    );
+
+    //***************************
+    // HUB:
+    //   - cannot create new hub
+    //***************************
+    let endpointsAllowedForHub = [
+      "getTokenData",
+      "users",
+      "getOwnedStones",
+      "processEnergyMeasurements"
+    ]
+    endpointsAllowedForHub.forEach((endPoint) => {
+      model.settings.acls.push(
+        {
+          "principalType": "ROLE",
+          "principalId": "$group:hub",
+          "permission": "ALLOW",
+          "property": endPoint
+        }
+      );
+    })
+    model.settings.acls.push(
+      {
+        "accessType": "READ",
+        "principalType": "ROLE",
+        "principalId": "$group:hub",
+        "permission": "ALLOW"
+      }
+    );
   }
 
 
@@ -285,6 +366,44 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__users');
   model.disableRemoteMethodByName('prototype.__get__users');
 
+  model.disableRemoteMethodByName('prototype.__create__features');
+  model.disableRemoteMethodByName('prototype.__delete__features');
+  model.disableRemoteMethodByName('prototype.__destroyById__features');
+  model.disableRemoteMethodByName('prototype.__deleteById__features');
+  model.disableRemoteMethodByName('prototype.__updateById__features');
+  model.disableRemoteMethodByName('prototype.__link__features');
+  model.disableRemoteMethodByName('prototype.__count__features');
+  model.disableRemoteMethodByName('prototype.__get__features');
+
+  // model.disableRemoteMethodByName('prototype.__create__scenes');
+  model.disableRemoteMethodByName('prototype.__delete__scenes');
+  // model.disableRemoteMethodByName('prototype.__destroyById__scenes');
+  // model.disableRemoteMethodByName('prototype.__deleteById__scenes');
+  model.disableRemoteMethodByName('prototype.__updateById__scenes');
+  model.disableRemoteMethodByName('prototype.__findById__scenes');
+  model.disableRemoteMethodByName('prototype.__link__scenes');
+  model.disableRemoteMethodByName('prototype.__count__scenes');
+  // model.disableRemoteMethodByName('prototype.__get__scenes');
+
+
+  // model.disableRemoteMethodByName('prototype.__create__sortedLists');
+  model.disableRemoteMethodByName('prototype.__delete__sortedLists');
+  // model.disableRemoteMethodByName('prototype.__destroyById__sortedLists');
+  // model.disableRemoteMethodByName('prototype.__deleteById__sortedLists');
+  model.disableRemoteMethodByName('prototype.__updateById__sortedLists');
+  model.disableRemoteMethodByName('prototype.__findById__sortedLists');
+  model.disableRemoteMethodByName('prototype.__link__sortedLists');
+  model.disableRemoteMethodByName('prototype.__count__sortedLists');
+  // model.disableRemoteMethodByName('prototype.__get__sortedLists');
+
+  model.disableRemoteMethodByName('prototype.__create__hubs');
+  model.disableRemoteMethodByName('prototype.__delete__hubs');
+  model.disableRemoteMethodByName('prototype.__destroyById__hubs');
+  model.disableRemoteMethodByName('prototype.__deleteById__hubs');
+  model.disableRemoteMethodByName('prototype.__updateById__hubs');
+  model.disableRemoteMethodByName('prototype.__findById__hubs');
+  model.disableRemoteMethodByName('prototype.__count__hubs');
+
   // model.disableRemoteMethodByName('prototype.__updateById__Toons');
   model.disableRemoteMethodByName('prototype.__destroyById__Toons');
   model.disableRemoteMethodByName('prototype.__deleteById__Toons');
@@ -295,6 +414,7 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__Toons');
 
   model.disableRemoteMethodByName('prototype.__delete__ownedLocations');
+  model.disableRemoteMethodByName('prototype.__get__ownedStones');
   model.disableRemoteMethodByName('prototype.__delete__ownedStones');
   model.disableRemoteMethodByName('prototype.__delete__ownedAppliances');
   model.disableRemoteMethodByName('prototype.__delete__messages');
@@ -345,6 +465,10 @@ module.exports = function(model) {
             // tell other people in the sphere to refresh their sphere user list.
             notificationHandler.notifyUsers( users, payload );
             next();
+
+            // update the sphere auth tokens and send the SSE event AFTER the deletion
+            EventHandler.dataChange.sendSphereUserDeletedEvent(sphere, user);
+            cycleSphereAuthorizationTokens(sphere.id).catch();
           })
           .catch((err) => {
             // ignoring errors, notifcations are optional.
@@ -407,6 +531,7 @@ module.exports = function(model) {
           error.statusCode = error.status = 409;
           return next(error);
         }
+        EventHandler.dataChange.sendSphereDeletedEvent(sphere);
       }
       next();
     });
@@ -435,7 +560,6 @@ module.exports = function(model) {
 
     if (ctx.isNewInstance) {
       injectUUID(ctx.instance);
-      injectEncryptionKeys(ctx.instance);
       injectMeshAccessAddress(ctx.instance);
       injectUID(ctx.instance);
       injectOwner(ctx.instance, userId, next);
@@ -457,23 +581,11 @@ module.exports = function(model) {
     }
   }
 
-  // LEGACY
-  function injectEncryptionKeys(item, next) {
-    if (!item.adminEncryptionKey) {
-      item.adminEncryptionKey = Util.createKey();
-    }
-    if (!item.memberEncryptionKey) {
-      item.memberEncryptionKey = Util.createKey();
-    }
-    if (!item.guestEncryptionKey) {
-      item.guestEncryptionKey = Util.createKey();
-    }
-  }
-
   // new keys go into the SphereKeys model
   function generateEncryptionKeys(ctx) {
     const SphereKeyModel = loopback.getModel('SphereKeys');
     let sphereId = ctx.instance.id;
+
     return SphereKeyModel.create([
       { sphereId: sphereId, keyType: constants.KEY_TYPES.ADMIN_KEY,            key: Util.createKey(), ttl: 0 },
       { sphereId: sphereId, keyType: constants.KEY_TYPES.MEMBER_KEY,           key: Util.createKey(), ttl: 0 },
@@ -504,10 +616,12 @@ module.exports = function(model) {
     if (ctx.isNewInstance) {
       generateEncryptionKeys(ctx)
         .then(() => {
+          EventHandler.dataChange.sendSphereCreatedEvent(ctx.instance);
           updateOwnerAccess(ctx, next);
         })
     }
     else {
+      EventHandler.dataChange.sendSphereUpdatedEvent(ctx.instance);
       next();
     }
   }
@@ -553,7 +667,8 @@ module.exports = function(model) {
         sphereId: sphere.id,
         userId: user.id,
         role: access,
-        invitePending: invite
+        invitePending: invite,
+        sphereAuthorizationToken: Util.createToken()
       },
       function(err, access) {
         callback(err);
@@ -567,7 +682,6 @@ module.exports = function(model) {
   function sendInvite(user, options, sphere, isNew, accessTokenId) {
     let baseUrl = app.__baseUrl;
     if (isNew) {
-      console.log('Send invite to new user ' + user.email);
       let acceptUrl = baseUrl + '/profile-setup';
       let declineUrl = baseUrl + '/decline-invite-new';
 
@@ -582,7 +696,6 @@ module.exports = function(model) {
         })
     }
     else {
-      console.log('Send invite to existing user ' + user.email);
       let acceptUrl = baseUrl + '/accept-invite';
       let declineUrl = baseUrl + '/decline-invite';
 
@@ -598,7 +711,7 @@ module.exports = function(model) {
     }
   }
 
-  function addExistingUser(email, id, access, options, callback) {
+  function addExistingUser(email, id, access, options, newUser, callback) {
     const User = loopback.getModel('user');
     model.findById(id, function(err, instance) {
       if (err) {
@@ -621,7 +734,7 @@ module.exports = function(model) {
 
                 addSphereAccess(user, sphere, access, true, function(err) {
                   if (err) return callback(err);
-                  sendInvite(user, options, sphere, false);
+                  sendInvite(user, options, sphere, newUser);
                   callback();
                 });
               } else {
@@ -646,7 +759,7 @@ module.exports = function(model) {
     const User = loopback.getModel('user');
     let tempPassword = crypto.randomBytes(8).toString('base64');
     // debug("tempPassword", tempPassword);
-    let userData = {email: email, password: tempPassword};
+    let userData = {email: email, password: tempPassword, accountCreationPending: true};
     User.create(userData, function(err, user) {
       if (err) return next(err);
 
@@ -688,15 +801,22 @@ module.exports = function(model) {
               }
               else {
                 debug("add existing user");
-                addExistingUser(email, sphereId, access, options, next);
+                if (user.accountCreationPending === true) {
+                  addExistingUser(email, sphereId, access, options, true, next);
+                }
+                else {
+                  addExistingUser(email, sphereId, access, options, false, next);
+                }
               }
             })
             notificationHandler.notifyUserIds(
               [user.id], { data: { command: "InvitationReceived", role: access, sphereId: sphereId }, silent: true
               });
+
           }
           // tell other people in the sphere to refresh their sphere user list.
           notificationHandler.notifySphereUsers(sphereId, {data: { sphereId: sphereId, command:"sphereUsersUpdated" }, silent: true });
+          EventHandler.dataChange.sendSphereUserInvitedEventById(sphereId, email);
         });
       }
       else {
@@ -749,7 +869,7 @@ module.exports = function(model) {
   /**
    * Find user in list of invites and resend an email if found. When the user does not exist in the database, the
    * same message "User not found in invites" will be send, so not to leak information about who is present in the
-   * database. A 409 (conflict) error is returned. This is namely not a server-side error, but it is an error that 
+   * database. A 409 (conflict) error is returned. This is namely not a server-side error, but it is an error that
    * can be solved at the client-side.
    */
   model.resendInvite = function(id, email, options, callback) {
@@ -842,6 +962,7 @@ module.exports = function(model) {
           }
 
           SphereAccess.deleteById(access.id, callback);
+          EventHandler.dataChange.sendSphereUserInvitationRevokedEventById(id, email);
         }
       );
     });
@@ -1189,6 +1310,11 @@ module.exports = function(model) {
   );
 
   model.changeRole = function(id, email, role, callback) {
+    let suppliedRole = role && role.toLowerCase() || null;
+    let allowedRoles = ['admin','member','guest'];
+    if (allowedRoles.indexOf(suppliedRole) === -1) {
+      return callback(Util.customError(400, "INVALID_ARGUMENT", "You can only set the following roles: admin, member, guest. You provided: " + role + "."))
+    }
 
     const User = loopback.findModel('user');
     User.findOne({where: {email: email}}, function(err, user) {
@@ -1208,6 +1334,9 @@ module.exports = function(model) {
               objects[0].save(function(err, instance) {
                 if (err) return callback(err);
                 callback();
+
+                EventHandler.dataChange.sendSphereUserUpdatedEventById(id, user.id);
+                cycleSphereAuthorizationTokens(id).catch();
               });
             } else {
               let error = new Error("User is not part of sphere");
@@ -1223,8 +1352,6 @@ module.exports = function(model) {
           return callback(error);
         }
       });
-
-
     });
 
     // model.findById(id, {include: {relation: "users", scope: {where: {email: email}}}}, function(err, user) {
@@ -1238,6 +1365,24 @@ module.exports = function(model) {
     // 	})
     // });
   };
+
+  function cycleSphereAuthorizationTokens(sphereId) {
+    const SphereAccess = loopback.findModel("SphereAccess");
+    return SphereAccess.find({where: {sphereId: sphereId}})
+      .then((results) => {
+        let promises = [];
+        results.forEach((result) => {
+          result.sphereAuthorizationToken = Util.createToken();
+          promises.push(result.save());
+        })
+
+        return Promise.all(promises);
+      })
+      .then(() => {
+        EventHandler.dataChange.sendSphereTokensUpdatedById(sphereId);
+      })
+  }
+
 
   model.remoteMethod(
     'changeRole',
@@ -1471,28 +1616,30 @@ module.exports = function(model) {
     }
   );
 
-  model.deleteAllAppliances = function(id, callback) {
-    debug("deleteAllAppliances");
-    model.findById(id, {include: "ownedAppliances"}, function(err, sphere) {
+
+  model.deleteAllScenes = function(id, callback) {
+    debug("deleteAllScenes");
+    model.findById(id, {include: "scenes"}, function(err, sphere) {
       if (err) return callback(err);
       if (model.checkForNullError(sphere, callback, "id: " + id)) return;
 
-      sphere.ownedAppliances.destroyAll(function(err) {
+      sphere.scenes.destroyAll(function(err) {
         callback(err);
       });
     })
   };
 
   model.remoteMethod(
-    'deleteAllAppliances',
+    'deleteAllScenes',
     {
-      http: {path: '/:id/deleteAllAppliances', verb: 'delete'},
+      http: {path: '/:id/deleteAllScenes', verb: 'delete'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
       ],
-      description: "Delete all appliances of Sphere"
+      description: "Delete all scenes of Sphere"
     }
   );
+
 
   model.deleteAllMessages = function(id, callback) {
     debug("deleteAllMessages");
@@ -1945,40 +2092,44 @@ module.exports = function(model) {
     const locationMapModel  = loopback.getModel("DeviceLocationMap");
     const sphereMapModel    = loopback.getModel("DeviceSphereMap");
 
+    const PRESENCE_TIMEOUT = 20*60000; // 20 minutes;
     let locationMapResult = null;
     let userIds = [];
     let userMap = {};
+    let threshold = new Date().valueOf() - PRESENCE_TIMEOUT;
     sphereAccessModel.find({where: {and: [{sphereId: id}, {invitePending: false}]}, fields: {userId: true}})
       .then((users) => {
         for (let i = 0; i < users.length; i++) {
           userIds.push(users[i].userId);
           userMap[users[i].userId] = {present:false, locations: []};
         }
-        return locationMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}});
+        return locationMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}, {updatedAt: {gt: new Date(threshold)}}]}});
       })
       .then((result) => {
         locationMapResult = result;
-        return sphereMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}]}})
+        return sphereMapModel.find({where: {and: [{sphereId: id}, {userId: {inq: userIds}}, {updatedAt: {gt: new Date(threshold)}}]}})
       })
       .then((sphereMapResult) => {
         for (let i = 0; i < locationMapResult.length; i++) {
-          if (locationMapResult[i].deviceId === ignoreDeviceId) {
+          let locationData = locationMapResult[i];
+          if (String(locationData.deviceId) === ignoreDeviceId) {
             continue;
           }
 
-          if (userMap[locationMapResult[i].userId] !== undefined) {
-            userMap[locationMapResult[i].userId].present = true;
-            userMap[locationMapResult[i].userId].locations.push(locationMapResult[i].locationId)
+          if (userMap[locationData.userId] !== undefined) {
+            userMap[locationData.userId].present = true;
+            userMap[locationData.userId].locations.push(locationData.locationId);
           }
         }
 
         for (let i = 0; i < sphereMapResult.length; i++) {
-          if (sphereMapResult[i].deviceId === ignoreDeviceId) {
+          let sphereData = sphereMapResult[i];
+          if (String(sphereData.deviceId) === ignoreDeviceId) {
             continue;
           }
 
-          if (userMap[sphereMapResult[i].userId] !== undefined) {
-            userMap[sphereMapResult[i].userId].present = true;
+          if (userMap[sphereData.userId] !== undefined) {
+            userMap[sphereData.userId].present = true;
           }
         }
 
@@ -2070,4 +2221,362 @@ module.exports = function(model) {
     }
   );
 
+  model.createHub = function(id, token, name, options, callback) {
+    const SphereAccess = loopback.getModel("SphereAccess");
+    const hubModel = loopback.getModel("Hub");
+    let newHub = null;
+
+    if (token.length !== 128) {
+      return callback("Length of token must be 128 characters.")
+    }
+    // ensure all users have an authentication token.
+    cycleSphereAuthorizationTokens(id)
+      .then(() => {
+        return hubModel.create({
+          sphereId: id,
+          token: token,
+          name: name
+        })
+      })
+      .then((newHubData) => {
+        newHub = newHubData;
+        return SphereAccess.create({
+          sphereId: id,
+          userId: newHub.id,
+          role:"hub",
+          invitePending:'false',
+          sphereAuthorizationToken: Util.createToken()
+        })
+      })
+      .then(()     => { callback(null, newHub); })
+      .catch((err) => { callback(err);  })
+  };
+
+
+  model.remoteMethod(
+    'createHub',
+    {
+      http: {path: '/:id/hub', verb: 'post'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'token', type: 'string', required: true, http: { source : 'query' }},
+        {arg: 'name',  type: 'string', required: true, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['Hub'], root: true},
+      description: "Add a hub to this sphere."
+    }
+  );
+
+
+  let CACHED_IP = null;
+
+  model.beforeRemote('getHubAddresses', function(context, user, next) {
+    let ip = context.req.headers['x-forwarded-for'] || context.req.ip || context.req.connection.remoteAddress;
+
+    if (ip.substr(0, 7) == "::ffff:") {
+      ip = ip.substr(7)
+    }
+    CACHED_IP = ip || null;
+    next()
+  });
+
+  model.getHubAddresses = function(id, options, callback) {
+    let externalIp = CACHED_IP || null;
+    CACHED_IP = null;
+    if (!externalIp) {
+      return callback("No External IP obtained...");
+    }
+
+    const SphereAccess = loopback.findModel("SphereAccess");
+    const Hubs = loopback.findModel("Hub");
+    SphereAccess.find({where: {sphereId: id, role:"hub", invitePending: {neq: true}}})
+      .then((hubs) => {
+        let ids = []
+        hubs.forEach((hub) => { ids.push(hub.userId); });
+        return Hubs.find({where: {id:{inq:ids}, sphereId: id, externalIPAddress: externalIp}, fields: {id:1, localIPAddress: 1, name: 1}})
+      })
+      .then((hubs) => {
+        callback(null, hubs)
+      })
+      .catch((err) => {
+        callback(err)
+      })
+  }
+
+  model.remoteMethod(
+    'getHubAddresses',
+    {
+      http: {path: '/:id/hubIpAddresses', verb: 'get'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['object'], root: true},
+      description: "Get the local ip address of the hubs in this sphere."
+    }
+  );
+
+
+  model.getOwnedStones = function(id, filter, options, callback) {
+    model.findById(id, function(err, sphere) {
+      if (err) return callback(err);
+      if (model.checkForNullError(sphere, callback, "id: " + id)) return;
+
+      if (typeof filter === 'string') {
+        try {
+          filter = JSON.parse(filter);
+        }
+        catch (err) {
+          return callback({
+            statusCode: 400,
+            name: "Error",
+            message: err.message
+          })
+        }
+      }
+
+      if (filter && filter.include && (Array.isArray(filter.include) && filter.include.indexOf("abilities") !== -1 || filter.include === "abilities")) {
+        if (filter.include === "abilities") {
+          filter.include = ["abilities"];
+        }
+
+        let abilitiesBlocked = false;
+        Util.deviceIsMinimalVersion(options, "4.1.0")
+          .then((allowAbilities) => {
+            abilitiesBlocked = !allowAbilities;
+            if (allowAbilities === false) {
+              if (filter.include.length === 1) {
+                filter = {};
+              }
+              else {
+                let positionOfAbilityFilter = filter.include.indexOf("abilities");
+                filter.include.splice(positionOfAbilityFilter, 1);
+              }
+            }
+
+            return sphere.ownedStones(filter)
+          })
+          .then((ownedStones) => {
+            if (abilitiesBlocked) {
+              let result = [];
+              if (ownedStones.length > 0) {
+                for (let i = 0; i < ownedStones.length; i++) {
+                  result.push({...ownedStones[i].__data, abilities:[]})
+                }
+                return callback(null, result);
+              }
+            }
+            callback(null, ownedStones)
+          })
+          .catch((err) => {
+            callback(err);
+          })
+      }
+      else {
+        sphere.ownedStones(filter)
+          .then((result) => {
+            callback(null, result);
+          })
+          .catch((err) => {
+            callback(err);
+          })
+      }
+    })
+
+  }
+
+  model.remoteMethod(
+    'getOwnedStones',
+    {
+      http: {path: '/:id/ownedStones', verb: 'get'},
+      accepts: [
+        {arg: 'id',    type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'filter',    type: 'any', required: false, http: { source : 'query' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: ['Stone'], root: true},
+      description: "Queries ownedStones of Sphere."
+    }
+  );
+
+
+  model.getTokenData = function(id, options, callback) {
+    let data = {}
+    const SphereAccess = loopback.findModel("SphereAccess");
+    let accessData = null;
+    SphereAccess.find({where: {sphereId: id, invitePending: {neq: true}}})
+      .then((results) => {
+        accessData = results;
+        let missingTokens = false;
+        for (let i = 0; i < accessData.length; i++) {
+          if (!accessData[i].sphereAuthorizationToken) {
+            missingTokens = true;
+            break;
+          }
+        }
+
+        if (missingTokens) {
+          return cycleSphereAuthorizationTokens(id);
+        }
+      })
+      .then(() => {
+        for (let i = 0; i < accessData.length; i++) {
+          data[String(accessData[i].userId)] = { role: accessData[i].role, token: accessData[i].sphereAuthorizationToken };
+        }
+
+        callback(null,data);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+  model.remoteMethod(
+    'getTokenData',
+    {
+      http: {path: '/:id/tokenData', verb: 'get'},
+      accepts: [
+        {arg: 'id',        type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options",   type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: "object", root: true},
+      description: "Get token data used by hubs."
+    }
+  );
+
+
+
+  model.multiswitch = function(id, packets, options, callback) {
+    if (Array.isArray(packets) === false) {
+      return callback("switchPackets should be an array of SwitchPackets:" + SwitchDataDefinition);
+    }
+
+    let stoneIds = [];
+    let idSwitchPacketMap = {};
+    for (let i = 0; i < packets.length; i++) {
+      let packet = packets[i];
+      if (packet && packet.type && packet.type !== 'PERCENTAGE' && packet.type !== "TURN_ON" && packet.type !== "TURN_OFF") {
+        return callback("Type of a switch packet can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
+      }
+
+      if (packet && !packet.type) {
+        return callback("SwitchPackets have a type: it can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
+      }
+
+      if (packet && !packet.stoneId) {
+        return callback("SwitchPackets have a stoneId, this is the id of the Crownstone.");
+      }
+
+      if (packet && packet.type === "PERCENTAGE" && (packet.percentage === undefined ||  (packet.percentage > 0 && packet.percentage <=1) || packet.percentage < 0 || packet.percentage > 100)) {
+        return callback("SwitchPackets with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
+      }
+
+      if (packet && packet.type === "PERCENTAGE" && (packet.percentage > 0 && packet.percentage < 10)) {
+        return callback("Dimming below 10% is not allowed.");
+      }
+
+      stoneIds.push(packet.stoneId);
+      idSwitchPacketMap[packet.stoneId] = packet;
+    }
+
+    let Stones = loopback.findModel("Stone");
+    let sphere = null;
+    model.findById(id)
+      .then((sphereResult) => {
+        if (!sphereResult) { throw util.unauthorizedError(); }
+        sphere = sphereResult;
+        return Stones.find({where: {sphereId: id, id: {inq: stoneIds}}});
+      })
+      .then((stones) => {
+        // check if we got all the required Crownstones
+        let resultIds = {};
+        let switchPacketMap = {};
+        for (let i = 0; i < stones.length; i++) {
+          resultIds[stones[i].id] = true;
+          switchPacketMap[stones[i].id] = idSwitchPacketMap[stones[i].id];
+        }
+        for (let i = 0; i < stoneIds.length; i++) {
+          if (resultIds[stoneIds[i]] === undefined) {
+            throw ("Invalid uid:" + stoneIds[i]);
+          }
+        }
+        SphereIndexCache.bump(sphere.id);
+        let ssePacket = EventHandler.command.sendStoneMultiSwitch(sphere, stones, switchPacketMap);
+        notificationHandler.notifySphereDevices(sphere, {
+          type: 'multiSwitch',
+          data: {event: ssePacket, command:'multiSwitch'},
+          silentAndroid: true,
+          silentIOS: true
+        });
+
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+
+  model.remoteMethod(
+    'multiswitch',
+    {
+      http: {path: '/:id/switchCrownstones', verb: 'post'},
+      accepts: [
+        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'switchPackets', type: '[SwitchPacket]',  required:true, http: {source:'body'}},
+        {arg: "options",       type: "object", http: "optionsFromRequest"},
+      ],
+      description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
+    }
+  );
+
+
+
+  model.remoteMethod(
+    'processEnergyMeasurements',
+    {
+      http: {path: '/:id/energyMeasurements', verb: 'post'},
+      accepts: [
+        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data',          type: 'any',  required:true, http: { source:  'body' }},
+        {arg: "options",       type: "object", http: "optionsFromRequest"},
+      ],
+      description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
+    }
+  );
+
+
+  model.processEnergyMeasurements = function(id, data, options, next) {
+    let Stones = loopback.findModel("Stone");
+    let EnergyUsage = loopback.findModel("EnergyUsage");
+    let ids = Object.keys(data);
+    Stones.find({where:{id: {inq: ids}, sphereId: id}})
+      .then((result) => {
+        let energyData = [];
+        for (let i = 0; i < result.length; i++) {
+          let stone = result[i];
+          let stoneId = stone.id;
+          for (let j = 0; j < data[stoneId].length; j++) {
+            let t = data[stoneId][j].t;
+            let e = data[stoneId][j].energy;
+            if (t !== undefined && e !== undefined) {
+              energyData.push({timestamp: new Date(t), energy: e, stoneId: stoneId, sphereId: id });
+            }
+          }
+        }
+        return EnergyUsage.create(energyData)
+      })
+      .then(() => {
+        next(null)
+      })
+      .catch((e) => {
+        console.log("Something went wrong", e)
+        next(e)
+      })
+  }
+
 };
+
+
+let SwitchDataDefinition = "{ type: 'PERCENTAGE' | 'TURN_ON' | 'TURN_OFF', stoneId: string, percentage?: number }"

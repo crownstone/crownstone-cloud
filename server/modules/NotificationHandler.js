@@ -1,7 +1,7 @@
 const gcm = require('node-gcm');
 const apn = require('apn');
 let loopback = require('loopback');
-
+const SphereIndexCache = require("../../server/modules/SphereIndexCache")
 /**
  *  This class will handle the sending of notifications. API:
  *
@@ -18,6 +18,8 @@ class NotificationHandlerClass {
   constructor() {
     // TODO: possibly start the apn connection and the gcm sender?
   }
+
+
 
   collectSphereUsers(sphereId) {
     let sphereAccessModel = loopback.getModel("SphereAccess");
@@ -68,6 +70,9 @@ class NotificationHandlerClass {
 
   notifySphereDevices(sphere, messageData, excludeDeviceId) {
     // get users
+    if (!messageData.data) { messageData.data = {}; }
+    messageData.data = { ...messageData.data, sequenceTime: SphereIndexCache.getLatest(sphere.id) };
+
     sphere.users({include: {relation: 'devices', scope: {include: 'installations'}}}, (err, users) => {
       let {iosTokens, iosDevTokens, androidTokens} = getTokensFromUsers(users, excludeDeviceId)
 
@@ -83,6 +88,7 @@ class NotificationHandlerClass {
         .then((appResult) => {
           if (appResult && appResult.pushSettings) {
             // console.log("Sending notification", messageData)
+
             this._notifyAndroid(appResult.pushSettings.gcm, androidTokens, messageData);
             this._notifyIOS(appResult.pushSettings.apns,    iosTokens, iosDevTokens, messageData);
           }
@@ -215,15 +221,16 @@ class NotificationHandlerClass {
     if (silent) {
       // add this for silent push
       notification.contentAvailable = true;
+      notification.pushType = "background";
     }
     else {
+      notification.pushType = "alert"
       notification.sound = "ping.aiff";       // do not add if no sound should play
       notification.body =  messageData.type;  // alert message body, do not add if no alert has to be shown.
       notification.alert = messageData.title || 'Notification Received'; // alert message, do not add if no alert has to be shown.
     }
 
     // Send the notification to the API with send, which returns a promise.
-    // console.log("sending this notificaiton", notification)
     apnProvider.send(notification, tokens)
       .then((result) => {
         // console.log("IOS PUSH RESULT", JSON.stringify(result, undefined,2));
@@ -235,11 +242,6 @@ class NotificationHandlerClass {
         // console.log("ERROR DURING PUSH!", err)
       })
   }
-
-  _notifyEndpoints() {
-    // todo: add notification endpoints model slaved to sphere
-  }
-
 }
 
 
@@ -291,7 +293,7 @@ function getTokensFromUsers(users, excludeDeviceId) {
   for (let i = 0; i < users.length; i++) {
     let devices = users[i].devices();
     for (let j = 0; j < devices.length; j++) {
-      if (devices[j].id == excludeDeviceId) {
+      if (String(devices[j].id) == excludeDeviceId) {
         continue;
       }
 

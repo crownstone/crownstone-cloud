@@ -1,60 +1,43 @@
 {
-  "name": "Schedule",
+  "name": "StoneBehaviour",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,
   "idInjection": true,
   "options": {
-    "validateUpsert": true,
     "strict":"filter"
   },
   "mixins": {
     "DisableCommon": true,
-    "Util": true,
-    "ChangeTracker": false,
+    "SphereContent": true,
     "TimeStamps": {
       "required": false,
       "validateUpsert": true
     }
   },
   "properties": {
-    "label": {
-      "type": "string"
-    },
-    "triggerTimeOnCrownstone": {
+    "type": {
       "type": "string",
       "required": true
     },
-    "scheduleEntryIndex": {
-      "type": "number",
-      "required": true
-    },
-    "linkedSchedule": {
-      "type": "string"
-    },
-    "active": {
-      "type": "boolean",
-      "default": true
-    },
-    "intervalInMinutes": {
-      "type": "number",
-      "default": 0
-    },
-    "fadeDuration": {
-      "type": "number",
-      "default": 0
-    },
-    "switchState": {
-      "type": "number",
-      "required": true
-    },
-    "ignoreLocationTriggers": {
-      "type": "boolean",
-      "default": false
-    },
-    "repeatMode": {
+    "data": {
       "type": "string",
-      "default": "24h"
+      "required": true
+    },
+    "idOnCrownstone": {
+      "type": "number"
+    },
+    "profileIndex": {
+      "type": "number",
+      "required": true
+    },
+    "syncedToCrownstone": {
+      "type": "boolean",
+      "required": true
+    },
+    "deleted":{
+      "type": "boolean",
+      "required": true
     },
     "activeDays": {
       "Mon": { "type":"boolean", "required":true},

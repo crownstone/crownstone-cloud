@@ -48,5 +48,14 @@
   },
   "StoneKeys": {
     "public": false
+  },
+  "StoneBehaviour": {
+    "public": false
+  },
+  "StoneAbility": {
+    "public": false
+  },
+  "StoneAbilityProperty": {
+    "public": false
   }
 }

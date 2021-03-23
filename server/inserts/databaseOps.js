@@ -16,8 +16,8 @@ function performDatabaseOperations(app) {
 
 function insertSphereUids(app) {
   let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
-  let sphereCounter = 0
-  let candidates = 0;
+  let sphereCounter = 0;
+  let candidates    = 0;
   console.log("----------- Starting insertSphereUids ------------");
   let doIt = function() {
     return sphereModel.find()

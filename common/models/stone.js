@@ -3,11 +3,14 @@
 let loopback = require('loopback');
 let crypto = require('crypto');
 
+const versionUtil = require('../../server/util/versionUtil');
 const notificationHandler = require('../../server/modules/NotificationHandler');
-const eventHandler = require('../../server/modules/EventHandler');
-const debug = require('debug')('loopback:dobots');
+const WebHookHandler = require('../../server/modules/WebHookHandler');
+const EventHandler = require('../../server/modules/EventHandler');
+const debug = require('debug')('loopback:crownstone');
 const constants = require('./sharedUtil/constants');
 const Util = require('./sharedUtil/util');
+const SphereIndexCache = require("../../server/modules/SphereIndexCache")
 
 module.exports = function(model) {
 
@@ -139,7 +142,7 @@ module.exports = function(model) {
         "principalType": "ROLE",
         "principalId": "$group:guest",
         "permission": "ALLOW",
-        "property": "activityLogBatch"
+        "property": "energyUsageBatch"
       }
     );
     model.settings.acls.push(
@@ -166,6 +169,34 @@ module.exports = function(model) {
         "property": "notifyOnRecovery"
       }
     );
+
+
+    //***************************
+    // HUB:
+    //   - cannot create new hub
+    //***************************
+    let endpointsAllowedForHub = [
+      "getCurrentSwitchStateV2",
+      "setCurrentSwitchState"
+    ]
+    endpointsAllowedForHub.forEach((endPoint) => {
+      model.settings.acls.push(
+        {
+          "principalType": "ROLE",
+          "principalId": "$group:hub",
+          "permission": "ALLOW",
+          "property": endPoint
+        }
+      );
+    })
+    model.settings.acls.push(
+      {
+        "accessType": "READ",
+        "principalType": "ROLE",
+        "principalId": "$group:hub",
+        "permission": "ALLOW"
+      }
+    );
   }
 
 
@@ -175,7 +206,6 @@ module.exports = function(model) {
   model.validatesUniquenessOf('major',   {scopedTo: ['sphereId', 'minor'], message: 'a stone with this major minor combination was already added'});
 
   // model.disableRemoteMethodByName('create');
-  // model.disableRemoteMethodByName('find');
   model.disableRemoteMethodByName('findOne');
   model.disableRemoteMethodByName('replaceById');
 
@@ -199,15 +229,6 @@ module.exports = function(model) {
 
   model.disableRemoteMethodByName('prototype.__count__schedules');
 
-  model.disableRemoteMethodByName('prototype.__count__diagnostics');
-  model.disableRemoteMethodByName('prototype.__create__diagnostics');
-  model.disableRemoteMethodByName('prototype.__findById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__destroyById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__deleteById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__delete__diagnostics');
-  model.disableRemoteMethodByName('prototype.__updateById__diagnostics');
-  model.disableRemoteMethodByName('prototype.__get__diagnostics');
-
   model.disableRemoteMethodByName('prototype.__count__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__findById__powerUsageHistory');
@@ -215,23 +236,26 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__deleteById__powerUsageHistory');
   model.disableRemoteMethodByName('prototype.__get__powerUsageHistory');
 
-  model.disableRemoteMethodByName('prototype.__count__activityLog');
-  model.disableRemoteMethodByName('prototype.__create__activityLog');
-  model.disableRemoteMethodByName('prototype.__findById__activityLog');
-  model.disableRemoteMethodByName('prototype.__updateById__activityLog');
-  model.disableRemoteMethodByName('prototype.__destroyById__activityLog');
-  model.disableRemoteMethodByName('prototype.__deleteById__activityLog');
-  model.disableRemoteMethodByName('prototype.__delete__activityLog');
-  model.disableRemoteMethodByName('prototype.__get__activityLog');
 
-  model.disableRemoteMethodByName('prototype.__count__activityRange');
-  model.disableRemoteMethodByName('prototype.__create__activityRange');
-  model.disableRemoteMethodByName('prototype.__findById__activityRange');
-  model.disableRemoteMethodByName('prototype.__updateById__activityRange');
-  model.disableRemoteMethodByName('prototype.__destroyById__activityRange');
-  model.disableRemoteMethodByName('prototype.__deleteById__activityRange');
-  model.disableRemoteMethodByName('prototype.__delete__activityRange');
-  model.disableRemoteMethodByName('prototype.__get__activityRange');
+  model.disableRemoteMethodByName('prototype.__count__energyUsage');
+  model.disableRemoteMethodByName('prototype.__create__energyUsage');
+  model.disableRemoteMethodByName('prototype.__findById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__updateById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__destroyById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__deleteById__energyUsage');
+  model.disableRemoteMethodByName('prototype.__delete__energyUsage');
+  model.disableRemoteMethodByName('prototype.__get__energyUsage');
+
+  model.disableRemoteMethodByName('prototype.__count__abilities');
+  model.disableRemoteMethodByName('prototype.__create__abilities');
+  model.disableRemoteMethodByName('prototype.__findById__abilities');
+  model.disableRemoteMethodByName('prototype.__updateById__abilities');
+  model.disableRemoteMethodByName('prototype.__destroyById__abilities');
+  model.disableRemoteMethodByName('prototype.__deleteById__abilities');
+  model.disableRemoteMethodByName('prototype.__delete__abilities');
+  model.disableRemoteMethodByName('prototype.__get__abilities');
+
+  model.disableRemoteMethodByName('prototype.__get__currentSwitchState');
 
   model.disableRemoteMethodByName('prototype.__count__energyUsageHistory');
   model.disableRemoteMethodByName('prototype.__create__energyUsageHistory');
@@ -244,9 +268,11 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__count__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__create__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__findById__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__get__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__destroyById__switchStateHistory');
 
-  model.disableRemoteMethodByName('prototype.__get__switchStateHistory');
+  model.disableRemoteMethodByName('prototype.__count__behaviour');
+  model.disableRemoteMethodByName('prototype.__delete__behaviour');
 
 
   function initStone(ctx, next) {
@@ -343,7 +369,7 @@ module.exports = function(model) {
       })
   }
 
-  function afterSave(ctx,next) {
+  function afterSave(ctx, next) {
     enforceUniqueness(ctx, (err) => {
       if (err) { return next(err); }
 
@@ -351,14 +377,21 @@ module.exports = function(model) {
         const StoneKeyModel = loopback.getModel('StoneKeys');
         let stoneId = ctx.instance.id;
         let sphereId = ctx.instance.sphereId;
-        return StoneKeyModel.create({
-          sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0
-        })
+        return StoneKeyModel.create([
+          {sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.MESH_DEVICE_KEY, key: Util.createKey(), ttl: 0},
+          {sphereId: sphereId, stoneId: stoneId, keyType: constants.KEY_TYPES.DEVICE_UART_KEY, key: Util.createKey(), ttl: 0}
+          ])
           .then(() => {
+            EventHandler.dataChange.sendStoneCreatedEventBySphereId(ctx.instance.sphereId, ctx.instance);
             next();
           })
       }
       else {
+        if (ctx && ctx.options && ctx.options.blockUpdateEvent === true) {
+          return next();
+        }
+
+        EventHandler.dataChange.sendStoneUpdatedEventBySphereId(ctx.instance.sphereId, ctx.instance);
         next();
       }
     })
@@ -399,117 +432,137 @@ module.exports = function(model) {
   model.observe('before save', initStone);
   model.observe('after save', afterSave);
 
+  model.observe('before delete', function(context, next) {
+    let stoneId = context.where.id;
+    let and = context.where.and;
+    if (and && Array.isArray(and) && and.length > 0 && and[0] && and[0].id) {
+      stoneId = and[0].id;
+    }
+    model.findById(stoneId)
+      .then((stone) => {
+        if (stone) {
+          return EventHandler.dataChange.sendStoneDeletedEventBySphereId(stone.sphereId, stone);
+        }
+      })
+      .then(() => {
+        next()
+      })
+      .catch((err) => {
+        next(err);
+      })
+  });
+
   /************************************
    **** Energy Usage
    ************************************/
-
-  model._setCurrentEnergyUsage = function(stone, energyUsage, next) {
-
-    debug("_setCurrentEnergyUsage");
-
-    // debug("stone:", stone);
-    // debug("energyUsage:", energyUsage);
-    energyUsage.sphereId = stone.sphereId;
-    stone.energyUsageHistory.create(energyUsage, function(err, energyUsageInstance) {
-      if (err) return next(err);
-
-      if (energyUsageInstance) {
-        stone.currentEnergyUsageId = energyUsageInstance.id;
-        stone.save(function(err, stoneInstance) {
-          if (next) {
-            if (err) return next(err);
-            next(null, energyUsageInstance);
-          }
-        })
-      } else {
-        return next(new Error("failed to create energyUsage"));
-      }
-    });
-
-  };
-
-  model.setCurrentEnergyUsage = function(energyUsage, stoneId, next) {
-    debug("setCurrentEnergyUsage");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      model._setCurrentEnergyUsage(stone, energyUsage, next);
-    })
-
-  };
-
-  model.remoteMethod(
-    'setCurrentEnergyUsage',
-    {
-      http: {path: '/:id/currentEnergyUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: 'EnergyUsage', required: true, 'http': {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: 'EnergyUsage', root: true},
-      description: "Add current energy usage of the stone"
-    }
-  );
+  //
+  // model._setCurrentEnergyUsage = function(stone, energyUsage, next) {
+  //
+  //   debug("_setCurrentEnergyUsage");
+  //
+  //   // debug("stone:", stone);
+  //   // debug("energyUsage:", energyUsage);
+  //   energyUsage.sphereId = stone.sphereId;
+  //   stone.energyUsageHistory.create(energyUsage, function(err, energyUsageInstance) {
+  //     if (err) return next(err);
+  //
+  //     if (energyUsageInstance) {
+  //       stone.currentEnergyUsageId = energyUsageInstance.id;
+  //       stone.save(function(err, stoneInstance) {
+  //         if (next) {
+  //           if (err) return next(err);
+  //           next(null, energyUsageInstance);
+  //         }
+  //       })
+  //     } else {
+  //       return next(new Error("failed to create energyUsage"));
+  //     }
+  //   });
+  //
+  // };
+  //
+  // model.setCurrentEnergyUsage = function(energyUsage, stoneId, next) {
+  //   debug("setCurrentEnergyUsage");
+  //
+  //   model.findById(stoneId, function(err, stone) {
+  //     if (err) return next(err);
+  //     if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+  //
+  //     model._setCurrentEnergyUsage(stone, energyUsage, next);
+  //   })
+  //
+  // };
+  //
+  // model.remoteMethod(
+  //   'setCurrentEnergyUsage',
+  //   {
+  //     http: {path: '/:id/currentEnergyUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: 'EnergyUsage', required: true, 'http': {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: 'EnergyUsage', root: true},
+  //     description: "Add current energy usage of the stone"
+  //   }
+  // );
 
   /************************************
    **** Power Usage
    ************************************/
 
-  model._setCurrentPowerUsage = function(stone, powerUsage, next) {
+  // model._setCurrentPowerUsage = function(stone, powerUsage, next) {
+  //
+  //   debug("_setCurrentPowerUsage");
+  //
+  //   // debug("stone:", stone);
+  //   // debug("powerUsage:", powerUsage);
+  //
+  //   powerUsage.sphereId = stone.sphereId;
+  //
+  //   stone.powerUsageHistory.create(powerUsage, function(err, powerUsageInstance) {
+  //     if (err) return next(err);
+  //
+  //     if (powerUsageInstance) {
+  //       stone.currentPowerUsageId = powerUsageInstance.id;
+  //
+  //       stone.save(function(err, stoneInstance) {
+  //         if (next) {
+  //           if (err) return next(err);
+  //           next(null, powerUsageInstance);
+  //         }
+  //       })
+  //     } else {
+  //       return next(new Error("failed to create powerUsage"));
+  //     }
+  //   });
+  //
+  // };
 
-    debug("_setCurrentPowerUsage");
-
-    // debug("stone:", stone);
-    // debug("powerUsage:", powerUsage);
-
-    powerUsage.sphereId = stone.sphereId;
-
-    stone.powerUsageHistory.create(powerUsage, function(err, powerUsageInstance) {
-      if (err) return next(err);
-
-      if (powerUsageInstance) {
-        stone.currentPowerUsageId = powerUsageInstance.id;
-
-        stone.save(function(err, stoneInstance) {
-          if (next) {
-            if (err) return next(err);
-            next(null, powerUsageInstance);
-          }
-        })
-      } else {
-        return next(new Error("failed to create powerUsage"));
-      }
-    });
-
-  };
-
-  model.setCurrentPowerUsage = function(powerUsage, stoneId, next) {
-    debug("setCurrentPowerUsage");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      model._setCurrentPowerUsage(stone, powerUsage, next);
-    })
-
-  };
-
-  model.remoteMethod(
-    'setCurrentPowerUsage',
-    {
-      http: {path: '/:id/currentPowerUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: 'PowerUsage', required: true, http: {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: 'PowerUsage', root: true},
-      description: "Add current power usage of the stone"
-    }
-  );
-
+  // model.setCurrentPowerUsage = function(powerUsage, stoneId, next) {
+  //   debug("setCurrentPowerUsage");
+  //
+  //   model.findById(stoneId, function(err, stone) {
+  //     if (err) return next(err);
+  //     if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+  //
+  //     model._setCurrentPowerUsage(stone, powerUsage, next);
+  //   })
+  //
+  // };
+  //
+  // model.remoteMethod(
+  //   'setCurrentPowerUsage',
+  //   {
+  //     http: {path: '/:id/currentPowerUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: 'PowerUsage', required: true, http: {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: 'PowerUsage', root: true},
+  //     description: "Add current power usage of the stone"
+  //   }
+  // );
+  //
 
   const batchSetHistory = function (fieldName, dataArray, stoneId, next) {
     let historyFieldName = fieldName + "History";
@@ -576,7 +629,7 @@ module.exports = function(model) {
             }
 
             if (eventName) {
-              eventHandler.notifyHooks(model, stoneId, mostRecentEntry, eventName)
+              WebHookHandler.notifyHooks(model, stoneId, mostRecentEntry, eventName)
             }
 
             stone[currentIdFieldName] = currentId;
@@ -612,98 +665,40 @@ module.exports = function(model) {
     });
   };
 
-  model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
-    batchSetHistory('powerUsage', powerUsageArray, stoneId, next);
-  };
+  // model.setBatchPowerUsage = function(powerUsageArray, stoneId, next) {
+  //   batchSetHistory('powerUsage', powerUsageArray, stoneId, next);
+  // };
+  //
+  // model.setBatchEnergyUsage = function(energyUsageArray, stoneId, next) {
+  //   batchSetHistory('energyUsage', energyUsageArray, stoneId, next);
+  // };
+  //
+  // model.remoteMethod(
+  //   'setBatchEnergyUsage',
+  //   {
+  //     http: {path: '/:id/batchEnergyUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: ['EnergyUsage'], required: true, http: {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: ['EnergyUsage'], root: true},
+  //     description: "Add array of energy usage measurements to the stone."
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'setBatchPowerUsage',
+  //   {
+  //     http: {path: '/:id/batchPowerUsage/', verb: 'POST'},
+  //     accepts: [
+  //       {arg: 'data', type: ['PowerUsage'], required: true, http: {source: 'body'}},
+  //       {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
+  //     ],
+  //     returns: {arg: 'data', type: ['PowerUsage'], root: true},
+  //     description: "Add an array of power usage measurements to the stone."
+  //   }
+  // );
 
-  model.setBatchEnergyUsage = function(energyUsageArray, stoneId, next) {
-    batchSetHistory('energyUsage', energyUsageArray, stoneId, next);
-  };
-
-  model.remoteMethod(
-    'setBatchEnergyUsage',
-    {
-      http: {path: '/:id/batchEnergyUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: ['EnergyUsage'], required: true, http: {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: ['EnergyUsage'], root: true},
-      description: "Add array of energy usage measurements to the stone."
-    }
-  );
-
-  model.remoteMethod(
-    'setBatchPowerUsage',
-    {
-      http: {path: '/:id/batchPowerUsage/', verb: 'POST'},
-      accepts: [
-        {arg: 'data', type: ['PowerUsage'], required: true, http: {source: 'body'}},
-        {arg: 'id', type: 'any', required: true, http: {source: 'path'}}
-      ],
-      returns: {arg: 'data', type: ['PowerUsage'], root: true},
-      description: "Add an array of power usage measurements to the stone."
-    }
-  );
-
-  /************************************
-   **** Appliance
-   ************************************/
-
-  model.setAppliance = function(stoneId, applianceId, next) {
-    debug("setAppliance");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      stone.applianceId = applianceId;
-      stone.save(function (err) {
-        if (err) return next(err);
-        next();
-      });
-    });
-  };
-
-  model.remoteMethod(
-    'setAppliance',
-    {
-      http: {path: '/:id/appliance/:fk', verb: 'PUT'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}},
-        {arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      description: "Link appliance to stone."
-    }
-  );
-
-  model.removeAppliance = function(stoneId, applianceId, next) {
-    debug("removeAppliance");
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      stone.applianceId = undefined;
-      stone.save(function(err) {
-        if (err) return next(err);
-        next();
-      });
-    });
-
-  };
-
-  model.remoteMethod(
-    'removeAppliance',
-    {
-      http: {path: '/:id/appliance/:fk', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, 'http': {source: 'path'}},
-        {arg: 'fk', type: 'any', required: true, 'http': {source: 'path'}}
-      ],
-      description: "Unlink appliance from stone"
-    }
-  );
 
   /************************************
    **** Other
@@ -756,139 +751,135 @@ module.exports = function(model) {
   //   }
   // );
 
-  model.deleteAllEnergyUsageHistory = function(id, callback) {
-    debug("deleteAllEnergyUsageHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.energyUsageHistory.destroyAll(function(err) {
-        stone.currentEnergyUsageId = undefined;
-        stone.save();
-        callback(err);
-      });
-    })
-  };
-
-
-  model.deleteAllPowerUsageHistory = function(id, callback) {
-    debug("deleteAllPowerUsageHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.powerUsageHistory.destroyAll(function(err) {
-        stone.currentPowerUsageId = undefined;
-        stone.save();
-        callback(err);
-      });
-    })
-  };
-
-  model.deleteAllSwitchStateHistory = function(id, callback) {
-    debug("deleteAllPowerUsageHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.switchStateHistory.destroyAll(function(err) {
-        stone.currentSwitchStateId = undefined;
-        stone.save();
-        callback(err);
-      });
-    })
-  };
-  model.deleteAllDiagnosticHistory = function(id, callback) {
-    debug("deleteAllDiagnosticHistory");
-    model.findById(id, function(err, stone) {
-      if (err) return callback(err);
-      if (model.checkForNullError(stone, callback, "id: " + id)) return;
-
-      stone.diagnostics.destroyAll(function(err) {
-        callback(err);
-      });
-    })
-  };
-
-  model.remoteMethod(
-    'deleteAllEnergyUsageHistory',
-    {
-      http: {path: '/:id/deleteAllEnergyUsageHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all energy usage history of this Stone"
-    }
-  );
-
-  model.remoteMethod(
-    'deleteAllPowerUsageHistory',
-    {
-      http: {path: '/:id/deleteAllPowerUsageHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all power usage history of this Stone"
-    }
-  );
-
-  model.remoteMethod(
-    'deleteAllSwitchStateHistory',
-    {
-      http: {path: '/:id/deleteAllSwitchStateHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all switch state history of this Stone"
-    }
-  );
-
-  model.remoteMethod(
-    'deleteAllDiagnosticHistory',
-    {
-      http: {path: '/:id/deleteAllDiagnosticHistory', verb: 'delete'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-      ],
-      description: "Delete all switch state history of this Stone"
-    }
-  );
+  // model.deleteAllEnergyUsageHistory = function(id, callback) {
+  //   debug("deleteAllEnergyUsageHistory");
+  //   model.findById(id, function(err, stone) {
+  //     if (err) return callback(err);
+  //     if (model.checkForNullError(stone, callback, "id: " + id)) return;
+  //
+  //     stone.energyUsageHistory.destroyAll(function(err) {
+  //       stone.currentEnergyUsageId = undefined;
+  //       stone.save();
+  //       callback(err);
+  //     });
+  //   })
+  // };
+  //
+  //
+  // model.deleteAllPowerUsageHistory = function(id, callback) {
+  //   debug("deleteAllPowerUsageHistory");
+  //   model.findById(id, function(err, stone) {
+  //     if (err) return callback(err);
+  //     if (model.checkForNullError(stone, callback, "id: " + id)) return;
+  //
+  //     stone.powerUsageHistory.destroyAll(function(err) {
+  //       stone.currentPowerUsageId = undefined;
+  //       stone.save();
+  //       callback(err);
+  //     });
+  //   })
+  // };
+  //
+  // model.deleteAllSwitchStateHistory = function(id, callback) {
+  //   debug("deleteAllPowerUsageHistory");
+  //   model.findById(id, function(err, stone) {
+  //     if (err) return callback(err);
+  //     if (model.checkForNullError(stone, callback, "id: " + id)) return;
+  //
+  //     stone.switchStateHistory.destroyAll(function(err) {
+  //       stone.currentSwitchStateId = undefined;
+  //       stone.save();
+  //       callback(err);
+  //     });
+  //   })
+  // };
+  //
+  // model.remoteMethod(
+  //   'deleteAllEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/deleteAllEnergyUsageHistory', verb: 'delete'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //     ],
+  //     description: "Delete all energy usage history of this Stone"
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'deleteAllPowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/deleteAllPowerUsageHistory', verb: 'delete'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //     ],
+  //     description: "Delete all power usage history of this Stone"
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'deleteAllSwitchStateHistory',
+  //   {
+  //     http: {path: '/:id/deleteAllSwitchStateHistory', verb: 'delete'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //     ],
+  //     description: "Delete all switch state history of this Stone"
+  //   }
+  // );
 
 
 
-  model.setSwitchStateRemotely = function(id, switchState, callback) {
+   model.setSwitchStateRemotely = function(stoneId, switchState, callback) {
     "use strict";
     debug("setSwitchStateRemotely");
-    model.findById(id)
-      .then((stone) => {
-        if (stone === null) {
-          callback("Could not find this stone.");
-          return;
-        }
 
-        if (stone.sphereId) {
-          let sphereModel = loopback.getModel("Sphere");
-          sphereModel.findById(stone.sphereId)
-            .then((sphere) => {
-              if (sphere) {
-                notificationHandler.notifySphereDevices(sphere, {
-                  type: 'setSwitchStateRemotely',
-                  data:{stoneId: id, sphereId: stone.sphereId, switchState: Math.max(0,Math.min(1,switchState)), command:'setSwitchStateRemotely'},
-                  silentAndroid: true,
-                  silentIOS: true
-                });
-              }
-              else {
-                throw 'No Sphere to notify';
-              }
-            });
-        }
+    let correctedLegacyState = Math.max(0,Math.min(1,switchState))
 
-        callback();
+    let stone;
+    let sphere;
+    let sphereModel = loopback.getModel("Sphere");
+    model.findById(stoneId)
+      .then((stoneResult) => {
+        if (!stoneResult) { throw util.unauthorizedError(); }
+        stone = stoneResult;
+
+        return sphereModel.findById(stone.sphereId)
+      })
+      .then((sphereResult) => {
+        if (!sphereResult) { throw "Invalid sphere." }
+        sphere = sphereResult;
+
+        let switchData = {};
+        switch (correctedLegacyState) {
+          case 0:
+            switchData['type'] = "TURN_OFF"; break;
+          case 1:
+            switchData['type'] = "TURN_ON"; break;
+          default:
+            switchData['type'] = "PERCENTAGE";
+            switchData['percentage'] = Math.round(100*correctedLegacyState);
+            break;
+        }
+        SphereIndexCache.bump(sphere.id);
+        let ssePacket = EventHandler.command.sendStoneMultiSwitch(sphere, [stone], {[stoneId]: switchData});
+        notificationHandler.notifySphereDevices(sphere, {
+          type: 'setSwitchStateRemotely',
+          data: {
+            event: ssePacket,
+            command: 'setSwitchStateRemotely',
+            stoneId: stoneId,
+            sphereId: sphere.id,
+            switchState: correctedLegacyState
+          },
+          silentAndroid: true,
+          silentIOS: true
+        });
+
+        callback(null);
       })
       .catch((err) => {
         callback(err);
-      });
+      })
   };
 
   model.remoteMethod(
@@ -906,20 +897,22 @@ module.exports = function(model) {
   );
 
 
-  model.getAllAccessibleCrownstones = function(options, next) {
+  model.getAllAccessibleCrownstones = function(filter, options, next) {
     if (options && options.accessToken) {
       let userId = options.accessToken.userId;
       // get get all sphereIds the user has access to.
       const sphereAccess = loopback.getModel("SphereAccess");
+
       sphereAccess.find({where: {userId: userId}, fields:{sphereId: true}})
         .then((results) => {
           let possibleIds = [];
           for (let i = 0; i < results.length; i++) {
             possibleIds.push(results[i].sphereId);
           }
-          let filter = {sphereId: {inq: possibleIds}};
+          let stoneFilter = {sphereId: {inq: possibleIds}};
+          let include = filter && filter.include || {}
 
-          return model.find({where: filter})
+          return model.find({where: stoneFilter, include: include})
         })
         .then((results) => {
           next(null, results);
@@ -935,6 +928,7 @@ module.exports = function(model) {
     {
       http: {path: '/all/', verb: 'GET'},
       accepts: [
+        {arg: 'filter', type: 'any', required: false, http: { source : 'query' }},
         {arg: "options", type: "object", http: "optionsFromRequest"},
       ],
       returns: {arg: 'data', type: '[Stone]', root: true},
@@ -942,7 +936,7 @@ module.exports = function(model) {
     }
   );
 
-  const getHistory = function (historyField, stoneId, from, to, limit, skip, ascending, next) {
+  const getHistory = function (historyField, stoneId, from, to, limit, skip, ascending, next, transform = false) {
     model.findById(stoneId, function(err, stone) {
       if (err) return next(err);
       if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
@@ -955,7 +949,13 @@ module.exports = function(model) {
 
       stone[historyField]({where: {timestamp: {between: [from, to]}}, limit: limit, skip: skip, order: ascending ? 'timestamp ASC' : 'timestamp DESC' })
         .then((result) => {
-          next(null, result);
+          if (transform === false) {
+            next(null, result);
+          }
+          else {
+            transform(result);
+            next(null, result);
+          }
         })
         .catch((err) => {
           next(err);
@@ -963,20 +963,49 @@ module.exports = function(model) {
     })
   };
 
-  model.getPowerUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
-    getHistory('powerUsageHistory', stoneId, from, to, limit, skip, ascending, next);
-  };
-
-  model.getEnergyUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
-    getHistory('energyUsageHistory', stoneId, from, to, limit, skip, ascending, next);
-  };
+  // model.getPowerUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+  //   getHistory('powerUsageHistory', stoneId, from, to, limit, skip, ascending, next);
+  // };
+  //
+  // model.getEnergyUsageHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+  //   getHistory('energyUsageHistory', stoneId, from, to, limit, skip, ascending, next);
+  // };
 
   model.getSwitchStateHistory = function(stoneId, from, to, limit, skip, ascending, next) {
     getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next);
   };
-  model.getDiagnosticsHistory = function(stoneId, from, to, limit, skip, ascending, next) {
-    getHistory('diagnostics', stoneId, from, to, limit, skip, ascending, next);
+
+  model.getSwitchStateHistory = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next, function(results) {
+      for (let i = 0; i < results.length; i++) {
+        if (results[i].switchState > 1) {
+          results[i].switchState = 0.01*results[i].switchState;
+        }
+      }
+    });
   };
+  model.getSwitchStateHistoryV2 = function(stoneId, from, to, limit, skip, ascending, next) {
+    getHistory('switchStateHistory', stoneId, from, to, limit, skip, ascending, next);
+  };
+
+  model.remoteMethod(
+    'getSwitchStateHistoryV2',
+    {
+      http: {path: '/:id/switchStateHistoryV2/', verb: 'GET'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+      ],
+      returns: {arg: 'data', type: '[SwitchState]', root: true},
+      description: 'Get an array of the known switch states of the specified Crownstone.' +
+        '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+        '\nTime is filtered like this: (from <= timestamp <= to).'
+    }
+  );
 
   model.remoteMethod(
     'getSwitchStateHistory',
@@ -997,62 +1026,43 @@ module.exports = function(model) {
     }
   );
 
-  model.remoteMethod(
-    'getEnergyUsageHistory',
-    {
-      http: {path: '/:id/energyUsageHistory/', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
-        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
-        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
-      ],
-      returns: {arg: 'data', type: '[EnergyUsage]', root: true},
-      description: 'Get an array of collected energy usage samples from the specified Crownstone.' +
-      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'getPowerUsageHistory',
-    {
-      http: {path: '/:id/powerUsageHistory/', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
-        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
-        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
-      ],
-      returns: {arg: 'data', type: '[PowerUsage]', root: true},
-      description: 'Get an array of collected power measurement samples from the specified Crownstone.' +
-      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'getDiagnosticsHistory',
-    {
-      http: {path: '/:id/diagnosticsHistory/', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
-        {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
-        {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
-      ],
-      returns: {arg: 'data', type: '[Diagnostic]', root: true},
-      description: 'Get an array of the gathered statistics of the specified Crownstone.' +
-      '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
-      '\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
+  // model.remoteMethod(
+  //   'getEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/energyUsageHistory/', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+  //       {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+  //       {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'data', type: '[EnergyUsage]', root: true},
+  //     description: 'Get an array of collected energy usage samples from the specified Crownstone.' +
+  //     '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+  //     '\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'getPowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/powerUsageHistory/', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'limit', type: 'number', required: false, default: 1000, http: { source : 'query' }},
+  //       {arg: 'skip', type: 'number', required: false, default: 0, http: { source : 'query' }},
+  //       {arg: 'ascending', type: 'boolean', required: true, default: true, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'data', type: '[PowerUsage]', root: true},
+  //     description: 'Get an array of collected power measurement samples from the specified Crownstone.' +
+  //     '\nLimit indicates the maximum amount of samples, it cannot currently be larger than 1000 (default).' +
+  //     '\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
 
   const countHistory = function(historyField, stoneId, from, to, next) {
     model.findById(stoneId, function(err, stone) {
@@ -1071,59 +1081,59 @@ module.exports = function(model) {
     })
   };
 
-  model.countPowerUsageHistory = function(stoneId, from, to, next) {
-    countHistory('powerUsageHistory', stoneId, from, to, next);
-  };
-
-  model.countEnergyUsageHistory = function(stoneId, from, to, next) {
-    countHistory('energyUsageHistory', stoneId, from, to, next);
-  };
+  // model.countPowerUsageHistory = function(stoneId, from, to, next) {
+  //   countHistory('powerUsageHistory', stoneId, from, to, next);
+  // };
+  //
+  // model.countEnergyUsageHistory = function(stoneId, from, to, next) {
+  //   countHistory('energyUsageHistory', stoneId, from, to, next);
+  // };
 
   model.countSwitchStateHistory = function(stoneId, from, to, next) {
     countHistory('switchStateHistory', stoneId, from, to, next);
   };
 
-  model.remoteMethod(
-    'countEnergyUsageHistory',
-    {
-      http: {path: '/:id/energyUsageHistory/count', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'countPowerUsageHistory',
-    {
-      http: {path: '/:id/powerUsageHistory/count', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
-
-  model.remoteMethod(
-    'countSwitchStateHistory',
-    {
-      http: {path: '/:id/switchStateHistory/count', verb: 'GET'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
-    }
-  );
+  // model.remoteMethod(
+  //   'countEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/energyUsageHistory/count', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'countPowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/powerUsageHistory/count', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'countSwitchStateHistory',
+  //   {
+  //     http: {path: '/:id/switchStateHistory/count', verb: 'GET'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: 'Get the amount of data points in between the from and to times.\nTime is filtered like this: (from <= timestamp <= to).'
+  //   }
+  // );
 
   const deleteHistory = function (historyField, stoneId, from, to, next) {
     model.findById(stoneId, function(err, stone) {
@@ -1143,46 +1153,46 @@ module.exports = function(model) {
     })
   };
 
-  model.deletePowerUsageHistory = function(stoneId, from, to, next) {
-    deleteHistory('powerUsageHistory', stoneId, from, to, next);
-  };
-
-  model.deleteEnergyUsageHistory = function(stoneId, from, to, next) {
-    deleteHistory('energyUsageHistory', stoneId, from, to, next);
-  };
+  // model.deletePowerUsageHistory = function(stoneId, from, to, next) {
+  //   deleteHistory('powerUsageHistory', stoneId, from, to, next);
+  // };
+  //
+  // model.deleteEnergyUsageHistory = function(stoneId, from, to, next) {
+  //   deleteHistory('energyUsageHistory', stoneId, from, to, next);
+  // };
 
   model.deleteSwitchStateHistory = function(stoneId, from, to, next) {
     deleteHistory('switchStateHistory', stoneId, from, to, next);
   };
 
-
-  model.remoteMethod(
-    'deleteEnergyUsageHistory',
-    {
-      http: {path: '/:id/energyUsageHistory', verb: 'DELETE'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
-    }
-  );
-
-  model.remoteMethod(
-    'deletePowerUsageHistory',
-    {
-      http: {path: '/:id/powerUsageHistory', verb: 'DELETE'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
-        {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
-      ],
-      returns: {arg: 'count', type: 'number', root: true},
-      description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
-    }
-  );
+  //
+  // model.remoteMethod(
+  //   'deleteEnergyUsageHistory',
+  //   {
+  //     http: {path: '/:id/energyUsageHistory', verb: 'DELETE'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
+  //   }
+  // );
+  //
+  // model.remoteMethod(
+  //   'deletePowerUsageHistory',
+  //   {
+  //     http: {path: '/:id/powerUsageHistory', verb: 'DELETE'},
+  //     accepts: [
+  //       {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'from', type: 'date', default: new Date(new Date().valueOf() - 24*7*3600*1000), required: false, http: { source : 'query' }},
+  //       {arg: 'to', type: 'date', default: new Date(new Date().valueOf() + 24*3600*1000), required: false, http: { source : 'query' }},
+  //     ],
+  //     returns: {arg: 'count', type: 'number', root: true},
+  //     description: "Delete all data points in between the from and to times.\n\nTime is filtered like this: (from <= timestamp <= to)."
+  //   }
+  // );
 
 
   model.remoteMethod(
@@ -1203,23 +1213,37 @@ module.exports = function(model) {
   model.setCurrentSwitchState = function(stoneId, switchState, next) {
     debug("setCurrentPowerUsage");
 
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+    model.findById(stoneId, {include: "currentSwitchState"})
+      .then((stone) => {
+        if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      model._setCurrentSwitchState(stone, {switchState: switchState}, next);
-    })
-
+        let currentSwitchState = stone.currentSwitchState()
+        if (currentSwitchState === null || switchState !== currentSwitchState.switchState) {
+          model._setCurrentSwitchState(stone, {switchState: switchState}, next);
+        }
+        else {
+          next(null);
+        }
+      })
+      .catch((err) => {
+        return next(err)
+      })
   };
 
   model._setCurrentSwitchState = function(stone, switchState, next) {
     debug("_setCurrentSwitchState");
+    if (switchState.switchState > 0 && switchState.switchState <= 1) {
+      switchState.switchState = Math.round(100*switchState.switchState);
+    }
+
     stone.switchStateHistory.create(switchState, function(err, switchStateInstance) {
       if (err) return next(err);
 
       if (switchStateInstance) {
         stone.currentSwitchStateId = switchStateInstance.id;
-        stone.save(function(err, stoneInstance) {
+        stone.save({blockUpdateEvent:true}, function(err, stoneInstance) {
+          EventHandler.dataChange.sendStoneSwitchOccurredBySphereId(stoneInstance.sphereId, stoneInstance, switchState.switchState);
+
           if (next) {
             if (err) return next(err);
             next(null, switchStateInstance);
@@ -1239,296 +1263,361 @@ module.exports = function(model) {
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
         {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
       ],
-      description: 'Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
+      description: 'LEGACY: Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
       '\n\nPossible values are between 0 and 1. 0 is off, 1 is on, between is dimming.'
     }
   );
 
+  model.remoteMethod(
+    'setCurrentSwitchState',
+    {
+      http: {path: '/:id/currentSwitchStateV2', verb: 'post'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'switchState', type: 'number', required: true, http: { source : 'query' }},
+      ],
+      description: 'Store the current switchState of a stone. This does not actually switch the Crownstone, it only stores the state.' +
+        '\n\nThe value is the percentage the Crownstone is on, which ranges from 0 to 100.'
+    }
+  );
 
-  model.setDiagnostics = function(stoneId, diagnosticData, next) {
-    debug("setDiagnostics");
+  function getCurrentSwitchState(stoneId, next, v2 = false) {
+    debug("getCurrentSwitchState");
+    model.findById(stoneId, { include: "currentSwitchState" })
+      .then((stone) => {
+        if (!stone) { return Util.unauthorizedError(); }
+        let currentSwitchState = stone.currentSwitchState();
 
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
+        if (currentSwitchState) {
+          if (v2 === false && currentSwitchState.switchState > 1) {
+            currentSwitchState.switchState = currentSwitchState.switchState * 0.01;
+          }
+          else if (v2 === true && currentSwitchState.switchState > 0 && currentSwitchState.switchState <= 1) {
+            currentSwitchState.switchState = currentSwitchState.switchState * 100;
+          }
 
-      diagnosticData.stoneId = stoneId;
-      diagnosticData.sphereId = stone.sphereId;
+          return next(null, currentSwitchState);
+        }
+        else {
+          next(null);
+        }
+      })
+      .catch((err) => {
+        return next(err);
+      })
+  };
 
-      stone.diagnostics.create(diagnosticData, function(err, instance) {
-        if (err) return next(err);
-        next(null, instance);
-      });
-    })
+  model.getCurrentSwitchState = function(stoneId, next) {
+    getCurrentSwitchState(stoneId, next, false);
+  };
+
+  model.getCurrentSwitchStateV2 = function(stoneId, next) {
+    getCurrentSwitchState(stoneId, next, true);
   };
 
   model.remoteMethod(
-    'setDiagnostics',
+    'getCurrentSwitchState',
     {
-      http: {path: '/:id/diagnostics', verb: 'post'},
+      http: {path: '/:id/currentSwitchState', verb: 'get'},
       accepts: [
         {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'data', type: 'Diagnostic', required: true, http: { source : 'body' }},
       ],
-      returns: {arg: 'data', type: 'Diagnostic', root: true},
-      description: 'Store diagnostic information about this Crownstone'
+      description: 'LEGACY: Retreive the last reported switch state of the Crownstone.' +
+        '\n\nPossible values are between 0 and 1. 0 is off, 1 is on, between is dimming.',
+      returns: {arg: 'data', type: 'SwitchState', root: true},
+    }
+  );
+
+  model.remoteMethod(
+    'getCurrentSwitchStateV2',
+    {
+      http: {path: '/:id/currentSwitchStateV2', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+
+      ],
+      description: 'Retreive the last reported switch state of the Crownstone.' +
+        '\n\nThe value is the percentage the Crownstone is on, which ranges from 0 to 100.',
+      returns: {arg: 'data', type: 'SwitchState', root: true},
     }
   );
 
 
-  model.activityLogBatch = function(stoneId, batchOfLogs, timestamp, options, next) {
-    let dt = new Date().valueOf() - ((timestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
-    if (Math.abs(dt) < 1000) {
-      dt = 0;
-    }
+  const ABILITY_TYPE = {
+    dimming:      "dimming",
+    switchcraft:  "switchcraft",
+    tapToToggle:  "tapToToggle",
+  };
 
-    if (!Array.isArray(batchOfLogs)) {
-      batchOfLogs = [batchOfLogs];
-    }
+  const ABILITY_PROPERTY_TYPE = {
+    dimming:      { softOnSpeed: 'softOnSpeed' },
+    switchcraft:  {},
+    tapToToggle:  { rssiOffset: 'rssiOffset' },
+  };
 
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
 
-      if (timestamp && timestamp > 0 && dt !== 0) {
-        for (let i = 0; i < batchOfLogs.length; i++) {
-          if (batchOfLogs[i].timestamp) {
-            // map the time to cloud time.
-            batchOfLogs[i].timestamp += dt;
-          }
-        }
+  /**
+   *
+   * @param stoneId     string
+   * @param data        { ABILITY_TYPE: {enabled: boolean, syncedToCrownstone: boolean, properties: [{type: ABILITY_PROPERTY_TYPE, value: any}]} }
+   * @param options
+   * @param callback
+   */
+  model.setAbilities = function(stoneId, data, options, callback) {
+    let abilitiesToSet = Object.keys(data);
+    for ( let i = 0; i < abilitiesToSet.length; i++) {
+      if (ABILITY_TYPE[abilitiesToSet[i]] === undefined) {
+        return callback({statusCode: 400, message: "Invalid ability: " + abilitiesToSet[i]})
       }
-
-      // create the new data in the database
-      stone.activityLog.create(batchOfLogs)
-        .then((insertResult) => {
-          next(null, insertResult)
-        })
-        .catch((err) => {
-          next(err);
-        })
-    })
-  }
-
-  model.remoteMethod(
-    'activityLogBatch',
-    {
-      http: {path: '/:id/activityLogBatch', verb: 'post'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'data', type: '[ActivityLog]', required: true, http: { source : 'body' }},
-        {arg: 'timestamp', type: 'number', required: false, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'data', type: '[ActivityLog]', root: true},
-      description: 'Store activity logs for this Crownstone'
-    }
-  );
-
-  model.getActivityLogs = function(stoneId, yourTimestamp, excludeUserId, sinceTimestamp, options, next) {
-    let dt = new Date().valueOf() - ((yourTimestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
-    if (Math.abs(dt) < 1000) {
-      dt = 0;
     }
 
-    let activityLogModel = loopback.getModel("ActivityLog")
-    let query = {where: {and: [{stoneId:stoneId}]}};
-    if (excludeUserId)  { query.where.and.push({userId:    {neq: excludeUserId}});  }
-    if (sinceTimestamp) { query.where.and.push({timestamp: {gte: sinceTimestamp - dt}}); }
-    activityLogModel.find(query)
-      .then((data) => {
-        if (yourTimestamp && yourTimestamp > 0 && dt !== 0) {
-          for (let i = 0; i < data.length; i++) {
-            // map the time to phone time
-            data[i].timestamp -= dt;
-          }
-        }
-        next(null, data)
+    const StoneAbilities = loopback.getModel("StoneAbility");
+    const StoneAbilityProperties = loopback.getModel("StoneAbilityProperty");
+
+    const createAbility = function(type, abilityData) {
+      return StoneAbilities.create({
+        type: type,
+        enabled: abilityData.enabled,
+        syncedToCrownstone: abilityData.syncedToCrownstone,
+        stoneId: stoneId,
+        sphereId: sphereId,
       })
-      .catch((err) => {
-        next(err);
-      })
-
-  }
-
-  model.remoteMethod(
-    'getActivityLogs',
-    {
-      http: {path: '/:id/activityLogs', verb: 'get'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'yourTimestamp', type: 'number', required: false, http: { source : 'query' }},
-        {arg: 'excludeUserId', type: 'string', required: false, http: { source : 'query' }},
-        {arg: 'sinceTimestamp', type: 'number', required: false, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'data', type: '[ActivityLog]', root: true},
-      description: 'Get last activity logs for this Crownstone'
-    }
-  );
-
-
-
-  model.remoteMethod(
-    'getActivityRanges',
-    {
-      http: {path: '/:id/activityRanges', verb: 'get'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'yourTimestamp', type: 'number', required: false, http: { source : 'query' }},
-        {arg: 'excludeUserId', type: 'string', required: false, http: { source : 'query' }},
-        {arg: 'sinceTimestamp', type: 'number', required: false, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'data', type: '[ActivityRange]', root: true},
-      description: 'Get last activity ranges for this Crownstone'
-    }
-  );
-
-  model.remoteMethod(
-    'activityRangeBatchCreate',
-    {
-      http: {path: '/:id/activityRangeBatch', verb: 'post'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'data', type: '[ActivityRange]', required: true, http: { source : 'body' }},
-        {arg: 'timestamp', type: 'number', required: false, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'data', type: '[ActivityRange]', root: true},
-      description: 'Get last activity ranges for this Crownstone'
-    }
-  );
-
-  model.remoteMethod(
-    'activityRangeBatchUpdate',
-    {
-      http: {path: '/:id/activityRangeBatch', verb: 'put'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'data', type: '[ActivityRange]', required: true, http: { source : 'body' }},
-        {arg: 'timestamp', type: 'number', required: false, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      description: 'Get last activity ranges for this Crownstone'
-    }
-  );
-
-
-  model.getActivityRanges = function(stoneId, yourTimestamp, excludeUserId, sinceTimestamp, options, next) {
-    let dt = new Date().valueOf() - ((yourTimestamp || 0) + 50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
-    if (Math.abs(dt) < 1000) {
-      dt = 0;
-    }
-
-    let activityRangeModel = loopback.getModel("ActivityRange")
-    let query = {where: {and: [{stoneId:stoneId}]}};
-    if (excludeUserId)  { query.where.and.push({userId:  {neq: excludeUserId}});  }
-    if (sinceTimestamp) { query.where.and.push({or:     [{lastDirectTime: {gte: sinceTimestamp - dt}}, {lastMeshTime: {gte: sinceTimestamp - dt}}]}); }
-    activityRangeModel.find(query)
-      .then((data) => {
-        if (yourTimestamp && yourTimestamp > 0 && dt !== 0) {
-          for (let i = 0; i < data.length; i++) {
-            // map the time to phone time
-            data[i].startTime -= dt;
-            if (data[i].lastDirectTime) { data[i].lastDirectTime -= dt; }
-            if (data[i].lastMeshTime)   { data[i].lastMeshTime   -= dt; }
-          }
-        }
-        next(null, data)
-      })
-      .catch((err) => {
-        next(err);
-      })
-
-  }
-
-  model.activityRangeBatchCreate = function(stoneId, batchOfRanges, timestamp, options, next) {
-    let dt = new Date().valueOf() - ((timestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
-    if (Math.abs(dt) < 1000) {
-      dt = 0;
-    }
-
-    if (!Array.isArray(batchOfRanges)) {
-      batchOfRanges = [batchOfRanges];
-    }
-
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      if (timestamp && timestamp > 0 && dt !== 0) {
-        for (let i = 0; i < batchOfRanges.length; i++) {
-          batchOfRanges[i].startTime += dt;
-          if (batchOfRanges[i].lastDirectTime) { batchOfRanges[i].lastDirectTime += dt; }
-          if (batchOfRanges[i].lastMeshTime)   { batchOfRanges[i].lastMeshTime   += dt; }
-        }
-      }
-
-      // create the new data in the database
-      stone.activityRange.create(batchOfRanges)
-        .then((insertResult) => {
-          next(null, insertResult)
-        })
-        .catch((err) => {
-          next(err);
-        })
-    })
-  }
-
-  model.activityRangeBatchUpdate = function(stoneId, batchOfRanges, timestamp, options, next) {
-    let dt = new Date().valueOf() - ((timestamp || 0)+50); // assuming a bit of travel time, say 50ms, this can be used to correct the activity log times across phones.
-    if (Math.abs(dt) < 1000) {
-      dt = 0;
-    }
-
-    if (!Array.isArray(batchOfRanges)) {
-      batchOfRanges = [batchOfRanges];
-    }
-
-    let activityRangeModel = loopback.getModel("ActivityRange")
-    model.findById(stoneId, function(err, stone) {
-      if (err) return next(err);
-      if (model.checkForNullError(stone, next, "id: " + stoneId)) return;
-
-      let idArray = [];
-      let batchMap = {}
-      for (let i = 0; i < batchOfRanges.length; i++) {
-        idArray.push(batchOfRanges[i].id)
-        batchMap[batchOfRanges[i].id] = batchOfRanges[i];
-      }
-
-      // create the new data in the database
-      activityRangeModel.find({where:{id:{inq:idArray}}})
-        .then((res) => {
-          if (res.length > 0) {
-            for (let i = 0; i < res.length; i++) {
-              let item = res[i];
-              let updatedItem = batchMap[item.id];
-              if (item.count !== updatedItem.count) {
-                item.count = updatedItem.count;
-                if (updatedItem.lastDirectTime) {
-                  item.lastDirectTime = updatedItem.lastDirectTime + dt;
-                }
-                if (updatedItem.lastMeshTime) {
-                  item.lastMeshTime = updatedItem.lastMeshTime + dt;
-                }
-                item.switchedToState = updatedItem.switchedToState;
-                item.delayInCommand  = updatedItem.delayInCommand;
-                item.save();
+        .then((newAbility) => {
+          let propertyLength = abilityData.properties && abilityData.properties.length || 0;
+          if (propertyLength.length > 0) {
+            let availableProperties = Object.keys(abilityData.properties);
+            for (let i = 0; i < availableProperties.length; i++) {
+              let prop = availableProperties[i];
+              if (ABILITY_PROPERTY_TYPE[prop.type] !== undefined) {
+                StoneAbilityProperties.create({
+                  type: prop.type,
+                  value: prop.value,
+                  abilityId: newAbility.id,
+                  sphereId: sphereId,
+                });
               }
             }
           }
-          next(null)
         })
-        .catch((err) => {
-          next(err);
+    }
+
+    const updateAbility = function(type, abilityData, existingAbility) {
+      existingAbility.type = type
+      existingAbility.enabled = abilityData.enabled;
+      existingAbility.syncedToCrownstone = abilityData.syncedToCrownstone;
+      existingAbility.updatedAt = abilityData.updatedAt;
+      let existingProperties = existingAbility.properties();
+      let existingPropertyLength = existingProperties.length || 0;
+      return existingAbility.save()
+        .then(() => {
+          let propertyLength = abilityData.properties && abilityData.properties.length || 0;
+
+          if (propertyLength > 0) {
+            // loop over existing ability properties to chech which to add or update.
+            for (let i = 0; i < propertyLength; i++) {
+              let found = false;
+              if (ABILITY_PROPERTY_TYPE[type][abilityData.properties[i].type] === undefined) {
+                continue;
+              }
+
+              for (let j = 0; j < existingPropertyLength; j++) {
+                if (abilityData.properties && abilityData.properties[i].type === existingProperties[j].type) {
+                  if (abilityData.properties[i].value !== existingProperties[j].value) {
+                    existingProperties[i].value = abilityData.properties[i].value;
+                    existingProperties[i].save();
+                  }
+                  found = true;
+                  break;
+                }
+              }
+
+              if (!found) {
+                StoneAbilityProperties.create({
+                  type: abilityData.properties[i].type,
+                  value: abilityData.properties[i].value,
+                  abilityId: existingAbility.id,
+                  sphereId: existingAbility.sphereId
+                });
+              }
+            }
+          }
         })
-    })
+    }
+
+
+    let stone = null;
+    let sphereId = null;
+    model.findById(stoneId, {fields:{sphereId:1}})
+      .then((stoneResult) => {
+        if (!stoneResult) { throw {statusCode: 404, message: "No stone with that ID."}}
+
+        stone = stoneResult;
+        sphereId = stone.sphereId;
+
+        return StoneAbilities.find({where:{stoneId: stoneId}, include: ["properties"]})
+      })
+      .then((abilities) => {
+        let promises = [];
+        if (abilities.length === 0) {
+          for (let i = 0; i < abilitiesToSet.length; i++) {
+            promises.push(createAbility(abilitiesToSet[i], data[abilitiesToSet[i]]));
+          }
+        }
+        else {
+          for (let i = 0; i < abilitiesToSet.length; i++) {
+            let found = false;
+            for (let j = 0; j < abilities.length; j++) {
+              if (abilities[j].type === abilitiesToSet[i]) {
+                if (found == true) {
+                  // THIS IS A DUPLICATE!
+                  StoneAbilities.destroyById(abilities[j].id);
+                }
+                else {
+                  found = true;
+                  promises.push(updateAbility(abilitiesToSet[i], data[abilitiesToSet[i]], abilities[j]));
+                }
+              }
+            }
+          }
+        }
+        return Promise.all(promises);
+      })
+      .then(() => {
+        callback();
+      })
+      .catch((err) => {
+        callback(err);
+      })
   }
 
+  model.getAbilities = function(stoneId, options, next) {
+    const StoneAbilities = loopback.getModel("StoneAbility");
+
+    // hack to only allow the newest app access to the abilities. Will be removed later on.
+    Util.deviceIsMinimalVersion(options, "4.1.0")
+      .then((result) => {
+        if (result) {
+          return StoneAbilities.find({where: {stoneId: stoneId}}, {include: "properties"})
+            .then((data) => { next(null, data); })
+        }
+        else {
+          next(null,[]);
+        }
+      })
+      .catch((err) => {
+        next(err);
+      })
+  }
+
+
+  model.remoteMethod(
+    'setAbilities',
+    {
+      http: {path: '/:id/abilities', verb: 'put'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data', type: 'any', required: true, http: { source : 'body' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      description: 'Set or update the abilities of this Stone. The format of data here is: \n' +
+        '{ ABILITY_TYPE: { enabled: boolean, syncedToCrownstone: boolean, properties: [ { type: ABILITY_PROPERTY_TYPES, value: any} ] } }'
+    }
+  );
+
+  model.remoteMethod(
+    'getAbilities',
+    {
+      http: {path: '/:id/abilities', verb: 'get'},
+      accepts: [
+        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
+        {arg: "options", type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: '[StoneAbility]', root: true},
+      description: 'Get the abilities of this Stone.'
+    }
+  );
+
+  model.setSwitchStateV2 = function(stoneId, switchData, options, callback) {
+    if (switchData && switchData.type && switchData.type !== 'PERCENTAGE' && switchData.type !== "TURN_ON" && switchData.type !== "TURN_OFF") {
+      return callback("Type of SwitchData can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
+    }
+
+    if (switchData && !switchData.type) {
+      return callback("SwitchData have a type: it can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
+    }
+
+    if (switchData && switchData.type === "PERCENTAGE" && (switchData.percentage === undefined || (switchData.percentage > 0 && switchData.percentage <=1) || switchData.percentage < 0 || switchData.percentage > 100)) {
+      return callback("SwitchData with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
+    }
+
+    if (switchData && switchData.type === "PERCENTAGE" && (switchData.percentage > 0 && switchData.percentage < 10)) {
+      return callback("Dimming below 10% is not allowed.");
+    }
+
+    let stone = null;
+    let sphere = null;
+    let switchStateLegacy = 0;
+    let sphereModel = loopback.getModel("Sphere");
+    model.findById(stoneId)
+      .then((stoneResult) => {
+        if (!stoneResult) { throw util.unauthorizedError(); }
+        stone = stoneResult;
+
+        return sphereModel.findById(stone.sphereId)
+      })
+      .then((sphereResult) => {
+        if (!sphereResult) { throw "Invalid sphere." }
+        sphere = sphereResult;
+        switch (switchData.type) {
+          case "PERCENTAGE":
+            switchStateLegacy = 0.01 * switchData.percentage;
+            break;
+          case "TURN_ON":
+            switchStateLegacy = 1;
+            break;
+          case "TURN_OFF":
+            switchStateLegacy = 0;
+            break;
+        }
+        SphereIndexCache.bump(sphere.id);
+        let ssePacket = EventHandler.command.sendStoneMultiSwitch(sphere, [stone], {[stoneId]: switchData});
+        notificationHandler.notifySphereDevices(sphere, {
+          type: 'setSwitchStateRemotely',
+          data: {
+            event: ssePacket,
+            command: 'setSwitchStateRemotely',
+            stoneId: stoneId,
+            sphereId: sphere.id,
+            switchState: Math.max(0, Math.min(1, switchStateLegacy))
+          },
+          silentAndroid: true,
+          silentIOS: true
+        });
+
+        callback(null);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  }
+
+
+  model.remoteMethod(
+    'setSwitchStateV2',
+    {
+      http: {path: '/:id/switch', verb: 'post'},
+      accepts: [
+        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'switchData',    type: 'SwitchData',  required:true, http: {source:'body'}},
+        {arg: "options",       type: "object", http: "optionsFromRequest"},
+      ],
+      description: "BETA: Switch Crownstone. Dimming below 10% is not allowed."
+    }
+  );
 };
 
+
+let SwitchDataDefinition = "{ type: 'PERCENTAGE' | 'TURN_ON' | 'TURN_OFF', percentage?: number }"
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

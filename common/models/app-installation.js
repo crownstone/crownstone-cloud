@@ -1,7 +1,5 @@
 "use strict";
 
-const Util = require("./sharedUtil/util");
-
 module.exports = function(model) {
 
   let app = require('../../server/server');
@@ -79,4 +77,5 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('replaceOrCreate');           // disable POST	    api/model/replaceOrCreate
 
   model.disableRemoteMethodByName('prototype.__get__device');
+
 };

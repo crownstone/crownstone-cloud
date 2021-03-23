@@ -1,5 +1,7 @@
 "use strict";
 
+const util = require("../../common/models/sharedUtil/util")
+
 /**
  * A note about process.nextTick()
     In the code here, we wrap some callback invocations in process.nextTick(()=> cb(...)), but not others. Why?
@@ -20,42 +22,82 @@ const authorizationError = {
 
 module.exports = function(app) {
   let Role = app.models.Role;
-  Role.registerResolver('lib-user', function(role, context, callback) {
-    function reject() {
-      process.nextTick(function() {
-        callback(null, false);
-      });
-    }
-
-    let userId = context.accessToken.userId;
-    if (!userId) {
-      return reject(); // do not allow anonymous users
-    }
-
-    app.models.user.findById(userId, function(err, user) {
-      if (err) {
-        reject(err);
-      }
-      else {
-        if (user && user.role) {
-          callback(null, user.role === 'lib-user');
-        }
-        else {
-          callback(null, false);
-        }
-      }
-    });
-  });
+  Role.registerResolver('lib-user', function(role, context, callback) { isLibUser(app, role, context, callback); });
+  Role.registerResolver('$owner', function(role, context, callback) { isUserOwner(app, role, context, callback); });
 
   Role.registerResolver('$group:admin',  function(role, context, callback) { verifyRoleInSphere(app, { admin:  true },  context, callback); });
   Role.registerResolver('$group:member', function(role, context, callback) { verifyRoleInSphere(app, { member: true },  context, callback); });
   Role.registerResolver('$group:guest',  function(role, context, callback) { verifyRoleInSphere(app, { guest:  true },  context, callback); }); // legacy
+  Role.registerResolver('$group:hub',    function(role, context, callback) { verifyRoleInSphere(app, { hub:    true },  context, callback); });
+  // Role.registerResolver('$group:basic',  function(role, context, callback) { verifyRoleInSphere(app, { basic:  true },  context, callback); });
+  Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner( app, context, callback); });
+
   Role.registerResolver('$project:admin',    function(role, context, callback) { verifyRoleInProject(app,{ admin:     true }, context, callback); });
   Role.registerResolver('$project:installer',function(role, context, callback) { verifyRoleInProject(app,{ installer: true }, context, callback); });
   Role.registerResolver('$project:viewer',   function(role, context, callback) { verifyRoleInProject(app,{ viewer:    true }, context, callback); });
-  // Role.registerResolver('$group:basic',  function(role, context, callback) { verifyRoleInSphere(app, { basic:  true },  context, callback); });
-  Role.registerResolver('$device:owner', function(role, context, callback) { verifyDeviceOwner( app, context, callback); });
+
 };
+
+function isUserOwner(app, role, context, callback) {
+  let userId        = context.accessToken.userId;
+  let principalType = context.accessToken.principalType;
+
+  // the hub does not OWN anything. Only users OWN things.
+  if (principalType === 'Hub') {
+    return callback(null, false);
+  }
+  else {
+    if (!context.modelId) { return callback(null, false); }
+
+    context.model.findById(context.modelId,{fields:{id: true, ownerId:true}})
+      .then((result) => {
+        if (!result) { throw "no data"; }
+        // only the user model has no owner, but uses the id to refer to the user.
+        if (result.ownerId === undefined && context.modelName !== 'user') {
+          throw "no owner"
+        }
+        else if (result.ownerId === undefined) {
+          callback(null, String(userId) === String(result.id));
+        }
+        else {
+          callback(null, String(userId) === String(result.ownerId));
+        }
+      })
+      .catch((err) => {
+        callback(null, false);
+      })
+  }
+
+
+
+}
+
+function isLibUser(app, role, context, callback) {
+  function reject() {
+    process.nextTick(function() {
+      callback(null, false);
+    });
+  }
+
+  let userId = context.accessToken.userId;
+  if (!userId) {
+    return reject(); // do not allow anonymous users
+  }
+
+  app.models.user.findById(userId, function(err, user) {
+    if (err) {
+      reject(err);
+    }
+    else {
+      if (user && user.role) {
+        callback(null, user.role === 'lib-user');
+      }
+      else {
+        callback(null, false);
+      }
+    }
+  });
+}
 
 
 /**
@@ -151,7 +193,8 @@ function verifyRoleInProject(app, accessMap, context, callback) {
  */
 function verifyRoleInSphere(app, accessMap, context, callback) {
   // check if user is logged in
-  let userId = context.accessToken.userId;
+  let userId        = context.accessToken.userId;
+  let principalType = context.accessToken.principalType;
 
   // do not allow anonymous users
   if (!userId) {
@@ -163,7 +206,7 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
 
   // in case of get/X we have to get the sphere for each i suppose...
   if (context.modelId === undefined) {
-    if (context.accessType === 'READ' && (context.modelName === 'Stone' || context.modelName === 'Location' || context.modelName === 'Appliance')) {
+    if (context.accessType === 'READ' && (context.modelName === 'Stone' || context.modelName === 'Location' || context.modelName === 'Hub')) {
       return callback(null, true);
     }
     else {
@@ -171,26 +214,66 @@ function verifyRoleInSphere(app, accessMap, context, callback) {
     }
   }
 
-  // check if the model has a sphereId
-  getSphereId(app, context)
-    .then((result) => {
-      if (result) {
-        return app.models.SphereAccess.findOne({where:{and: [{userId: userId}, {sphereId: result}]}});
-      }
-      else { throw "No Sphere Id"; }
-    })
-    // check if and what kind of access the user has to this sphere.
-    .then((access) => {
-      if (access && access.role && accessMap[access.role] === true) {
-        callback(null, true);
-      }
-      else {
-        callback(null, false);
-      }
-    })
-    .catch((err) => {
-      callback(err, false);
-    })
+  // check for principalType to differentiate between hub and user
+  if (principalType === 'Hub') {
+    let sphereId = null;
+    getSphereId(app, context)
+      .then((sphereIdResult) => {
+        if (sphereIdResult) {
+          sphereId = sphereIdResult;
+          return app.models.Hub.findById(userId);
+        }
+        else { throw "No Sphere Id"; }
+      })
+      .then((hub) => {
+        if (!hub) { throw util.unauthorizedError() }
+
+        if (String(sphereId) == String(hub.sphereId)) {
+          if (accessMap.hub === true) {
+            // check if this hub has access. A user might have changed the hubId...
+            return app.models.SphereAccess.findOne({where:{and: [{userId: userId}, {sphereId: sphereId}, {role:'hub'}]}})
+              .then((access) => {
+                if (access) { callback(null, true);  }
+                else        { callback(null, false); }
+              })
+          }
+          else {
+            callback(null, false);
+          }
+        }
+        else {
+          callback(null, false);
+        }
+      })
+      .catch((err) => {
+        callback(err, false);
+      })
+  }
+  else {
+    // check if the model has a sphereId
+    getSphereId(app, context)
+      .then((result) => {
+        if (result) {
+          return app.models.SphereAccess.findOne({where:{and: [{userId: userId}, {sphereId: result}]}});
+        }
+        else { throw "No Sphere Id"; }
+      })
+      // check if and what kind of access the user has to this sphere.
+      .then((access) => {
+        if (access && access.role && accessMap[access.role] === true) {
+          callback(null, true);
+        }
+        else {
+          callback(null, false);
+        }
+      })
+      .catch((err) => {
+        callback(err, false);
+      })
+
+  }
+
+
 }
 
 function getSphereId(app, context) {

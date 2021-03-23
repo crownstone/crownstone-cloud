@@ -51,10 +51,9 @@
       "foreignKey": "triggerLocationId"
     },
     "stones": {
-      "type": "hasAndBelongsToMany",
+      "type": "hasMany",
       "model": "Stone",
-      "foreignKey": "locationId",
-      "through": "StoneLocation"
+      "foreignKey": "locationId"
     },
     "presentPeople": {
       "type": "hasMany",

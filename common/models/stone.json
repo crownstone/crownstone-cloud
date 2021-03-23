@@ -41,10 +41,6 @@
     "type": {
       "type": "string"
     },
-    "dimmingEnabled": {
-      "type": "boolean",
-      "default": false
-    },
     "deviceType": {
       "type": "string"
     },
@@ -60,15 +56,6 @@
     "icon": {
       "type": "string"
     },
-    "json": {
-      "type": "string"
-    },
-    "touchToToggle": {
-      "type": "boolean"
-    },
-    "tapToToggle": {
-      "type": "boolean"
-    },
     "lastSeenAt": {
       "type": "date"
     },
@@ -81,20 +68,11 @@
     "hardwareVersion": {
       "type": "string"
     },
-    "onlyOnWhenDark": {
-      "type": "boolean"
-    },
     "hidden": {
       "type": "boolean"
     },
     "locked": {
       "type": "boolean"
-    },
-    "switchCraft": {
-      "type": "boolean"
-    },
-    "meshDeviceKey": {
-      "type": "string"
     },
     "addedBySubProject": {
       "type":"boolean",
@@ -114,59 +92,29 @@
       "foreignKey": "stoneId",
       "through": "StoneLocation"
     },
-    "currentPowerUsage": {
-      "type": "belongsTo",
-      "model": "PowerUsage",
-      "foreignKey": "currentPowerUsageId"
-    },
-    "powerUsageHistory": {
+    "energyUsage": {
       "type": "hasMany",
-      "model": "PowerUsage",
-      "foreignKey": "stoneId"
-    },
-    "currentEnergyUsage": {
-      "type": "belongsTo",
       "model": "EnergyUsage",
-      "foreignKey": "currentEnergyUsageId"
+      "foreignKey": "stoneId"
     },
     "currentSwitchState": {
       "type": "belongsTo",
       "model": "SwitchState",
       "foreignKey": "currentSwitchStateId"
     },
-    "energyUsageHistory": {
-      "type": "hasMany",
-      "model": "EnergyUsage",
-      "foreignKey": "stoneId"
-    },
-    "appliance": {
-      "type": "belongsTo",
-      "model": "Appliance",
-      "foreignKey": "applianceId"
-    },
-    "schedules": {
-      "type": "hasMany",
-      "model": "Schedule",
-      "foreignKey": "stoneId"
-    },
     "switchStateHistory": {
       "type": "hasMany",
       "model": "SwitchState",
       "foreignKey": "stoneId"
     },
-    "activityLog": {
+    "abilities": {
       "type": "hasMany",
-      "model": "ActivityLog",
+      "model": "StoneAbility",
       "foreignKey": "stoneId"
     },
-    "activityRange": {
+    "behaviours": {
       "type": "hasMany",
-      "model": "ActivityRange",
-      "foreignKey": "stoneId"
-    },
-    "diagnostics": {
-      "type": "hasMany",
-      "model": "Diagnostic",
+      "model": "StoneBehaviour",
       "foreignKey": "stoneId"
     }
   },

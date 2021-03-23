@@ -2,7 +2,8 @@
 
 let loopback = require('loopback');
 const idUtil = require('./sharedUtil/idUtil');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
+const EventHandler = require('../../server/modules/EventHandler');
 
 module.exports = function(model) {
 
@@ -139,6 +140,8 @@ module.exports = function(model) {
 	model.disableRemoteMethodByName('prototype.__destroyById__presentPeople');
 	model.disableRemoteMethodByName('prototype.__create__presentPeople');
 	model.disableRemoteMethodByName('prototype.__delete__presentPeople');
+	model.disableRemoteMethodByName('prototype.__count__presentPeople');
+	model.disableRemoteMethodByName('prototype.__get__presentPeople');
 
   // model.disableRemoteMethodByName('prototype.__get__fingerprints');
   model.disableRemoteMethodByName('prototype.__count__fingerprints');
@@ -164,6 +167,18 @@ module.exports = function(model) {
 
 
   model.observe('before save', initLocation);
+  model.observe('after save', afterSave);
+
+  function afterSave(ctx,next) {
+    let location = ctx.instance;
+    if (ctx.isNewInstance) {
+      EventHandler.dataChange.sendLocationCreatedEventBySphereId(location.sphereId, location);
+    }
+    else {
+      EventHandler.dataChange.sendLocationUpdatedEventBySphereId(location.sphereId, location);
+    }
+    next();
+  }
 
   function initLocation(ctx, next) {
     debug("initLocation");
@@ -256,10 +271,24 @@ module.exports = function(model) {
 	 **** Cascade
 	 ************************************/
 
-	// if the sphere is deleted, delete also all files stored for this sphere
+	// if the location is deleted, delete also all files stored for this sphere
 	model.observe('before delete', function(context, next) {
-		model.deleteImage(context.where.id, {}, function() {
-			next();
+	  let locationId = context.where.id;
+	  let and = context.where.and;
+	  if (and && Array.isArray(and) && and.length > 0 && and[0] && and[0].id) {
+	    locationId = and[0].id;
+    }
+		model.deleteImage(locationId, {}, function(err) {
+		  model.findById(locationId)
+        .then((location) => {
+          if (location) {
+            return EventHandler.dataChange.sendLocationDeletedEventBySphereId(location.sphereId, location);
+          }
+        })
+        .then(() => {
+          next()
+        })
+        .catch((err) => { next();})
 		});
 	});
 

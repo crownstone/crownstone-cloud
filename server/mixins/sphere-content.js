@@ -1,5 +1,6 @@
 "use strict";
 let loopback = require('loopback');
+let util = require("../../common/models/sharedUtil/util")
 
 module.exports = function(model, options) {
 
@@ -10,7 +11,7 @@ module.exports = function(model, options) {
 	// define the belongTo relation to the Sphere. this is necessary to
 	// distinguish SphereContent and decide who has access to what content
 	var Sphere = require("loopback").getModel("Sphere");
-	model.belongsTo(Sphere, { foreignKey: "sphereId", as: "owner"});
+	model.belongsTo(Sphere, { foreignKey: "sphereId", as: "owner" });
 
 
   /**
@@ -21,28 +22,49 @@ module.exports = function(model, options) {
 		if (context.options && context.options.accessToken) {
 			// TODO: only when required.
       let userId = context.options.accessToken.userId;
-      // get get all sphereIds the user has access to.
-      const sphereAccess = loopback.getModel("SphereAccess");
-      sphereAccess.find({where: {userId: userId}, fields:{sphereId: true}})
-        .then((results) => {
-          let possibleIds = [];
-          for (let i = 0; i < results.length; i++) {
-            possibleIds.push(results[i].sphereId);
-          }
-          let filter = {sphereId: {inq: possibleIds}};
-          const where = context.query.where ? { and: [ context.query.where, filter ] } : filter;
-          context.query.where = where;
+      let principalType = context.options.accessToken.principalType;
 
-          callback();
-        })
-        .catch((err) => {
-          callback(err);
-        })
-    }
-    else {
-			callback();
-		}
+      let hubModel = loopback.getModel("Hub");
 
+      // check for principalType to differentiate between hub and user
+      if (principalType === 'Hub') {
+        hubModel.findById(userId)
+          .then((hub) => {
+            if (!hub) {
+               throw util.unauthorizedError()
+            }
+            let filter = {sphereId: hub.sphereId};
+            const where = context.query.where ? { and: [ context.query.where, filter ] } : filter;
+            context.query.where = where;
+
+            callback();
+          })
+          .catch((err) => {
+            callback(err);
+          })
+      }
+      else {
+        // get get all sphereIds the user has access to.
+        const sphereAccess = loopback.getModel("SphereAccess");
+        sphereAccess.find({where: {userId: userId}, fields:{sphereId: true}})
+          .then((results) => {
+            let possibleIds = [];
+            for (let i = 0; i < results.length; i++) {
+              possibleIds.push(results[i].sphereId);
+            }
+            let filter = {sphereId: {inq: possibleIds}};
+            const where = context.query.where ? { and: [ context.query.where, filter ] } : filter;
+            context.query.where = where;
+            callback();
+          })
+          .catch((err) => {
+            callback(err);
+          })
+        }
+      }
+      else {
+        callback();
+      }
 	});
 
 	// define access rules based on the sphere roles. define here all rules
@@ -89,6 +111,15 @@ module.exports = function(model, options) {
 				"permission": "ALLOW"
 			}
 		);
+
+    model.settings.acls.push(
+      {
+        "accessType": "*",
+        "principalType": "ROLE",
+        "principalId": "$group:hub",
+        "permission": "ALLOW"
+      }
+    );
 
 		//////////////////////////////////
 		/// GUEST
@@ -146,3 +177,4 @@ module.exports = function(model, options) {
 		);
 	}
 }
+

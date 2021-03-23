@@ -4,5 +4,6 @@ module.exports = {
   ToonIntegration: {
     clientId:     process.env.TOON_CLIENT_ID,
     clientSecret: process.env.TOON_CLIENT_SECRET
-  }
+  },
+  SSEToken: process.env.CROWNSTONE_CLOUD_SSE_TOKEN
 };

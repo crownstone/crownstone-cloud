@@ -1,7 +1,7 @@
 "use strict";
 
 const loopback = require('loopback');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 const versionUtil = require('../../server/util/versionUtil');
 
 let hardwareVersions = require("../../server/constants/hardwareVersions");
@@ -41,17 +41,28 @@ module.exports = function(model) {
 
 
   model.getBootloader = function(version, hardwareVersion, callback) {
-    model.findOne({where: {version: version}})
-      .then((result) => {
-        // check if the hardware version is supported by this bootloader
-        if (result && result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
-          for (let i = 0; i < result.supportedHardwareVersions.length; i++) {
-            if (result.supportedHardwareVersions[i] === hardwareVersion) {
-              return callback(null, result);
+    hardwareVersion = hardwareVersion.substr(0,11);
+    model.find({where: {version: version}})
+      .then((bootloaders) => {
+        if (bootloaders.length === 0) {
+          return callback(null, []);
+        }
+        let foundBootloader = false;
+        for (let i = 0; i < bootloaders.length; i++) {
+          let bootloader = bootloaders[i];
+          // check if the hardware version is supported by this bootloader
+          if (bootloader && bootloader.supportedHardwareVersions && Array.isArray(bootloader.supportedHardwareVersions)) {
+            for (let j = 0; j < bootloader.supportedHardwareVersions.length; j++) {
+              if (bootloader.supportedHardwareVersions[j] === hardwareVersion) {
+                foundBootloader = bootloader;
+                break;
+              }
             }
           }
-          // nothing found.
-          callback(null, []);
+        }
+
+        if (foundBootloader !== null) {
+          callback(null, foundBootloader);
         }
         else {
           callback(null, []);
@@ -89,7 +100,6 @@ module.exports = function(model) {
 
   const getBootloader = (appVersion, options, callback, filterOptions = {}) => {
     let hwVersions = hardwareVersions.util.getAllVersions();
-
     let accessLevel = 0;
     new Promise((resolve, reject) => {
       if (options && options.accessToken && options.accessToken.userId) {
@@ -113,6 +123,7 @@ module.exports = function(model) {
       })
       .then((results) => {
         let filteredByAppVersion = [];
+        // FILTER BY APP VERSION
         if (appVersion) {
           results.forEach((result) => {
             if (versionUtil.isHigherOrEqual(appVersion, result.minimumAppVersion) || !result.minimumAppVersion) {
@@ -140,7 +151,7 @@ module.exports = function(model) {
           hwVersions.forEach((hwVersion) => {
             let latestVersion = '0.0.0';
             bootloaderForHardwareVersions[hwVersion].forEach((entry) => {
-              if (versionUtil.isHigher(entry.version, '0.0.0')) {
+              if (versionUtil.isHigher(entry.version, latestVersion)) {
                 latestVersion = entry.version;
               }
             });

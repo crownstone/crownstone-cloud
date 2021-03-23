@@ -1,7 +1,7 @@
 "use strict";
 
 const loopback = require('loopback');
-const debug = require('debug')('loopback:dobots');
+const debug = require('debug')('loopback:crownstone');
 const versionUtil = require('../../server/util/versionUtil');
 
 
@@ -43,22 +43,33 @@ module.exports = function(model) {
 
 
   model.getFirmware = function(version, hardwareVersion, callback) {
-    model.findOne({where: {version: version}})
-			.then((result) => {
-        // check if the hardware version is supported by this firmware
-        if (result && result.supportedHardwareVersions && Array.isArray(result.supportedHardwareVersions)) {
-          for (let i = 0; i < result.supportedHardwareVersions.length; i++) {
-            if (result.supportedHardwareVersions[i] === hardwareVersion) {
-              return callback(null, result);
+    hardwareVersion = hardwareVersion.substr(0,11);
+    model.find({where: {version: version}})
+      .then((firmwares) => {
+        if (firmwares.length === 0) {
+          return callback(null, []);
+        }
+        let foundBootloader = false;
+        for (let i = 0; i < firmwares.length; i++) {
+          let firmware = firmwares[i];
+          // check if the hardware version is supported by this bootloader
+          if (firmware && firmware.supportedHardwareVersions && Array.isArray(firmware.supportedHardwareVersions)) {
+            for (let j = 0; j < firmware.supportedHardwareVersions.length; j++) {
+              if (firmware.supportedHardwareVersions[j] === hardwareVersion) {
+                foundBootloader = firmware;
+                break;
+              }
             }
           }
-          // nothing found.
-          callback(null, null);
+        }
+
+        if (foundBootloader !== null) {
+          callback(null, foundBootloader);
         }
         else {
-          callback(null, null);
+          callback(null, []);
         }
-			})
+      })
 			.catch((err) => {
         callback(err)
       })
@@ -91,7 +102,6 @@ module.exports = function(model) {
 
   const getFirmware = (appVersion, options, callback, filterOptions = {}) => {
     let hwVersions = hardwareVersions.util.getAllVersions();
-
     let accessLevel = 0;
     new Promise((resolve, reject) => {
       if (options && options.accessToken && options.accessToken.userId) {
@@ -142,7 +152,7 @@ module.exports = function(model) {
           hwVersions.forEach((hwVersion) => {
             let latestVersion = '0.0.0';
             firmwareForHardwareVersions[hwVersion].forEach((entry) => {
-              if (versionUtil.isHigher(entry.version, '0.0.0')) {
+              if (versionUtil.isHigher(entry.version, latestVersion)) {
                 latestVersion = entry.version;
               }
             });
