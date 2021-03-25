@@ -137,7 +137,7 @@ module.exports = function(model) {
   model.reportFailedCrownstone = function(subProjectId, number, options, callback) {
     model.findById(subProjectId)
       .then((subProject) => {
-        subProject.numberOfFailedCrownstones = subProject.totalNumberOfPreparedCrownstones + number;
+        subProject.numberOfFailedCrownstones = subProject.numberOfFailedCrownstones + number;
         return subProject.save();
       })
       .then(() => { callback(null); })
@@ -258,7 +258,6 @@ module.exports = function(model) {
           sphereKeys: JSON.parse(subProject.sphereKeys),
           sphereUid: sphere.uid,
           sphereIBeaconUUID: sphere.uuid,
-          legacyMeshAccessAddress: sphere.meshAccessAddress,
           stoneIBeaconMajor: stone.major,
           stoneIBeaconMinor: stone.minor,
           stoneUid: stone.uid,
