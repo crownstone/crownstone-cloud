@@ -110,10 +110,6 @@
     "dataSource": "filesDs",
     "public": true
   },
-  "Appliance": {
-    "dataSource": "mongoDs",
-    "public": false
-  },
   "AppInstallation": {
     "dataSource": "mongoDs",
     "public": true
@@ -169,14 +165,6 @@
   "Position": {
     "dataSource": "mongoDs",
     "public": false
-  },
-  "ActivityLog": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
-  "ActivityRange": {
-    "dataSource": "mongoDs",
-    "public": true
   },
   "Toon": {
     "dataSource": "mongoDs",

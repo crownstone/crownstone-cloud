@@ -58,27 +58,6 @@ module.exports = function(model) {
       }
     );
 
-    //***************************
-    // OWNER:
-    //   - everything
-    //***************************
-    model.settings.acls.push(
-      {
-        "accessType": "*",
-        "principalType": "ROLE",
-        "principalId": "$owner",
-        "permission": "ALLOW"
-      }
-    );
-
-    // model.settings.acls.push(
-    //   {
-    //     "principalType": "ROLE",
-    //     "principalId": "$owner",
-    //     "permission": "DENY",
-    //     "property": 'processMeasurements'
-    //   }
-    // );
 
     //***************************
     // ADMIN:
@@ -102,14 +81,6 @@ module.exports = function(model) {
     //   }
     // );
 
-    // model.settings.acls.push(
-    // 	{
-    // 		"principalType": "ROLE",
-    // 		"principalId": "$group:admin",
-    // 		"permission": "DENY",
-    // 		"property": "changeOwnership"
-    // 	}
-    // );
 
     //***************************
     // MEMBER:
@@ -221,14 +192,6 @@ module.exports = function(model) {
         "principalId": "$group:member",
         "permission": "DENY",
         "property": "changeRole"
-      }
-    );
-    model.settings.acls.push(
-      {
-        "principalType": "ROLE",
-        "principalId": "$group:member",
-        "permission": "DENY",
-        "property": "changeOwnership"
       }
     );
     model.settings.acls.push(
@@ -427,7 +390,6 @@ module.exports = function(model) {
    **** Model Validation
    ************************************/
 
-  model.validatesUniquenessOf('name', {scopedTo: ['ownerId'], message: 'a sphere with this name was already added'});
   model.validatesUniquenessOf('uuid', {message: 'a sphere with this UUID was already added'});
 
   /************************************
@@ -444,37 +406,30 @@ module.exports = function(model) {
       if (err) return next(err);
       if (!user) return next();
 
-      if (String(user.id) === String(sphere.ownerId)) {
-        let error = new Error("Can't remove owner from sphere");
-        error.statusCode = error.status = 409;
-        return next(error);
-      }
-      else {
-        // we collect the users because we need the userIds of all users in the sphere, including the one whos is about to be deleted.
-        // this promise takes care of a race condition where the user is deleted before we get his id.
-        notificationHandler.collectSphereUsers(String(sphere.id))
-          .then((users) => {
-            let payload = {
-              data: {
-                sphereId: String(sphere.id),
-                command: "sphereUserRemoved",
-                removedUserId: String(user.id)
-              },
-              silent: true
-            };
-            // tell other people in the sphere to refresh their sphere user list.
-            notificationHandler.notifyUsers( users, payload );
-            next();
+      // we collect the users because we need the userIds of all users in the sphere, including the one whos is about to be deleted.
+      // this promise takes care of a race condition where the user is deleted before we get his id.
+      notificationHandler.collectSphereUsers(String(sphere.id))
+        .then((users) => {
+          let payload = {
+            data: {
+              sphereId: String(sphere.id),
+              command: "sphereUserRemoved",
+              removedUserId: String(user.id)
+            },
+            silent: true
+          };
+          // tell other people in the sphere to refresh their sphere user list.
+          notificationHandler.notifyUsers( users, payload );
+          next();
 
-            // update the sphere auth tokens and send the SSE event AFTER the deletion
-            EventHandler.dataChange.sendSphereUserDeletedEvent(sphere, user);
-            cycleSphereAuthorizationTokens(sphere.id).catch();
-          })
-          .catch((err) => {
-            // ignoring errors, notifcations are optional.
-            next();
-          })
-      }
+          // update the sphere auth tokens and send the SSE event AFTER the deletion
+          EventHandler.dataChange.sendSphereUserDeletedEvent(sphere, user);
+          cycleSphereAuthorizationTokens(sphere.id).catch();
+        })
+        .catch((err) => {
+          // ignoring errors, notifcations are optional.
+          next();
+        })
     })
   });
 
@@ -555,24 +510,11 @@ module.exports = function(model) {
   function initSphere(ctx, next) {
     debug("initSphere");
     // debug("ctx", ctx);
-    const token = ctx.options && ctx.options.accessToken;
-    const userId = token && token.userId;
-    const user = userId ? 'user#' + userId : '<anonymous>';
-
     if (ctx.isNewInstance) {
       injectUUID(ctx.instance);
-      injectMeshAccessAddress(ctx.instance);
       injectUID(ctx.instance);
-      injectOwner(ctx.instance, userId, next);
     }
-    else {
-      // disallow changing the owner when updating the sphere
-      // so always overwrite the ownerId with the current ownerId
-      if (ctx.data && ctx.currentInstance) {
-        ctx.data.ownerId = ctx.currentInstance.ownerId;
-      }
-      next();
-    }
+    next();
   }
 
   function injectUUID(item) {
@@ -598,11 +540,6 @@ module.exports = function(model) {
     ]);
   }
 
-  function injectMeshAccessAddress(item) {
-    if (!item.meshAccessAddress) {
-      item.meshAccessAddress = mesh.generateAccessAddress();
-    }
-  }
   function injectUID(item) {
     if (!item.uid) {
       item.uid = crypto.randomBytes(1)[0]
@@ -610,15 +547,21 @@ module.exports = function(model) {
   }
 
   model.observe('before save', initSphere);
-  // model.beforeRemote('create', injectOwner);
-  // model.beforeRemote('upsert', injectOwner);
 
   function afterSave(ctx, next) {
     if (ctx.isNewInstance) {
+      const token = ctx.options && ctx.options.accessToken;
+      const userId = token && token.userId;
+
       generateEncryptionKeys(ctx)
         .then(() => {
           EventHandler.dataChange.sendSphereCreatedEvent(ctx.instance);
-          updateOwnerAccess(ctx, next);
+          const User = loopback.getModel('user');
+          User.findById(userId, function(err, user) {
+            if (err) return next(err);
+            // make the creator admin of the group
+            addSphereAccess(user, ctx.instance, "admin", false, function(err, res) { next(err); });
+          });
         })
     }
     else {
@@ -627,39 +570,12 @@ module.exports = function(model) {
     }
   }
 
-  // model.afterRemote('create', updateOwnerAccess);
   model.observe('after save', afterSave);
 
 
   /************************************
    **** Membership Methods
    ************************************/
-
-  function injectOwner(item, ownerId, next) {
-    if (!item.ownerId) {
-      debug("injectOwner");
-      item.ownerId = ownerId;
-      next();
-    } else {
-      next();
-    }
-  }
-
-  function updateOwnerAccess(ctx, next) {
-    if (ctx.isNewInstance) {
-      const User = loopback.getModel('user');
-      User.findById(ctx.instance.ownerId, function(err, user) {
-        if (err) return next(err);
-        // make the owner admin of the group
-        addSphereAccess(user, ctx.instance, "admin", false, function(err, res) {
-          next(err);
-        });
-      })
-    }
-    else {
-      next();
-    }
-  }
 
   function addSphereAccess(user, sphere, access, invite, callback) {
     debug("addSphereAccess");
@@ -1197,82 +1113,6 @@ module.exports = function(model) {
     }
   );
 
-  model.changeOwnership = function(id, email, options, callback) {
-    model.findById(id, function(err, sphere) {
-      if (err) return callback(err);
-
-      const User = loopback.findModel('user');
-      User.findOne({where: {email: email}}, function(err, user) {
-        if (err) return callback(err);
-        // debug("user", user);
-        // debug("sphere", sphere);
-        let currentUserId = options && options.accessToken && options.accessToken.userId;
-        if (!currentUserId) {
-          return callback("Can not identify user by accessToken.");
-        }
-
-        if (sphere.ownerId === currentUserId) {
-          const SphereAccess = loopback.findModel("SphereAccess");
-          SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-            if (err) return callback(err);
-
-            if (objects.length === 1) {
-              objects[0].role = "admin";
-              objects[0].save(function(err, instance) {
-                if (err) return callback(err);
-
-                sphere.ownerId = user.id;
-                sphere.save(function(err, inst) {
-                  if (err) return callback(err);
-
-                  callback(null, true);
-                });
-              });
-
-            }
-            else {
-              let error = new Error("User is not part of sphere");
-              error.name = "Membership error";
-              error.statusCode = error.status = 409;
-              return callback(error);
-            }
-          })
-        } else {
-          debug("Error: Authorization required!");
-          let error = new Error("Authorization Required");
-          error.status = 401;
-          return callback(error);
-        }
-      });
-    });
-  };
-
-  model.remoteMethod(
-    'changeOwnership',
-    {
-      http: {path: '/:id/owner', verb: 'put'},
-      accepts: [
-        {arg: 'id', type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'email', type: 'string', required: true, http: { source : 'query' }},
-        {arg: "options", type: "object", http: "optionsFromRequest"},
-      ],
-      returns: {arg: 'success', type: 'boolean', root: true},
-      description: "Change owner of Group"
-    }
-  );
-
-  function verifyChangeRole(sphereId, user, role, callback) {
-    model.findById(sphereId, function(err, sphere) {
-      if (err) return callback(err);
-      if (model.checkForNullError(sphere, callback, "id: " + sphereId)) return;
-
-      if (role === "owner") {
-        callback(null, false);
-      } else {
-        callback(null, user.id !== sphere.ownerId)
-      }
-    });
-  }
 
   model.getRole = function(id, email, callback) {
     const User = loopback.findModel('user');
@@ -1303,61 +1143,69 @@ module.exports = function(model) {
     }
   );
 
-  model.changeRole = function(id, email, role, callback) {
+  model.changeRole = function(sphereId, email, role, callback) {
     let suppliedRole = role && role.toLowerCase() || null;
     let allowedRoles = ['admin','member','guest'];
     if (allowedRoles.indexOf(suppliedRole) === -1) {
-      return callback(Util.customError(400, "INVALID_ARGUMENT", "You can only set the following roles: admin, member, guest. You provided: " + role + "."))
+      return callback(
+        Util.customError(
+          400,
+          "INVALID_ARGUMENT",
+          "You can only set the following roles: admin, member, guest. You provided: " + role + "."
+        ));
+    }
+
+    let currentRole = null;
+    let store = (sphereAccessItem, next) => {
+      sphereAccessItem.role = role;
+      sphereAccessItem.save(function (err, instance) {
+        if (err) return next(err);
+        next();
+
+        EventHandler.dataChange.sendSphereUserUpdatedEventById(sphereId, sphereAccessItem.userId);
+        cycleSphereAuthorizationTokens(sphereId).catch();
+      });
     }
 
     const User = loopback.findModel('user');
-    User.findOne({where: {email: email}}, function(err, user) {
-      if (err) return callback(err);
-      if (User.checkForNullError(user, callback, "email: " + email)) return;
-
-      verifyChangeRole(id, user, role, function(err, success) {
-        if (err) return callback(err);
-
-        if (success) {
-          const SphereAccess = loopback.findModel("SphereAccess");
-          SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: id}]}}, function(err, objects) {
-            if (err) return callback(err);
-
-            if (objects.length === 1) {
-              objects[0].role = role;
-              objects[0].save(function(err, instance) {
-                if (err) return callback(err);
-                callback();
-
-                EventHandler.dataChange.sendSphereUserUpdatedEventById(id, user.id);
-                cycleSphereAuthorizationTokens(id).catch();
-              });
-            } else {
-              let error = new Error("User is not part of sphere");
-              error.name = "Membership error";
-              error.statusCode = error.status = 409;
-              return callback(error);
-            }
-          })
-        } else {
-          let error = new Error("Not allowed to change owners. Use /changeOwnership instead.");
-          error.name = "Permission error";
-          error.statusCode = error.status = 409;
-          return callback(error);
+    const SphereAccess = loopback.findModel("SphereAccess");
+    User.findOne({where: {email: email}})
+      .then((user) => {
+        if (!user) {
+          throw Util.customError(404, "EMAIL_ADDRESS_NOT_FOUND", "There is no user with that email address in this sphere.");
         }
-      });
-    });
 
-    // model.findById(id, {include: {relation: "users", scope: {where: {email: email}}}}, function(err, user) {
-    // 	if (err) return callback(err);
+        return SphereAccess.find({where: {and: [{userId: user.id}, {sphereId: sphereId}]}})
+      })
+      .then((results) => {
+        if (results.length === 1) {
+          currentRole = results[0].role;
 
-    // 	const SphereAccess = loopback.findModel("SphereAccess");
-    // 	SphereAccess.updateAll({userId: user.id}, {role: role}, function(err, info) {
-    // 		if (err) return callback(err);
-    // 		debug(info);
-    // 		callback();
-    // 	})
-    // });
+          // no change.
+          if (currentRole == role) { return callback(); }
+
+          // user is not an admin, anything is allowed
+          if (currentRole !== 'admin') { return store(results[0], callback); }
+
+          // user is currently an admin. check if user can change.
+          return SphereAccess.find({where: {and: [{role: 'admin'}, {sphereId: sphereId}]}})
+            .then((adminItems) => {
+              // There must always be at least 1 admin
+              if (adminItems.length > 1) {
+                store(results[0], callback);
+              }
+              else {
+                throw Util.customError(401, "ONE_ADMIN_REQUIRED", "There must always be an admin in a sphere. You cannot change the role of this user.");
+              }
+            })
+        }
+        else {
+          throw Util.customError(404, "EMAIL_ADDRESS_NOT_FOUND", "There is no user with that email address in this sphere.");
+        }
+      })
+      .catch((err) => {
+        callback(err);
+      })
   };
 
   function cycleSphereAuthorizationTokens(sphereId) {
@@ -1684,7 +1532,7 @@ module.exports = function(model) {
         })
         .then((users) => {
           let notifyUsers = [];
-          // filter out the owner if he is not one of the recipients.
+          // filter out the message owner if he is not one of the recipients.
           if (instance.everyoneInSphere && instance.everyoneInSphereIncludingOwner === false) {
             for (let i = 0; i < users.length; i++) {
               if (String(users[i].id) !== String(instance.ownerId)) {

@@ -41,9 +41,6 @@
       "type": "string",
       "required": true
     },
-    "meshAccessAddress": {
-      "type": "string"
-    },
     "adminEncryptionKey": {
       "type": "string"
     },
@@ -69,11 +66,6 @@
   },
   "validations": [],
   "relations": {
-    "owner": {
-      "type": "belongsTo",
-      "model": "user",
-      "foreignKey": "ownerId"
-    },
     "ownedLocations": {
       "type": "hasMany",
       "model": "Location",

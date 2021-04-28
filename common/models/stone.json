@@ -38,9 +38,6 @@
     "type": {
       "type": "string"
     },
-    "deviceType": {
-      "type": "string"
-    },
     "major": {
       "type": "number"
     },
@@ -78,12 +75,6 @@
       "type": "belongsTo",
       "model": "Location",
       "foreignKey": "locationId"
-    },
-    "locations": {
-      "type": "hasAndBelongsToMany",
-      "model": "Location",
-      "foreignKey": "stoneId",
-      "through": "StoneLocation"
     },
     "energyUsage": {
       "type": "hasMany",

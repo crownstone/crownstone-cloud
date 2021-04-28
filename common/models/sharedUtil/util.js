@@ -10,7 +10,6 @@ module.exports = {
     return crypto.randomBytes(16).toString('hex');
   },
 
-
   createToken: function() {
     return crypto.randomBytes(32).toString('hex');
   },
