@@ -513,10 +513,15 @@ module.exports = function(model) {
     if (ctx.isNewInstance) {
       injectUUID(ctx.instance);
       injectUID(ctx.instance);
+      injectMeshAccessAddress(ctx.instance);
     }
     next();
   }
-
+  function injectMeshAccessAddress(item) {
+    if (!item.meshAccessAddress) {
+      item.meshAccessAddress = mesh.generateAccessAddress();
+    }
+  }
   function injectUUID(item) {
     if (!item.uuid) {
       debug("create uuid");

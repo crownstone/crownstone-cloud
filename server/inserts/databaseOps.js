@@ -4,13 +4,66 @@ const { ask, promiseBatchPerformer } = require("./insertUtil");
 const crypto = require("crypto")
 
 
-let CHANGE_DATA = false;
+let CHANGE_DATA = true;
 let DELETE_TIMESERIES = false;
 
 function performDatabaseOperations(app) {
   Promise.resolve()
-    .then(() => { return insertSphereUids(app);   })
-    .then(() => { return insertLocationUids(app); })
+    // .then(() => { return insertSphereMeshAccessAddresses(app);   })
+    // .then(() => { return insertSphereUids(app);   })
+    // .then(() => { return insertLocationUids(app); })
+}
+
+
+function insertSphereMeshAccessAddresses(app) {
+  let sphereModel = app.dataSources.mongoDs.getModel('Sphere');
+  let sphereCounter = 0;
+  let candidates    = 0;
+  console.log("----------- Starting insertSphereMeshAccessAddresses ------------");
+  let doIt = function() {
+    return sphereModel.find()
+      .then((results) => {
+        let promises = []
+        sphereCounter = results.length;
+        results.forEach((sphere) => {
+          if (!sphere.meshAccessAddress) {
+            candidates++;
+            if (CHANGE_DATA === true) {
+              sphere.meshAccessAddress = 'b392adb4';
+              promises.push(sphere.save());
+            }
+          }
+
+        })
+        return Promise.all(promises)
+      })
+      .then(() => {
+        if (CHANGE_DATA !== true) {
+          console.log("Because change data is false nothing was changed. I would have added a meshAccessAddress to ", candidates, " out of ", sphereCounter, " Spheres.")
+        } else {
+          console.log("FINISHED")
+        }
+      })
+  }
+
+  if (CHANGE_DATA === true) {
+    return ask("Database Operations: DO YOU WANT TO ADD meshAccessAddress TO ALL SPHERES? Continue? (YES/NO)")
+      .then((answer) => {
+        if (answer === 'YES') {
+          console.log("STARTING OPERATION")
+          return doIt()
+        }
+        else {
+          return new Promise((resolve, reject) => {
+            reject("User permission denied for adding meshAccessAddress to spheres. Restart script and type YES to continue.")
+          });
+        }
+      })
+  }
+  else {
+    return doIt()
+  }
+
 }
 
 
