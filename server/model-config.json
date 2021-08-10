@@ -1,4 +1,10 @@
 {
+  "user": {
+    "options": {
+      "emailVerificationRequired": true,
+      "caseSensitiveEmail": false
+    }
+  },
   "_meta": {
     "sources": [
       "loopback/common/models",

@@ -48,8 +48,5 @@
     "type": "",
     "url": ""
   },
-  "description": "Crownstone",
-  "engines": {
-    "node": "^12.14.1"
-  }
+  "description": "Crownstone"
 }

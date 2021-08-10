@@ -1,7 +1,8 @@
 {
   "user": {
     "options": {
-      "emailVerificationRequired": true
+      "emailVerificationRequired": true,
+      "caseSensitiveEmail": false
     }
   },
   "PowerUsage": {
