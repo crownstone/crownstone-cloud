@@ -76,12 +76,6 @@
       "model": "Location",
       "foreignKey": "locationId"
     },
-    "locations": {
-      "type": "hasAndBelongsToMany",
-      "model": "Location",
-      "foreignKey": "stoneId",
-      "through": "StoneLocation"
-    },
     "energyUsage": {
       "type": "hasMany",
       "model": "EnergyUsage",
