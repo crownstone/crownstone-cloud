@@ -603,5 +603,9 @@ module.exports = function (app) {
 
   app.get('/generateHubToken', function(req, res) {
     res.sendFile(path.join(__dirname, '../../public/generateHubToken.html'))
-  })
+  });
+
+  app.get('/time', function(req, res) {
+    res.end(`Current time on server:${new Date()}\nTimestamp:${Date.now()}`);
+  });
 };
