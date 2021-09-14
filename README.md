@@ -25,3 +25,7 @@ Once that completes, the api can be started with
 in which case it starts the debug version where all endpoints are open. To get the same production version, use
 
 	NODE_ENV=prod node.
+
+# User documetation
+
+[You can find the user documentation here.](./docs/README.md)
