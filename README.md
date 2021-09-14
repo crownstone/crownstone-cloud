@@ -6,7 +6,7 @@ An overview of the available endpoints can be found at https://cloud.crownstone.
 
 ## Documentation
 
-You can find a documentation of the different models and how to use them [here](https://github.com/crownstone/crownstone-sdk/blob/master/REST_API.md)
+[You can find the user documentation here.](./docs/README.md)
 
 ## Running it locally
 
@@ -26,6 +26,3 @@ in which case it starts the debug version where all endpoints are open. To get t
 
 	NODE_ENV=prod node.
 
-# User documetation
-
-[You can find the user documentation here.](./docs/README.md)
