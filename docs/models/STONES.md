@@ -2,7 +2,7 @@
 
 If you want to get a full list of all Crownstones that your account has access to (regardless of Sphere), use the all endpoint.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /Stones/all</summary>
+<summary>GET /Stones/all</summary>
 
 > Get a list of all Crownstones you have access to.
 >
@@ -40,7 +40,7 @@ If you want to get a full list of all Crownstones that your account has access t
 If you switch a Crownstone via the phone, it will tell the cloud it has done so. If you have a hub, it will also keep track of Crownstones
 switched via SwitchCraft and update the cloud. Keep in mind that the user can opt-out of this behaviour in the privacy settings in the app.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /Stones/{id}/currentSwitchStateV2</summary>
+<summary>GET /Stones/{id}/currentSwitchStateV2</summary>
 
 > Get the last known switch state of the Crownstone (whether it was on, off or dimmed)
 > Keep in mind that the user can opt-out of this behaviour in the privacy settings in the app.
@@ -60,7 +60,7 @@ If you want to switch your Crownstone via a cloud call, use the switch endpoint!
 Crownstones at once, use the switchCrownstones endpoint on the Sphere model.
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">POST /Stones/{id}/switch</summary>
+<summary>POST /Stones/{id}/switch</summary>
 
 > Switch the Crownstone.
 > This will send a push notification to your phone, which will then switch the Crownstone.

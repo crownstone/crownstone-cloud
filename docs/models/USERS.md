@@ -5,7 +5,7 @@ The user represents your account. It is the startingpoint to start using the Cro
 You can log in via the form at [https://my.crownstone.rocks](https://my.crownstone.rocks), or you can do it programatically using the login endpoint.
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">POST /users/login</summary>
+<summary>POST /users/login</summary>
 
 > Log into you account. Used to get the access token.
 >
@@ -36,7 +36,7 @@ You can log in via the form at [https://my.crownstone.rocks](https://my.crownsto
 Often, you will already have the access token, but you might still need to get the user ID. To quickly get the id, you can use /users/me or /users/userId.
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /users/me</summary>
+<summary>GET /users/me</summary>
 
 > Get your user data. This is often used to obtain the user ID.
 >
@@ -62,7 +62,7 @@ Often, you will already have the access token, but you might still need to get t
  >```
 </details>
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /users/userId</summary>
+<summary>GET /users/userId</summary>
 
 > Get your user ID.
 >
@@ -78,7 +78,7 @@ The Spheres represent a group of Crownstones, which can communicate with eachoth
 To get the spheres you have access to you can use the GET /users/id/spheres endpoint. We'll discuss spheres more later on.
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /users/{id}/spheres</summary>
+<summary>GET /users/{id}/spheres</summary>
 
 > Get your Spheres
 >
@@ -109,7 +109,7 @@ To get the spheres you have access to you can use the GET /users/id/spheres endp
 If you want to use one of our Bluetooth libraries, you can get use the /users/{id}/keysV2 endpoint to get all the encryption keys you have access to. These keys are per Sphere
 and the keys you have access to are dependent on your access level per sphere.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /users/{id}/keysV2</summary>
+<summary>GET /users/{id}/keysV2</summary>
 
 > Get all the encryption keys you have access to. If you're an admin, you also receive keys per stone.
 >
@@ -154,7 +154,7 @@ If you want to get your current location, you can use the /users/{id}/currentLoc
 If you require a notification when location changes, take a look at the [server-sent events](https://events.crownstone.rocks). Do not poll this endpoint for changes!
 
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /users/{id}/currentLocation</summary>
+<summary>GET /users/{id}/currentLocation</summary>
 
 > Get your current location, based on the devices you have. Each device can be in a different location.
 > Keep in mind that the user can opt-out of sharing his/her location with the cloud. If the app's privacy settings allow sharing location,

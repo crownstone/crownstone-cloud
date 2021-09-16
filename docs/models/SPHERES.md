@@ -4,7 +4,7 @@ Your sphere is a collection of Crownstones, rooms (which we call Locations), use
 
 Since we often refer to a room by it's ID, you can get all rooms in a sphere via the ownedLocations endpoint.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /Spheres/{id}/ownedLocations</summary>
+<summary>GET /Spheres/{id}/ownedLocations</summary>
 
 > Get a list of all rooms (Locations) in this Sphere
 >
@@ -30,7 +30,7 @@ Since we often refer to a room by it's ID, you can get all rooms in a sphere via
 
 A Sphere also contains Crownstones. You can get a list of all Crownstones in a Sphere via the ownedStones endpoint.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /Spheres/{id}/ownedStones</summary>
+<summary>GET /Spheres/{id}/ownedStones</summary>
 
 > Get a list of all Crownstones in this Sphere
 >
@@ -68,7 +68,7 @@ A Sphere also contains Crownstones. You can get a list of all Crownstones in a S
 If you want to switch multiple Crownstones at once, you can use the switchCrownstones endpoint! This will be supported from the upcoming app version.
 Untill then, please use the Stones/{id}/switch endpoint to switch a single stone, and call it for each stone.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">POST /Spheres/{id}/switchCrownstones</summary>
+<summary>POST /Spheres/{id}/switchCrownstones</summary>
 
 > Switch a number of Crownstones in the Sphere. This endpoint will be supported from app versions 4.5 and above.
 > This will send a push notification to your phone, which will then switch the Crownstone.
@@ -94,7 +94,7 @@ Untill then, please use the Stones/{id}/switch endpoint to switch a single stone
 
 To get a list of all users, including their permission levels, you have the users endpoint.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /Spheres/{id}/users</summary>
+<summary>GET /Spheres/{id}/users</summary>
 
 > Get all users in this Sphere, along with their corresponding permission levels.
 >
@@ -128,7 +128,7 @@ To get a list of all users, including their permission levels, you have the user
 To get an overview of which users are in the Sphere, use the presentPeople endpoint. Do not poll this! Take a look at the [server-sent events](https://events.crownstone.rocks)
 for real-time updates.
 <details>
-<summary style="font-size: 16px; font-weight: bold;">GET /Spheres/{id}/presentPeople</summary>
+<summary>GET /Spheres/{id}/presentPeople</summary>
 
 > Get the current location of everyone in this Sphere.
 > Keep in mind that the user can opt-out of sharing his/her location with the cloud. If the app's privacy settings allow sharing location,
