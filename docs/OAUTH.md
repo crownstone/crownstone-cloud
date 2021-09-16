@@ -1,84 +1,49 @@
 # OAUTH 2
 
-You can also use OAUTH to use our cloud services. If you're working on an integration for which you need to use OAUTH, contact us to get an OAUTH client.
+You can also use OAUTH to use our cloud services.
 
-### Scopes
+## Using OAUTH for your users
+
+You need a OAUTH account before you can have your users log into our cloud services via OAUTH. Contact us for an account.
+
+## Scopes
 
 OAUTH 2 uses scopes to inform the user how much control they give external parties. Here is a list of available scopes and their access.
 
-```json
-{
-  "user_information": [
-    {
-      "methods": "get",
-      "path": "/api/users/me"
-    },
-    {
-      "methods": "get",
-      "path": "/api/users/userId"
-    }
-  ],
-  "user_id": [
-    {
-      "methods": "get",
-      "path": "/api/users/userId"
-    }
-  ],
-  "user_location": [
-    {
-      "methods": "get",
-      "path": "/api/users/:id/currentLocation"
-    },
-    {
-      "methods": "get",
-      "path": "/api/users/:id/devices"
-    }
-  ],
-  "stone_information": [
-    {
-      "methods": "get",
-      "path": "/api/Stones/all"
-    }
-  ],
-  "switch_stone": [
-    {
-      "methods": "get",
-      "path": "/api/Stones/:id/currentSwitchState"
-    },
-    {
-      "methods": "get",
-      "path": "/api/Stones/:id/currentSwitchStateV2"
-    },
-    {
-      "methods": "put",
-      "path": "/api/Stones/:id/setSwitchStateRemotely"
-    },
-    {
-      "methods": "post",
-      "path": "/api/Stones/:id/switch"
-    },
-    {
-      "methods": "post",
-      "path": "/api/Spheres/:id/switchCrownstones"
-    }
-  ],
-  "sphere_information": [
-    {
-      "methods": "get",
-      "path": "/api/users/:id/spheres"
-    }
-  ],
-  "location_information": [
-    {
-      "methods": "get",
-      "path": "/api/Locations/all"
-    }
-  ],
-  "all": [
-    {
-      "methods": "all",
-      "path": "/api"
-    }
-  ]
-}
-```
+### user_information
+- GET: /api/users/me
+- GET: /api/users/userId
+
+### user_id
+- GET: /api/users/userId
+
+### user_location
+- GET: /api/users/:id/currentLocation
+- GET: /api/users/:id/devices
+
+### stone_information
+- GET: /api/Stones/all
+
+### switch_stone
+- GET: /api/Stones/:id/currentSwitchState
+- GET: /api/Stones/:id/currentSwitchStateV2
+- PUT: /api/Stones/:id/setSwitchStateRemotely
+- POST: /api/Stones/:id/switch
+- POST: /api/Spheres/:id/switchCrownstones
+
+### sphere_information
+- GET: /api/users/:id/spheres
+
+### location_information
+- GET: /api/Locations/all
+
+### all
+- Every endpoint. (used for development)
+
+
+If you require access to other endpoints with OAUTH, contact us.
+
+## Events
+
+OAUTH scopes also effect the which SSE events you can receive on the eventserver. For more information on this, refer to the documentation
+on the SSE server.
