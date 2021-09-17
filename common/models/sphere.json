@@ -127,7 +127,7 @@
     },
     "floatingLocationPosition": {
       "type":"hasOne",
-      "model": "Position",
+      "model": "SpherePosition",
       "foreignKey": "sphereId"
     }
   },

@@ -58,5 +58,11 @@
   },
   "StoneAbilityProperty": {
     "public": false
+  },
+  "SpherePosition": {
+    "public": false
+  },
+  "LocationPosition": {
+    "public": false
   }
 }

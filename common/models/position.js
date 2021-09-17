@@ -51,7 +51,4 @@ module.exports = function(model) {
       "permission": "DENY"
     });
   }
-
-
-
 };

@@ -1,5 +1,5 @@
 {
-  "name": "Position",
+  "name": "LocationPosition",
   "replaceOnPUT": false,
   "base": "PersistedModel",
   "strictDelete": true,

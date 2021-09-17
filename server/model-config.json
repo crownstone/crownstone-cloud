@@ -219,5 +219,13 @@
   "SphereFeature": {
     "dataSource": "mongoDs",
     "public": false
+  },
+  "SpherePosition": {
+    "dataSource": "mongoDs",
+    "public": false
+  },
+  "LocationPosition": {
+    "dataSource": "mongoDs",
+    "public": false
   }
 }
