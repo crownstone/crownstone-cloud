@@ -8,6 +8,12 @@
     "validateUpsert": true,
     "strict":"filter"
   },
+  "mixins": {
+    "TimeStamps": {
+      "required": false,
+      "validateUpsert": true
+    }
+  },
   "properties": {
     "sphereId": {
       "type": "string",
