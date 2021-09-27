@@ -59,7 +59,10 @@ module.exports = function (Model, options) {
     Promise.all(promises)
       .then(function () {
         next();
-      });
+      })
+      .catch((err) => {
+        next(err)
+      })
 
   });
 

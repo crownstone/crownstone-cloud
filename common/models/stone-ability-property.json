@@ -23,6 +23,10 @@
     "value": {
       "type": "string",
       "required": true
+    },
+    "syncedToCrownstone": {
+      "type": "boolean",
+      "default": true
     }
   },
   "validations": [],
