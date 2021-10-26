@@ -1546,12 +1546,16 @@ module.exports = function(model) {
       return callback("SwitchData have a type: it can only be 'PERCENTAGE', 'TURN_ON' or 'TURN_OFF'");
     }
 
-    if (switchData && switchData.type === "PERCENTAGE" && (switchData.percentage === undefined || (switchData.percentage > 0 && switchData.percentage <=1) || switchData.percentage < 0 || switchData.percentage > 100)) {
-      return callback("SwitchData with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
-    }
-
-    if (switchData && switchData.type === "PERCENTAGE" && (switchData.percentage > 0 && switchData.percentage < 10)) {
-      return callback("Dimming below 10% is not allowed.");
+    if (switchData && switchData.type === "PERCENTAGE") {
+      if (switchData.percentage !== undefined && typeof switchData.percentage === 'string') {
+        switchData.percentage = Number(switchData.percentage);
+      }
+      if (switchData.percentage === undefined || (switchData.percentage > 0 && switchData.percentage <=1) || switchData.percentage < 0 || switchData.percentage > 100) {
+        return callback("SwitchPackets with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
+      }
+      if (switchData.percentage > 0 && switchData.percentage < 10) {
+        return callback("Dimming below 10% is not allowed.");
+      }
     }
 
     let stone = null;

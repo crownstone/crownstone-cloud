@@ -2315,12 +2315,16 @@ module.exports = function(model) {
         return callback("SwitchPackets have a stoneId, this is the id of the Crownstone.");
       }
 
-      if (packet && packet.type === "PERCENTAGE" && (packet.percentage === undefined ||  (packet.percentage > 0 && packet.percentage <=1) || packet.percentage < 0 || packet.percentage > 100)) {
-        return callback("SwitchPackets with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
-      }
-
-      if (packet && packet.type === "PERCENTAGE" && (packet.percentage > 0 && packet.percentage < 10)) {
-        return callback("Dimming below 10% is not allowed.");
+      if (packet && packet.type === "PERCENTAGE") {
+        if (packet.percentage !== undefined && typeof packet.percentage === 'string') {
+          packet.percentage = Number(packet.percentage);
+        }
+        if (packet.percentage === undefined || (packet.percentage > 0 && packet.percentage <=1) || packet.percentage < 0 || packet.percentage > 100) {
+          return callback("SwitchPackets with type PERCENTAGE require a percentage between 0 and 100:" + SwitchDataDefinition);
+        }
+        if (packet.percentage > 0 && packet.percentage < 10) {
+          return callback("Dimming below 10% is not allowed.");
+        }
       }
 
       stoneIds.push(packet.stoneId);
@@ -2374,7 +2378,7 @@ module.exports = function(model) {
         {arg: 'switchPackets', type: '[SwitchPacket]',  required:true, http: {source:'body'}},
         {arg: "options",       type: "object", http: "optionsFromRequest"},
       ],
-      description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
+      description: `BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed.\nSwitchPacket = ${SwitchDataDefinition}`
     }
   );
 

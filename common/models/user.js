@@ -664,7 +664,7 @@ module.exports = function(model) {
 
   const getSphereKeys = function(sphereId, accessMap, container) {
     const SphereKeyModel = loopback.getModel('SphereKeys');
-    let containerIndex = container.length - 1;
+    let containerIndex   = container.length - 1;
     return SphereKeyModel.find({where:{sphereId: sphereId}})
       .then((sphereKeys) => {
         for (let i = 0; i < sphereKeys.length; i++) {
@@ -678,7 +678,7 @@ module.exports = function(model) {
 
   const getKeysForUser = function(sphereId, role, container, stoneId) {
     const StoneKeyModel = loopback.getModel('StoneKeys');
-    let containerIndex = container.length - 1;
+    let containerIndex  = container.length - 1;
     let accessMap = {};
     switch (role) {
       case "admin":
