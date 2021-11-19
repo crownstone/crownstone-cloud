@@ -44,11 +44,11 @@
     },
     "uploadLocation": {
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "uploadSwitchState": {
       "type": "boolean",
-      "default": false
+      "default": true
     },
     "uploadDeviceDetails": {
       "type": "boolean",

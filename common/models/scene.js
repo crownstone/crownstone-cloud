@@ -204,7 +204,7 @@ module.exports = function(model) {
 			if (model.checkForNullError(scene, callback, "id: " + id)) return;
       if (idUtil.verifyMongoId(scene.customPictureId) === false) {
         // remove the profile pic
-        scene.customPictureId = undefined;
+        scene.customPictureId = null;
         scene.save()
           .then(() => {
             callback();
@@ -215,7 +215,7 @@ module.exports = function(model) {
           if (err) { return callback(err); }
 
           // remove the profile pic
-          scene.customPictureId = undefined;
+          scene.customPictureId = null;
           scene.save()
             .then(() => {
               callback();
