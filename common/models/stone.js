@@ -271,8 +271,9 @@ module.exports = function(model) {
   model.disableRemoteMethodByName('prototype.__get__switchStateHistory');
   model.disableRemoteMethodByName('prototype.__destroyById__switchStateHistory');
 
-  model.disableRemoteMethodByName('prototype.__count__behaviour');
-  model.disableRemoteMethodByName('prototype.__delete__behaviour');
+  model.disableRemoteMethodByName('prototype.__count__behaviours');
+  model.disableRemoteMethodByName('prototype.__delete__behaviours');
+  model.disableRemoteMethodByName('prototype.__create__behaviours');
 
 
   function initStone(ctx, next) {
@@ -1618,10 +1619,41 @@ module.exports = function(model) {
       description: "BETA: Switch Crownstone. Dimming below 10% is not allowed."
     }
   );
+
+
+  model.addBehaviour = function(stoneId, stoneBehaviour, options, callback) {
+    model.findById(stoneId)
+      .then((stoneResult) => {
+        if (!stoneResult) { throw util.unauthorizedError(); }
+        stoneBehaviour.stoneId  = stoneResult.id;
+        stoneBehaviour.sphereId = stoneResult.sphereId;
+        return stoneResult.behaviours.create(stoneBehaviour)
+      })
+      .then((newBehaviour) => {
+        callback(null, newBehaviour);
+      })
+      .catch((err) => {
+        callback(err);
+      })
+  };
+
+  model.remoteMethod(
+    'addBehaviour',
+    {
+      http: {path: '/:id/behaviours', verb: 'post'},
+      accepts: [
+        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+        {arg: 'data',          type: 'StoneBehaviour',  required:true, http: {source:'body'}},
+        {arg: "options",       type: "object", http: "optionsFromRequest"},
+      ],
+      returns: {arg: 'data', type: 'any', root: true},
+      description: "Add behaviour to a Crownstone."
+    }
+  );
 };
 
 
-let SwitchDataDefinition = "{ type: 'PERCENTAGE' | 'TURN_ON' | 'TURN_OFF', percentage?: number }"
+let SwitchDataDefinition = "{ type: 'PERCENTAGE' | 'TURN_ON' | 'TURN_OFF', percentage?: number }";
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);

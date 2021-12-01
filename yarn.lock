@@ -4195,9 +4195,9 @@ loopback-swagger@^5.0.0:
     strong-globalize "^4.1.1"
 
 loopback@^3.27.0:
-  version "3.27.0"
-  resolved "https://registry.yarnpkg.com/loopback/-/loopback-3.27.0.tgz#16384a274a88e9f9073e94c08c5770779ee0a87e"
-  integrity sha512-Y8pL1jyIZQf5QfkKZrQaOKdK88GEgBP5JZxfWSgm/k5tF+jbVZxHfqKr+3HUicSDX4HcRS1Fx1vLcPawDqKqaA==
+  version "3.28.0"
+  resolved "https://registry.yarnpkg.com/loopback/-/loopback-3.28.0.tgz#92ef8634b884bc66f5bf465f191b72f8f2259a2c"
+  integrity sha512-txYAc2vUn2imOKqcxnRFTm7fLx6+dbZ+V/wfAME0kyOJVyuV56H8RPpHl9/LTpKyNYQuoedGYrl9bwSavXgKoQ==
   dependencies:
     async "^2.0.1"
     bcryptjs "^2.1.0"
@@ -4214,7 +4214,7 @@ loopback@^3.27.0:
     loopback-datasource-juggler "^3.28.0"
     loopback-filters "^1.0.0"
     loopback-phase "^3.0.0"
-    nodemailer "^4.0.1"
+    nodemailer "^6.4.16"
     nodemailer-direct-transport "^3.3.2"
     nodemailer-stub-transport "^1.1.0"
     serve-favicon "^2.2.0"
@@ -4819,10 +4819,10 @@ nodemailer-stub-transport@^1.1.0:
   resolved "https://registry.yarnpkg.com/nodemailer-stub-transport/-/nodemailer-stub-transport-1.1.0.tgz#11421d2d66b4ee6f405354f914c1f4641eb24b0d"
   integrity sha1-EUIdLWa07m9AU1T5FMH0ZB6ySw0=
 
-nodemailer@^4.0.1:
-  version "4.6.7"
-  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-4.6.7.tgz#b68de7f36d65618bdeeeb76234e3547d51266373"
-  integrity sha512-GIAAYvs9XIP1fBa8wR89ukUh3yjL44pom5LKY5nTZcL+Zp9sRkqL8wgskyBQECQg9CPsDX/fjTZx8MNz20t0jA==
+nodemailer@^6.4.16:
+  version "6.7.2"
+  resolved "https://registry.yarnpkg.com/nodemailer/-/nodemailer-6.7.2.tgz#44b2ad5f7ed71b7067f7a21c4fedabaec62b85e0"
+  integrity sha512-Dz7zVwlef4k5R71fdmxwR8Q39fiboGbu3xgswkzGwczUfjp873rVxt1O46+Fh0j1ORnAC6L9+heI8uUpO6DT7Q==
 
 nopt@^4.0.1:
   version "4.0.1"
