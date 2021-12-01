@@ -50,6 +50,6 @@
   },
   "description": "Crownstone",
   "engines": {
-    "node": "^14.18.2"
+    "node": "^12.14.1"
   }
 }
