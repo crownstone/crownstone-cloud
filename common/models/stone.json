@@ -62,6 +62,21 @@
     "hardwareVersion": {
       "type": "string"
     },
+    "uicr": {
+      "board         ": { "type":"number" },
+      "productType   ": { "type":"number" },
+      "region        ": { "type":"number" },
+      "productFamily ": { "type":"number" },
+      "reserved1     ": { "type":"number" },
+      "hardwarePatch ": { "type":"number" },
+      "hardwareMinor ": { "type":"number" },
+      "hardwareMajor ": { "type":"number" },
+      "reserved2     ": { "type":"number" },
+      "productHousing": { "type":"number" },
+      "productionWeek": { "type":"number" },
+      "productionYear": { "type":"number" },
+      "reserved3     ": { "type":"number" }
+    },
     "hidden": {
       "type": "boolean"
     },
