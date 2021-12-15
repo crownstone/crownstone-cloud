@@ -33,9 +33,16 @@ module.exports = function (app) {
       applinks: {
         apps: [],
         details: []
+      },
+      webcredentials: {
+        apps: []
       }
     };
-    payload.applinks.details.push({appID:"6LYJ9PNC3V.com.crownstone.Crownstone",paths:['callbackURL']});
+
+    let crownstoneAppId = "6LYJ9PNC3V.com.crownstone.Crownstone";
+
+    payload.applinks.details.push({appID:crownstoneAppId,paths:['callbackURL']});
+    payload.webcredentials.apps.push(crownstoneAppId);
     res.set("Content-Type","application/pkcs7-mime");
     res.send(JSON.stringify(payload, undefined, 2));
   });
