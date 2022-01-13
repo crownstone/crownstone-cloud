@@ -9,7 +9,7 @@
     "pretest": "jshint ."
   },
   "dependencies": {
-    "apn": "git+https://github.com/node-apn/node-apn.git#3.0.0",
+    "@parse/node-apn": "^5.1.0",
     "uid2": "*",
     "body-parser": "1.16.0",
     "compression": "1.0.3",

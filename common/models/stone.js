@@ -290,7 +290,7 @@ module.exports = function(model) {
     }
   }
 
- function injectMajorMinor(item, next) {
+ function injectMajorMinor(item) {
     let buf = crypto.randomBytes(4);
     if (!item.major) {
       // debug("inject major");

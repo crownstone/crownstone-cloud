@@ -1,6 +1,11 @@
 {
   "name": "CrownstoneAccessToken",
   "base": "AccessToken",
+  "properties": {
+    "expiredAt": {
+      "type": "date"
+    }
+  },
   "relations": {
     "user": {
       "type": "belongsTo",

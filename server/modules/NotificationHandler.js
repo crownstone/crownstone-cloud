@@ -1,5 +1,5 @@
 const gcm = require('node-gcm');
-const apn = require('apn');
+const apn = require('@parse/node-apn');
 let loopback = require('loopback');
 const SphereIndexCache = require("../../server/modules/SphereIndexCache")
 /**
@@ -315,7 +315,3 @@ function getTokensFromUsers(users, excludeDeviceId) {
 
 
 module.exports = new NotificationHandlerClass();
-
-
-
-
