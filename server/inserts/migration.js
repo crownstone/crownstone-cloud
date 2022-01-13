@@ -8,6 +8,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 function performMigration(app) {
   Promise.resolve()
+    // .then(() => { return addExpiredAtToTokens(app) })
     // .then(() => { return migrateTokens(app) })
     // .then(() => { return migrateFirmwareFields(app) })
     // .then(() => { return migrateBootloaderFields(app) })
@@ -16,6 +17,30 @@ function performMigration(app) {
     // .then(() => { return migrateKeysForExistingSpheres(app) })
     // .then(() => { return migrateKeysForExistingStones(app) })
     .then(() => { console.log("DONE!") })
+}
+
+function addExpiredAtToTokens(app) {
+  const tokenModel = app.dataSources.mongoDs.getModel('CrownstoneAccessToken');
+
+  let tokensToChange = 0
+  return tokenModel.find()
+    .then((tokens) => {
+      for (let token of tokens) {
+        if (!token.expiredAt) {
+          let createdAt = new Date(token.created);
+          let expiredAt = new Date(createdAt.valueOf() + token.ttl*1000);
+          tokensToChange++
+          if (CHANGE_DATA !== true) {
+            console.log("Because change data is false nothing was changed. I would have added expiredAt", token.expiredAt, "to this token");
+          }
+          else {
+            token.expiredAt = expiredAt;
+            token.save()
+          }
+        }
+      }
+
+    })
 }
 
 function migrateTokens(app) {
