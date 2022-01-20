@@ -1674,13 +1674,11 @@ module.exports = function(model) {
         break;
       case FILTER_TYPES.ACTIVE:
       case FILTER_TYPES.NEW:
+        // we make the difference between these 2 below.
+      case FILTER_TYPES.NEW_IN_LOCATION:
         whereFilter = {deliveredAll: false};
         break;
-      case FILTER_TYPES.NEW_IN_LOCATION:
-        whereFilter = {and:[{or: [{triggerLocationId: locationId},{triggerLocationId: undefined}]}, {deliveredAll: false}]};
-        break;
     }
-
 
     // filter for messages where user is the recipient off.
     let filter = {
@@ -1786,9 +1784,11 @@ module.exports = function(model) {
                 }
               }
               break;
-            case FILTER_TYPES.NEW:
-              // same as new in location since the difference is in the where filter up top.
             case FILTER_TYPES.NEW_IN_LOCATION:
+              if (message.triggerLocationId !== undefined && message.triggerLocationId != locationId) {
+                continue;
+              }
+            case FILTER_TYPES.NEW:
               // if the user is not the sender, it is only active for him if it has not been delivered yet.
               let alreadyDelivered = isDeliveredToUser(deliveredList);
               // if not already delivered, add to the list
