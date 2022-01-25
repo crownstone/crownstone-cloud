@@ -701,6 +701,17 @@ module.exports = function(model) {
     model.findById(sphereId, function(err, sphere) {
       if (err) return next(err);
 
+      // fix translation issue in app
+      if (access === "gast") {
+        access = "guest";
+      }
+      else if (access === "groepslid") {
+        access = "member";
+      }
+      else if (access === "beheerder") {
+        access = "admin";
+      }
+
       // debug("sphere", sphere);
 
       if (sphere) {

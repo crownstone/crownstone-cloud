@@ -8,6 +8,9 @@ var ObjectID = require('mongodb').ObjectID;
 
 function performMigration(app) {
   Promise.resolve()
+    // .then(() => { return convertDutchRolesToEnglish(app, 'beheerder','admin')  })
+    // .then(() => { return convertDutchRolesToEnglish(app, 'groepslid','member') })
+    // .then(() => { return convertDutchRolesToEnglish(app, 'gast',     'guest')  })
     // .then(() => { return addExpiredAtToTokens(app) })
     // .then(() => { return migrateTokens(app) })
     // .then(() => { return migrateFirmwareFields(app) })
@@ -17,6 +20,27 @@ function performMigration(app) {
     // .then(() => { return migrateKeysForExistingSpheres(app) })
     // .then(() => { return migrateKeysForExistingStones(app) })
     .then(() => { console.log("DONE!") })
+}
+
+function convertDutchRolesToEnglish(app, dutchRole, englishRole) {
+  const accessModel = app.dataSources.mongoDs.getModel('SphereAccess');
+
+  let accessToChange = 0
+  return accessModel.find({where:{role:dutchRole}})
+    .then((accessItems) => {
+      for (let item of accessItems) {
+        accessToChange++;
+        if (CHANGE_DATA == true) {
+          item.role = englishRole;
+          item.save();
+        }
+      }
+    })
+    .then(() => {
+      if (CHANGE_DATA !== true) {
+        console.log("Because change data is false nothing was changed. I would have changed", dutchRole, "to", englishRole, "for", accessToChange, "items");
+      }
+    })
 }
 
 function addExpiredAtToTokens(app) {
