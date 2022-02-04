@@ -2,6 +2,7 @@
 
 const debug = require('debug')('loopback:crownstone');
 const Util = require('./sharedUtil/util');
+const loopback = require("loopback");
 
 module.exports = function(model) {
 
@@ -15,10 +16,17 @@ module.exports = function(model) {
     let sphereId = query.sphereId;
     let userId = query.userId;
 
+    let sphereWasDeleted = true;
     let currentRole = null;
-    model.find({where: {and: [{userId: userId}, {sphereId: sphereId}]}})
+
+    let sphereModel = loopback.getModel('Sphere');
+    sphereModel.findById(sphereId)
+      .then((item) => {
+        if (item) { sphereWasDeleted = false; }
+        return model.find({where: {and: [{userId: userId}, {sphereId: sphereId}]}})
+      })
       .then((results) => {
-        if (results.length === 1) {
+        if (results.length === 1 && !sphereWasDeleted) {
           currentRole = results[0].role;
 
           // user is not an admin, anything is allowed
