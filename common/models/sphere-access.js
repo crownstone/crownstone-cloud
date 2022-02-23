@@ -20,6 +20,13 @@ module.exports = function(model) {
     let currentRole = null;
 
     let sphereModel = loopback.getModel('Sphere');
+
+    // this is used for direct deletions, like removing an invted user
+    if (query.id !== undefined) {
+      next();
+      return;
+    }
+
     sphereModel.findById(sphereId)
       .then((item) => {
         if (item) { sphereWasDeleted = false; }
