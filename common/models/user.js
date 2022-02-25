@@ -622,7 +622,7 @@ module.exports = function(model) {
       if (model.checkForNullError(user, callback, "id: " + id)) return;
       if (idUtil.verifyMongoId(user.profilePicId) === false) {
         // remove the profile pic
-        user.profilePicId = undefined;
+        user.profilePicId = null;
         user.save()
           .then(() => {
             callback();
@@ -633,7 +633,7 @@ module.exports = function(model) {
           if (err) { return callback(err); }
 
           // remove the profile pic
-          user.profilePicId = undefined;
+          user.profilePicId = null;
           user.save()
             .then(() => {
               callback();
