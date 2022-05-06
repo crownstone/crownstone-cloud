@@ -39,7 +39,7 @@
     "imageId": {
       "type": "any"
     },
-    "stockImage": {
+    "stockPicture": {
       "type": "string"
     },
     "fingerprint": {
