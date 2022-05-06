@@ -39,6 +39,9 @@
     "imageId": {
       "type": "any"
     },
+    "stockImage": {
+      "type": "string"
+    },
     "fingerprint": {
       "type": "string"
     }
