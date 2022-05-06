@@ -184,12 +184,23 @@ module.exports = function(model) {
     debug("initLocation");
     // debug("ctx", ctx);
     let item = ctx.instance;
-
-    if (item) {
-      injectUID(item, next);
+    if (ctx.isNewInstance === false) {
+      let instance = ctx.currentInstance;
+      let changeData = ctx.data;
+      if (changeData.stockPicture && instance.imageId) {
+        // the user set a stock picture but we have a custom picture. We will delete the custom picture.
+        model.deleteImage(instance.id, {}, next);
+        return;
+      }
+      next()
     }
     else {
-      next();
+      if (item) {
+        injectUID(item, next);
+      }
+      else {
+        next();
+      }
     }
   }
 
@@ -326,6 +337,7 @@ module.exports = function(model) {
 
 				// and set the id as profilePicId
 				location.imageId = file._id;
+        location.stockPicture = null;
 				location.save();
 
 				next(null, file);
