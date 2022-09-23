@@ -110,11 +110,6 @@
       "model": "Scene",
       "foreignKey": "sphereId"
     },
-    "sortedLists": {
-      "type": "hasMany",
-      "model": "SortedList",
-      "foreignKey": "sphereId"
-    },
     "features": {
       "type": "hasMany",
       "model": "SphereFeature",

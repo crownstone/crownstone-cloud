@@ -44,6 +44,10 @@ function performReference(app) {
   let unownedInstallationIds = {};
 
 
+  // stoneModel.find({fields:{type:1, lastSeenAt:1, firmwareVersion:1, bootloaderVersion:1, uicr:1, id:1, hardwareVersion: 1, sphereId: 1}})
+  //   .then((stones) => {
+  //   })
+
   // get all users
   // stoneModel.find({fields:{sphereId:true}})
   //   .then((stones) => {

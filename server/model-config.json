@@ -96,10 +96,6 @@
     "dataSource": "mongoDs",
     "public": true
   },
-  "EnergyUsage": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
   "PowerCurve": {
     "dataSource": "mongoDs",
     "public": true
@@ -209,10 +205,6 @@
     "public": true
   },
   "Scene": {
-    "dataSource": "mongoDs",
-    "public": true
-  },
-  "SortedList": {
     "dataSource": "mongoDs",
     "public": true
   },

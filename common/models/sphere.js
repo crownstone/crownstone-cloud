@@ -349,16 +349,6 @@ module.exports = function(model) {
   // model.disableRemoteMethodByName('prototype.__get__scenes');
 
 
-  // model.disableRemoteMethodByName('prototype.__create__sortedLists');
-  model.disableRemoteMethodByName('prototype.__delete__sortedLists');
-  // model.disableRemoteMethodByName('prototype.__destroyById__sortedLists');
-  // model.disableRemoteMethodByName('prototype.__deleteById__sortedLists');
-  model.disableRemoteMethodByName('prototype.__updateById__sortedLists');
-  model.disableRemoteMethodByName('prototype.__findById__sortedLists');
-  model.disableRemoteMethodByName('prototype.__link__sortedLists');
-  model.disableRemoteMethodByName('prototype.__count__sortedLists');
-  // model.disableRemoteMethodByName('prototype.__get__sortedLists');
-
   model.disableRemoteMethodByName('prototype.__create__hubs');
   model.disableRemoteMethodByName('prototype.__delete__hubs');
   model.disableRemoteMethodByName('prototype.__destroyById__hubs');
@@ -1811,7 +1801,7 @@ module.exports = function(model) {
           }
         }
 
-        next(null, myMessages)
+        next(null, myMessages);
       })
       .catch((err) => { next(err); })
   };
@@ -2395,48 +2385,48 @@ module.exports = function(model) {
 
 
 
-  model.remoteMethod(
-    'processEnergyMeasurements',
-    {
-      http: {path: '/:id/energyMeasurements', verb: 'post'},
-      accepts: [
-        {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
-        {arg: 'data',          type: 'any',  required:true, http: { source:  'body' }},
-        {arg: "options",       type: "object", http: "optionsFromRequest"},
-      ],
-      description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
-    }
-  );
-
-
-  model.processEnergyMeasurements = function(id, data, options, next) {
-    let Stones = loopback.findModel("Stone");
-    let EnergyUsage = loopback.findModel("EnergyUsage");
-    let ids = Object.keys(data);
-    Stones.find({where:{id: {inq: ids}, sphereId: id}})
-      .then((result) => {
-        let energyData = [];
-        for (let i = 0; i < result.length; i++) {
-          let stone = result[i];
-          let stoneId = stone.id;
-          for (let j = 0; j < data[stoneId].length; j++) {
-            let t = data[stoneId][j].t;
-            let e = data[stoneId][j].energy;
-            if (t !== undefined && e !== undefined) {
-              energyData.push({timestamp: new Date(t), energy: e, stoneId: stoneId, sphereId: id });
-            }
-          }
-        }
-        return EnergyUsage.create(energyData)
-      })
-      .then(() => {
-        next(null)
-      })
-      .catch((e) => {
-        console.log("Something went wrong", e)
-        next(e)
-      })
-  }
+  // model.remoteMethod(
+  //   'processEnergyMeasurements',
+  //   {
+  //     http: {path: '/:id/energyMeasurements', verb: 'post'},
+  //     accepts: [
+  //       {arg: 'id',            type: 'any', required: true, http: { source : 'path' }},
+  //       {arg: 'data',          type: 'any',  required:true, http: { source:  'body' }},
+  //       {arg: "options",       type: "object", http: "optionsFromRequest"},
+  //     ],
+  //     description: "BETA: Switch multiple Crownstones at the same time. Dimming below 10% is not allowed."
+  //   }
+  // );
+  //
+  //
+  // model.processEnergyMeasurements = function(id, data, options, next) {
+  //   let Stones = loopback.findModel("Stone");
+  //   let EnergyUsage = loopback.findModel("EnergyUsage");
+  //   let ids = Object.keys(data);
+  //   Stones.find({where:{id: {inq: ids}, sphereId: id}})
+  //     .then((result) => {
+  //       let energyData = [];
+  //       for (let i = 0; i < result.length; i++) {
+  //         let stone = result[i];
+  //         let stoneId = stone.id;
+  //         for (let j = 0; j < data[stoneId].length; j++) {
+  //           let t = data[stoneId][j].t;
+  //           let e = data[stoneId][j].energy;
+  //           if (t !== undefined && e !== undefined) {
+  //             energyData.push({timestamp: new Date(t), energy: e, stoneId: stoneId, sphereId: id });
+  //           }
+  //         }
+  //       }
+  //       return EnergyUsage.create(energyData)
+  //     })
+  //     .then(() => {
+  //       next(null)
+  //     })
+  //     .catch((e) => {
+  //       console.log("Something went wrong", e)
+  //       next(e)
+  //     })
+  // }
 
 };
 
