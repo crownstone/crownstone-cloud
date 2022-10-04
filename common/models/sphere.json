@@ -41,22 +41,10 @@
       "type": "string",
       "required": true
     },
-    "meshAccessAddress": {
-      "type": "string"
-    },
-    "adminEncryptionKey": {
-      "type": "string"
-    },
-    "memberEncryptionKey": {
-      "type": "string"
-    },
-    "guestEncryptionKey": {
-      "type": "string"
-    },
     "aiName": {
       "type": "string"
     },
-    "aiSex": {
+    "timezone": {
       "type": "string"
     },
     "exitDelay": {
