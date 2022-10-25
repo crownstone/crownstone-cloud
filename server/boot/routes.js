@@ -580,6 +580,11 @@ module.exports = function (app) {
   })
 
 
+  app.get('/hi', function(req, res) {
+    res.end(JSON.stringify({hi: "v1"}))
+  })
+
+
   app.get('/hubs', function(req, res) {
     let ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
 
