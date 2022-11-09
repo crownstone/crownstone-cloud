@@ -1,4 +1,4 @@
-{
+module.exports ={
   "user": {
     "options": {
       "emailVerificationRequired": true,
@@ -61,5 +61,8 @@
   },
   "LocationPosition": {
     "public": false
+  },
+  "Email": {
+    "dataSource": process.env.MAIL_PROVIDER,
   }
 }

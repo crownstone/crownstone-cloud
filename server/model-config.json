@@ -46,7 +46,7 @@
     "public": false
   },
   "Email": {
-    "dataSource": "sendgridDs",
+    "dataSource": "gmail",
     "public": false
   },
   "Hook": {

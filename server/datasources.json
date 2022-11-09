@@ -11,8 +11,12 @@
     "name": "userDs",
     "connector": "memory"
   },
-  "sendgridDs": {
-    "name": "sendgridDs",
+  "sendgrid": {
+    "name": "sendgrid",
+    "connector": "memory"
+  },
+  "gmail": {
+    "name": "gmail",
     "connector": "memory"
   },
   "filesDs": {

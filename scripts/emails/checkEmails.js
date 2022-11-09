@@ -17,7 +17,7 @@ let invitedNewAccount      = "alexdemulder+new@gmail.com";
 /** preperation:
 *
 * edit the datasources.local.js to only have this field active, the rest can be empty or commented:
-*  sendgridDs: {
+*  sendgrid: {
     "connector": "loopback-connector-sendgrid",
     "api_user": "user_here",
     "api_key": "key_here
@@ -37,8 +37,8 @@ let sphereId = null
 
 console.log("Checking config for databases. Must be working in memory to use this script...")
 let datasources  = require('../../server/datasources.' + (process.env.NODE_ENV || 'local'));
-if (!(Object.keys(datasources).length === 1 && datasources['sendgridDs'] !== undefined)) {
-  console.log("Datasource contains either database information or no sendgridDs entry. Closing.")
+if (!(Object.keys(datasources).length === 1 && datasources['sendgrid'] !== undefined)) {
+  console.log("Datasource contains either database information or no sendgrid entry. Closing.")
   return
 }
 console.log("Config file check passed. Starting email script.")
