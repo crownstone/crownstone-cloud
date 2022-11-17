@@ -2,7 +2,7 @@ This document is an attempt to describe the meaning behind some of the fields in
 so this is the alternative.
 
 
-####Bootloader:
+#### Bootloader:
 
 | Field | Explanation |
 | ----- | ----------- |
@@ -17,8 +17,8 @@ so this is the alternative.
 
 
 
-####Firmware:
-Most things are the same as the bootloader, except: 
+#### Firmware:
+Most things are the same as the bootloader, except:
 
 | Field | Explanation |
 | ----- | ----------- |
