@@ -1,7 +1,7 @@
 module.exports ={
   "user": {
     "options": {
-      "emailVerificationRequired": true,
+      "emailVerificationRequired": process.env.EMAIL_VERIFICATION_REQUIRED === 'false' ? false : true,
       "caseSensitiveEmail": false
     }
   },
