@@ -405,16 +405,16 @@ module.exports = function(model) {
 
 	model.deleteImage = function(id, options, callback) {
 		debug("deleteImage");
-
 		const Sphere = loopback.getModel('Sphere');
 
 		// get the location instance
 		model.findById(id, function(err, location) {
 			if (err) return callback(err);
 			if (model.checkForNullError(location, callback, "id: " + id)) return;
+
       if (idUtil.verifyMongoId(location.imageId) === false) {
         // remove the profile pic
-        location.imageId = undefined;
+        location.imageId = null;
         location.save()
           .then(() => {
             callback();
@@ -423,9 +423,8 @@ module.exports = function(model) {
       else {
 			  Sphere.deleteFile(location.sphereId, location.imageId, options, (err, result) => {
           if (err) { return callback(err); }
-
           // remove the profile pic
-          location.imageId = undefined;
+          location.imageId = null;
           location.save()
             .then(() => {
               callback();
